@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membresías | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
+            <span class="sidebar-subtitle">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/calendario.html" class="nav-item">
+                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                <span>Calendario</span>
+            </a>
+            <a href="/admin/clientes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                <span>Clientes</span>
+            </a>
+            <a href="/admin/membresias.html" class="nav-item active">
+                <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                <span>Membresías</span>
+            </a>
+            <a href="/admin/reportes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                <span>Reportes</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-title">
+                <h2>Gestión de Membresías</h2>
+                <p class="header-date">Administra planes y suscripciones</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openActivateMembershipModal()">+ Activar Membresía</button>
+            </div>
+        </header>
+        
+        <!-- Stats -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-active">0</span>
+                    <span class="stat-label">Activas</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-expiring">0</span>
+                    <span class="stat-label">Por Vencer (30 días)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-revenue">$0</span>
+                    <span class="stat-label">Ingresos Mensuales</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👑</div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-lifetime">0</span>
+                    <span class="stat-label">Lifetime (Black)</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Filters -->
+        <section class="content-section">
+            <div class="filters-bar">
+                <input type="text" id="search-memberships" class="search-input" placeholder="Buscar por cliente...">
+                
+                <select id="filter-status" class="search-input" style="width: auto;">
+                    <option value="">Todos los estados</option>
+                    <option value="active">Activas</option>
+                    <option value="expiring">Por vencer</option>
+                    <option value="cancelled">Canceladas</option>
+                </select>
+                
+                <select id="filter-type" class="search-input" style="width: auto;">
+                    <option value="">Todos los planes</option>
+                    <option value="gold">Gold</option>
+                    <option value="platinum">Platinum</option>
+                    <option value="black">Black</option>
+                </select>
+                
+                <button class="btn btn-secondary" onclick="exportMemberships()">📥 Exportar</button>
+            </div>
+        </section>
+        
+        <!-- Memberships Table -->
+        <section class="content-section">
+            <div class="section-header">
+                <h3>Membresías Activas</h3>
+            </div>
+            
+            <div id="memberships-container">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando membresías...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="../js/admin.js"></script>
+    <script>
+        checkAuth();
+        
+        let allMemberships = [];
+        let filteredMemberships = [];
+        let membershipTypes = [];
+        
+        // Event listeners
+        document.getElementById('search-memberships').addEventListener('input', debounce(applyFilters, 300));
+        document.getElementById('filter-status').addEventListener('change', applyFilters);
+        document.getElementById('filter-type').addEventListener('change', applyFilters);
+        
+        // Load data
+        async function loadMemberships() {
+            try {
+                const data = await AdminAPI.getMemberships();
+                allMemberships = data.memberships || [];
+                
+                // Update stats
+                const active = allMemberships.filter(m => m.status === 'active').length;
+                document.getElementById('stat-active').textContent = active;
+                
+                const thirtyDaysFromNow = new Date();
+                thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                const expiring = allMemberships.filter(m => {
+                    if (m.status !== 'active' || !m.end_date) return false;
+                    const endDate = new Date(m.end_date);
+                    return endDate <= thirtyDaysFromNow;
+                }).length;
+                document.getElementById('stat-expiring').textContent = expiring;
+                
+                const monthlyRevenue = allMemberships
+                    .filter(m => m.status === 'active' && m.type_name !== 'black')
+                    .reduce((sum, m) => sum + parseFloat(m.type_price || 0), 0);
+                document.getElementById('stat-revenue').textContent = formatCurrency(monthlyRevenue);
+                
+                const lifetime = allMemberships.filter(m => 
+                    m.status === 'active' && m.type_name === 'black'
+                ).length;
+                document.getElementById('stat-lifetime').textContent = lifetime;
+                
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading memberships:', error);
+                showToast('Error al cargar las membresías', 'error');
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-memberships').value.toLowerCase();
+            const statusFilter = document.getElementById('filter-status').value;
+            const typeFilter = document.getElementById('filter-type').value;
+            
+            filteredMemberships = allMemberships.filter(membership => {
+                // Search filter
+                if (searchTerm) {
+                    const searchText = membership.client_name.toLowerCase();
+                    if (!searchText.includes(searchTerm)) return false;
+                }
+                
+                // Status filter
+                if (statusFilter === 'active' && membership.status !== 'active') return false;
+                if (statusFilter === 'cancelled' && membership.status !== 'cancelled') return false;
+                if (statusFilter === 'expiring') {
+                    if (membership.status !== 'active' || !membership.end_date) return false;
+                    const thirtyDaysFromNow = new Date();
+                    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                    const endDate = new Date(membership.end_date);
+                    if (endDate > thirtyDaysFromNow) return false;
+                }
+                
+                // Type filter
+                if (typeFilter && membership.type_name !== typeFilter) return false;
+                
+                return true;
+            });
+            
+            renderMemberships();
+        }
+        
+        function renderMemberships() {
+            const container = document.getElementById('memberships-container');
+            
+            if (filteredMemberships.length === 0) {
+                container.innerHTML = '<p class="empty-message">No se encontraron membresías</p>';
+                return;
+            }
+            
+            const columns = [
+                { 
+                    field: 'client_name', 
+                    label: 'Cliente'
+                },
+                { 
+                    field: 'type_name', 
+                    label: 'Plan',
+                    format: (value) => {
+                        const icons = { gold: '🥇', platinum: '💎', black: '👑' };
+                        const labels = { gold: 'Gold', platinum: 'Platinum', black: 'Black' };
+                        return `${icons[value] || ''} ${labels[value] || value}`;
+                    }
+                },
+                { 
+                    field: 'type_price', 
+                    label: 'Precio',
+                    format: formatCurrency
+                },
+                { 
+                    field: 'start_date', 
+                    label: 'Inicio',
+                    format: (value) => formatDate(value)
+                },
+                { 
+                    field: 'end_date', 
+                    label: 'Vencimiento',
+                    format: (value, row) => {
+                        if (!value) return '♾️ Lifetime';
+                        
+                        const endDate = new Date(value);
+                        const today = new Date();
+                        const daysUntilExpiry = Math.floor((endDate - today) / (1000 * 60 * 60 * 24));
+                        
+                        let badge = '';
+                        if (row.status === 'active' && daysUntilExpiry <= 30) {
+                            badge = ' <span class="badge expiring">Por vencer</span>';
+                        }
+                        
+                        return formatDate(value) + badge;
+                    }
+                },
+                { 
+                    field: 'remaining_services', 
+                    label: 'Servicios',
+                    format: (value, row) => {
+                        if (row.type_name === 'black') return '♾️';
+                        return `${value || 0} / ${row.type_services_per_month || 0}`;
+                    }
+                },
+                { 
+                    field: 'status', 
+                    label: 'Estado',
+                    format: (value) => {
+                        const badges = {
+                            active: '<span class="badge active">Activa</span>',
+                            cancelled: '<span class="badge inactive">Cancelada</span>'
+                        };
+                        return badges[value] || value;
+                    }
+                },
+                { 
+                    field: 'id', 
+                    label: 'Acciones',
+                    format: (value, row) => `
+                        <div class="actions">
+                            <button class="btn-icon" onclick="viewMembershipDetail(${value})" title="Ver detalles">👁️</button>
+                            ${row.status === 'active' ? 
+                                `<button class="btn-icon" onclick="cancelMembership(${value})" title="Cancelar">❌</button>` 
+                                : ''}
+                        </div>
+                    `
+                }
+            ];
+            
+            container.innerHTML = createTable(filteredMemberships, columns);
+        }
+        
+        async function openActivateMembershipModal() {
+            // Load clients and membership types for dropdown
+            try {
+                const [clientsData, typesData] = await Promise.all([
+                    AdminAPI.getClients(),
+                    fetch('http://localhost:3000/api/membership-types').then(r => r.json())
+                ]);
+                
+                const clients = clientsData.clients || [];
+                membershipTypes = typesData.types || [];
+                
+                const content = `
+                    <form id="membership-form" class="admin-form">
+                        <div class="form-group">
+                            <label for="membership-client">Cliente *</label>
+                            <select id="membership-client" required>
+                                <option value="">Selecciona un cliente</option>
+                                ${clients.map(c => `
+                                    <option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="membership-type">Plan *</label>
+                            <select id="membership-type" required onchange="updateMembershipPreview()">
+                                <option value="">Selecciona un plan</option>
+                                ${membershipTypes.map(t => `
+                                    <option value="${t.id}" data-price="${t.price}" data-services="${t.services_per_month || 0}">
+                                        ${t.name} - ${formatCurrency(t.price)}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="membership-start-date">Fecha de Inicio *</label>
+                            <input type="date" id="membership-start-date" value="${getTodayString()}" required onchange="updateMembershipPreview()">
+                        </div>
+                        
+                        <div id="membership-preview" style="margin-top: 1rem; padding: 1rem; background: rgba(196, 163, 90, 0.1); display: none;">
+                            <p><strong>Resumen:</strong></p>
+                            <p id="preview-details"></p>
+                        </div>
+                    </form>
+                `;
+                
+                const footer = `
+                    <button class="btn btn-secondary" onclick="activateMembershipModal.close()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="activateMembership()">Activar Membresía</button>
+                `;
+                
+                window.activateMembershipModal = showModal('activateMembershipModal', 'Activar Membresía', content, footer);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error al cargar los datos', 'error');
+            }
+        }
+        
+        function updateMembershipPreview() {
+            const typeSelect = document.getElementById('membership-type');
+            const startDate = document.getElementById('membership-start-date').value;
+            const preview = document.getElementById('membership-preview');
+            const details = document.getElementById('preview-details');
+            
+            if (!typeSelect.value || !startDate) {
+                preview.style.display = 'none';
+                return;
+            }
+            
+            const option = typeSelect.options[typeSelect.selectedIndex];
+            const price = option.dataset.price;
+            const services = option.dataset.services;
+            const typeName = option.textContent.split(' - ')[0];
+            
+            const start = new Date(startDate);
+            let endDate = 'Sin vencimiento (Lifetime)';
+            
+            if (typeName.toLowerCase() !== 'black') {
+                const end = new Date(start);
+                end.setMonth(end.getMonth() + 1);
+                endDate = formatDate(end.toISOString().split('T')[0]);
+            }
+            
+            details.innerHTML = `
+                Plan: ${typeName}<br>
+                Precio: ${formatCurrency(price)}<br>
+                Servicios mensuales: ${services > 0 ? services : 'Ilimitados'}<br>
+                Inicio: ${formatDate(startDate)}<br>
+                Vencimiento: ${endDate}
+            `;
+            
+            preview.style.display = 'block';
+        }
+        
+        async function activateMembership() {
+            const form = document.getElementById('membership-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const membershipData = {
+                client_id: parseInt(document.getElementById('membership-client').value),
+                membership_type_id: parseInt(document.getElementById('membership-type').value),
+                start_date: document.getElementById('membership-start-date').value
+            };
+            
+            try {
+                await AdminAPI.createMembership(membershipData);
+                showToast('Membresía activada correctamente', 'success');
+                window.activateMembershipModal.close();
+                loadMemberships();
+            } catch (error) {
+                console.error('Error activating membership:', error);
+                showToast(error.message || 'Error al activar la membresía', 'error');
+            }
+        }
+        
+        async function viewMembershipDetail(id) {
+            try {
+                const membership = await AdminAPI.getMembership(id);
+                
+                const content = `
+                    <div style="line-height: 1.8;">
+                        <p><strong>Cliente:</strong> ${membership.client_name}</p>
+                        <p><strong>Teléfono:</strong> ${formatPhone(membership.client_phone)}</p>
+                        <p><strong>Plan:</strong> ${membership.type_name}</p>
+                        <p><strong>Precio:</strong> ${formatCurrency(membership.type_price)}</p>
+                        <p><strong>Fecha de Inicio:</strong> ${formatDate(membership.start_date)}</p>
+                        <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vencimiento (Lifetime)'}</p>
+                        <p><strong>Servicios Restantes:</strong> ${membership.type_name === 'black' ? 'Ilimitados' : `${membership.remaining_services || 0}`}</p>
+                        <p><strong>Estado:</strong> 
+                            ${membership.status === 'active' 
+                                ? '<span class="badge active">Activa</span>' 
+                                : '<span class="badge inactive">Cancelada</span>'}
+                        </p>
+                        ${membership.payment_history && membership.payment_history.length > 0 ? `
+                            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(196, 163, 90, 0.1);">
+                                <p><strong>Historial de Pagos:</strong></p>
+                                ${membership.payment_history.map(p => `
+                                    <div style="padding: 0.5rem 0;">
+                                        ${formatDate(p.payment_date)} - ${formatCurrency(p.amount)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                const footer = `
+                    <button class="btn btn-secondary" onclick="membershipDetailModal.close()">Cerrar</button>
+                `;
+                
+                window.membershipDetailModal = showModal('membershipDetailModal', 'Detalles de Membresía', content, footer);
+                
+            } catch (error) {
+                console.error('Error loading membership details:', error);
+                showToast('Error al cargar los detalles', 'error');
+            }
+        }
+        
+        function cancelMembership(id) {
+            const membership = allMemberships.find(m => m.id === id);
+            if (!membership) return;
+            
+            showConfirm(
+                'Confirmar Cancelación',
+                `¿Estás seguro de cancelar la membresía de <strong>${membership.client_name}</strong>? Esta acción no se puede deshacer.`,
+                async () => {
+                    try {
+                        await AdminAPI.cancelMembership(id);
+                        showToast('Membresía cancelada correctamente', 'success');
+                        loadMemberships();
+                    } catch (error) {
+                        console.error('Error canceling membership:', error);
+                        showToast(error.message || 'Error al cancelar la membresía', 'error');
+                    }
+                }
+            );
+        }
+        
+        function exportMemberships() {
+            const exportData = filteredMemberships.map(m => ({
+                'Cliente': m.client_name,
+                'Plan': m.type_name,
+                'Precio': m.type_price,
+                'Inicio': formatDate(m.start_date),
+                'Vencimiento': m.end_date ? formatDate(m.end_date) : 'Lifetime',
+                'Servicios Restantes': m.type_name === 'black' ? 'Ilimitados' : m.remaining_services,
+                'Estado': m.status === 'active' ? 'Activa' : 'Cancelada'
+            }));
+            
+            exportToExcel(exportData, `membresias_${new Date().toISOString().split('T')[0]}`);
+        }
+        
+        // Initial load
+        loadMemberships();
+    </script>
+    
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        mobileOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
+
+// Importar configuraciones
+import config from './config/index.js';
+import { testConnection } from './config/database.js';
+
+// Importar rutas
+import routes from './routes/index.js';
+
+// Importar middleware
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+
+// Cargar variables de entorno
+dotenv.config();
+
+// Crear aplicación Express
+const app = express();
+
+// ============================================
+// MIDDLEWARE GLOBAL
+// ============================================
+
+// Seguridad
+app.use(helmet());
+
+// CORS
+app.use(cors(config.cors));
+
+// Parseo de JSON
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Compresión de respuestas
+app.use(compression());
+
+// Logging
+if (config.env === 'development') {
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
+}
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.max,
+  message: {
+    success: false,
+    message: 'Demasiadas solicitudes, por favor intenta de nuevo más tarde.'
+  }
+});
+app.use('/api/', limiter);
+
+// ============================================
+// RUTAS
+// ============================================
+
+// Ruta raíz
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: "Bienvenido a Braco's Barbería API",
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      services: '/api/services',
+      clients: '/api/clients',
+      appointments: '/api/appointments'
+    }
+  });
+});
+
+// API Routes
+app.use('/api', routes);
+
+// ============================================
+// MANEJO DE ERRORES
+// ============================================
+
+// 404 - Ruta no encontrada
+app.use(notFound);
+
+// Error handler global
+app.use(errorHandler);
+
+// ============================================
+// INICIAR SERVIDOR
+// ============================================
+
+const PORT = config.port;
+
+const startServer = async () => {
+  try {
+    // Probar conexión a base de datos
+    console.log('🔌 Probando conexión a base de datos...');
+    const dbConnected = await testConnection();
+    
+    if (!dbConnected) {
+      console.error('❌ No se pudo conectar a la base de datos');
+      process.exit(1);
+    }
+
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      console.log('');
+      console.log('╔══════════════════════════════════════════════╗');
+      console.log('║                                              ║');
+      console.log("║     BRACO'S BARBERÍA - API BACKEND           ║");
+      console.log('║                                              ║');
+      console.log('╚══════════════════════════════════════════════╝');
+      console.log('');
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+      console.log(`🌍 Entorno: ${config.env}`);
+      console.log(`📊 Base de datos: ${config.database.name}`);
+      console.log('');
+      console.log('Endpoints disponibles:');
+      console.log(`  → API Health: http://localhost:${PORT}/api/health`);
+      console.log(`  → Servicios: http://localhost:${PORT}/api/services`);
+      console.log(`  → Clientes: http://localhost:${PORT}/api/clients`);
+      console.log(`  → Citas: http://localhost:${PORT}/api/appointments`);
+      console.log('');
+      console.log('Presiona CTRL+C para detener el servidor');
+      console.log('══════════════════════════════════════════════════');
+    });
+
+  } catch (error) {
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
+};
+
+// Manejo de errores no capturados
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
+
+// Iniciar servidor
+startServer();
+
+export default app;

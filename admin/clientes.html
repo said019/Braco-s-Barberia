@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
+            <span class="sidebar-subtitle">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/calendario.html" class="nav-item">
+                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                <span>Calendario</span>
+            </a>
+            <a href="/admin/clientes.html" class="nav-item active">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                <span>Clientes</span>
+            </a>
+            <a href="/admin/membresias.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                <span>Membresías</span>
+            </a>
+            <a href="/admin/reportes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                <span>Reportes</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-title">
+                <h2>Gestión de Clientes</h2>
+                <p class="header-date">Administra la base de datos de clientes</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openCreateClientModal()">+ Nuevo Cliente</button>
+            </div>
+        </header>
+        
+        <!-- Search & Filters -->
+        <section class="content-section">
+            <div class="filters-bar">
+                <input type="text" id="search-clients" class="search-input" placeholder="Buscar por nombre, teléfono o email...">
+                
+                <select id="filter-membership" class="search-input" style="width: auto;">
+                    <option value="">Todas las membresías</option>
+                    <option value="active">Con membresía activa</option>
+                    <option value="inactive">Sin membresía</option>
+                </select>
+                
+                <button class="btn btn-secondary" onclick="exportClients()">📥 Exportar</button>
+            </div>
+        </section>
+        
+        <!-- Stats -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-total">0</span>
+                    <span class="stat-label">Total Clientes</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-members">0</span>
+                    <span class="stat-label">Con Membresía</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+                <div class="stat-content">
+                    <span class="stat-value" id="stat-new">0</span>
+                    <span class="stat-label">Nuevos (30 días)</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Clients Table -->
+        <section class="content-section">
+            <div class="section-header">
+                <h3>Lista de Clientes</h3>
+            </div>
+            
+            <div id="clients-container">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando clientes...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="../js/admin.js"></script>
+    <script>
+        checkAuth();
+        
+        let allClients = [];
+        let filteredClients = [];
+        
+        // Event listeners
+        document.getElementById('search-clients').addEventListener('input', debounce(applyFilters, 300));
+        document.getElementById('filter-membership').addEventListener('change', applyFilters);
+        
+        // Load clients
+        async function loadClients() {
+            try {
+                const data = await AdminAPI.getClients();
+                allClients = data.clients || [];
+                
+                // Update stats
+                document.getElementById('stat-total').textContent = allClients.length;
+                
+                const withMembership = allClients.filter(c => c.has_active_membership).length;
+                document.getElementById('stat-members').textContent = withMembership;
+                
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const newClients = allClients.filter(c => new Date(c.created_at) >= thirtyDaysAgo).length;
+                document.getElementById('stat-new').textContent = newClients;
+                
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                showToast('Error al cargar los clientes', 'error');
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-clients').value.toLowerCase();
+            const membershipFilter = document.getElementById('filter-membership').value;
+            
+            filteredClients = allClients.filter(client => {
+                // Search filter
+                if (searchTerm) {
+                    const searchText = `${client.name} ${client.phone} ${client.email || ''}`.toLowerCase();
+                    if (!searchText.includes(searchTerm)) return false;
+                }
+                
+                // Membership filter
+                if (membershipFilter === 'active' && !client.has_active_membership) return false;
+                if (membershipFilter === 'inactive' && client.has_active_membership) return false;
+                
+                return true;
+            });
+            
+            renderClients();
+        }
+        
+        function renderClients() {
+            const container = document.getElementById('clients-container');
+            
+            if (filteredClients.length === 0) {
+                container.innerHTML = '<p class="empty-message">No se encontraron clientes</p>';
+                return;
+            }
+            
+            const columns = [
+                { 
+                    field: 'name', 
+                    label: 'Nombre',
+                    format: (value, row) => `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${getClientColor(row.id)}"></div>
+                            ${value}
+                        </div>
+                    `
+                },
+                { 
+                    field: 'phone', 
+                    label: 'Teléfono',
+                    format: formatPhone
+                },
+                { 
+                    field: 'email', 
+                    label: 'Email',
+                    format: (value) => value || '-'
+                },
+                { 
+                    field: 'has_active_membership', 
+                    label: 'Membresía',
+                    format: (value) => value 
+                        ? '<span class="badge active">Activa</span>' 
+                        : '<span class="badge inactive">Ninguna</span>'
+                },
+                { 
+                    field: 'total_appointments', 
+                    label: 'Citas',
+                    format: (value) => value || 0
+                },
+                { 
+                    field: 'created_at', 
+                    label: 'Registro',
+                    format: (value) => new Date(value).toLocaleDateString('es-MX', { 
+                        day: 'numeric', month: 'short', year: 'numeric' 
+                    })
+                },
+                { 
+                    field: 'id', 
+                    label: 'Acciones',
+                    format: (value) => `
+                        <div class="actions">
+                            <button class="btn-icon" onclick="viewClientDetail(${value})" title="Ver detalles">👁️</button>
+                            <button class="btn-icon" onclick="editClient(${value})" title="Editar">✏️</button>
+                            <button class="btn-icon" onclick="deleteClient(${value})" title="Eliminar">🗑️</button>
+                        </div>
+                    `
+                }
+            ];
+            
+            container.innerHTML = createTable(filteredClients, columns);
+        }
+        
+        function openCreateClientModal() {
+            const content = `
+                <form id="client-form" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="client-name">Nombre *</label>
+                            <input type="text" id="client-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="client-phone">Teléfono *</label>
+                            <input type="tel" id="client-phone" placeholder="5551234567" maxlength="10" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="client-email">Email</label>
+                        <input type="email" id="client-email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="client-birthdate">Fecha de Nacimiento</label>
+                        <input type="date" id="client-birthdate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="client-preferences">Preferencias</label>
+                        <textarea id="client-preferences" rows="3" placeholder="Preferencias de corte, alergias, etc."></textarea>
+                    </div>
+                </form>
+            `;
+            
+            const footer = `
+                <button class="btn btn-secondary" onclick="createClientModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveNewClient()">Crear Cliente</button>
+            `;
+            
+            window.createClientModal = showModal('createClientModal', 'Nuevo Cliente', content, footer);
+        }
+        
+        async function saveNewClient() {
+            const form = document.getElementById('client-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const clientData = {
+                name: document.getElementById('client-name').value,
+                phone: document.getElementById('client-phone').value,
+                email: document.getElementById('client-email').value || null,
+                birthdate: document.getElementById('client-birthdate').value || null,
+                preferences: document.getElementById('client-preferences').value || null
+            };
+            
+            // Validate phone
+            if (!validatePhone(clientData.phone)) {
+                showToast('El teléfono debe tener 10 dígitos', 'error');
+                return;
+            }
+            
+            try {
+                await AdminAPI.createClient(clientData);
+                showToast('Cliente creado correctamente', 'success');
+                window.createClientModal.close();
+                loadClients();
+            } catch (error) {
+                console.error('Error creating client:', error);
+                showToast(error.message || 'Error al crear el cliente', 'error');
+            }
+        }
+        
+        async function viewClientDetail(id) {
+            try {
+                const [client, history] = await Promise.all([
+                    AdminAPI.getClient(id),
+                    AdminAPI.getClientHistory(id)
+                ]);
+                
+                const content = `
+                    <div style="line-height: 1.8;">
+                        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Información Personal</h4>
+                            <p><strong>Nombre:</strong> ${client.name}</p>
+                            <p><strong>Teléfono:</strong> ${formatPhone(client.phone)}</p>
+                            <p><strong>Email:</strong> ${client.email || '-'}</p>
+                            <p><strong>Fecha de Nacimiento:</strong> ${client.birthdate ? formatDate(client.birthdate) : '-'}</p>
+                            <p><strong>Cliente desde:</strong> ${formatDate(client.created_at)}</p>
+                            ${client.preferences ? `<p><strong>Preferencias:</strong> ${client.preferences}</p>` : ''}
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Estadísticas</h4>
+                            <p><strong>Total de citas:</strong> ${history.total_appointments || 0}</p>
+                            <p><strong>Citas completadas:</strong> ${history.completed_appointments || 0}</p>
+                            <p><strong>Total gastado:</strong> ${formatCurrency(history.total_spent || 0)}</p>
+                            <p><strong>Membresía activa:</strong> ${client.has_active_membership ? 'Sí' : 'No'}</p>
+                        </div>
+                        
+                        <div>
+                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Últimas Citas</h4>
+                            ${history.recent_appointments && history.recent_appointments.length > 0 ? `
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${history.recent_appointments.map(apt => `
+                                        <div style="padding: 0.5rem 0; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                                            <div><strong>${apt.service_name}</strong></div>
+                                            <div style="font-size: 0.85rem; opacity: 0.7;">
+                                                ${formatDate(apt.appointment_date)} - ${formatCurrency(apt.price)}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : '<p class="empty-message">Sin citas registradas</p>'}
+                        </div>
+                    </div>
+                `;
+                
+                const footer = `
+                    <button class="btn btn-secondary" onclick="clientDetailModal.close()">Cerrar</button>
+                    <button class="btn btn-primary" onclick="editClient(${id}); clientDetailModal.close();">Editar</button>
+                `;
+                
+                window.clientDetailModal = showModal('clientDetailModal', 'Detalles del Cliente', content, footer);
+                
+            } catch (error) {
+                console.error('Error loading client details:', error);
+                showToast('Error al cargar los detalles del cliente', 'error');
+            }
+        }
+        
+        async function editClient(id) {
+            try {
+                const client = await AdminAPI.getClient(id);
+                
+                const content = `
+                    <form id="edit-client-form" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-client-name">Nombre *</label>
+                                <input type="text" id="edit-client-name" value="${client.name}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="edit-client-phone">Teléfono *</label>
+                                <input type="tel" id="edit-client-phone" value="${client.phone}" maxlength="10" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-client-email">Email</label>
+                            <input type="email" id="edit-client-email" value="${client.email || ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-client-birthdate">Fecha de Nacimiento</label>
+                            <input type="date" id="edit-client-birthdate" value="${client.birthdate || ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-client-preferences">Preferencias</label>
+                            <textarea id="edit-client-preferences" rows="3">${client.preferences || ''}</textarea>
+                        </div>
+                    </form>
+                `;
+                
+                const footer = `
+                    <button class="btn btn-secondary" onclick="editClientModal.close()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="saveClientChanges(${id})">Guardar Cambios</button>
+                `;
+                
+                window.editClientModal = showModal('editClientModal', 'Editar Cliente', content, footer);
+                
+            } catch (error) {
+                console.error('Error loading client:', error);
+                showToast('Error al cargar el cliente', 'error');
+            }
+        }
+        
+        async function saveClientChanges(id) {
+            const form = document.getElementById('edit-client-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const clientData = {
+                name: document.getElementById('edit-client-name').value,
+                phone: document.getElementById('edit-client-phone').value,
+                email: document.getElementById('edit-client-email').value || null,
+                birthdate: document.getElementById('edit-client-birthdate').value || null,
+                preferences: document.getElementById('edit-client-preferences').value || null
+            };
+            
+            if (!validatePhone(clientData.phone)) {
+                showToast('El teléfono debe tener 10 dígitos', 'error');
+                return;
+            }
+            
+            try {
+                await AdminAPI.updateClient(id, clientData);
+                showToast('Cliente actualizado correctamente', 'success');
+                window.editClientModal.close();
+                loadClients();
+            } catch (error) {
+                console.error('Error updating client:', error);
+                showToast(error.message || 'Error al actualizar el cliente', 'error');
+            }
+        }
+        
+        function deleteClient(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
+            
+            showConfirm(
+                'Confirmar Eliminación',
+                `¿Estás seguro de eliminar al cliente <strong>${client.name}</strong>? Esta acción no se puede deshacer.`,
+                async () => {
+                    try {
+                        await AdminAPI.deleteClient(id);
+                        showToast('Cliente eliminado correctamente', 'success');
+                        loadClients();
+                    } catch (error) {
+                        console.error('Error deleting client:', error);
+                        showToast(error.message || 'Error al eliminar el cliente', 'error');
+                    }
+                }
+            );
+        }
+        
+        function exportClients() {
+            const exportData = filteredClients.map(client => ({
+                'Nombre': client.name,
+                'Teléfono': client.phone,
+                'Email': client.email || '',
+                'Membresía': client.has_active_membership ? 'Sí' : 'No',
+                'Total Citas': client.total_appointments || 0,
+                'Fecha Registro': formatDate(client.created_at)
+            }));
+            
+            exportToExcel(exportData, `clientes_${new Date().toISOString().split('T')[0]}`);
+        }
+        
+        // Initial load
+        loadClients();
+    </script>
+    
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        mobileOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+        });
+        
+        // Cerrar menú al hacer click en un enlace
+        document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

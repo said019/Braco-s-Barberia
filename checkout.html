@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Barbería</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/checkout.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="Barbería" class="logo-img">
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#servicios">Servicios</a></li>
+                <li><a href="agendar.html">Agendar</a></li>
+                <li><a href="checkout.html" class="active">Checkout</a></li>
+                <li><a href="membresias.html">Membresías</a></li>
+            </ul>
+            
+            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+            
+            <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#servicios">Servicios</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="checkout.html">Checkout</a></li>
+            <li><a href="membresias.html">Membresías</a></li>
+            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="checkout-main">
+        <div class="checkout-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <span class="page-label">Finalizar Servicio</span>
+                <h1 class="page-title">Checkout</h1>
+                <div class="page-line"></div>
+                <p class="page-description">Ingresa tu código de cita para proceder con el pago</p>
+            </div>
+
+            <!-- Step 1: Enter Code -->
+            <section class="checkout-step" id="step-code">
+                <div class="code-entry-container">
+                    <div class="code-icon">🔐</div>
+                    <h2 class="code-title">Ingresa tu Código de Cita</h2>
+                    <p class="code-description">Recibiste este código de 4 dígitos al agendar tu cita</p>
+                    
+                    <form id="code-form" class="code-form">
+                        <div class="code-inputs">
+                            <input type="text" maxlength="1" class="code-digit" id="digit1" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="code-digit" id="digit2" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="code-digit" id="digit3" pattern="[0-9]" required>
+                            <input type="text" maxlength="1" class="code-digit" id="digit4" pattern="[0-9]" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Buscar Cita</button>
+                    </form>
+
+                    <p class="code-help">¿No encuentras tu código? <a href="tel:5573432027">Llámanos</a></p>
+                </div>
+            </section>
+
+            <!-- Step 2: Checkout Details -->
+            <section class="checkout-step hidden" id="step-checkout">
+                <!-- Appointment Info -->
+                <div class="appointment-info">
+                    <div class="info-header">
+                        <h2>Información de tu Cita</h2>
+                        <span class="appointment-code" id="display-code">----</span>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Cliente</span>
+                            <span class="info-value" id="client-name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Servicio</span>
+                            <span class="info-value" id="service-name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Fecha</span>
+                            <span class="info-value" id="appointment-date">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Hora</span>
+                            <span class="info-value" id="appointment-time">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Membership Section -->
+                <div class="membership-section" id="membership-section">
+                    <h3 class="section-subtitle">
+                        <span class="subtitle-icon">👑</span>
+                        Membresía Activa
+                    </h3>
+                    
+                    <div class="membership-card" id="membership-card">
+                        <div class="membership-info">
+                            <h4 id="membership-name">Sin membresía activa</h4>
+                            <p id="membership-details">Considera adquirir una membresía para obtener beneficios exclusivos</p>
+                        </div>
+                        <div class="membership-action">
+                            <label class="checkbox-container" id="use-membership-container" style="display: none;">
+                                <input type="checkbox" id="use-membership">
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Usar servicio de membresía</span>
+                            </label>
+                            <a href="membresias.html" class="btn-outline btn-small" id="get-membership-btn">Ver Membresías</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div class="products-section">
+                    <h3 class="section-subtitle">
+                        <span class="subtitle-icon">🧴</span>
+                        Productos Disponibles
+                    </h3>
+                    
+                    <div class="products-grid" id="products-grid">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="payment-summary">
+                    <h3 class="summary-title">Resumen de Pago</h3>
+                    
+                    <div class="summary-items">
+                        <div class="summary-row">
+                            <span>Servicio</span>
+                            <span id="summary-service-price">$0</span>
+                        </div>
+                        <div class="summary-row" id="products-summary">
+                            <span>Productos (<span id="products-count">0</span>)</span>
+                            <span id="summary-products-price">$0</span>
+                        </div>
+                        <div class="summary-row discount" id="membership-discount" style="display: none;">
+                            <span>Descuento Membresía</span>
+                            <span id="summary-discount">- $0</span>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row total">
+                            <span>Total a Pagar</span>
+                            <span id="summary-total">$0</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <h4>Método de Pago</h4>
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="efectivo" checked>
+                                <span class="payment-icon">💵</span>
+                                <span class="payment-label">Efectivo</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="tarjeta">
+                                <span class="payment-icon">💳</span>
+                                <span class="payment-label">Tarjeta</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="transferencia">
+                                <span class="payment-icon">📱</span>
+                                <span class="payment-label">Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary btn-block btn-large" id="btn-complete-checkout">
+                        Completar Pago
+                    </button>
+                </div>
+            </section>
+
+            <!-- Step 3: Success -->
+            <section class="checkout-step hidden" id="step-success">
+                <div class="success-container">
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">¡Pago Completado!</h2>
+                    <p class="success-message">
+                        Gracias por tu visita a <img src="assets/logo.png" alt="Logo" style="height: 1.5em; vertical-align: middle; display: inline-block;"> Barbería
+                    </p>
+                    
+                    <div class="success-details">
+                        <div class="detail-row">
+                            <span>Total Pagado</span>
+                            <strong id="final-total">$0</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Método de Pago</span>
+                            <span id="final-method">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Fecha</span>
+                            <span id="final-date">-</span>
+                        </div>
+                    </div>
+
+                    <div class="success-message-box">
+                        <p>
+                            <strong>¡Esperamos verte pronto!</strong><br>
+                            Tu próxima visita es importante para nosotros.
+                        </p>
+                    </div>
+
+                    <div class="success-actions">
+                        <a href="index.html" class="btn-outline">Volver al Inicio</a>
+                        <a href="agendar.html" class="btn-primary">Agendar Nueva Cita</a>
+                    </div>
+
+                    <div class="loyalty-cta">
+                        <p>¿Vienes frecuentemente?</p>
+                        <a href="membresias.html" class="btn-outline btn-small">Conoce nuestras Membresías</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <a href="index.html" class="footer-logo">
+                <img src="assets/logo.png" alt="Logo" class="footer-logo-img" style="height: 80px;">
+            </a>
+            <div class="footer-bottom">
+                <p>&copy; 2016-2025 BRACO'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>

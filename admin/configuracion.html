@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        /* Estilos adicionales para configuración */
+        .config-tabs {
+            display: flex;
+            gap: 0;
+            margin: 2rem 0;
+            border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+        }
+
+        .config-tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0.6;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.3s ease;
+        }
+
+        .config-tab.active {
+            opacity: 1;
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .config-section {
+            display: none;
+        }
+
+        .config-section.active {
+            display: block;
+        }
+
+        .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .hours-table th {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+        }
+
+        .hours-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(196, 163, 90, 0.1);
+        }
+
+        .hours-table tr:hover {
+            background: rgba(196, 163, 90, 0.05);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            display: inline-block;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--charcoal-dark);
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: '';
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--cream);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+            background: var(--charcoal-dark);
+        }
+
+        /* Time Input */
+        .time-input {
+            width: 90px;
+            padding: 0.5rem;
+            background: var(--charcoal-dark);
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .time-input:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Blocked Date Item */
+        .blocked-date-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--charcoal-dark);
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(196, 163, 90, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .blocked-date-item:hover {
+            border-color: rgba(196, 163, 90, 0.3);
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: var(--error);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            transform: scale(1.2);
+        }
+
+        .add-blocked-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .add-blocked-form input[type="date"],
+        .add-blocked-form input[type="text"] {
+            padding: 0.75rem;
+            background: var(--charcoal-dark);
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .add-blocked-form input[type="text"] {
+            flex: 1;
+        }
+
+        .message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid;
+            display: none;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(229, 57, 53, 0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
+            <span class="sidebar-subtitle">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/calendario.html" class="nav-item">
+                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                <span>Calendario</span>
+            </a>
+            <a href="/admin/clientes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                <span>Clientes</span>
+            </a>
+            <a href="/admin/membresias.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                <span>Membresías</span>
+            </a>
+            <a href="/admin/reportes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                <span>Reportes</span>
+            </a>
+            <a href="/admin/configuracion.html" class="nav-item active">
+                <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-title">
+                <h2>Configuración</h2>
+                <p class="header-date">Sistema de agendamiento</p>
+            </div>
+            <div class="header-user">
+                <span id="admin-name">Admin</span>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="config-tabs">
+            <button class="config-tab active" data-tab="horarios">Horarios</button>
+            <button class="config-tab" data-tab="bloqueados">Días Bloqueados</button>
+            <button class="config-tab" data-tab="general">General</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="message success" id="success-msg"></div>
+        <div class="message error" id="error-msg"></div>
+
+        <!-- Tab: Horarios -->
+        <section class="config-section active" id="tab-horarios">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Horarios de Atención</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.6;">Configura los horarios de apertura y cierre para cada día de la semana</p>
+                </div>
+
+                <table class="hours-table">
+                    <thead>
+                        <tr>
+                            <th>Día</th>
+                            <th>Abierto</th>
+                            <th>Horario</th>
+                            <th>Descanso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hours-tbody">
+                        <!-- Se llena con JavaScript -->
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 2rem; text-align: right;">
+                    <button class="btn btn-primary" onclick="saveBusinessHours()">
+                        Guardar Horarios
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Días Bloqueados -->
+        <section class="config-section" id="tab-bloqueados">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Días Bloqueados</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.6;">Bloquea fechas específicas (vacaciones, festivos, etc.)</p>
+                </div>
+
+                <div id="blocked-list">
+                    <!-- Se llena con JavaScript -->
+                </div>
+
+                <form class="add-blocked-form" id="add-blocked-form">
+                    <input type="date" id="blocked-date" required>
+                    <input type="text" id="blocked-reason" placeholder="Razón (opcional)">
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Tab: General -->
+        <section class="config-section" id="tab-general">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Configuración General</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.6;">Ajustes del sistema de agendamiento</p>
+                </div>
+
+                <div class="admin-form">
+                    <div class="form-group">
+                        <label>Intervalo de Slots (minutos)</label>
+                        <select id="slot-interval" class="form-control">
+                            <option value="15">15 minutos</option>
+                            <option value="30" selected>30 minutos</option>
+                            <option value="60">60 minutos</option>
+                        </select>
+                        <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.5rem;">
+                            Define cada cuánto tiempo se generan los slots de disponibilidad
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Días de Anticipación</label>
+                        <select id="advance-days" class="form-control">
+                            <option value="7">7 días</option>
+                            <option value="14">14 días</option>
+                            <option value="30" selected>30 días</option>
+                            <option value="60">60 días</option>
+                        </select>
+                        <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.5rem;">
+                            Cuántos días adelante pueden los clientes agendar citas
+                        </p>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveGeneralSettings()">
+                        Guardar Configuración
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script>
+        // ============================
+        // AUTENTICACIÓN
+        // ============================
+        checkAuth();
+        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('admin-name').textContent = adminUser.name || 'Admin';
+
+        // ============================
+        // DATOS
+        // ============================
+        let businessHours = [];
+        let blockedDates = [];
+
+        // ============================
+        // TABS
+        // ============================
+        document.querySelectorAll('.config-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.config-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        // ============================
+        // CARGAR HORARIOS
+        // ============================
+        async function loadBusinessHours() {
+            try {
+                const response = await fetchWithAuth('/api/admin/business-hours');
+                businessHours = response;
+                renderBusinessHours();
+            } catch (error) {
+                console.error('Error loading business hours:', error);
+                showMessage('error', 'Error al cargar horarios');
+            }
+        }
+
+        function renderBusinessHours() {
+            const tbody = document.getElementById('hours-tbody');
+            tbody.innerHTML = businessHours.map(day => `
+                <tr data-day="${day.day_of_week}">
+                    <td><strong>${day.day_name}</strong></td>
+                    <td>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${day.is_open ? 'checked' : ''} 
+                                   onchange="toggleDay(${day.day_of_week}, this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <input type="time" class="time-input" value="${day.open_time || '09:00'}" 
+                               ${!day.is_open ? 'disabled' : ''}
+                               onchange="updateHour(${day.day_of_week}, 'open_time', this.value)">
+                        <span style="color:var(--gold); margin: 0 0.5rem;"> a </span>
+                        <input type="time" class="time-input" value="${day.close_time || '18:00'}" 
+                               ${!day.is_open ? 'disabled' : ''}
+                               onchange="updateHour(${day.day_of_week}, 'close_time', this.value)">
+                    </td>
+                    <td>
+                        <input type="time" class="time-input" value="${day.break_start || ''}" 
+                               ${!day.is_open ? 'disabled' : ''}
+                               placeholder="--:--"
+                               onchange="updateHour(${day.day_of_week}, 'break_start', this.value)">
+                        <span style="color:var(--gold); margin: 0 0.5rem;"> a </span>
+                        <input type="time" class="time-input" value="${day.break_end || ''}" 
+                               ${!day.is_open ? 'disabled' : ''}
+                               placeholder="--:--"
+                               onchange="updateHour(${day.day_of_week}, 'break_end', this.value)">
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleDay(dayOfWeek, isOpen) {
+            const day = businessHours.find(d => d.day_of_week === dayOfWeek);
+            if (day) {
+                day.is_open = isOpen;
+                renderBusinessHours();
+            }
+        }
+
+        function updateHour(dayOfWeek, field, value) {
+            const day = businessHours.find(d => d.day_of_week === dayOfWeek);
+            if (day) day[field] = value || null;
+        }
+
+        async function saveBusinessHours() {
+            try {
+                for (const day of businessHours) {
+                    await fetchWithAuth(`/api/admin/business-hours/${day.day_of_week}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(day)
+                    });
+                }
+                showMessage('success', 'Horarios guardados correctamente');
+            } catch (error) {
+                console.error('Error saving business hours:', error);
+                showMessage('error', '✗ Error al guardar horarios');
+            }
+        }
+
+        // ============================
+        // DÍAS BLOQUEADOS
+        // ============================
+        async function loadBlockedDates() {
+            try {
+                const response = await fetchWithAuth('/api/admin/blocked-dates');
+                blockedDates = response;
+                renderBlockedDates();
+            } catch (error) {
+                console.error('Error loading blocked dates:', error);
+                showMessage('error', 'Error al cargar días bloqueados');
+            }
+        }
+
+        function renderBlockedDates() {
+            const list = document.getElementById('blocked-list');
+            if (blockedDates.length === 0) {
+                list.innerHTML = '<p class="empty-message">No hay días bloqueados</p>';
+                return;
+            }
+
+            list.innerHTML = blockedDates.map(d => {
+                const dateObj = new Date(d.blocked_date + 'T12:00:00');
+                return `
+                    <div class="blocked-date-item">
+                        <div>
+                            <strong>${dateObj.toLocaleDateString('es-MX', { 
+                                weekday: 'long', 
+                                day: 'numeric', 
+                                month: 'long',
+                                year: 'numeric'
+                            })}</strong>
+                            ${d.reason ? `<span style="opacity:0.6; margin-left:1rem;">${d.reason}</span>` : ''}
+                        </div>
+                        <button class="btn-remove" onclick="removeBlockedDate(${d.id})" title="Eliminar">✕</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('add-blocked-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('blocked-date').value;
+            const reason = document.getElementById('blocked-reason').value;
+            
+            try {
+                await fetchWithAuth('/api/admin/blocked-dates', {
+                    method: 'POST',
+                    body: JSON.stringify({ date, reason })
+                });
+                
+                showMessage('success', 'Día bloqueado agregado');
+                document.getElementById('add-blocked-form').reset();
+                loadBlockedDates();
+            } catch (error) {
+                console.error('Error adding blocked date:', error);
+                showMessage('error', '✗ Error al agregar día bloqueado');
+            }
+        });
+
+        async function removeBlockedDate(id) {
+            if (!confirm('¿Eliminar este día bloqueado?')) return;
+            
+            try {
+                await fetchWithAuth(`/api/admin/blocked-dates/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                showMessage('success', 'Día bloqueado eliminado');
+                loadBlockedDates();
+            } catch (error) {
+                console.error('Error removing blocked date:', error);
+                showMessage('error', '✗ Error al eliminar día bloqueado');
+            }
+        }
+
+        // ============================
+        // CONFIGURACIÓN GENERAL
+        // ============================
+        async function loadGeneralSettings() {
+            try {
+                const settings = await fetchWithAuth('/api/admin/settings');
+                
+                if (settings.slot_interval_minutes) {
+                    document.getElementById('slot-interval').value = settings.slot_interval_minutes.value;
+                }
+                if (settings.advance_booking_days) {
+                    document.getElementById('advance-days').value = settings.advance_booking_days.value;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showMessage('error', 'Error al cargar configuración');
+            }
+        }
+
+        async function saveGeneralSettings() {
+            try {
+                const slotInterval = document.getElementById('slot-interval').value;
+                const advanceDays = document.getElementById('advance-days').value;
+                
+                await fetchWithAuth('/api/admin/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        slot_interval_minutes: slotInterval,
+                        advance_booking_days: advanceDays
+                    })
+                });
+                
+                showMessage('success', 'Configuración guardada correctamente');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showMessage('error', '✗ Error al guardar configuración');
+            }
+        }
+
+        // ============================
+        // UTILIDADES
+        // ============================
+        function showMessage(type, text) {
+            const el = document.getElementById(type === 'success' ? 'success-msg' : 'error-msg');
+            el.textContent = text;
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 4000);
+        }
+
+        // ============================
+        // INICIALIZAR
+        // ============================
+        loadBusinessHours();
+        loadBlockedDates();
+        loadGeneralSettings();
+    </script>
+    
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        if (mobileMenuToggle && sidebar && mobileOverlay) {
+            mobileMenuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+            
+            mobileOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

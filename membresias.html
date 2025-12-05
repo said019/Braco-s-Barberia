@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membresías | Barbería</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/membresias.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="Barbería" class="logo-img">
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#servicios">Servicios</a></li>
+                <li><a href="agendar.html">Agendar</a></li>
+                <li><a href="checkout.html">Checkout</a></li>
+                <li><a href="membresias.html" class="active">Membresías</a></li>
+            </ul>
+            
+            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+            
+            <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#servicios">Servicios</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="checkout.html">Checkout</a></li>
+            <li><a href="membresias.html">Membresías</a></li>
+            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="memberships-main">
+        <!-- Hero -->
+        <section class="memberships-hero">
+            <div class="hero-content">
+                <span class="hero-badge">Beneficios Exclusivos</span>
+                <h1 class="hero-title">Membresías</h1>
+                <div class="hero-line"></div>
+                <p class="hero-description">
+                    Disfruta de servicios ilimitados, prioridad en reservaciones y descuentos exclusivos
+                </p>
+            </div>
+        </section>
+
+        <!-- Plans -->
+        <section class="plans-section">
+            <div class="plans-grid">
+                <!-- Plan Gold -->
+                <div class="plan-card">
+                    <div class="plan-badge">Más Popular</div>
+                    <div class="plan-header">
+                        <div class="plan-icon">👑</div>
+                        <h3 class="plan-name">Gold</h3>
+                        <p class="plan-tagline">Para el caballero distinguido</p>
+                    </div>
+                    <div class="plan-price">
+                        <span class="price-amount">$1,200</span>
+                        <span class="price-period">/ mes</span>
+                    </div>
+                    <div class="plan-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>4 servicios al mes</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Prioridad en reservaciones</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>15% descuento en productos</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Bebidas premium incluidas</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Servicios: cortes + barba</span>
+                        </div>
+                    </div>
+                    <a href="tel:5573432027" class="btn-primary btn-block">Adquirir Gold</a>
+                </div>
+
+                <!-- Plan Platinum -->
+                <div class="plan-card featured">
+                    <div class="plan-badge premium">Premium</div>
+                    <div class="plan-header">
+                        <div class="plan-icon">💎</div>
+                        <h3 class="plan-name">Platinum</h3>
+                        <p class="plan-tagline">La experiencia suprema</p>
+                    </div>
+                    <div class="plan-price">
+                        <span class="price-amount">$2,000</span>
+                        <span class="price-period">/ mes</span>
+                    </div>
+                    <div class="plan-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span><strong>Servicios ilimitados</strong></span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Máxima prioridad en agenda</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>25% descuento en productos</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Bebidas premium + whisky</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Todos los servicios incluidos</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Masaje relajante incluido</span>
+                        </div>
+                    </div>
+                    <a href="tel:5573432027" class="btn-primary btn-block">Adquirir Platinum</a>
+                </div>
+
+                <!-- Plan Black -->
+                <div class="plan-card">
+                    <div class="plan-badge">Exclusivo</div>
+                    <div class="plan-header">
+                        <div class="plan-icon">⚜</div>
+                        <h3 class="plan-name">Black</h3>
+                        <p class="plan-tagline">Membresía vitalicia</p>
+                    </div>
+                    <div class="plan-price">
+                        <span class="price-amount">$10,000</span>
+                        <span class="price-period">/ único pago</span>
+                    </div>
+                    <div class="plan-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span><strong>Todo Platinum de por vida</strong></span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Pago único sin renovaciones</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Productos con 30% descuento</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Invitaciones a eventos VIP</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Tarjeta Black personalizada</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Atención preferencial 24/7</span>
+                        </div>
+                    </div>
+                    <a href="tel:5573432027" class="btn-outline btn-block">Adquirir Black</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works">
+            <div class="section-header">
+                <span class="section-label">Proceso Simple</span>
+                <h2 class="section-title">¿Cómo Funciona?</h2>
+                <div class="section-line"></div>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h4>Elige tu Plan</h4>
+                    <p>Selecciona la membresía que mejor se adapte a tu frecuencia de visitas</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h4>Contáctanos</h4>
+                    <p>Llámanos o visítanos para activar tu membresía y recibir tu tarjeta</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h4>Agenda Libremente</h4>
+                    <p>Reserva tus citas con prioridad y disfruta de todos tus beneficios</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <h4>Disfruta sin Límites</h4>
+                    <p>Usa tus servicios cuando quieras y obtén descuentos en productos</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Table -->
+        <section class="comparison-section">
+            <div class="section-header">
+                <h2 class="section-title">Comparativa de Planes</h2>
+                <div class="section-line"></div>
+            </div>
+
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Beneficio</th>
+                            <th>Gold</th>
+                            <th>Platinum</th>
+                            <th>Black</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Servicios mensuales</td>
+                            <td>4 servicios</td>
+                            <td>Ilimitados</td>
+                            <td>Ilimitados</td>
+                        </tr>
+                        <tr>
+                            <td>Prioridad en agenda</td>
+                            <td>Media</td>
+                            <td>Alta</td>
+                            <td>Máxima</td>
+                        </tr>
+                        <tr>
+                            <td>Descuento en productos</td>
+                            <td>15%</td>
+                            <td>25%</td>
+                            <td>30%</td>
+                        </tr>
+                        <tr>
+                            <td>Bebidas premium</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Masajes incluidos</td>
+                            <td>—</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Eventos VIP</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Vigencia</td>
+                            <td>1 mes</td>
+                            <td>1 mes</td>
+                            <td>Vitalicia</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <div class="section-header">
+                <h2 class="section-title">Preguntas Frecuentes</h2>
+                <div class="section-line"></div>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿Cuándo expiran los servicios de la membresía?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Los servicios de las membresías Gold y Platinum se renuevan cada mes. Los servicios no utilizados del mes actual no se acumulan para el siguiente mes.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿Puedo cancelar mi membresía en cualquier momento?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Sí, puedes cancelar tu membresía en cualquier momento. El mes pagado se respeta hasta su vencimiento, pero no hay reembolsos por servicios no utilizados.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿La membresía Black realmente es vitalicia?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Sí, con un único pago de $10,000 obtienes todos los beneficios Platinum de por vida, sin renovaciones ni cuotas mensuales.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿Qué servicios están incluidos?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Gold incluye cortes de cabello y servicios de barba básicos. Platinum y Black incluyen todos nuestros servicios sin excepción, incluyendo tratamientos especiales.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿Cómo funciona la prioridad en reservaciones?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Los miembros tienen acceso a horarios preferenciales y pueden agendar con mayor anticipación. Platinum y Black tienen slots exclusivos reservados.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span>¿Puedo compartir mi membresía?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No, las membresías son personales e intransferibles. Están vinculadas a tu nombre y número de teléfono.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Final -->
+        <section class="final-cta">
+            <div class="cta-content">
+                <h2>¿Listo para la Mejor Experiencia?</h2>
+                <p>Únete a nuestro círculo exclusivo de caballeros distinguidos</p>
+                <div class="cta-actions">
+                    <a href="tel:5573432027" class="btn-primary btn-large">Llámanos Ahora</a>
+                    <a href="agendar.html" class="btn-outline btn-large">Agenda una Visita</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <a href="index.html" class="footer-logo">
+                <img src="assets/logo.png" alt="Logo" class="footer-logo-img" style="height: 80px;">
+            </a>
+
+            <div class="footer-info">
+                <div class="footer-section">
+                    <h4>Navegación</h4>
+                    <p><a href="index.html">Inicio</a></p>
+                    <p><a href="index.html#servicios">Servicios</a></p>
+                    <p><a href="agendar.html">Agendar</a></p>
+                    <p><a href="membresias.html">Membresías</a></p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p><a href="tel:5573432027">55 7343 2027</a></p>
+                    <p><a href="https://wa.me/525573432027">WhatsApp</a></p>
+                    <p>Tequisquiapan, Querétaro</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Horarios</h4>
+                    <p>Lun - Vie: 10:00 - 20:00</p>
+                    <p>Sábados: 10:00 - 19:00</p>
+                    <p>Domingos: Cerrado</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2016-2025 BRACO'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script src="js/membresias.js"></script>
+</body>
+</html>

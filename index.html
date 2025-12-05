@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Barbería Premium - Donde el arte del corte se encuentra con la tradición del buen servicio. Tequisquiapan, Querétaro.">
+    <title>Barbería Premium</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <!-- ========================================
+         HEADER & NAVIGATION
+         ======================================== -->
+    <header id="header">
+        <nav>
+            <a href="#inicio" class="logo">
+                <img src="assets/logo.png" alt="Barbería" class="logo-img">
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#inicio" class="active">Inicio</a></li>
+                <li><a href="#servicios">Servicios</a></li>
+                <li><a href="agendar.html">Agendar</a></li>
+                <li><a href="checkout.html">Checkout</a></li>
+                <li><a href="membresias.html">Membresías</a></li>
+            </ul>
+
+            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+
+            <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#servicios">Servicios</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="checkout.html">Checkout</a></li>
+            <li><a href="membresias.html">Membresías</a></li>
+            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+        </ul>
+    </div>
+
+    <!-- ========================================
+         HERO SECTION
+         ======================================== -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <!-- Logo -->
+            <div class="hero-logo">
+                <img src="assets/logo.png" alt="Barbería Logo" class="hero-logo-img">
+            </div>
+
+            <p class="hero-description">
+                Donde el arte del corte se encuentra con la tradición del buen servicio.
+                Una experiencia de cuidado personal para el caballero clásico y elegante.
+            </p>
+            <a href="agendar.html" class="btn-primary btn-large">Agenda tu Cita</a>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <span>Descubre nuestros servicios</span>
+            <div class="scroll-arrow">↓</div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SERVICIOS PRINCIPALES - 12 SERVICIOS COMPLETOS
+         ======================================== -->
+    <section class="services-section" id="servicios">
+        <div class="section-header">
+            <span class="section-label">Nuestros Servicios</span>
+            <h2 class="section-title">El Arte del Cuidado Masculino</h2>
+            <div class="section-line"></div>
+            <p class="section-subtitle">
+                Servicios premium diseñados para el hombre que valora la excelencia
+            </p>
+        </div>
+
+        <!-- Servicios Destacados - 12 SERVICIOS -->
+        <div class="services-featured">
+            <!-- 1. CORTE DE CABELLO CABALLERO -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/corte_caballero.jpeg" alt="Corte de Cabello Caballero">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">Corte de Cabello para CABALLERO</h3>
+                    <ul class="service-features">
+                        <li>Lavado de cabello</li>
+                        <li>Visagismo</li>
+                        <li>Corte de cabello</li>
+                        <li>Estilizado de peinado</li>
+                        <li>Productos Premium</li>
+                    </ul>
+                    <a href="agendar.html?service=1" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 2. CORTE DE CABELLO NIÑO -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/corte_nino.jpeg" alt="Corte de Cabello Niño">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$220</span>
+                    </div>
+                    <h3 class="service-name">Corte de Cabello NIÑO (hasta 11 años)</h3>
+                    <ul class="service-features">
+                        <li>Lavado de cabello</li>
+                        <li>Visagismo</li>
+                        <li>Corte de cabello</li>
+                        <li>Estilizado de peinado</li>
+                        <li>Productos Premium</li>
+                    </ul>
+                    <a href="agendar.html?service=2" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 3. RITUAL TRADICIONAL DE BARBA -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/ritual_barba.jpeg" alt="Ritual Tradicional de Barba">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">Ritual Tradicional de Barba</h3>
+                    <ul class="service-features">
+                        <li>Visagismo</li>
+                        <li>Rasurado completo o arreglo de barba y bigote</li>
+                        <li>Toallas calientes y frías</li>
+                        <li>Masaje facial y craneal</li>
+                        <li>Aromaterapia</li>
+                        <li>Productos Premium</li>
+                    </ul>
+                    <a href="agendar.html?service=3" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 4. DÚO -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/duo.png" alt="DÚO">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">120 min</span>
+                        <span class="service-price">$550</span>
+                    </div>
+                    <h3 class="service-name">DÚO</h3>
+                    <ul class="service-features">
+                        <li>Visagismo</li>
+                        <li>Corte de cabello</li>
+                        <li>Ritual tradicional para rasurado o arreglo de barba y bigote</li>
+                    </ul>
+                    <a href="agendar.html?service=11" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 5. INSTALACIÓN DE PRÓTESIS CAPILAR -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/instalacio_protesis.jpeg" alt="Instalación de Prótesis Capilar">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">180 min</span>
+                        <span class="service-price">$4,800</span>
+                    </div>
+                    <h3 class="service-name">INSTALACIÓN DE PRÓTESIS CAPILAR</h3>
+                    <p class="service-description">
+                        Las prótesis o reemplazo capilar es una solución innovadora y efectiva para aquellos que
+                        experimentan pérdida de cabello o calvicie severa.
+                    </p>
+                    <ul class="service-features">
+                        <li>Diagnóstico</li>
+                        <li>Prótesis capilar</li>
+                        <li>Visagismo</li>
+                        <li>Personalización</li>
+                    </ul>
+                    <a href="agendar.html?service=4" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 6. MANTENIMIENTO DE PRÓTESIS CAPILAR -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/mant_protesis.jpeg" alt="Mantenimiento de Prótesis Capilar">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">120 min</span>
+                        <span class="service-price">$650</span>
+                    </div>
+                    <h3 class="service-name">MANTENIMIENTO DE PRÓTESIS CAPILAR</h3>
+                    <p class="service-description">
+                        Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e
+                        hidratación.
+                    </p>
+                    <ul class="service-features">
+                        <li>Retiro seguro</li>
+                        <li>Limpieza profesional</li>
+                        <li>Ajuste de adhesivos</li>
+                        <li>Colocación segura</li>
+                    </ul>
+                    <a href="agendar.html?service=5" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 7. TERAPIA INTEGRAL CAPILAR (TIC) -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/TIC.jpeg" alt="Terapia Integral Capilar">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$550</span>
+                    </div>
+                    <h3 class="service-name">TERAPIA INTEGRAL CAPILAR (TIC)</h3>
+                    <p class="service-description">
+                        Recomendado para las personas que inician con un problema de calvicie de leve a moderada. El TIC
+                        es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo con el objetivo de
+                        lograr un cuero cabelludo sano y por lo tanto un cabello grueso y en ocasiones abundante.
+                    </p>
+                    <ul class="service-features">
+                        <li>Exfoliación capilar</li>
+                        <li>Alta Frecuencia</li>
+                        <li>Fotobiomodulación</li>
+                        <li>Ozonoterapia</li>
+                        <li>Productos Premium</li>
+                    </ul>
+                    <a href="agendar.html?service=6" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 8. MASCARILLA PLASTIFICADA NEGRA -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/mascarilla_negra.jpeg" alt="Mascarilla Plastificada Negra">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">MASCARILLA PLASTIFICADA NEGRA</h3>
+                    <p class="service-description">
+                        Recomendada para obtener un rostro limpio de puntos negros y espinillas.
+                    </p>
+                    <ul class="service-features">
+                        <li>Limpieza de rostro</li>
+                        <li>Aplicación y retiro de mascarilla</li>
+                        <li>Aplicación de productos Premium</li>
+                        <li>Masaje facial</li>
+                    </ul>
+                    <a href="agendar.html?service=7" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 9. MASCARILLA DE ARCILLA -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/arcilla.jpeg" alt="Mascarilla de Arcilla">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">MASCARILLA DE ARCILLA</h3>
+                    <p class="service-description">
+                        Después de la aplicación de la mascarilla plástica recomendamos como mantenimiento la mascarilla
+                        de arcilla que exfolia el rostro de una manera más amigable y sutil pero sin perder efectividad
+                        en el proceso.
+                    </p>
+                    <ul class="service-features">
+                        <li>Limpieza de rostro</li>
+                        <li>Aplicación y retiro de mascarilla</li>
+                        <li>Aplicación de productos Premium</li>
+                        <li>Masaje facial</li>
+                    </ul>
+                    <a href="agendar.html?service=8" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 10. MANICURA CABALLERO -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/manicura_caballero.jpeg" alt="Manicura Caballero">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">MANICURA CABALLERO</h3>
+                    <ul class="service-features">
+                        <li>Retiro de cutícula</li>
+                        <li>Exfoliación de manos</li>
+                        <li>Recorte de uñas</li>
+                        <li>Arreglo de uñas</li>
+                        <li>Humectación de manos</li>
+                        <li>Masaje de manos y dedos</li>
+                    </ul>
+                    <a href="agendar.html?service=9" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 11. PEDICURA CABALLERO -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/pedicura.jpeg" alt="Pedicura Caballero">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">60 min</span>
+                        <span class="service-price">$300</span>
+                    </div>
+                    <h3 class="service-name">PEDICURA CABALLERO</h3>
+                    <ul class="service-features">
+                        <li>Retiro de cutícula</li>
+                        <li>Exfoliación de pies</li>
+                        <li>Recorte y limado de uñas</li>
+                        <li>Limado de callosidad</li>
+                        <li>Humectación de pies</li>
+                        <li>Masaje de pies</li>
+                    </ul>
+                    <a href="agendar.html?service=10" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+
+            <!-- 12. PAQUETE NUPCIAL D'LUX -->
+            <article class="service-card featured">
+                <div class="service-image">
+                    <img src="assets/pqte_dlux.jpeg" alt="Paquete Nupcial D'Lux">
+                </div>
+                <div class="service-content">
+                    <div class="service-meta">
+                        <span class="service-duration">240 min</span>
+                        <span class="service-price">$1,200</span>
+                    </div>
+                    <h3 class="service-name">PAQUETE NUPCIAL D'Lux</h3>
+                    <p class="service-description">
+                        Eleva tu imagen con un ritual completo de elegancia masculina. Ese es el mejor día de tu vida…Y
+                        la mejor versión de ti.
+                    </p>
+                    <ul class="service-features">
+                        <li>Visagismo</li>
+                        <li>Corte de cabello</li>
+                        <li>Ritual de barba o rasurado clásico</li>
+                        <li>Mascarilla de carbón activado o mascarilla de arcilla natural</li>
+                        <li>Manicura SPA</li>
+                    </ul>
+                    <a href="agendar.html?service=12" class="service-cta">Agendar →</a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- ========================================
+         PRODUCTOS
+         ======================================== -->
+    <section class="products-section">
+        <div class="section-header">
+            <span class="section-label">Productos Premium</span>
+            <h2 class="section-title">Lleva la Experiencia a Casa</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="products-grid">
+            <!-- Producto 1 - Shampoo -->
+            <article class="product-card">
+                <div class="product-image">
+                    <div class="product-badge">Bestseller</div>
+                    <img src="assets/shampoo.jpeg" alt="Shampoo">
+                </div>
+                <div class="product-content">
+                    <h3 class="product-name">Shampoo <img src="assets/logo.png" alt="Braco's" style="height: 1.2em; vertical-align: middle; display: inline-block;"></h3>
+                    <p class="product-description">
+                        100% natural, libre de sulfatos, parabenos y sales. Con Minoxidil 2% para fortalecer y estimular
+                        el crecimiento del cabello.
+                    </p>
+                    <div class="product-meta">
+                        <span class="product-size">250ml</span>
+                        <span class="product-stock">✓ Disponible</span>
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price">$350</span>
+                        <a href="checkout.html" class="btn-outline btn-small">Comprar</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Producto 2 - Aceite -->
+            <article class="product-card">
+                <div class="product-image">
+                    <div class="product-badge">Nuevo</div>
+                    <img src="assets/aceite.jpeg" alt="Aceite para Barba">
+                </div>
+                <div class="product-content">
+                    <h3 class="product-name">Aceite para Barba <img src="assets/logo.png" alt="Braco's" style="height: 1.2em; vertical-align: middle; display: inline-block;"></h3>
+                    <p class="product-description">
+                        Aceite hidratante con esencias naturales. Suaviza, hidrata y da brillo a tu barba. Aroma
+                        amaderado y masculino.
+                    </p>
+                    <div class="product-meta">
+                        <span class="product-size">30ml</span>
+                        <span class="product-stock">✓ Disponible</span>
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price">$250</span>
+                        <a href="checkout.html" class="btn-outline btn-small">Comprar</a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- ========================================
+         MEMBRESÍAS CTA
+         ======================================== -->
+    <section class="membership-cta">
+        <div class="cta-content">
+            <span class="cta-label">Clientes Frecuentes</span>
+            <h2 class="cta-title">Hazte Miembro</h2>
+            <div class="section-line"></div>
+            <p class="cta-description">
+                Accede a servicios ilimitados, descuentos exclusivos y prioridad en reservaciones
+            </p>
+            <div class="cta-benefits">
+                <div class="benefit-item">✓ Servicios sin límite</div>
+                <div class="benefit-item">✓ Prioridad en agenda</div>
+                <div class="benefit-item">✓ Descuentos en productos</div>
+            </div>
+            <a href="membresias.html" class="btn-primary btn-large">Ver Planes de Membresía</a>
+        </div>
+    </section>
+
+    <!-- ========================================
+         CONTACTO
+         ======================================== -->
+    <section class="contact-section" id="contacto">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2 class="contact-title">Visítanos</h2>
+                <div class="section-line" style="margin-left: 0;"></div>
+
+                <div class="info-block">
+                    <h4>📍 Dirección</h4>
+                    <p>Av. Hidalgo #123, Centro Histórico<br>
+                        Tequisquiapan, Querétaro, 76750</p>
+                </div>
+
+                <div class="info-block">
+                    <h4>📞 Contacto</h4>
+                    <p>
+                        <a href="tel:5573432027">55 7343 2027</a><br>
+                        <a href="https://wa.me/525573432027" target="_blank">WhatsApp</a>
+                    </p>
+                </div>
+
+                <div class="info-block">
+                    <h4>🕐 Horarios</h4>
+                    <div class="schedule">
+                        <div class="schedule-row">
+                            <span>Lunes a Viernes</span>
+                            <span>10:00 - 20:00</span>
+                        </div>
+                        <div class="schedule-row">
+                            <span>Sábados</span>
+                            <span>10:00 - 19:00</span>
+                        </div>
+                        <div class="schedule-row closed">
+                            <span>Domingos</span>
+                            <span>Cerrado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-map">
+                <!-- Placeholder para mapa -->
+                <div class="map-placeholder">
+                    <div class="map-icon">📍</div>
+                    <p>Centro Histórico de Tequisquiapan</p>
+                    <a href="https://maps.google.com" target="_blank" class="btn-outline btn-small">
+                        Abrir en Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer>
+        <div class="footer-content">
+            <a href="#inicio" class="footer-logo">
+                <img src="assets/logo.png" alt="Barbería" class="footer-logo-img">
+            </a>
+
+            <div class="footer-info">
+                <div class="footer-section">
+                    <h4>Navegación</h4>
+                    <p><a href="#inicio">Inicio</a></p>
+                    <p><a href="#servicios">Servicios</a></p>
+                    <p><a href="agendar.html">Agendar</a></p>
+                    <p><a href="membresias.html">Membresías</a></p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p><a href="tel:5573432027">55 7343 2027</a></p>
+                    <p><a href="https://wa.me/525573432027">WhatsApp</a></p>
+                    <p>Tequisquiapan, Querétaro</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Horarios</h4>
+                    <p>Lun - Vie: 10:00 - 20:00</p>
+                    <p>Sábados: 10:00 - 19:00</p>
+                    <p>Domingos: Cerrado</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2016-2025 BRACO'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>

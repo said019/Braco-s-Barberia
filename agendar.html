@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita | Barbería</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/agendar.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="Barbería" class="logo-img">
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#servicios">Servicios</a></li>
+                <li><a href="agendar.html" class="active">Agendar</a></li>
+                <li><a href="checkout.html">Checkout</a></li>
+                <li><a href="membresias.html">Membresías</a></li>
+            </ul>
+            
+            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+            
+            <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="index.html#servicios">Servicios</a></li>
+            <li><a href="agendar.html">Agendar</a></li>
+            <li><a href="checkout.html">Checkout</a></li>
+            <li><a href="membresias.html">Membresías</a></li>
+            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <main class="booking-main">
+        <div class="booking-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <span class="page-label">Reservaciones</span>
+                <h1 class="page-title">Agenda tu Cita</h1>
+                <div class="page-line"></div>
+                <p class="page-description">En 3 simples pasos tendrás tu cita confirmada</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="booking-steps">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <span class="step-label">Servicio</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <span class="step-label">Fecha y Hora</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <span class="step-label">Confirmar</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Service Selection -->
+            <section class="booking-step" id="step-1">
+                <h2 class="step-title">¿Qué servicio te gustaría?</h2>
+                
+                <!-- Category Tabs -->
+                <div class="category-tabs">
+                    <button class="category-tab active" data-category="all">Todos</button>
+                    <button class="category-tab" data-category="1">Cortes</button>
+                    <button class="category-tab" data-category="2">Barba</button>
+                    <button class="category-tab" data-category="3">Tratamientos</button>
+                    <button class="category-tab" data-category="4">Facial</button>
+                    <button class="category-tab" data-category="5">Manos/Pies</button>
+                    <button class="category-tab" data-category="6">Paquetes</button>
+                </div>
+
+                <!-- Services Grid -->
+                <div class="services-select-grid" id="services-grid">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </section>
+
+            <!-- Step 2: Date & Time -->
+            <section class="booking-step hidden" id="step-2">
+                <h2 class="step-title">Elige fecha y hora</h2>
+                
+                <div class="datetime-container">
+                    <!-- Calendar -->
+                    <div class="calendar-wrapper">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="prev-month">‹</button>
+                            <span class="calendar-month" id="current-month">Diciembre 2024</span>
+                            <button class="calendar-nav" id="next-month">›</button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>Dom</span>
+                            <span>Lun</span>
+                            <span>Mar</span>
+                            <span>Mié</span>
+                            <span>Jue</span>
+                            <span>Vie</span>
+                            <span>Sáb</span>
+                        </div>
+                        <div class="calendar-days" id="calendar-days">
+                            <!-- Se genera dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Time Slots -->
+                    <div class="slots-wrapper">
+                        <h3 class="slots-title">Horarios disponibles</h3>
+                        <p class="slots-date" id="selected-date-label">Selecciona una fecha</p>
+                        <div class="time-slots" id="time-slots">
+                            <p class="no-selection">Selecciona una fecha para ver horarios disponibles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn-secondary" onclick="goToStep(1)">Atrás</button>
+                    <button class="btn-primary" id="btn-to-step3" disabled>Continuar</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Confirmation -->
+            <section class="booking-step hidden" id="step-3">
+                <h2 class="step-title">Confirma tus datos</h2>
+                
+                <!-- Summary -->
+                <div class="booking-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Servicio</span>
+                        <span class="summary-value" id="summary-service">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Fecha</span>
+                        <span class="summary-value" id="summary-date">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Hora</span>
+                        <span class="summary-value" id="summary-time">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Duración</span>
+                        <span class="summary-value" id="summary-duration">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Precio</span>
+                        <span class="summary-value price" id="summary-price">-</span>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <form class="booking-form" id="booking-form">
+                    <div class="form-group">
+                        <label for="client-name">Nombre completo *</label>
+                        <input type="text" id="client-name" name="name" required 
+                               placeholder="Ej: Juan Pérez García">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-phone">Teléfono (WhatsApp) *</label>
+                        <input type="tel" id="client-phone" name="phone" required 
+                               placeholder="Ej: 55 1234 5678"
+                               pattern="[0-9]{10}"
+                               maxlength="10">
+                        <span class="form-hint">Te enviaremos confirmación y recordatorio por WhatsApp</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-notes">Notas adicionales (opcional)</label>
+                        <textarea id="client-notes" name="notes" rows="3"
+                                  placeholder="Algún detalle especial que debamos saber..."></textarea>
+                    </div>
+                    
+                    <div class="form-notice">
+                        <p>
+                            ✓ Al confirmar aceptas recibir notificaciones por WhatsApp<br>
+                            ✓ Recibirás un código de 4 dígitos para tu cita
+                        </p>
+                    </div>
+                </form>
+
+                <div class="step-actions">
+                    <button class="btn-secondary" onclick="goToStep(2)">Atrás</button>
+                    <button class="btn-primary" type="submit" form="booking-form" id="btn-confirm">
+                        Confirmar Cita
+                    </button>
+                </div>
+            </section>
+
+            <!-- Success Message -->
+            <section class="booking-step hidden" id="step-success">
+                <div class="success-container">
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">¡Cita Agendada!</h2>
+                    <p class="success-message">
+                        Hemos enviado la confirmación a tu WhatsApp
+                    </p>
+                    
+                    <div class="success-details">
+                        <div class="detail-row">
+                            <span>Código de cita</span>
+                            <strong id="success-code" class="code-display">----</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Servicio</span>
+                            <span id="success-service">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Fecha y hora</span>
+                            <span id="success-datetime">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Total a pagar</span>
+                            <strong id="success-price">-</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="success-notice">
+                        <p>
+                            <strong>Importante:</strong> Guarda tu código de cita. 
+                            Lo necesitarás al finalizar tu servicio para realizar el checkout.
+                        </p>
+                    </div>
+                    
+                    <div class="success-actions">
+                        <a href="index.html" class="btn-outline">Volver al Inicio</a>
+                        <a href="agendar.html" class="btn-primary">Agendar Otra Cita</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <a href="index.html" class="footer-logo">
+                <img src="assets/logo.png" alt="Logo" class="footer-logo-img" style="height: 80px;">
+            </a>
+            <div class="footer-bottom">
+                <p>&copy; 2016-2025 BRACO'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/agendar.js"></script>
+</body>
+</html>

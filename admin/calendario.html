@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
+            <span class="sidebar-subtitle">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/admin/" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/calendario.html" class="nav-item active">
+                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                <span>Calendario</span>
+            </a>
+            <a href="/admin/clientes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-users"></i></span>
+                <span>Clientes</span>
+            </a>
+            <a href="/admin/membresias.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                <span>Membresías</span>
+            </a>
+            <a href="/admin/reportes.html" class="nav-item">
+                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                <span>Reportes</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-title">
+                <h2>Calendario de Citas</h2>
+                <p class="header-date" id="current-date"></p>
+            </div>
+            <div class="header-actions">
+                <select id="view-select" class="search-input" style="width: auto;">
+                    <option value="month">Vista Mensual</option>
+                    <option value="week">Vista Semanal</option>
+                    <option value="day">Vista Diaria</option>
+                </select>
+            </div>
+        </header>
+        
+        <!-- Calendar Header -->
+        <section class="content-section">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button class="btn-icon" onclick="previousPeriod()">←</button>
+                    <h3 class="calendar-title" id="calendar-title">Diciembre 2024</h3>
+                    <button class="btn-icon" onclick="nextPeriod()">→</button>
+                    <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 1rem;">Hoy</button>
+                </div>
+            </div>
+            
+            <!-- Calendar Grid (Month View) -->
+            <div id="calendar-month-view" class="calendar-grid">
+                <!-- Se llena dinámicamente -->
+            </div>
+            
+            <!-- Week/Day View -->
+            <div id="calendar-list-view" class="hidden">
+                <div class="appointments-list" id="appointments-list">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Filters & Legend -->
+        <section class="content-section">
+            <div class="section-header">
+                <h3>Filtros</h3>
+            </div>
+            
+            <div class="filters-bar">
+                <select id="filter-status" class="search-input" style="width: auto;">
+                    <option value="">Todos los estados</option>
+                    <option value="scheduled">Agendadas</option>
+                    <option value="confirmed">Confirmadas</option>
+                    <option value="in_progress">En Curso</option>
+                    <option value="completed">Completadas</option>
+                    <option value="cancelled">Canceladas</option>
+                    <option value="no_show">No Asistió</option>
+                </select>
+                
+                <input type="text" id="filter-search" class="search-input" placeholder="Buscar por cliente o servicio...">
+            </div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status scheduled">Agendada</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status confirmed">Confirmada</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status in_progress">En Curso</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status completed">Completada</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status cancelled">Cancelada</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="appointment-status no_show">No Asistió</span>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="../js/admin.js"></script>
+    <script>
+        checkAuth();
+        
+        // State
+        let currentView = 'month';
+        let currentDate = new Date();
+        let allAppointments = [];
+        let filteredAppointments = [];
+        
+        // Initialize
+        document.getElementById('current-date').textContent = 
+            new Date().toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+        
+        // Event Listeners
+        document.getElementById('view-select').addEventListener('change', (e) => {
+            currentView = e.target.value;
+            renderCalendar();
+        });
+        
+        document.getElementById('filter-status').addEventListener('change', applyFilters);
+        document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
+        
+        // Load appointments
+        async function loadAppointments() {
+            try {
+                const startDate = getMonthStart(currentDate).toISOString().split('T')[0];
+                const endDate = getMonthEnd(currentDate).toISOString().split('T')[0];
+                
+                const data = await AdminAPI.getAppointments({ 
+                    start_date: startDate, 
+                    end_date: endDate 
+                });
+                
+                allAppointments = data.appointments || [];
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                showToast('Error al cargar las citas', 'error');
+            }
+        }
+        
+        function applyFilters() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+            
+            filteredAppointments = allAppointments.filter(apt => {
+                // Status filter
+                if (statusFilter && apt.status !== statusFilter) return false;
+                
+                // Search filter
+                if (searchFilter) {
+                    const searchText = `${apt.client_name} ${apt.service_name}`.toLowerCase();
+                    if (!searchText.includes(searchFilter)) return false;
+                }
+                
+                return true;
+            });
+            
+            renderCalendar();
+        }
+        
+        function renderCalendar() {
+            if (currentView === 'month') {
+                renderMonthView();
+            } else {
+                renderListView();
+            }
+        }
+        
+        function renderMonthView() {
+            document.getElementById('calendar-month-view').classList.remove('hidden');
+            document.getElementById('calendar-list-view').classList.add('hidden');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update title
+            document.getElementById('calendar-title').textContent = 
+                currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            // Build calendar HTML
+            let html = '';
+            
+            // Day headers
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayNames.forEach(day => {
+                html += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // Empty cells before first day
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += '<div class="calendar-day other-month"></div>';
+            }
+            
+            // Days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateStr = date.toISOString().split('T')[0];
+                const isToday = isSameDay(date, new Date());
+                
+                // Get appointments for this day
+                const dayAppointments = filteredAppointments.filter(apt => 
+                    apt.appointment_date === dateStr
+                );
+                
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}">
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-appointments">
+                            ${dayAppointments.map(apt => `
+                                <div class="calendar-appointment ${apt.status}" 
+                                     onclick="viewAppointmentDetail(${apt.id})"
+                                     title="${apt.start_time.slice(0,5)} - ${apt.client_name}">
+                                    ${apt.start_time.slice(0,5)} ${apt.client_name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Fill remaining cells
+            const totalCells = Math.ceil((startingDayOfWeek + daysInMonth) / 7) * 7;
+            const remainingCells = totalCells - (startingDayOfWeek + daysInMonth);
+            for (let i = 0; i < remainingCells; i++) {
+                html += '<div class="calendar-day other-month"></div>';
+            }
+            
+            document.getElementById('calendar-month-view').innerHTML = html;
+        }
+        
+        function renderListView() {
+            document.getElementById('calendar-month-view').classList.add('hidden');
+            document.getElementById('calendar-list-view').classList.remove('hidden');
+            
+            const container = document.getElementById('appointments-list');
+            
+            if (currentView === 'week') {
+                // Week view - get appointments for current week
+                const startOfWeek = new Date(currentDate);
+                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+                
+                document.getElementById('calendar-title').textContent = 
+                    `Semana del ${startOfWeek.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`;
+                
+            } else if (currentView === 'day') {
+                // Day view - get appointments for current day
+                document.getElementById('calendar-title').textContent = 
+                    currentDate.toLocaleDateString('es-MX', { 
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+                    });
+            }
+            
+            // Filter appointments for current view
+            let viewAppointments = filteredAppointments;
+            
+            if (currentView === 'week') {
+                const startOfWeek = new Date(currentDate);
+                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+                const endOfWeek = addDays(startOfWeek, 6);
+                
+                viewAppointments = filteredAppointments.filter(apt => {
+                    const aptDate = new Date(apt.appointment_date);
+                    return aptDate >= startOfWeek && aptDate <= endOfWeek;
+                });
+            } else if (currentView === 'day') {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                viewAppointments = filteredAppointments.filter(apt => 
+                    apt.appointment_date === dateStr
+                );
+            }
+            
+            // Sort by date and time
+            viewAppointments.sort((a, b) => {
+                const dateCompare = a.appointment_date.localeCompare(b.appointment_date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.start_time.localeCompare(b.start_time);
+            });
+            
+            if (viewAppointments.length === 0) {
+                container.innerHTML = '<p class="empty-message">No hay citas en este período</p>';
+                return;
+            }
+            
+            // Render list
+            let html = '';
+            let lastDate = null;
+            
+            viewAppointments.forEach(apt => {
+                // Add date header if changed
+                if (apt.appointment_date !== lastDate) {
+                    html += `
+                        <div style="margin: 1.5rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(196, 163, 90, 0.2);">
+                            <strong>${formatDate(apt.appointment_date)}</strong>
+                        </div>
+                    `;
+                    lastDate = apt.appointment_date;
+                }
+                
+                html += `
+                    <div class="appointment-item">
+                        <div class="appointment-time">${apt.start_time.slice(0, 5)}</div>
+                        <div class="appointment-info">
+                            <span class="appointment-client" style="border-left: 3px solid ${apt.client_color || getClientColor(apt.client_id)}">
+                                ${apt.client_name}
+                            </span>
+                            <span class="appointment-service">${apt.service_name} - ${apt.duration} min</span>
+                        </div>
+                        <div class="appointment-status ${apt.status}">${getStatusLabel(apt.status)}</div>
+                        <div class="appointment-actions">
+                            <button class="btn-icon" onclick="viewAppointmentDetail(${apt.id})" title="Ver detalles">👁️</button>
+                            <button class="btn-icon" onclick="changeStatus(${apt.id})" title="Cambiar estado">✏️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function previousPeriod() {
+            if (currentView === 'month') {
+                currentDate = addMonths(currentDate, -1);
+            } else if (currentView === 'week') {
+                currentDate = addDays(currentDate, -7);
+            } else {
+                currentDate = addDays(currentDate, -1);
+            }
+            loadAppointments();
+        }
+        
+        function nextPeriod() {
+            if (currentView === 'month') {
+                currentDate = addMonths(currentDate, 1);
+            } else if (currentView === 'week') {
+                currentDate = addDays(currentDate, 7);
+            } else {
+                currentDate = addDays(currentDate, 1);
+            }
+            loadAppointments();
+        }
+        
+        function goToday() {
+            currentDate = new Date();
+            loadAppointments();
+        }
+        
+        async function viewAppointmentDetail(id) {
+            try {
+                const appointment = await AdminAPI.getAppointment(id);
+                
+                const content = `
+                    <div style="line-height: 1.8;">
+                        <p><strong>Cliente:</strong> ${appointment.client_name}</p>
+                        <p><strong>Teléfono:</strong> ${formatPhone(appointment.client_phone)}</p>
+                        <p><strong>Servicio:</strong> ${appointment.service_name}</p>
+                        <p><strong>Fecha:</strong> ${formatDate(appointment.appointment_date)}</p>
+                        <p><strong>Hora:</strong> ${appointment.start_time.slice(0,5)} - ${appointment.end_time.slice(0,5)}</p>
+                        <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
+                        <p><strong>Precio:</strong> ${formatCurrency(appointment.price)}</p>
+                        <p><strong>Estado:</strong> <span class="appointment-status ${appointment.status}">${getStatusLabel(appointment.status)}</span></p>
+                        ${appointment.notes ? `<p><strong>Notas:</strong> ${appointment.notes}</p>` : ''}
+                    </div>
+                `;
+                
+                const footer = `
+                    <button class="btn btn-secondary" onclick="appointmentDetailModal.close()">Cerrar</button>
+                    <button class="btn btn-primary" onclick="changeStatus(${id}); appointmentDetailModal.close();">Cambiar Estado</button>
+                `;
+                
+                window.appointmentDetailModal = showModal('appointmentDetailModal', 'Detalles de la Cita', content, footer);
+                
+            } catch (error) {
+                console.error('Error loading appointment:', error);
+                showToast('Error al cargar los detalles', 'error');
+            }
+        }
+        
+        function changeStatus(id) {
+            const content = `
+                <div class="form-group">
+                    <label for="new-status">Nuevo Estado</label>
+                    <select id="new-status" class="search-input">
+                        <option value="scheduled">Agendada</option>
+                        <option value="confirmed">Confirmada</option>
+                        <option value="in_progress">En Curso</option>
+                        <option value="completed">Completada</option>
+                        <option value="cancelled">Cancelada</option>
+                        <option value="no_show">No Asistió</option>
+                    </select>
+                </div>
+            `;
+            
+            const footer = `
+                <button class="btn btn-secondary" onclick="statusModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="updateStatus(${id})">Guardar</button>
+            `;
+            
+            window.statusModal = showModal('statusModal', 'Cambiar Estado de Cita', content, footer);
+        }
+        
+        async function updateStatus(id) {
+            const newStatus = document.getElementById('new-status').value;
+            
+            try {
+                await AdminAPI.updateAppointmentStatus(id, newStatus);
+                showToast('Estado actualizado correctamente', 'success');
+                window.statusModal.close();
+                loadAppointments();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('Error al actualizar el estado', 'error');
+            }
+        }
+        
+        function getStatusLabel(status) {
+            const labels = {
+                'scheduled': 'Agendada',
+                'confirmed': 'Confirmada',
+                'in_progress': 'En Curso',
+                'completed': 'Completada',
+                'cancelled': 'Cancelada',
+                'no_show': 'No Asistió'
+            };
+            return labels[status] || status;
+        }
+        
+        // Initial load
+        loadAppointments();
+    </script>
+    
+    <!-- Mobile Menu Script -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        if (mobileMenuToggle && sidebar && mobileOverlay) {
+            mobileMenuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+            
+            mobileOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
