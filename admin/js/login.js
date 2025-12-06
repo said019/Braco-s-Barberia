@@ -25,8 +25,13 @@ document.getElementById('btn-submit').addEventListener('click', async (e) => {
 
     try {
         // Llamar al API
-        console.log('Calling API...');
-        const response = await fetch('http://localhost:3000/api/admin/login', {
+        // Usar lógica dinámica para la URL
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3000/api/admin/login'
+            : '/api/admin/login';
+
+        console.log('Calling API:', apiUrl);
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
