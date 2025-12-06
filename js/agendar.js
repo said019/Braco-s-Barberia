@@ -234,6 +234,7 @@ function selectService(card) {
 // NAVEGACIÓN ENTRE PASOS
 // ============================================================================
 function goToStep(step) {
+    console.log('goToStep called with step:', step);
     state.currentStep = step;
 
     // Actualizar indicadores
@@ -271,6 +272,8 @@ function goToStep(step) {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// Exponer función goToStep globalmente para uso en HTML onclick
+window.goToStep = goToStep;
 
 // ============================================================================
 // RENDERIZAR CALENDARIO
@@ -521,6 +524,3 @@ function showSuccess(appointmentData) {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// Exponer función goToStep globalmente para uso en HTML
-window.goToStep = goToStep;

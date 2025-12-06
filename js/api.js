@@ -141,7 +141,9 @@ const API = {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const result = await response.json();
+            // El backend devuelve { success: true, data: client }
+            return result.data || null;
         } catch (error) {
             return this.handleError(error);
         }
@@ -163,7 +165,9 @@ const API = {
                 throw new Error(error.message || 'Error al crear cliente');
             }
 
-            return await response.json();
+            const result = await response.json();
+            // El backend devuelve { success: true, data: client }
+            return result.data;
         } catch (error) {
             return this.handleError(error);
         }
