@@ -208,6 +208,8 @@ const API = {
      */
     async createAppointment(appointmentData) {
         try {
+            console.log('Enviando datos de cita:', appointmentData);
+
             const response = await fetch(`${API_BASE_URL}/appointments`, {
                 method: 'POST',
                 headers: this.getHeaders(),
@@ -216,6 +218,7 @@ const API = {
 
             if (!response.ok) {
                 const error = await response.json();
+                console.log('Error del servidor:', error);
                 throw new Error(error.message || 'Error al crear la cita');
             }
 

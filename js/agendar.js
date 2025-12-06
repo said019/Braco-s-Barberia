@@ -43,7 +43,7 @@ const SERVICIOS_BRACOS = [
         duration_minutes: 60,
         price: 300,
         category_id: 2,
-        image_url: "assets/f428c49b-d85d-4b47-9349-dbb31e0b90bb_removalai_preview.png"
+        image_url: "assets/ritual_barba.jpeg"
     },
     {
         id: 4,
@@ -52,7 +52,7 @@ const SERVICIOS_BRACOS = [
         duration_minutes: 120,
         price: 550,
         category_id: 6,
-        image_url: "assets/corte_caballero.jpeg"
+        image_url: "assets/duo.png"
     },
     {
         id: 5,
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadServices();
     setupEventListeners();
     renderCalendar();
-    
+
     // Check if service is pre-selected from URL
     const serviceId = getUrlParameter('service');
     if (serviceId) {
@@ -177,7 +177,7 @@ function renderServices(services) {
     elements.servicesGrid.innerHTML = services.map(service => {
         const descriptionLines = service.description ? service.description.split('\n').filter(line => line.trim()) : [];
         const firstLine = descriptionLines[0] || '';
-        
+
         return `
         <div class="service-select-card" 
              data-id="${service.id}" 
@@ -207,10 +207,10 @@ function renderServices(services) {
 // FILTRAR SERVICIOS POR CATEGORÍA
 // ============================================================================
 function filterServices(category) {
-    const filtered = category === 'all' 
-        ? state.services 
+    const filtered = category === 'all'
+        ? state.services
         : state.services.filter(s => s.category_id == category);
-    
+
     renderServices(filtered);
 }
 
@@ -218,14 +218,14 @@ function filterServices(category) {
 // SELECCIONAR SERVICIO
 // ============================================================================
 function selectService(card) {
-    document.querySelectorAll('.service-select-card').forEach(c => 
+    document.querySelectorAll('.service-select-card').forEach(c =>
         c.classList.remove('selected')
     );
     card.classList.add('selected');
-    
+
     const serviceId = parseInt(card.dataset.id);
     state.selectedService = state.services.find(s => s.id === serviceId);
-    
+
     // Ir al paso 2
     setTimeout(() => goToStep(2), 300);
 }
@@ -235,29 +235,29 @@ function selectService(card) {
 // ============================================================================
 function goToStep(step) {
     state.currentStep = step;
-    
+
     // Actualizar indicadores
     elements.stepIndicators.forEach((indicator, index) => {
         indicator.classList.remove('active', 'completed');
         if (index + 1 < step) indicator.classList.add('completed');
         if (index + 1 === step) indicator.classList.add('active');
     });
-    
+
     // Mostrar/ocultar secciones
     elements.steps.forEach((section, index) => {
         section.classList.toggle('hidden', index + 1 !== step);
     });
-    
+
     // Si es paso 2 y hay fecha seleccionada, cargar disponibilidad
     if (step === 2 && state.selectedDate) {
         loadAvailability(state.selectedDate);
     }
-    
+
     // Si es paso 3, actualizar resumen
     if (step === 3) {
         updateSummary();
     }
-    
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -268,25 +268,25 @@ function goToStep(step) {
 function renderCalendar() {
     const year = state.currentMonth.getFullYear();
     const month = state.currentMonth.getMonth();
-    
+
     elements.currentMonth.textContent = new Intl.DateTimeFormat('es-MX', {
         month: 'long',
         year: 'numeric'
     }).format(state.currentMonth);
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const startPadding = firstDay.getDay();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     let html = '';
-    
+
     // Días del mes anterior
     for (let i = 0; i < startPadding; i++) {
         html += '<div class="calendar-day other-month"></div>';
     }
-    
+
     // Días del mes actual
     for (let day = 1; day <= lastDay.getDate(); day++) {
         const date = new Date(year, month, day);
@@ -294,19 +294,19 @@ function renderCalendar() {
         const isToday = date.getTime() === today.getTime();
         const isSunday = date.getDay() === 0;
         const isDisabled = isPast || isSunday;
-        const isSelected = state.selectedDate && 
+        const isSelected = state.selectedDate &&
             date.toDateString() === state.selectedDate.toDateString();
-        
+
         let classes = 'calendar-day';
         if (isDisabled) classes += ' disabled';
         if (isToday) classes += ' today';
         if (isSelected) classes += ' selected';
-        
+
         html += `<div class="${classes}" data-date="${date.toISOString()}">${day}</div>`;
     }
-    
+
     elements.calendarDays.innerHTML = html;
-    
+
     // Event listeners
     document.querySelectorAll('.calendar-day:not(.disabled):not(.other-month)').forEach(day => {
         day.addEventListener('click', () => selectDate(day));
@@ -319,17 +319,17 @@ function renderCalendar() {
 async function selectDate(dayElement) {
     document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
     dayElement.classList.add('selected');
-    
+
     state.selectedDate = new Date(dayElement.dataset.date);
     state.selectedTime = null;
     elements.btnToStep3.disabled = true;
-    
+
     elements.selectedDateLabel.textContent = new Intl.DateTimeFormat('es-MX', {
         weekday: 'long',
         day: 'numeric',
         month: 'long'
     }).format(state.selectedDate);
-    
+
     await loadAvailability(state.selectedDate);
 }
 
@@ -338,9 +338,9 @@ async function selectDate(dayElement) {
 // ============================================================================
 async function loadAvailability(date) {
     const dateStr = date.toISOString().split('T')[0];
-    
+
     showLoading(elements.timeSlots);
-    
+
     try {
         state.availableSlots = await API.getAvailableSlots(state.selectedService.id, dateStr);
     } catch (error) {
@@ -348,7 +348,7 @@ async function loadAvailability(date) {
         // Generar slots de ejemplo
         state.availableSlots = MOCK_DATA.generateTimeSlots();
     }
-    
+
     renderTimeSlots();
 }
 
@@ -360,7 +360,7 @@ function renderTimeSlots() {
         elements.timeSlots.innerHTML = '<p class="no-selection">No hay horarios disponibles para esta fecha</p>';
         return;
     }
-    
+
     elements.timeSlots.innerHTML = state.availableSlots.map(slot => `
         <button class="time-slot ${slot.available ? '' : 'disabled'}" 
                 data-time="${slot.time}"
@@ -368,7 +368,7 @@ function renderTimeSlots() {
             ${slot.time}
         </button>
     `).join('');
-    
+
     document.querySelectorAll('.time-slot:not(.disabled)').forEach(slot => {
         slot.addEventListener('click', () => selectTime(slot));
     });
@@ -380,7 +380,7 @@ function renderTimeSlots() {
 function selectTime(slotElement) {
     document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
     slotElement.classList.add('selected');
-    
+
     state.selectedTime = slotElement.dataset.time;
     elements.btnToStep3.disabled = false;
 }
@@ -410,32 +410,32 @@ function setupEventListeners() {
         state.currentMonth.setMonth(state.currentMonth.getMonth() - 1);
         renderCalendar();
     });
-    
+
     document.getElementById('next-month').addEventListener('click', () => {
         state.currentMonth.setMonth(state.currentMonth.getMonth() + 1);
         renderCalendar();
     });
-    
+
     // Botón continuar a paso 3
     elements.btnToStep3.addEventListener('click', () => goToStep(3));
-    
+
     // Tabs de categorías
     document.querySelectorAll('.category-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             const category = tab.dataset.category;
             filterServices(category);
         });
     });
-    
+
     // Formulario de confirmación
     elements.bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         await submitBooking();
     });
-    
+
     // Formatear teléfono mientras se escribe
     const phoneInput = document.getElementById('client-phone');
     phoneInput.addEventListener('input', (e) => {
@@ -449,17 +449,17 @@ function setupEventListeners() {
 async function submitBooking() {
     const btnConfirm = document.getElementById('btn-confirm');
     const originalText = btnConfirm.textContent;
-    
+
     btnConfirm.disabled = true;
     btnConfirm.textContent = 'Procesando...';
-    
+
     const formData = new FormData(elements.bookingForm);
     const phone = formData.get('phone').replace(/\D/g, '');
-    
+
     try {
         // Verificar si el cliente existe
         let client = await API.getClientByPhone(phone);
-        
+
         // Si no existe, crear nuevo cliente
         if (!client) {
             client = await API.createClient({
@@ -467,7 +467,7 @@ async function submitBooking() {
                 phone: phone
             });
         }
-        
+
         // Crear la cita
         const bookingData = {
             client_id: client.id,
@@ -476,12 +476,12 @@ async function submitBooking() {
             start_time: state.selectedTime,
             notes: formData.get('notes') || null
         };
-        
+
         const result = await API.createAppointment(bookingData);
-        
+
         // Mostrar pantalla de éxito
         showSuccess(result);
-        
+
     } catch (error) {
         console.error('Error:', error);
         showToast(error.message || 'Error al agendar la cita', 'error');
@@ -496,18 +496,18 @@ async function submitBooking() {
 function showSuccess(appointmentData) {
     // Ocultar todos los pasos
     elements.steps.forEach(s => s.classList.add('hidden'));
-    
+
     // Mostrar pantalla de éxito
     const successStep = document.getElementById('step-success');
     successStep.classList.remove('hidden');
-    
+
     // Llenar datos
     document.getElementById('success-code').textContent = appointmentData.checkout_code || '----';
     document.getElementById('success-service').textContent = state.selectedService.name;
-    document.getElementById('success-datetime').textContent = 
+    document.getElementById('success-datetime').textContent =
         `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
     document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
-    
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }

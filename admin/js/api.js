@@ -1,0 +1,103 @@
+const API_BASE = '/api';
+
+const api = {
+    async request(method, endpoint, data = null) {
+        const token = localStorage.getItem('admin_token');
+
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        };
+
+        if (data && method !== 'GET') {
+            options.body = JSON.stringify(data);
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+
+            if (response.status === 401) {
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login.html';
+                return;
+            }
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Error en la solicitud');
+            }
+
+            return result;
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
+        }
+    },
+
+    get(endpoint) {
+        return this.request('GET', endpoint);
+    },
+
+    post(endpoint, data) {
+        return this.request('POST', endpoint, data);
+    },
+
+    put(endpoint, data) {
+        return this.request('PUT', endpoint, data);
+    },
+
+    delete(endpoint) {
+        return this.request('DELETE', endpoint);
+    }
+};
+
+// ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // Mobile Menu Injection
+    if (!document.querySelector('.mobile-menu-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mobile-menu-toggle';
+        toggleBtn.id = 'mobile-menu-toggle';
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        document.body.appendChild(toggleBtn);
+    }
+    if (!document.querySelector('.mobile-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        overlay.id = 'mobile-overlay';
+        document.body.appendChild(overlay);
+    }
+    const toggleBtn = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    if (toggleBtn && sidebar && overlay) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    }
+    // Calendar Responsive Fix
+    const calendarGrid = document.querySelector('.calendar-grid');
+    if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'calendar-container';
+        calendarGrid.parentNode.insertBefore(wrapper, calendarGrid);
+        wrapper.appendChild(calendarGrid);
+    }
+});

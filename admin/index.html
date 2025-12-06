@@ -1,299 +1,434 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Dashboard | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        /* Custom tweaks for premium gradients if needed, but admin.css handles most */
+    </style>
 </head>
+
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
-            <span class="sidebar-subtitle">Admin</span>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item active">
-                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/admin/calendario.html" class="nav-item">
-                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
-                <span>Calendario</span>
-            </a>
-            <a href="/admin/clientes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                <span>Clientes</span>
-            </a>
-            <a href="/admin/membresias.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                <span>Membresías</span>
-            </a>
-            <a href="/admin/reportes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="main-header">
-            <div class="header-title">
-                <h2>Dashboard</h2>
-                <p class="header-date" id="current-date"></p>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
             </div>
-            <div class="header-user">
-                <span id="admin-name">Admin</span>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
             </div>
-        </header>
-        
-        <!-- Stats Cards -->
-        <section class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="far fa-calendar-check"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-appointments">0</span>
-                    <span class="stat-label">Citas Hoy</span>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 class="page-title">Dashboard</h1>
+                <div class="header-actions">
+                    <span class="header-date" id="header-date"></span>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="far fa-calendar-check"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-citas-hoy">0</div>
+                            <div class="stat-label">Citas Hoy</div>
+                            <div class="stat-change positive" id="stat-citas-change"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-ventas-hoy">$0</div>
+                            <div class="stat-label">Ventas Hoy</div>
+                            <div class="stat-change" id="stat-ventas-change"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-membresias">0</div>
+                            <div class="stat-label">Membresías Activas</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="stat-clientes">0</div>
+                            <div class="stat-label">Total Clientes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Próximas Citas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Próximas Citas</h3>
+                                <p class="card-subtitle">Citas programadas para hoy</p>
+                            </div>
+                            <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="upcoming-appointments">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Membresías por Vencer -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Membresías por Vencer</h3>
+                                <p class="card-subtitle">Próximos 30 días</p>
+                            </div>
+                            <a href="membresias.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="expiring-memberships">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Plan</th>
+                                        <th>Restantes</th>
+                                        <th>Vence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Últimas Transacciones -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Últimas Transacciones</h3>
+                            <p class="card-subtitle">Ventas de hoy</p>
+                        </div>
+                        <a href="reportes.html" class="btn btn-secondary btn-sm">Ver Reporte</a>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="recent-transactions">
+                            <thead>
+                                <tr>
+                                    <th>Hora</th>
+                                    <th>Cliente</th>
+                                    <th>Concepto</th>
+                                    <th>Método</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Se llena con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-sales">$0</span>
-                    <span class="stat-label">Ventas Hoy</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-crown"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-memberships">0</span>
-                    <span class="stat-label">Membresías Activas</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-clients">0</span>
-                    <span class="stat-label">Clientes Totales</span>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Upcoming Appointments -->
-        <section class="content-section">
-            <div class="section-header">
-                <h3>Citas de Hoy</h3>
-                <a href="/admin/calendario.html" class="section-link">Ver todas →</a>
-            </div>
-            
-            <div id="appointments-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Cargando citas...</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Recent Activity -->
-        <section class="content-section">
-            <div class="section-header">
-                <h3>Actividad Reciente</h3>
-            </div>
-            
-            <div id="activity-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Cargando actividad...</p>
-                </div>
-            </div>
-        </section>
-    </main>
-    
-    <script src="../js/admin.js"></script>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
     <script>
-        // Verificar autenticación al cargar
+        // Verificar autenticación
         checkAuth();
-        
-        // Mostrar nombre de usuario
-        const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
-        document.getElementById('admin-name').textContent = adminUser.name || 'Admin';
-        
-        // Mostrar fecha actual
-        const dateOptions = {
+
+        // Cargar datos del admin
+        const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+        document.getElementById('admin-name').textContent = admin.name || 'Admin';
+        document.getElementById('admin-role').textContent = admin.role || 'Administrador';
+        document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
+
+        // Fecha actual
+        document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-MX', {
             weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        };
-        document.getElementById('current-date').textContent = 
-            new Date().toLocaleDateString('es-MX', dateOptions);
-        
+        });
+
         // Cargar dashboard
         async function loadDashboard() {
             try {
-                // Obtener estadísticas del dashboard
-                const data = await fetchWithAuth('/api/admin/dashboard');
-                
-                // Actualizar stats
-                document.getElementById('stat-appointments').textContent = 
-                    data.stats.appointments_today || 0;
-                document.getElementById('stat-sales').textContent = 
-                    formatCurrency(data.stats.sales_today || 0);
-                document.getElementById('stat-memberships').textContent = 
-                    data.stats.active_memberships || 0;
-                document.getElementById('stat-clients').textContent = 
-                    data.stats.total_clients || 0;
-                
-                // Renderizar citas de hoy
-                renderAppointments(data.upcoming_appointments || []);
-                
-                // Renderizar actividad reciente
-                renderActivity(data.recent_activity || []);
-                
+                const data = await api.get('/admin/dashboard');
+
+                // Stats
+                document.getElementById('stat-citas-hoy').textContent = data.stats.appointments_today;
+                document.getElementById('stat-ventas-hoy').textContent = `$${data.stats.sales_today.toLocaleString()}`;
+                document.getElementById('stat-membresias').textContent = data.stats.active_memberships;
+                document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
+
+                // Badge del nav
+                document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
+
+                // Próximas citas
+                renderUpcomingAppointments(data.upcoming_appointments);
+
+                // Membresías por vencer
+                renderExpiringMemberships(data.expiring_memberships || []);
+
+                // Transacciones
+                renderRecentTransactions(data.recent_transactions || []);
+
             } catch (error) {
-                console.error('Error loading dashboard:', error);
-                showError('appointments-container', 'Error al cargar las citas');
-                showError('activity-container', 'Error al cargar la actividad');
+                console.error('Error:', error);
+                // Datos de ejemplo para desarrollo
+                loadDemoData();
             }
         }
-        
-        function renderAppointments(appointments) {
-            const container = document.getElementById('appointments-container');
-            
-            if (appointments.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay citas programadas para hoy</p>';
+
+        function renderUpcomingAppointments(appointments) {
+            const tbody = document.querySelector('#upcoming-appointments tbody');
+
+            if (!appointments || appointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay citas programadas para hoy
+                        </td>
+                    </tr>
+                `;
                 return;
             }
-            
-            const html = `
-                <div class="appointments-list">
-                    ${appointments.map(apt => `
-                        <div class="appointment-item">
-                            <div class="appointment-time">${apt.start_time.slice(0, 5)}</div>
-                            <div class="appointment-info">
-                                <span class="appointment-client" style="border-left: 3px solid ${apt.client_color || '#C4A35A'}">
-                                    ${apt.client_name}
-                                </span>
-                                <span class="appointment-service">${apt.service_name}</span>
-                            </div>
-                            <div class="appointment-status ${apt.status}">${getStatusLabel(apt.status)}</div>
-                            <div class="appointment-actions">
-                                <button class="btn-icon" onclick="viewAppointment(${apt.id})" title="Ver detalles">👁️</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            container.innerHTML = html;
+
+            tbody.innerHTML = appointments.slice(0, 5).map(apt => `
+                <tr>
+                    <td>
+                        <strong>${apt.start_time.slice(0, 5)}</strong>
+                    </td>
+                    <td>
+                        <span class="client-type-dot" style="background: ${apt.client_color}"></span>
+                        ${apt.client_name}
+                    </td>
+                    <td>${apt.service_name}</td>
+                    <td>
+                        <span class="badge badge-${getStatusBadge(apt.status)}">${getStatusText(apt.status)}</span>
+                    </td>
+                </tr>
+            `).join('');
         }
-        
-        function renderActivity(activities) {
-            const container = document.getElementById('activity-container');
-            
-            if (activities.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay actividad reciente</p>';
+
+        function renderExpiringMemberships(memberships) {
+            const tbody = document.querySelector('#expiring-memberships tbody');
+
+            if (!memberships || memberships.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay membresías por vencer
+                        </td>
+                    </tr>
+                `;
                 return;
             }
-            
-            const html = `
-                <div class="appointments-list">
-                    ${activities.map(activity => `
-                        <div class="appointment-item">
-                            <div class="appointment-time">${formatTime(activity.created_at)}</div>
-                            <div class="appointment-info">
-                                <span class="appointment-client">${activity.description}</span>
-                                <span class="appointment-service">${activity.details || ''}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            container.innerHTML = html;
+
+            tbody.innerHTML = memberships.slice(0, 5).map(m => {
+                const daysLeft = Math.ceil((new Date(m.expiration_date) - new Date()) / (1000 * 60 * 60 * 24));
+                return `
+                    <tr>
+                        <td>${m.client_name}</td>
+                        <td>${m.membership_type}</td>
+                        <td>${m.remaining_services}/${m.total_services}</td>
+                        <td>
+                            <span class="badge ${daysLeft <= 7 ? 'badge-error' : 'badge-warning'}">
+                                ${daysLeft} días
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
-        
-        function getStatusLabel(status) {
-            const labels = {
+
+        function renderRecentTransactions(transactions) {
+            const tbody = document.querySelector('#recent-transactions tbody');
+
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay transacciones hoy
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = transactions.slice(0, 5).map(t => `
+                <tr>
+                    <td>${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td>${t.client_name}</td>
+                    <td>${t.description}</td>
+                    <td>${getPaymentMethodText(t.payment_method)}</td>
+                    <td class="text-gold"><strong>$${parseFloat(t.amount).toLocaleString()}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'scheduled': 'info',
+                'confirmed': 'success',
+                'in_progress': 'warning',
+                'completed': 'gold',
+                'cancelled': 'error',
+                'no_show': 'error'
+            };
+            return badges[status] || 'info';
+        }
+
+        function getStatusText(status) {
+            const texts = {
                 'scheduled': 'Agendada',
                 'confirmed': 'Confirmada',
-                'in_progress': 'En Curso',
+                'in_progress': 'En Progreso',
                 'completed': 'Completada',
                 'cancelled': 'Cancelada',
                 'no_show': 'No Asistió'
             };
-            return labels[status] || status;
+            return texts[status] || status;
         }
-        
-        function formatTime(datetime) {
-            const date = new Date(datetime);
-            const now = new Date();
-            const diffHours = Math.floor((now - date) / (1000 * 60 * 60));
-            
-            if (diffHours < 1) {
-                const diffMinutes = Math.floor((now - date) / (1000 * 60));
-                return `Hace ${diffMinutes} min`;
-            } else if (diffHours < 24) {
-                return `Hace ${diffHours}h`;
-            } else {
-                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-            }
+
+        function getPaymentMethodText(method) {
+            const methods = {
+                'cash': '<i class="fas fa-money-bill-wave"></i> Efectivo',
+                'card': '<i class="fas fa-credit-card"></i> Tarjeta',
+                'transfer': '<i class="fas fa-mobile-alt"></i> Transferencia'
+            };
+            return methods[method] || method;
         }
-        
-        function viewAppointment(id) {
-            window.location.href = `/admin/calendario.html?appointment=${id}`;
+
+        function loadDemoData() {
+            document.getElementById('stat-citas-hoy').textContent = '8';
+            document.getElementById('stat-ventas-hoy').textContent = '$4,350';
+            document.getElementById('stat-membresias').textContent = '24';
+            document.getElementById('stat-clientes').textContent = '156';
+            document.getElementById('nav-badge-citas').textContent = '8';
+
+            // Demo citas
+            const demoAppointments = [
+                { start_time: '10:00', client_name: 'Carlos Mendoza', client_color: '#C4A35A', service_name: 'Corte Caballero', status: 'confirmed' },
+                { start_time: '11:00', client_name: 'Roberto García', client_color: '#D4B76A', service_name: 'DÚO (Corte + Barba)', status: 'scheduled' },
+                { start_time: '13:00', client_name: 'Miguel Torres', client_color: '#1A1A1A', service_name: 'Ritual de Barba', status: 'scheduled' }
+            ];
+            renderUpcomingAppointments(demoAppointments);
+
+            // Demo membresías
+            const demoMemberships = [
+                { client_name: 'Juan López', membership_type: 'Premium', remaining_services: 2, total_services: 6, expiration_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) },
+                { client_name: 'Pedro Sánchez', membership_type: 'VIP', remaining_services: 5, total_services: 12, expiration_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) }
+            ];
+            renderExpiringMemberships(demoMemberships);
+
+            // Demo transacciones
+            const demoTransactions = [
+                { created_at: new Date(), client_name: 'Carlos Mendoza', description: 'Corte Caballero', payment_method: 'card', amount: 300 },
+                { created_at: new Date(), client_name: 'Roberto García', description: 'DÚO + Productos', payment_method: 'cash', amount: 750 }
+            ];
+            renderRecentTransactions(demoTransactions);
         }
-        
-        function showError(containerId, message) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = `<p class="empty-message" style="color: var(--error)">${message}</p>`;
-        }
-        
-        // Cargar datos al iniciar
+
+        // Inicializar
         loadDashboard();
-        
-        // Recargar cada 30 segundos
-        setInterval(loadDashboard, 30000);
     </script>
-    
-    <!-- Mobile Menu Script -->
-    <script>
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        
-        if (mobileMenuToggle && sidebar && mobileOverlay) {
-            mobileMenuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-            });
-            
-            mobileOverlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                });
-            });
-        }
-    </script>
+
 </body>
+
 </html>

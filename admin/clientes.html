@@ -1,511 +1,542 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clientes | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Clientes | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../css/admin.css">
 </head>
+
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
-            <span class="sidebar-subtitle">Admin</span>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/admin/calendario.html" class="nav-item">
-                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
-                <span>Calendario</span>
-            </a>
-            <a href="/admin/clientes.html" class="nav-item active">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                <span>Clientes</span>
-            </a>
-            <a href="/admin/membresias.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                <span>Membresías</span>
-            </a>
-            <a href="/admin/reportes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="main-header">
-            <div class="header-title">
-                <h2>Gestión de Clientes</h2>
-                <p class="header-date">Administra la base de datos de clientes</p>
+
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-primary" onclick="openCreateClientModal()">+ Nuevo Cliente</button>
-            </div>
-        </header>
-        
-        <!-- Search & Filters -->
-        <section class="content-section">
-            <div class="filters-bar">
-                <input type="text" id="search-clients" class="search-input" placeholder="Buscar por nombre, teléfono o email...">
-                
-                <select id="filter-membership" class="search-input" style="width: auto;">
-                    <option value="">Todas las membresías</option>
-                    <option value="active">Con membresía activa</option>
-                    <option value="inactive">Sin membresía</option>
-                </select>
-                
-                <button class="btn btn-secondary" onclick="exportClients()">📥 Exportar</button>
-            </div>
-        </section>
-        
-        <!-- Stats -->
-        <section class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-total">0</span>
-                    <span class="stat-label">Total Clientes</span>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-crown"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-members">0</span>
-                    <span class="stat-label">Con Membresía</span>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-new">0</span>
-                    <span class="stat-label">Nuevos (30 días)</span>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
                 </div>
-            </div>
-        </section>
-        
-        <!-- Clients Table -->
-        <section class="content-section">
-            <div class="section-header">
-                <h3>Lista de Clientes</h3>
-            </div>
-            
-            <div id="clients-container">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Cargando clientes...</p>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
                 </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
             </div>
-        </section>
-    </main>
-    
-    <script src="../js/admin.js"></script>
-    <script>
-        checkAuth();
-        
-        let allClients = [];
-        let filteredClients = [];
-        
-        // Event listeners
-        document.getElementById('search-clients').addEventListener('input', debounce(applyFilters, 300));
-        document.getElementById('filter-membership').addEventListener('change', applyFilters);
-        
-        // Load clients
-        async function loadClients() {
-            try {
-                const data = await AdminAPI.getClients();
-                allClients = data.clients || [];
-                
-                // Update stats
-                document.getElementById('stat-total').textContent = allClients.length;
-                
-                const withMembership = allClients.filter(c => c.has_active_membership).length;
-                document.getElementById('stat-members').textContent = withMembership;
-                
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                const newClients = allClients.filter(c => new Date(c.created_at) >= thirtyDaysAgo).length;
-                document.getElementById('stat-new').textContent = newClients;
-                
-                applyFilters();
-                
-            } catch (error) {
-                console.error('Error loading clients:', error);
-                showToast('Error al cargar los clientes', 'error');
-            }
-        }
-        
-        function applyFilters() {
-            const searchTerm = document.getElementById('search-clients').value.toLowerCase();
-            const membershipFilter = document.getElementById('filter-membership').value;
-            
-            filteredClients = allClients.filter(client => {
-                // Search filter
-                if (searchTerm) {
-                    const searchText = `${client.name} ${client.phone} ${client.email || ''}`.toLowerCase();
-                    if (!searchText.includes(searchTerm)) return false;
-                }
-                
-                // Membership filter
-                if (membershipFilter === 'active' && !client.has_active_membership) return false;
-                if (membershipFilter === 'inactive' && client.has_active_membership) return false;
-                
-                return true;
-            });
-            
-            renderClients();
-        }
-        
-        function renderClients() {
-            const container = document.getElementById('clients-container');
-            
-            if (filteredClients.length === 0) {
-                container.innerHTML = '<p class="empty-message">No se encontraron clientes</p>';
-                return;
-            }
-            
-            const columns = [
-                { 
-                    field: 'name', 
-                    label: 'Nombre',
-                    format: (value, row) => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${getClientColor(row.id)}"></div>
-                            ${value}
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1 class="page-title">Clientes</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('add-client')">
+                        + Nuevo Cliente
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <span class="search-icon"><i class="fas fa-search"></i></span>
+                        <input type="text" class="search-input" id="search-clients"
+                            placeholder="Buscar por nombre o teléfono...">
+                    </div>
+
+                    <select class="filter-select" id="filter-type">
+                        <option value="">Todos los tipos</option>
+                        <option value="1">Normal</option>
+                        <option value="2">Premium</option>
+                        <option value="3">VIP</option>
+                    </select>
+
+                    <select class="filter-select" id="filter-membership">
+                        <option value="">Membresía: Todas</option>
+                        <option value="active">Con membresía activa</option>
+                        <option value="none">Sin membresía</option>
+                    </select>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-clients">0</div>
+                            <div class="stat-label">Total Clientes</div>
                         </div>
-                    `
-                },
-                { 
-                    field: 'phone', 
-                    label: 'Teléfono',
-                    format: formatPhone
-                },
-                { 
-                    field: 'email', 
-                    label: 'Email',
-                    format: (value) => value || '-'
-                },
-                { 
-                    field: 'has_active_membership', 
-                    label: 'Membresía',
-                    format: (value) => value 
-                        ? '<span class="badge active">Activa</span>' 
-                        : '<span class="badge inactive">Ninguna</span>'
-                },
-                { 
-                    field: 'total_appointments', 
-                    label: 'Citas',
-                    format: (value) => value || 0
-                },
-                { 
-                    field: 'created_at', 
-                    label: 'Registro',
-                    format: (value) => new Date(value).toLocaleDateString('es-MX', { 
-                        day: 'numeric', month: 'short', year: 'numeric' 
-                    })
-                },
-                { 
-                    field: 'id', 
-                    label: 'Acciones',
-                    format: (value) => `
-                        <div class="actions">
-                            <button class="btn-icon" onclick="viewClientDetail(${value})" title="Ver detalles">👁️</button>
-                            <button class="btn-icon" onclick="editClient(${value})" title="Editar">✏️</button>
-                            <button class="btn-icon" onclick="deleteClient(${value})" title="Eliminar">🗑️</button>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="new-clients-month">0</div>
+                            <div class="stat-label">Nuevos Este Mes</div>
                         </div>
-                    `
-                }
-            ];
-            
-            container.innerHTML = createTable(filteredClients, columns);
-        }
-        
-        function openCreateClientModal() {
-            const content = `
-                <form id="client-form" class="admin-form">
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="vip-clients">0</div>
+                            <div class="stat-label">Clientes VIP</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="with-membership">0</div>
+                            <div class="stat-label">Con Membresía</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table" id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Teléfono</th>
+                                    <th>Tipo</th>
+                                    <th>Visitas</th>
+                                    <th>Total Gastado</th>
+                                    <th>Membresía</th>
+                                    <th>Última Visita</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-tbody">
+                                <!-- Se llena con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="pagination">
+                        <!-- Se llena con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Agregar/Editar Cliente -->
+    <div class="modal-overlay" id="modal-add-client">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-client-title">Nuevo Cliente</h3>
+                <button class="modal-close" onclick="closeModal('add-client')">&times;</button>
+            </div>
+            <form id="client-form">
+                <div class="modal-body">
+                    <input type="hidden" id="client-id">
+
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-input" id="client-name" required>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="client-name">Nombre *</label>
-                            <input type="text" id="client-name" required>
+                            <label class="form-label">Teléfono *</label>
+                            <input type="tel" class="form-input" id="client-phone" required pattern="[0-9]{10}"
+                                placeholder="10 dígitos">
                         </div>
-                        
                         <div class="form-group">
-                            <label for="client-phone">Teléfono *</label>
-                            <input type="tel" id="client-phone" placeholder="5551234567" maxlength="10" required>
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="client-email">
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="client-email">Email</label>
-                        <input type="email" id="client-email">
+                        <label class="form-label">Tipo de Cliente</label>
+                        <select class="form-select" id="client-type">
+                            <option value="1">Normal</option>
+                            <option value="2">Premium</option>
+                            <option value="3">VIP</option>
+                        </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="client-birthdate">Fecha de Nacimiento</label>
-                        <input type="date" id="client-birthdate">
+                        <label class="form-label">Notas</label>
+                        <textarea class="form-textarea" id="client-notes" rows="3"
+                            placeholder="Preferencias, alergias, etc."></textarea>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="client-preferences">Preferencias</label>
-                        <textarea id="client-preferences" rows="3" placeholder="Preferencias de corte, alergias, etc."></textarea>
-                    </div>
-                </form>
-            `;
-            
-            const footer = `
-                <button class="btn btn-secondary" onclick="createClientModal.close()">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveNewClient()">Crear Cliente</button>
-            `;
-            
-            window.createClientModal = showModal('createClientModal', 'Nuevo Cliente', content, footer);
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-client')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Detalle de Cliente -->
+    <div class="modal-overlay" id="modal-client-detail">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalle del Cliente</h3>
+                <button class="modal-close" onclick="closeModal('client-detail')">&times;</button>
+            </div>
+            <div class="modal-body" id="client-detail-content">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        checkAuth();
+
+        let clients = [];
+        let currentPage = 1;
+        const perPage = 15;
+
+        // Cargar clientes
+        async function loadClients() {
+            try {
+                const data = await api.get('/admin/clients');
+                clients = data.clients || [];
+
+                document.getElementById('total-clients').textContent = data.stats?.total || clients.length;
+                document.getElementById('new-clients-month').textContent = data.stats?.new_this_month || 0;
+                document.getElementById('vip-clients').textContent = data.stats?.vip || 0;
+                document.getElementById('with-membership').textContent = data.stats?.with_membership || 0;
+
+                renderClients();
+            } catch (error) {
+                console.error('Error:', error);
+                // Fallback to demo data if API fails or unreachable
+                loadDemoClients();
+            }
         }
-        
-        async function saveNewClient() {
-            const form = document.getElementById('client-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
+
+        function renderClients() {
+            const search = document.getElementById('search-clients').value.toLowerCase();
+            const typeFilter = document.getElementById('filter-type').value;
+            const membershipFilter = document.getElementById('filter-membership').value;
+
+            let filtered = clients.filter(c => {
+                if (search && !c.name.toLowerCase().includes(search) && (!c.phone || !c.phone.includes(search))) {
+                    return false;
+                }
+                if (typeFilter && c.client_type_id != typeFilter) {
+                    return false;
+                }
+                if (membershipFilter === 'active' && !c.has_active_membership) {
+                    return false;
+                }
+                if (membershipFilter === 'none' && c.has_active_membership) {
+                    return false;
+                }
+                return true;
+            });
+
+            const totalPages = Math.ceil(filtered.length / perPage);
+            const start = (currentPage - 1) * perPage;
+            const paginated = filtered.slice(start, start + perPage);
+
+            const tbody = document.getElementById('clients-tbody');
+
+            if (paginated.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-muted" style="text-align: center; padding: 3rem;">
+                            No se encontraron clientes
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = paginated.map(c => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span class="client-type-dot" style="background: ${c.client_color || '#C4A35A'}"></span>
+                                <div>
+                                    <strong>${c.name}</strong>
+                                    ${c.email ? `<br><small class="text-muted">${c.email}</small>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td>${formatPhone(c.phone)}</td>
+                        <td><span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></td>
+                        <td>${c.total_visits || 0}</td>
+                        <td class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
+                        <td>
+                            ${c.has_active_membership
+                        ? `<span class="badge badge-success">${c.membership_type || 'Activa'}</span>`
+                        : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
+                        <td class="actions">
+                            <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderPagination(filtered.length, totalPages);
+        }
+
+        function renderPagination(total, totalPages) {
+            const pagination = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
                 return;
             }
-            
-            const clientData = {
+
+            let html = `
+                <button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    ‹
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `
+                        <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += '<span style="padding: 0 0.5rem;">...</span>';
+                }
+            }
+
+            html += `
+                <button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    ›
+                </button>
+            `;
+
+            pagination.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderClients();
+        }
+
+        // Eventos de filtros
+        document.getElementById('search-clients').addEventListener('input', () => {
+            currentPage = 1;
+            renderClients();
+        });
+
+        document.getElementById('filter-type').addEventListener('change', () => {
+            currentPage = 1;
+            renderClients();
+        });
+
+        document.getElementById('filter-membership').addEventListener('change', () => {
+            currentPage = 1;
+            renderClients();
+        });
+
+        // CRUD Operations
+        function openModal(id) {
+            document.getElementById(`modal-${id}`).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(`modal-${id}`).classList.remove('active');
+        }
+
+        document.getElementById('client-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const clientId = document.getElementById('client-id').value;
+            const data = {
                 name: document.getElementById('client-name').value,
                 phone: document.getElementById('client-phone').value,
-                email: document.getElementById('client-email').value || null,
-                birthdate: document.getElementById('client-birthdate').value || null,
-                preferences: document.getElementById('client-preferences').value || null
+                email: document.getElementById('client-email').value,
+                client_type_id: document.getElementById('client-type').value,
+                notes: document.getElementById('client-notes').value
             };
-            
-            // Validate phone
-            if (!validatePhone(clientData.phone)) {
-                showToast('El teléfono debe tener 10 dígitos', 'error');
-                return;
-            }
-            
+
             try {
-                await AdminAPI.createClient(clientData);
-                showToast('Cliente creado correctamente', 'success');
-                window.createClientModal.close();
-                loadClients();
-            } catch (error) {
-                console.error('Error creating client:', error);
-                showToast(error.message || 'Error al crear el cliente', 'error');
-            }
-        }
-        
-        async function viewClientDetail(id) {
-            try {
-                const [client, history] = await Promise.all([
-                    AdminAPI.getClient(id),
-                    AdminAPI.getClientHistory(id)
-                ]);
-                
-                const content = `
-                    <div style="line-height: 1.8;">
-                        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
-                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Información Personal</h4>
-                            <p><strong>Nombre:</strong> ${client.name}</p>
-                            <p><strong>Teléfono:</strong> ${formatPhone(client.phone)}</p>
-                            <p><strong>Email:</strong> ${client.email || '-'}</p>
-                            <p><strong>Fecha de Nacimiento:</strong> ${client.birthdate ? formatDate(client.birthdate) : '-'}</p>
-                            <p><strong>Cliente desde:</strong> ${formatDate(client.created_at)}</p>
-                            ${client.preferences ? `<p><strong>Preferencias:</strong> ${client.preferences}</p>` : ''}
-                        </div>
-                        
-                        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
-                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Estadísticas</h4>
-                            <p><strong>Total de citas:</strong> ${history.total_appointments || 0}</p>
-                            <p><strong>Citas completadas:</strong> ${history.completed_appointments || 0}</p>
-                            <p><strong>Total gastado:</strong> ${formatCurrency(history.total_spent || 0)}</p>
-                            <p><strong>Membresía activa:</strong> ${client.has_active_membership ? 'Sí' : 'No'}</p>
-                        </div>
-                        
-                        <div>
-                            <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem;">Últimas Citas</h4>
-                            ${history.recent_appointments && history.recent_appointments.length > 0 ? `
-                                <div style="max-height: 200px; overflow-y: auto;">
-                                    ${history.recent_appointments.map(apt => `
-                                        <div style="padding: 0.5rem 0; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
-                                            <div><strong>${apt.service_name}</strong></div>
-                                            <div style="font-size: 0.85rem; opacity: 0.7;">
-                                                ${formatDate(apt.appointment_date)} - ${formatCurrency(apt.price)}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : '<p class="empty-message">Sin citas registradas</p>'}
-                        </div>
-                    </div>
-                `;
-                
-                const footer = `
-                    <button class="btn btn-secondary" onclick="clientDetailModal.close()">Cerrar</button>
-                    <button class="btn btn-primary" onclick="editClient(${id}); clientDetailModal.close();">Editar</button>
-                `;
-                
-                window.clientDetailModal = showModal('clientDetailModal', 'Detalles del Cliente', content, footer);
-                
-            } catch (error) {
-                console.error('Error loading client details:', error);
-                showToast('Error al cargar los detalles del cliente', 'error');
-            }
-        }
-        
-        async function editClient(id) {
-            try {
-                const client = await AdminAPI.getClient(id);
-                
-                const content = `
-                    <form id="edit-client-form" class="admin-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="edit-client-name">Nombre *</label>
-                                <input type="text" id="edit-client-name" value="${client.name}" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="edit-client-phone">Teléfono *</label>
-                                <input type="tel" id="edit-client-phone" value="${client.phone}" maxlength="10" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="edit-client-email">Email</label>
-                            <input type="email" id="edit-client-email" value="${client.email || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="edit-client-birthdate">Fecha de Nacimiento</label>
-                            <input type="date" id="edit-client-birthdate" value="${client.birthdate || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="edit-client-preferences">Preferencias</label>
-                            <textarea id="edit-client-preferences" rows="3">${client.preferences || ''}</textarea>
-                        </div>
-                    </form>
-                `;
-                
-                const footer = `
-                    <button class="btn btn-secondary" onclick="editClientModal.close()">Cancelar</button>
-                    <button class="btn btn-primary" onclick="saveClientChanges(${id})">Guardar Cambios</button>
-                `;
-                
-                window.editClientModal = showModal('editClientModal', 'Editar Cliente', content, footer);
-                
-            } catch (error) {
-                console.error('Error loading client:', error);
-                showToast('Error al cargar el cliente', 'error');
-            }
-        }
-        
-        async function saveClientChanges(id) {
-            const form = document.getElementById('edit-client-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            const clientData = {
-                name: document.getElementById('edit-client-name').value,
-                phone: document.getElementById('edit-client-phone').value,
-                email: document.getElementById('edit-client-email').value || null,
-                birthdate: document.getElementById('edit-client-birthdate').value || null,
-                preferences: document.getElementById('edit-client-preferences').value || null
-            };
-            
-            if (!validatePhone(clientData.phone)) {
-                showToast('El teléfono debe tener 10 dígitos', 'error');
-                return;
-            }
-            
-            try {
-                await AdminAPI.updateClient(id, clientData);
-                showToast('Cliente actualizado correctamente', 'success');
-                window.editClientModal.close();
-                loadClients();
-            } catch (error) {
-                console.error('Error updating client:', error);
-                showToast(error.message || 'Error al actualizar el cliente', 'error');
-            }
-        }
-        
-        function deleteClient(id) {
-            const client = allClients.find(c => c.id === id);
-            if (!client) return;
-            
-            showConfirm(
-                'Confirmar Eliminación',
-                `¿Estás seguro de eliminar al cliente <strong>${client.name}</strong>? Esta acción no se puede deshacer.`,
-                async () => {
-                    try {
-                        await AdminAPI.deleteClient(id);
-                        showToast('Cliente eliminado correctamente', 'success');
-                        loadClients();
-                    } catch (error) {
-                        console.error('Error deleting client:', error);
-                        showToast(error.message || 'Error al eliminar el cliente', 'error');
-                    }
+                if (clientId) {
+                    await api.put(`/admin/clients/${clientId}`, data);
+                } else {
+                    await api.post('/admin/clients', data);
                 }
-            );
+                closeModal('add-client');
+                loadClients();
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
+        });
+
+        function editClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+
+            document.getElementById('modal-client-title').textContent = 'Editar Cliente';
+            document.getElementById('client-id').value = client.id;
+            document.getElementById('client-name').value = client.name;
+            document.getElementById('client-phone').value = client.phone;
+            document.getElementById('client-email').value = client.email || '';
+            document.getElementById('client-type').value = client.client_type_id;
+            document.getElementById('client-notes').value = client.notes || '';
+
+            openModal('add-client');
         }
-        
-        function exportClients() {
-            const exportData = filteredClients.map(client => ({
-                'Nombre': client.name,
-                'Teléfono': client.phone,
-                'Email': client.email || '',
-                'Membresía': client.has_active_membership ? 'Sí' : 'No',
-                'Total Citas': client.total_appointments || 0,
-                'Fecha Registro': formatDate(client.created_at)
-            }));
-            
-            exportToExcel(exportData, `clientes_${new Date().toISOString().split('T')[0]}`);
+
+        async function viewClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+
+            // Try to fetch detailed data first
+            let detailData = { client, appointments: [] };
+            try {
+                detailData = await api.get(`/admin/clients/${id}`);
+            } catch (e) {
+                console.warn("Could not fetch details, using filtering", e);
+            }
+
+            // Combine fetched detailed info or fallback to listed info
+            const c = detailData.client || client;
+
+            document.getElementById('client-detail-content').innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <h4 style="color: var(--gold); margin-bottom: 1rem;">Información</h4>
+                        <p><strong>Nombre:</strong> ${c.name}</p>
+                        <p><strong>Teléfono:</strong> ${formatPhone(c.phone)}</p>
+                        <p><strong>Email:</strong> ${c.email || '-'}</p>
+                        <p><strong>Tipo:</strong> <span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></p>
+                        <p><strong>Notas:</strong> ${c.notes || '-'}</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--gold); margin-bottom: 1rem;">Estadísticas</h4>
+                        <p><strong>Total Visitas:</strong> ${c.total_visits || 0}</p>
+                        <p><strong>Total Gastado:</strong> $${(c.total_spent || 0).toLocaleString()}</p>
+                        <p><strong>Última Visita:</strong> ${c.last_visit ? formatDate(c.last_visit) : 'Nunca'}</p>
+                        <p><strong>Cliente desde:</strong> ${formatDate(c.created_at)}</p>
+                    </div>
+                </div>
+                ${c.has_active_membership ? `
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(196,163,90,0.1);">
+                        <h4 style="color: var(--gold); margin-bottom: 1rem;">Membresía Activa</h4>
+                        <p><strong>Plan:</strong> ${c.membership_type || 'Activa'}</p>
+                        <p><strong>Servicios Restantes:</strong> ${c.remaining_services || '?'}/${c.total_services || '?'}</p>
+                        <p><strong>Vence:</strong> ${c.membership_expiration ? formatDate(c.membership_expiration) : '-'}</p>
+                    </div>
+                ` : ''}
+            `;
+            openModal('client-detail');
         }
-        
-        // Initial load
+
+        async function deleteClient(id) {
+            if (!confirm('¿Eliminar este cliente?')) return;
+
+            try {
+                await api.delete(`/admin/clients/${id}`);
+                loadClients();
+            } catch (error) {
+                alert('Error al eliminar: ' + error.message);
+            }
+        }
+
+        // Utilidades
+        function formatPhone(phone) {
+            if (!phone) return '-';
+            return phone.replace(/(\d{2})(\d{4})(\d{4})/, '$1 $2 $3');
+        }
+
+        function formatDate(date) {
+            if (!date) return '-';
+            return new Date(date).toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        // Demo data
+        function loadDemoClients() {
+            clients = [
+                { id: 1, name: 'Carlos Mendoza', phone: '4421234567', email: 'carlos@email.com', client_type_id: 1, client_type_name: 'Normal', client_color: '#C4A35A', total_visits: 12, total_spent: 4500, has_active_membership: false, created_at: '2024-01-15' },
+                { id: 2, name: 'Roberto García', phone: '4429876543', email: 'roberto@email.com', client_type_id: 2, client_type_name: 'Premium', client_color: '#D4B76A', total_visits: 24, total_spent: 12000, has_active_membership: true, membership_type: 'Premium 6', remaining_services: 4, total_services: 6, created_at: '2023-08-20', last_visit: '2024-12-01' },
+                { id: 3, name: 'Miguel Torres', phone: '4425551234', email: '', client_type_id: 3, client_type_name: 'VIP', client_color: '#1A1A1A', total_visits: 48, total_spent: 35000, has_active_membership: true, membership_type: 'VIP 12', remaining_services: 8, total_services: 12, created_at: '2022-03-10', last_visit: '2024-12-03' }
+            ];
+
+            document.getElementById('total-clients').textContent = '156';
+            document.getElementById('new-clients-month').textContent = '12';
+            document.getElementById('vip-clients').textContent = '8';
+            document.getElementById('with-membership').textContent = '24';
+
+            renderClients();
+        }
+
+        // Reset form al abrir modal de nuevo cliente
+        document.querySelector('[onclick="openModal(\'add-client\')"]').addEventListener('click', () => {
+            document.getElementById('modal-client-title').textContent = 'Nuevo Cliente';
+            document.getElementById('client-form').reset();
+            document.getElementById('client-id').value = '';
+        });
+
+        // Inicializar
         loadClients();
     </script>
-    
-    <!-- Mobile Menu Script -->
-    <script>
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        
-        mobileMenuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-        
-        mobileOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-        });
-        
-        // Cerrar menú al hacer click en un enlace
-        document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-            });
-        });
-    </script>
 </body>
+
 </html>

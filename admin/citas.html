@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas de Hoy | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Citas de Hoy</h1>
+                    <p class="text-muted" id="today-date"></p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.location.href='calendario.html'">
+                        <i class="far fa-calendar-alt"></i> Ver Calendario Completo
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Status Legend -->
+                <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
+                    <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);">Programada</span>
+                    <span class="badge"
+                        style="background: rgba(76,175,80,0.3); color: var(--success);">Confirmada</span>
+                    <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);">En Curso</span>
+                    <span class="badge"
+                        style="background: rgba(76,175,80,0.15); color: var(--success);">Completada</span>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Cliente</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointments-table-body">
+                            <tr>
+                                <td colspan="5" class="text-center p-3">Cargando citas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let todayAppointments = [];
+
+        async function init() {
+            checkAuth();
+            updateUserInfo();
+            setupDate();
+            await loadData();
+        }
+
+        function setupDate() {
+            const today = new Date();
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('today-date').textContent = today.toLocaleDateString('es-MX', options);
+        }
+
+        function updateUserInfo() {
+            const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            document.getElementById('admin-name').textContent = admin.name || 'Admin';
+            document.getElementById('admin-role').textContent = admin.role || 'Administrador';
+            document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
+        }
+
+        async function loadData() {
+            try {
+                // Get today's date in YYYY-MM-DD local
+                const today = new Date().toISOString().split('T')[0];
+                todayAppointments = await api.get(`/admin/appointments?date=${today}`);
+                renderTable(todayAppointments);
+                updateBadge(todayAppointments.length);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="5" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+            }
+        }
+
+        function updateBadge(count) {
+            const badge = document.getElementById('nav-badge-citas');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        function formatTime(timeStr) {
+            // HH:MM:SS -> HH:MM AM/PM
+            if (!timeStr) return '';
+            const [hours, minutes] = timeStr.split(':');
+            const date = new Date();
+            date.setHours(parseInt(hours));
+            date.setMinutes(parseInt(minutes));
+            return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getStatusBadge(status) {
+            const styles = {
+                scheduled: 'background: rgba(196,163,90,0.3); color: var(--cream);',
+                confirmed: 'background: rgba(76,175,80,0.3); color: var(--success);',
+                in_progress: 'background: rgba(255,152,0,0.2); color: var(--warning);',
+                completed: 'background: rgba(76,175,80,0.15); color: var(--success);',
+                cancelled: 'background: rgba(229,57,53,0.15); color: var(--error);',
+                no_show: 'background: rgba(158,158,158,0.2); color: #9E9E9E;'
+            };
+            const labels = {
+                scheduled: 'Programada',
+                confirmed: 'Confirmada',
+                in_progress: 'En Curso',
+                completed: 'Completada',
+                cancelled: 'Cancelada',
+                no_show: 'No Asistió'
+            };
+            return `<span class="badge" style="${styles[status]}">${labels[status]}</span>`;
+        }
+
+        function renderTable(appointments) {
+            const tbody = document.getElementById('appointments-table-body');
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-3">No hay citas para hoy</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(app => `
+                <tr>
+                    <td class="font-medium text-gold">${formatTime(app.start_time)}</td>
+                    <td>
+                        <div class="font-medium">${app.client_name}</div>
+                        <div class="text-sm text-muted">${app.client_phone}</div>
+                    </td>
+                    <td>
+                        <div>${app.service_name}</div>
+                        <div class="text-sm text-muted">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(app.service_price)}</div>
+                    </td>
+                    <td>${getStatusBadge(app.status)}</td>
+                    <td>
+                        <div class="actions">
+                            ${getActionButtons(app)}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getActionButtons(app) {
+            const id = app.id;
+            // State transitions
+            /*
+            Scheduled -> Confirmed, In Progress, Cancelled
+            Confirmed -> In Progress, Cancelled, No Show
+            In Progress -> Completed
+            Completed -> (None or Payment?)
+            */
+            let buttons = '';
+
+            if (['scheduled', 'confirmed'].includes(app.status)) {
+                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
+            }
+            if (app.status === 'in_progress') {
+                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
+            }
+            if (['scheduled', 'confirmed'].includes(app.status)) {
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
+            }
+
+            return buttons || '-';
+        }
+
+        async function updateStatus(id, newStatus) {
+            if (!confirm(`¿Cambiar estado a ${newStatus}?`)) return;
+            try {
+                await api.put(`/admin/appointments/${id}/status`, { status: newStatus });
+                // Reload
+                loadData();
+            } catch (error) {
+                alert('Error al actualizar: ' + error.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -81,10 +81,13 @@ export const Client = {
     const sql = `
       INSERT INTO clients (name, email, phone, notes)
       VALUES ($1, $2, $3, $4)
-      RETURNING *
+      RETURNING id
     `;
     const result = await query(sql, [name, email, phone, notes]);
-    return result.rows[0];
+    const clientId = result.rows[0].id;
+
+    // Retornar el cliente completo con el tipo de cliente
+    return this.getById(clientId);
   },
 
   // Actualizar cliente

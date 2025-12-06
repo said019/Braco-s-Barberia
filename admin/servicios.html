@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Catálogo de Servicios</h1>
+                    <p class="text-muted">Gestiona los servicios ofrecidos y sus precios</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openServiceModal()">
+                        <i class="fas fa-plus"></i> Nuevo Servicio
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-service" placeholder="Buscar servicio..."
+                            onkeyup="filterServices()">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Servicio</th>
+                                <th>Categoría</th>
+                                <th>Duración</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-table-body">
+                            <tr>
+                                <td colspan="6" class="text-center p-3">Cargando servicios...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let allServices = [];
+        let serviceCategories = [];
+
+        async function init() {
+            checkAuth();
+            updateUserInfo();
+            await loadData();
+        }
+
+        function updateUserInfo() {
+            const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            document.getElementById('admin-name').textContent = admin.name || 'Admin';
+            document.getElementById('admin-role').textContent = admin.role || 'Administrador';
+            document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
+        }
+
+        async function loadData() {
+            try {
+                // Fetch categories and services
+                const [cats, srvs] = await Promise.all([
+                    api.get('/admin/service-categories'),
+                    api.get('/admin/services')
+                ]);
+                
+                serviceCategories = cats || [];
+                allServices = srvs || [];
+                renderTable(allServices);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // Simple toast fallback if api.js doesn't have showToast
+                alert('Error al cargar datos: ' + error.message);
+            }
+        }
+
+        function renderTable(services) {
+            const tbody = document.getElementById('services-table-body');
+            
+            if (services.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">No hay servicios registrados</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = services.map(service => `
+                <tr>
+                    <td>
+                        <div class="font-medium">${service.name}</div>
+                        <div class="text-sm text-muted">${service.description || '-'}</div>
+                    </td>
+                    <td>
+                        <span class="badge" style="background: rgba(196, 163, 90, 0.1); color: var(--gold);">
+                            ${service.category_name || 'General'}
+                        </span>
+                    </td>
+                    <td>${service.duration_minutes} min</td>
+                    <td class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(service.price)}</td>
+                    <td>
+                        <span class="badge ${service.is_active ? 'active' : 'inactive'}">
+                            ${service.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-icon" onclick="openServiceModal(${service.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="toggleServiceStatus(${service.id}, ${service.is_active})" title="${service.is_active ? 'Desactivar' : 'Activar'}">
+                                <i class="fas fa-${service.is_active ? 'ban' : 'check-circle'}"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteService(${service.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterServices() {
+            const query = document.getElementById('search-service').value.toLowerCase();
+            const filtered = allServices.filter(s => 
+                s.name.toLowerCase().includes(query) || 
+                (s.category_name && s.category_name.toLowerCase().includes(query))
+            );
+            renderTable(filtered);
+        }
+
+        // Modal Logic
+        window.openServiceModal = function(id = null) {
+            const service = id ? allServices.find(s => s.id === id) : null;
+            const title = service ? 'Editar Servicio' : 'Nuevo Servicio';
+            
+            // Build Category Options
+            const categoryOptions = serviceCategories.map(c => 
+                `<option value="${c.id}" ${service && service.category_id === c.id ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+
+            const content = `
+                <form id="service-form" class="admin-form">
+                    <div class="form-group">
+                        <label for="service-name">Nombre *</label>
+                        <input type="text" id="service-name" value="${service ? service.name : ''}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service-category">Categoría *</label>
+                        <select id="service-category" required>
+                            <option value="">Selecciona una categoría</option>
+                            ${categoryOptions}
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service-price">Precio ($) *</label>
+                            <input type="number" id="service-price" value="${service ? service.price : ''}" required min="0" step="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="service-duration">Duración (min) *</label>
+                            <input type="number" id="service-duration" value="${service ? service.duration_minutes : 30}" required min="5" step="5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service-desc">Descripción</label>
+                        <textarea id="service-desc" rows="3">${service ? (service.description || '') : ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
+                            <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''}>
+                            <span>Servicio Activo (Disponible para citas)</span>
+                        </label>
+                    </div>
+                </form>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.serviceModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveService(${id})">Guardar</button>
+            `;
+
+            // Using global Modal helper from api.js or creating simpler internal one if missing
+            // api.js doesn't seem to have Modal class (js/admin.js did).
+            // We should use Simple Modal logic or copy Modal class?
+            // "js/admin.js" (Legacy) HAS Modal class.
+            // "js/api.js" (New) does NOT?
+            // "admin/js/api.js" (Step 346 view) did NOT have Modal class.
+            // "admin/js/admin.js" (Legacy) HAS it.
+            // SOLUTION: Include simple modal logic here or rely on global if we include js/admin.js
+            // But this is "admin/servicios.html" -> New Page.
+            // I'll add simple modal logic inside the script or just inject HTML.
+            
+            showCustomModal('serviceModal', title, content, footer);
+        };
+
+        // Simple Modal Helper (since api.js doesn't have it)
+        function showCustomModal(id, title, content, footer) {
+            const existing = document.getElementById(id);
+            if(existing) existing.remove();
+
+            const html = `
+                <div class="modal-overlay active" id="${id}">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h3>${title}</h3>
+                            <button class="modal-close" onclick="document.getElementById('${id}').remove()">×</button>
+                        </div>
+                        <div class="modal-body">${content}</div>
+                        <div class="modal-footer">${footer}</div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            window[id] = { close: () => document.getElementById(id).remove() };
+        }
+
+        async function saveService(id) {
+            const form = document.getElementById('service-form');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                name: document.getElementById('service-name').value,
+                category_id: document.getElementById('service-category').value,
+                price: parseFloat(document.getElementById('service-price').value),
+                duration_minutes: parseInt(document.getElementById('service-duration').value),
+                description: document.getElementById('service-desc').value,
+                is_active: document.getElementById('service-active').checked
+            };
+
+            try {
+                if (id) {
+                    await api.put(`/admin/services/${id}`, data);
+                } else {
+                    await api.post('/admin/services', data);
+                }
+                window.serviceModal.close();
+                loadData();
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
+        }
+
+        async function toggleServiceStatus(id, currentStatus) {
+            if(!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este servicio?`)) return;
+            // Assuming API supports partial update or we fetch full?
+            // The API PUT expects full object.
+            // To be safe, find service and flip status.
+            const service = allServices.find(s => s.id === id);
+            if(!service) return;
+
+            try {
+                // Construct full update payload (Backend expects all fields for PUT)
+                const payload = { ...service, is_active: !currentStatus };
+                await api.put(`/admin/services/${id}`, payload);
+                loadData();
+            } catch (error) {
+                alert('Error al actualizar: ' + error.message);
+            }
+        }
+
+        async function deleteService(id) {
+            if(!confirm('¿Eliminar servicio? Esta acción no se puede deshacer (se archivará).')) return;
+            try {
+                await api.delete(`/admin/services/${id}`);
+                loadData();
+            } catch(error) {
+                alert('Error al eliminar: ' + error.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

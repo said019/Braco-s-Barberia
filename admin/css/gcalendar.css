@@ -1,0 +1,374 @@
+/* ============================================
+   GOOGLE CALENDAR STYLE VIEWS
+   ============================================ */
+
+/* Week View */
+.gcal-week-view {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.gcal-week-header {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    background: var(--charcoal-dark);
+    border-bottom: 1px solid rgba(196, 163, 90, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.gcal-week-header-cell {
+    padding: 1rem;
+    text-align: center;
+    border-left: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.gcal-week-header-cell:first-child {
+    border-left: none;
+}
+
+.gcal-week-header-day {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: rgba(245, 243, 238, 0.6);
+    letter-spacing: 0.1em;
+}
+
+.gcal-week-header-date {
+    font-size: 1.5rem;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    margin-top: 0.25rem;
+}
+
+.gcal-week-header-cell.today .gcal-week-header-date {
+    background: var(--gold);
+    color: var(--charcoal-dark);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gcal-week-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.gcal-time-slot {
+    border-bottom: 1px solid rgba(196, 163, 90, 0.05);
+    border-left: 1px solid rgba(196, 163, 90, 0.1);
+    min-height: 60px;
+    position: relative;
+}
+
+.gcal-time-slot:first-child {
+    border-left: none;
+}
+
+.gcal-time-label {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(245, 243, 238, 0.5);
+    text-align: right;
+    padding-right: 1rem;
+    position: sticky;
+    left: 0;
+    background: var(--charcoal);
+}
+
+.gcal-day-column {
+    position: relative;
+    min-height: 60px;
+    transition: background-color 0.2s ease;
+}
+
+.gcal-day-column:hover {
+    background: rgba(196, 163, 90, 0.05);
+}
+
+.gcal-appointment {
+    background: rgba(196, 163, 90, 0.3);
+    border-left: 3px solid var(--gold);
+    padding: 0.5rem;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    font-size: 0.85rem;
+    position: absolute;
+    left: 2px;
+    right: 2px;
+}
+
+.gcal-appointment:hover {
+    background: rgba(196, 163, 90, 0.5);
+    z-index: 5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.gcal-appointment.scheduled {
+    background: rgba(196, 163, 90, 0.3);
+    border-left-color: var(--gold);
+}
+
+.gcal-appointment.confirmed {
+    background: rgba(76, 175, 80, 0.3);
+    border-left-color: var(--success);
+}
+
+.gcal-appointment.in_progress {
+    background: rgba(255, 152, 0, 0.3);
+    border-left-color: var(--warning);
+}
+
+.gcal-appointment.completed {
+    background: rgba(76, 175, 80, 0.2);
+    border-left-color: var(--success);
+    opacity: 0.7;
+}
+
+.gcal-appointment.cancelled {
+    background: rgba(229, 57, 53, 0.15);
+    border-left-color: var(--error);
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.gcal-appointment-time {
+    font-weight: 600;
+    color: var(--cream);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.gcal-appointment-client {
+    color: var(--cream);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.gcal-appointment-service {
+    color: rgba(245, 243, 238, 0.7);
+    font-size: 0.75rem;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.25rem;
+}
+
+/* Day View */
+.gcal-day-view {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.gcal-day-grid {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Side Panel - Google Calendar Style */
+.gcal-side-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 400px;
+    height: 100vh;
+    background: var(--charcoal);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    border-left: 1px solid rgba(196, 163, 90, 0.2);
+}
+
+.gcal-side-panel.open {
+    transform: translateX(0);
+}
+
+.gcal-side-panel-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gcal-side-panel-content {
+    padding: 2rem;
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+}
+
+.gcal-detail-section {
+    margin-bottom: 2rem;
+}
+
+.gcal-detail-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.gcal-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.05);
+}
+
+.gcal-detail-row:last-child {
+    border-bottom: none;
+}
+
+.gcal-detail-icon {
+    color: var(--gold);
+    width: 24px;
+    text-align: center;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.gcal-detail-content {
+    flex: 1;
+}
+
+.gcal-detail-label {
+    font-size: 0.85rem;
+    color: rgba(245, 243, 238, 0.6);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.gcal-detail-value {
+    color: var(--cream);
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.gcal-detail-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.gcal-detail-badge.scheduled {
+    background: rgba(196, 163, 90, 0.2);
+    color: var(--gold);
+}
+
+.gcal-detail-badge.confirmed {
+    background: rgba(76, 175, 80, 0.2);
+    color: var(--success);
+}
+
+.gcal-detail-badge.in_progress {
+    background: rgba(255, 152, 0, 0.2);
+    color: var(--warning);
+}
+
+.gcal-detail-badge.completed {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success);
+}
+
+.gcal-detail-badge.cancelled {
+    background: rgba(229, 57, 53, 0.15);
+    color: var(--error);
+}
+
+.gcal-detail-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.gcal-detail-actions .btn {
+    flex: 1;
+}
+
+/* Side Panel Overlay (for mobile) */
+.gcal-side-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 199;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.gcal-side-panel-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gcal-side-panel {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .gcal-week-header {
+        grid-template-columns: 50px repeat(7, minmax(80px, 1fr));
+    }
+
+    .gcal-week-grid {
+        grid-template-columns: 50px repeat(7, minmax(80px, 1fr));
+    }
+
+    .gcal-day-grid {
+        grid-template-columns: 50px 1fr;
+    }
+
+    .gcal-appointment {
+        font-size: 0.75rem;
+        padding: 0.25rem;
+    }
+
+    .gcal-appointment-service {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .gcal-week-header {
+        font-size: 0.7rem;
+    }
+
+    .gcal-week-header-date {
+        font-size: 1.2rem;
+    }
+
+    .gcal-appointment-time {
+        font-size: 0.7rem;
+    }
+}

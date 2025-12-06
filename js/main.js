@@ -10,13 +10,13 @@ let lastScroll = 0;
 
 window.addEventListener('scroll', () => {
     const currentScroll = window.pageYOffset;
-    
+
     if (currentScroll > 100) {
         header.classList.add('scrolled');
     } else {
         header.classList.remove('scrolled');
     }
-    
+
     lastScroll = currentScroll;
 });
 
@@ -51,12 +51,12 @@ const sections = document.querySelectorAll('section[id]');
 
 function updateActiveLink() {
     const scrollPos = window.pageYOffset + 100;
-    
+
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
         const sectionHeight = section.offsetHeight;
         const sectionId = section.getAttribute('id');
-        
+
         if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
             navLinks.forEach(link => {
                 link.classList.remove('active');
@@ -74,16 +74,16 @@ window.addEventListener('scroll', updateActiveLink);
 // SMOOTH SCROLL
 // ============================================================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
+    anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
-        
+
         if (href !== '#' && href.length > 1) {
             e.preventDefault();
             const target = document.querySelector(href);
-            
+
             if (target) {
                 const offsetTop = target.offsetTop - 80;
-                
+
                 window.scrollTo({
                     top: offsetTop,
                     behavior: 'smooth'
@@ -144,7 +144,7 @@ function formatDate(date, options = {}) {
         day: 'numeric',
         ...options
     };
-    
+
     return new Intl.DateTimeFormat('es-MX', defaultOptions).format(date);
 }
 
@@ -183,7 +183,7 @@ const SERVICES_DATA = [
         name: "Ritual Tradicional de Barba",
         price: 300,
         duration: 60,
-        image: "assets/logo.png", // Usando logo como fallback o imagen específica si existe
+        image: "assets/ritual_barba.jpeg",
         description: `Duración 60 minutos
 -Visagismo
 -Rasurado completo o arreglo de barba y bigote
@@ -198,7 +198,7 @@ const SERVICES_DATA = [
         name: "DÚO",
         price: 550,
         duration: 120,
-        image: "assets/corte_caballero.jpeg",
+        image: "assets/duo.png",
         description: `Duración 120min (2horas)
 -Visagismo
 -Corte de cabello
@@ -329,22 +329,22 @@ function loadServices() {
 function renderServices(services) {
     const servicesContainer = document.querySelector('.services-featured');
     if (!servicesContainer) return;
-    
+
     servicesContainer.innerHTML = '';
-    
+
     services.forEach(service => {
         const card = document.createElement('article');
         card.className = 'service-card featured';
-        
+
         // Procesar descripción
         const lines = service.description.split('\n');
         let descriptionHTML = '';
         let featuresHTML = '<ul class="service-features">';
-        
+
         lines.forEach(line => {
             line = line.trim();
             if (!line) return;
-            
+
             if (line.startsWith('-')) {
                 featuresHTML += `<li>${line.substring(1).trim()}</li>`;
             } else {
@@ -352,7 +352,7 @@ function renderServices(services) {
             }
         });
         featuresHTML += '</ul>';
-        
+
         card.innerHTML = `
             <div class="service-image">
                 <img src="${service.image}" alt="${service.name}" loading="lazy" onerror="this.src='assets/logo.png'">
@@ -370,7 +370,7 @@ function renderServices(services) {
                 <a href="agendar.html?service=${service.id}" class="service-cta">Agendar →</a>
             </div>
         `;
-        
+
         servicesContainer.appendChild(card);
     });
 }
@@ -385,11 +385,11 @@ if (document.querySelector('.services-featured')) {
  */
 function formatPhone(phone) {
     const cleaned = phone.replace(/\D/g, '');
-    
+
     if (cleaned.length === 10) {
         return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 6)} ${cleaned.slice(6)}`;
     }
-    
+
     return phone;
 }
 
@@ -430,9 +430,9 @@ function showToast(message, type = 'info') {
         font-size: 0.9rem;
         max-width: 300px;
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => toast.remove(), 300);
@@ -467,7 +467,7 @@ function getUrlParameter(name) {
  */
 function showLoading(element) {
     if (!element) return;
-    
+
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     spinner.innerHTML = `
@@ -481,7 +481,7 @@ function showLoading(element) {
             margin: 2rem auto;
         "></div>
     `;
-    
+
     element.innerHTML = '';
     element.appendChild(spinner);
 }

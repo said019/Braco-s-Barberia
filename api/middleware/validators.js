@@ -53,9 +53,10 @@ export const validateAppointment = [
   body('start_time')
     .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('Hora de inicio inválida'),
   body('end_time')
+    .optional()
     .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('Hora de fin inválida')
     .custom((value, { req }) => {
-      if (value <= req.body.start_time) {
+      if (value && value <= req.body.start_time) {
         throw new Error('La hora de fin debe ser posterior a la hora de inicio');
       }
       return true;

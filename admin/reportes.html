@@ -1,480 +1,321 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Reportes de Ventas | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
-            <span class="sidebar-subtitle">Admin</span>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/admin/calendario.html" class="nav-item">
-                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
-                <span>Calendario</span>
-            </a>
-            <a href="/admin/clientes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                <span>Clientes</span>
-            </a>
-            <a href="/admin/membresias.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                <span>Membresías</span>
-            </a>
-            <a href="/admin/reportes.html" class="nav-item active">
-                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="main-header">
-            <div class="header-title">
-                <h2>Reportes y Analytics</h2>
-                <p class="header-date">Análisis de ventas y rendimiento</p>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
             </div>
-        </header>
-        
-        <!-- Period Selector -->
-        <section class="content-section">
-            <div class="filters-bar">
-                <select id="report-type" class="search-input" style="width: auto;">
-                    <option value="sales">Reporte de Ventas</option>
-                    <option value="services">Servicios Más Populares</option>
-                    <option value="memberships">Reporte de Membresías</option>
-                </select>
-                
-                <select id="period-type" class="search-input" style="width: auto;" onchange="updatePeriodInputs()">
-                    <option value="day">Día</option>
-                    <option value="week">Semana</option>
-                    <option value="month" selected>Mes</option>
-                    <option value="year">Año</option>
-                    <option value="custom">Personalizado</option>
-                </select>
-                
-                <input type="date" id="start-date" class="search-input" style="width: auto; display: none;">
-                <input type="date" id="end-date" class="search-input" style="width: auto; display: none;">
-                
-                <button class="btn btn-primary" onclick="generateReport()">Generar Reporte</button>
-                <button class="btn btn-secondary" onclick="exportReport()"><i class="fas fa-download"></i> Exportar</button>
-            </div>
-        </section>
-        
-        <!-- Stats Summary -->
-        <section class="stats-grid" id="report-stats" style="display: none;">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-total-sales">$0</span>
-                    <span class="stat-label">Total de Ventas</span>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="far fa-calendar-check"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-total-appointments">0</span>
-                    <span class="stat-label">Citas Completadas</span>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-avg-sale">$0</span>
-                    <span class="stat-label">Ticket Promedio</span>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-content">
-                    <span class="stat-value" id="stat-unique-clients">0</span>
-                    <span class="stat-label">Clientes Atendidos</span>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
                 </div>
-            </div>
-        </section>
-        
-        <!-- Report Content -->
-        <section class="content-section">
-            <div class="section-header">
-                <h3 id="report-title">Reporte de Ventas</h3>
-                <span id="report-period" style="font-size: 0.9rem; opacity: 0.7;"></span>
-            </div>
-            
-            <div id="report-container">
-                <p class="empty-message">Selecciona un período y haz clic en "Generar Reporte"</p>
-            </div>
-        </section>
-    </main>
-    
-    <script src="../js/admin.js"></script>
-    <script>
-        checkAuth();
-        
-        let currentReportData = null;
-        
-        // Initialize dates
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        
-        document.getElementById('start-date').value = firstDayOfMonth.toISOString().split('T')[0];
-        document.getElementById('end-date').value = lastDayOfMonth.toISOString().split('T')[0];
-        
-        function updatePeriodInputs() {
-            const periodType = document.getElementById('period-type').value;
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            
-            if (periodType === 'custom') {
-                startDateInput.style.display = 'block';
-                endDateInput.style.display = 'block';
-            } else {
-                startDateInput.style.display = 'none';
-                endDateInput.style.display = 'none';
-            }
-        }
-        
-        function getPeriodDates() {
-            const periodType = document.getElementById('period-type').value;
-            const today = new Date();
-            let startDate, endDate;
-            
-            switch (periodType) {
-                case 'day':
-                    startDate = endDate = today.toISOString().split('T')[0];
-                    break;
-                    
-                case 'week':
-                    const startOfWeek = new Date(today);
-                    startOfWeek.setDate(today.getDate() - today.getDay());
-                    startDate = startOfWeek.toISOString().split('T')[0];
-                    
-                    const endOfWeek = new Date(startOfWeek);
-                    endOfWeek.setDate(startOfWeek.getDate() + 6);
-                    endDate = endOfWeek.toISOString().split('T')[0];
-                    break;
-                    
-                case 'month':
-                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    startDate = firstDay.toISOString().split('T')[0];
-                    endDate = lastDay.toISOString().split('T')[0];
-                    break;
-                    
-                case 'year':
-                    startDate = `${today.getFullYear()}-01-01`;
-                    endDate = `${today.getFullYear()}-12-31`;
-                    break;
-                    
-                case 'custom':
-                    startDate = document.getElementById('start-date').value;
-                    endDate = document.getElementById('end-date').value;
-                    if (!startDate || !endDate) {
-                        throw new Error('Selecciona un rango de fechas válido');
-                    }
-                    break;
-            }
-            
-            return { start_date: startDate, end_date: endDate };
-        }
-        
-        function getPeriodLabel() {
-            const periodType = document.getElementById('period-type').value;
-            const { start_date, end_date } = getPeriodDates();
-            
-            if (periodType === 'day') {
-                return formatDate(start_date);
-            } else if (start_date === end_date) {
-                return formatDate(start_date);
-            } else {
-                return `${formatDate(start_date)} - ${formatDate(end_date)}`;
-            }
-        }
-        
-        async function generateReport() {
-            const reportType = document.getElementById('report-type').value;
-            
-            try {
-                const params = getPeriodDates();
-                const periodLabel = getPeriodLabel();
-                
-                document.getElementById('report-period').textContent = periodLabel;
-                document.getElementById('report-container').innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>Generando reporte...</p>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
                     </div>
-                `;
-                
-                if (reportType === 'sales') {
-                    await generateSalesReport(params);
-                } else if (reportType === 'services') {
-                    await generateServicesReport(params);
-                } else if (reportType === 'memberships') {
-                    await generateMembershipsReport(params);
-                }
-                
-            } catch (error) {
-                console.error('Error generating report:', error);
-                showToast(error.message || 'Error al generar el reporte', 'error');
-                document.getElementById('report-container').innerHTML = 
-                    `<p class="empty-message" style="color: var(--error)">${error.message || 'Error al generar el reporte'}</p>`;
-            }
-        }
-        
-        async function generateSalesReport(params) {
-            const data = await AdminAPI.getSalesReport(params);
-            currentReportData = data;
-            
-            document.getElementById('report-title').textContent = 'Reporte de Ventas';
-            
-            // Update stats
-            const stats = document.getElementById('report-stats');
-            stats.style.display = 'grid';
-            
-            document.getElementById('stat-total-sales').textContent = formatCurrency(data.summary.total_sales || 0);
-            document.getElementById('stat-total-appointments').textContent = data.summary.total_appointments || 0;
-            document.getElementById('stat-avg-sale').textContent = formatCurrency(data.summary.average_sale || 0);
-            document.getElementById('stat-unique-clients').textContent = data.summary.unique_clients || 0;
-            
-            // Render table
-            const container = document.getElementById('report-container');
-            
-            if (!data.sales || data.sales.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay ventas en este período</p>';
-                return;
-            }
-            
-            const columns = [
-                { field: 'date', label: 'Fecha', format: formatDate },
-                { field: 'client_name', label: 'Cliente' },
-                { field: 'service_name', label: 'Servicio' },
-                { field: 'service_price', label: 'Servicio', format: formatCurrency },
-                { field: 'products_total', label: 'Productos', format: (v) => formatCurrency(v || 0) },
-                { field: 'discount', label: 'Descuento', format: (v) => formatCurrency(v || 0) },
-                { field: 'total', label: 'Total', format: formatCurrency },
-                { field: 'payment_method', label: 'Método de Pago' }
-            ];
-            
-            container.innerHTML = createTable(data.sales, columns);
-        }
-        
-        async function generateServicesReport(params) {
-            const data = await AdminAPI.getServicesReport(params);
-            currentReportData = data;
-            
-            document.getElementById('report-title').textContent = 'Servicios Más Populares';
-            
-            // Update stats
-            const stats = document.getElementById('report-stats');
-            stats.style.display = 'grid';
-            
-            const totalServices = data.services.reduce((sum, s) => sum + parseInt(s.count || 0), 0);
-            const totalRevenue = data.services.reduce((sum, s) => sum + parseFloat(s.revenue || 0), 0);
-            
-            document.getElementById('stat-total-sales').textContent = formatCurrency(totalRevenue);
-            document.getElementById('stat-total-appointments').textContent = totalServices;
-            document.getElementById('stat-avg-sale').textContent = 
-                totalServices > 0 ? formatCurrency(totalRevenue / totalServices) : '$0';
-            document.getElementById('stat-unique-clients').textContent = data.summary?.unique_clients || 0;
-            
-            // Render table
-            const container = document.getElementById('report-container');
-            
-            if (!data.services || data.services.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay datos de servicios en este período</p>';
-                return;
-            }
-            
-            const columns = [
-                { 
-                    field: 'service_name', 
-                    label: 'Servicio',
-                    format: (value, row) => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <div style="width: 30px; height: 4px; background: var(--gold); border-radius: 2px;"></div>
-                            ${value}
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Reporte de Ventas</h1>
+                    <p class="text-muted">Análisis de ingresos y rendimiento</p>
+                </div>
+                <!-- Date Filter -->
+                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="date-range-picker"
+                        style="display: flex; gap: 0.5rem; align-items: center; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <input type="date" id="start-date" class="form-control-sm"
+                            style="border: none; background: transparent; color: var(--text-primary);">
+                        <span class="text-muted">a</span>
+                        <input type="date" id="end-date" class="form-control-sm"
+                            style="border: none; background: transparent; color: var(--text-primary);">
+                        <button class="btn-icon" onclick="loadReports()" title="Filtrar"
+                            style="width: 30px; height: 30px;"><i class="fas fa-filter"></i></button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportReport()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Summary Cards -->
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(196,163,90,0.2); color: var(--gold);">
+                            <i class="fas fa-coins"></i>
                         </div>
-                    `
-                },
-                { field: 'category', label: 'Categoría' },
-                { field: 'count', label: 'Cantidad', format: (v) => parseInt(v) },
-                { field: 'revenue', label: 'Ingresos', format: formatCurrency },
-                { 
-                    field: 'count', 
-                    label: 'Popularidad',
-                    format: (value, row, allData) => {
-                        const maxCount = Math.max(...data.services.map(s => parseInt(s.count)));
-                        const percentage = (parseInt(value) / maxCount) * 100;
-                        return `
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div style="width: 100px; height: 8px; background: rgba(196, 163, 90, 0.2); border-radius: 4px; overflow: hidden;">
-                                    <div style="width: ${percentage}%; height: 100%; background: var(--gold);"></div>
-                                </div>
-                                <span>${Math.round(percentage)}%</span>
-                            </div>
-                        `;
-                    }
-                }
-            ];
-            
-            container.innerHTML = createTable(data.services, columns);
-        }
-        
-        async function generateMembershipsReport(params) {
-            const data = await AdminAPI.getMembershipsReport(params);
-            currentReportData = data;
-            
-            document.getElementById('report-title').textContent = 'Reporte de Membresías';
-            
-            // Update stats
-            const stats = document.getElementById('report-stats');
-            stats.style.display = 'grid';
-            
-            document.getElementById('stat-total-sales').textContent = formatCurrency(data.summary.total_revenue || 0);
-            document.getElementById('stat-total-appointments').textContent = data.summary.total_memberships || 0;
-            document.getElementById('stat-avg-sale').textContent = formatCurrency(data.summary.average_revenue || 0);
-            document.getElementById('stat-unique-clients').textContent = data.summary.active_memberships || 0;
-            
-            // Render table
-            const container = document.getElementById('report-container');
-            
-            if (!data.memberships || data.memberships.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay datos de membresías en este período</p>';
-                return;
-            }
-            
-            const columns = [
-                { 
-                    field: 'type_name', 
-                    label: 'Plan',
-                    format: (value) => {
-                        const icons = { gold: '🥇', platinum: '💎', black: '👑' };
-                        return `${icons[value.toLowerCase()] || ''} ${value}`;
-                    }
-                },
-                { field: 'count', label: 'Activas', format: (v) => parseInt(v) },
-                { field: 'new_count', label: 'Nuevas', format: (v) => parseInt(v || 0) },
-                { field: 'cancelled_count', label: 'Canceladas', format: (v) => parseInt(v || 0) },
-                { field: 'revenue', label: 'Ingresos', format: formatCurrency },
-                { 
-                    field: 'revenue', 
-                    label: 'Participación',
-                    format: (value) => {
-                        const totalRevenue = data.memberships.reduce((sum, m) => sum + parseFloat(m.revenue || 0), 0);
-                        const percentage = totalRevenue > 0 ? (parseFloat(value) / totalRevenue) * 100 : 0;
-                        return `${percentage.toFixed(1)}%`;
-                    }
-                }
-            ];
-            
-            container.innerHTML = createTable(data.memberships, columns);
-        }
-        
-        function exportReport() {
-            if (!currentReportData) {
-                showToast('Genera un reporte primero', 'warning');
-                return;
-            }
-            
-            const reportType = document.getElementById('report-type').value;
-            const periodLabel = getPeriodLabel();
-            
-            let exportData = [];
-            let filename = '';
-            
-            if (reportType === 'sales' && currentReportData.sales) {
-                exportData = currentReportData.sales.map(s => ({
-                    'Fecha': formatDate(s.date),
-                    'Cliente': s.client_name,
-                    'Servicio': s.service_name,
-                    'Precio Servicio': s.service_price,
-                    'Productos': s.products_total || 0,
-                    'Descuento': s.discount || 0,
-                    'Total': s.total,
-                    'Método de Pago': s.payment_method
-                }));
-                filename = `ventas_${periodLabel}`;
-                
-            } else if (reportType === 'services' && currentReportData.services) {
-                exportData = currentReportData.services.map(s => ({
-                    'Servicio': s.service_name,
-                    'Categoría': s.category,
-                    'Cantidad': s.count,
-                    'Ingresos': s.revenue
-                }));
-                filename = `servicios_${periodLabel}`;
-                
-            } else if (reportType === 'memberships' && currentReportData.memberships) {
-                exportData = currentReportData.memberships.map(m => ({
-                    'Plan': m.type_name,
-                    'Activas': m.count,
-                    'Nuevas': m.new_count || 0,
-                    'Canceladas': m.cancelled_count || 0,
-                    'Ingresos': m.revenue
-                }));
-                filename = `membresias_${periodLabel}`;
-            }
-            
-            if (exportData.length > 0) {
-                exportToExcel(exportData, filename);
-            } else {
-                showToast('No hay datos para exportar', 'warning');
-            }
-        }
-        
-        // Generate initial report for current month
-        setTimeout(() => {
-            generateReport();
-        }, 500);
-    </script>
-    
-    <!-- Mobile Menu Script -->
+                        <div class="stat-info">
+                            <h3 class="stat-value" id="total-revenue">$0.00</h3>
+                            <p class="stat-label">Ingresos Totales</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(76,175,80,0.2); color: var(--success);">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 class="stat-value" id="total-transactions">0</h3>
+                            <p class="stat-label">Transacciones</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(33,150,243,0.2); color: #2196F3;">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 class="stat-value" id="avg-ticket">$0.00</h3>
+                            <p class="stat-label">Ticket Promedio</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <!-- Sales Chart -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Evolución de Ventas</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesChart" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Services -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Servicios Top</h3>
+                        </div>
+                        <div class="card-body" style="overflow-y: auto; max-height: 350px;">
+                            <table class="data-table" style="font-size: 0.9rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Servicio</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-services-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
     <script>
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        
-        if (mobileMenuToggle && sidebar && mobileOverlay) {
-            mobileMenuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
+        let salesChart = null;
+
+        async function init() {
+            checkAuth();
+            updateUserInfo();
+            setupDates();
+            await loadReports();
+        }
+
+        function updateUserInfo() {
+            const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            document.getElementById('admin-name').textContent = admin.name || 'Admin';
+            document.getElementById('admin-role').textContent = admin.role || 'Administrador';
+            document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
+        }
+
+        function setupDates() {
+            // Default: Current Month
+            const date = new Date();
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+            document.getElementById('start-date').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('end-date').value = lastDay.toISOString().split('T')[0];
+        }
+
+        async function loadReports() {
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+
+            try {
+                const data = await api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`);
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                alert('Error al cargar reporte: ' + error.message);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Unpack Data
+            const { daily_sales, services_sales, totals } = data;
+
+            // 1. Update Cards
+            const revenue = totals?.total_revenue || 0;
+            const transactions = totals?.total_transactions || 0;
+            const avg = totals?.avg_ticket || 0;
+
+            document.getElementById('total-revenue').textContent = formatCurrency(revenue);
+            document.getElementById('total-transactions').textContent = transactions;
+            document.getElementById('avg-ticket').textContent = formatCurrency(avg);
+
+            // 2. Update Chart
+            updateChart(daily_sales);
+
+            // 3. Update Top Services
+            const tbody = document.getElementById('top-services-body');
+            tbody.innerHTML = (services_sales || []).map(s => `
+                <tr>
+                    <td>
+                        <div class="font-medium">${s.name}</div>
+                        <div class="text-sm text-muted">${s.count} ventas</div>
+                    </td>
+                    <td class="text-right font-medium">${formatCurrency(s.total)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateChart(dailyData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            // Prepare Data
+            const labels = dailyData.map(d => {
+                const date = new Date(d.date); // d.date is string YYYY-MM-DD
+                // Adjust for timezone offset if necessary or just split
+                // Best to display visual date
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
             });
-            
-            mobileOverlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                });
+            const values = dailyData.map(d => d.total);
+
+            if (salesChart) {
+                salesChart.destroy();
+            }
+
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ventas ($)',
+                        data: values,
+                        borderColor: '#C4A35A', // Gold
+                        backgroundColor: 'rgba(196, 163, 90, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#1a1a1a',
+                        pointBorderColor: '#C4A35A'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
             });
         }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+        }
+
+        function exportReport() {
+            // Simple CSV export of daily sales
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+            // Ideally trigger backend export or just download current chart data
+            alert('Funcionalidad de exportación detallada en desarrollo. Captura de pantalla recomendada.');
+        }
+
+        init();
     </script>
 </body>
+
 </html>

@@ -58,7 +58,7 @@ export const appointmentController = {
   async getAvailableSlots(req, res, next) {
     try {
       const { date, serviceId } = req.query;
-      
+
       if (!date || !serviceId) {
         throw new AppError('Fecha y servicio son requeridos', 400);
       }
@@ -69,7 +69,7 @@ export const appointmentController = {
       }
 
       const slots = await Appointment.getAvailableSlots(date, service.duration_minutes);
-      
+
       res.json({
         success: true,
         data: {
@@ -90,7 +90,8 @@ export const appointmentController = {
   // POST /api/appointments - Crear cita
   async create(req, res, next) {
     try {
-      const { client_id, service_id, appointment_date, start_time, end_time } = req.body;
+      const { client_id, service_id, appointment_date, start_time, notes } = req.body;
+      let { end_time } = req.body;
 
       // Verificar que el servicio existe
       const service = await Service.getById(service_id);
@@ -104,6 +105,16 @@ export const appointmentController = {
         throw new AppError('Cliente no encontrado', 404);
       }
 
+      // Calcular end_time si no se proporciona
+      if (!end_time) {
+        const [hours, minutes] = start_time.split(':').map(Number);
+        const startMinutes = hours * 60 + minutes;
+        const endMinutes = startMinutes + service.duration_minutes;
+        const endHours = Math.floor(endMinutes / 60);
+        const endMins = endMinutes % 60;
+        end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+      }
+
       // Verificar disponibilidad
       const isAvailable = await Appointment.checkAvailability(
         appointment_date,
@@ -115,8 +126,15 @@ export const appointmentController = {
         throw new AppError('El horario seleccionado no está disponible', 409);
       }
 
-      const appointment = await Appointment.create(req.body);
-      
+      const appointment = await Appointment.create({
+        client_id,
+        service_id,
+        appointment_date,
+        start_time,
+        end_time,
+        notes
+      });
+
       res.status(201).json({
         success: true,
         message: 'Cita creada exitosamente',
@@ -156,7 +174,7 @@ export const appointmentController = {
       }
 
       const appointment = await Appointment.update(req.params.id, req.body);
-      
+
       res.json({
         success: true,
         message: 'Cita actualizada exitosamente',
@@ -172,7 +190,7 @@ export const appointmentController = {
     try {
       const { status, reason } = req.body;
       const appointment = await Appointment.updateStatus(req.params.id, status, reason);
-      
+
       if (!appointment) {
         throw new AppError('Cita no encontrada', 404);
       }

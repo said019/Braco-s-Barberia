@@ -171,39 +171,99 @@
     padding: 6rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
+    position: relative;
+}
+
+.services-section::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(196, 163, 90, 0.03) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .services-featured {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-    gap: 2rem;
+    gap: 2.5rem;
 }
 
 .service-card {
-    background: var(--charcoal);
-    border: 1px solid rgba(196, 163, 90, 0.15);
+    background: linear-gradient(145deg,
+            rgba(55, 55, 55, 0.9) 0%,
+            rgba(45, 45, 45, 0.95) 50%,
+            rgba(35, 35, 35, 0.9) 100%);
+    border: 1px solid rgba(196, 163, 90, 0.2);
     display: flex;
     overflow: hidden;
-    transition: all 0.4s ease;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 12px;
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+            rgba(196, 163, 90, 0.08) 0%,
+            transparent 50%,
+            rgba(196, 163, 90, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+.service-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(196, 163, 90, 0.5) 50%,
+            transparent 100%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
 
 .service-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(196, 163, 90, 0.4);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px) scale(1.01);
+    border-color: rgba(196, 163, 90, 0.5);
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(196, 163, 90, 0.1),
+        0 0 40px rgba(196, 163, 90, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.service-card:hover::before,
+.service-card:hover::after {
+    opacity: 1;
 }
 
 .service-image {
-    width: 300px;
-    height: 280px;
-    background: linear-gradient(135deg, var(--charcoal-dark), var(--charcoal));
+    width: 320px;
+    height: 300px;
+    background: linear-gradient(135deg,
+            rgba(30, 30, 30, 1) 0%,
+            rgba(45, 45, 45, 1) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    border-radius: 4px;
+    margin: 12px;
+    border-radius: 8px;
 }
 
 .service-image img {
@@ -211,19 +271,41 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.4s ease;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    filter: brightness(0.95) contrast(1.05);
+    border-radius: 8px;
 }
 
 .service-card:hover .service-image img {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    filter: brightness(1.05) contrast(1.1);
 }
 
 .service-image::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, rgba(196, 163, 90, 0.1), transparent);
+    background: linear-gradient(180deg,
+            transparent 60%,
+            rgba(0, 0, 0, 0.4) 100%);
     z-index: 1;
+    pointer-events: none;
+    border-radius: 8px;
+}
+
+.service-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    border-radius: 8px;
+    z-index: 2;
+    pointer-events: none;
+    transition: border-color 0.5s ease;
+}
+
+.service-card:hover .service-image::after {
+    border-color: rgba(196, 163, 90, 0.4);
 }
 
 .service-image-placeholder {
@@ -235,48 +317,73 @@
 }
 
 .service-content {
-    padding: 2rem;
+    padding: 2rem 2rem 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     flex: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .service-meta {
     display: flex;
     gap: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
+    align-items: center;
 }
 
 .service-duration {
     color: var(--cream);
-    opacity: 0.6;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .service-duration::before {
-    content: '⏱ ';
+    content: '⏱';
+    font-size: 0.9rem;
 }
 
 .service-price {
     color: var(--gold);
-    font-weight: 500;
+    font-weight: 600;
     font-family: var(--font-display);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    padding: 0.4rem 1rem;
+    background: linear-gradient(135deg,
+            rgba(196, 163, 90, 0.15) 0%,
+            rgba(196, 163, 90, 0.08) 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(196, 163, 90, 0.25);
+    text-shadow: 0 0 20px rgba(196, 163, 90, 0.3);
 }
 
 .service-name {
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: var(--cream);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    background: linear-gradient(135deg,
+            var(--cream) 0%,
+            rgba(196, 163, 90, 0.9) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .service-description {
     font-size: 0.9rem;
-    opacity: 0.8;
-    line-height: 1.7;
+    opacity: 0.75;
+    line-height: 1.8;
     margin-bottom: 1rem;
     flex: 1;
 }
@@ -313,16 +420,25 @@
     list-style: none;
     margin-bottom: 1.5rem;
     padding: 0;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem;
 }
 
 .service-features li {
     font-size: 0.85rem;
     color: rgba(245, 243, 238, 0.9);
-    padding: 0.75rem 0;
-    padding-left: 1.5rem;
+    padding: 0.65rem 0.75rem;
+    padding-left: 2rem;
     position: relative;
-    border-bottom: 1px solid rgba(196, 163, 90, 0.1);
-    line-height: 1.6;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.08);
+    line-height: 1.5;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.service-features li:hover {
+    background: rgba(196, 163, 90, 0.05);
 }
 
 .service-features li:last-child {
@@ -332,25 +448,41 @@
 .service-features li::before {
     content: '✓';
     position: absolute;
-    left: 0;
+    left: 0.75rem;
     color: var(--gold);
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    text-shadow: 0 0 10px rgba(196, 163, 90, 0.5);
 }
 
 .service-cta {
     color: var(--gold);
     text-decoration: none;
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     margin-top: auto;
-    transition: all 0.3s ease;
-    display: inline-block;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg,
+            rgba(196, 163, 90, 0.1) 0%,
+            rgba(196, 163, 90, 0.05) 100%);
+    border-radius: 25px;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    width: fit-content;
 }
 
 .service-cta:hover {
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     transform: translateX(5px);
+    background: linear-gradient(135deg,
+            rgba(196, 163, 90, 0.2) 0%,
+            rgba(196, 163, 90, 0.1) 100%);
+    border-color: rgba(196, 163, 90, 0.5);
+    box-shadow: 0 0 20px rgba(196, 163, 90, 0.2);
 }
 
 /* ============================================================================
@@ -751,15 +883,15 @@
     .services-featured {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .hero-title {
         font-size: 4rem;
     }
-    
+
     .hero-description {
         font-size: 1rem;
     }
@@ -771,20 +903,20 @@
         min-height: 70vh;
         padding: 5rem 2rem 3rem;
     }
-    
+
     .hero-logo-img {
         height: 120px;
     }
-    
+
     .hero-title {
         font-size: 3.5rem;
     }
-    
+
     .hero-description {
         font-size: 0.95rem;
         max-width: 100%;
     }
-    
+
     .scroll-indicator {
         font-size: 0.7rem;
     }
@@ -796,57 +928,74 @@
 
     .service-card {
         flex-direction: column;
+        border-radius: 16px;
     }
 
     .service-image {
-        width: 100%;
-        min-height: 200px;
+        width: calc(100% - 24px);
+        min-height: 220px;
+        height: 220px;
+        margin: 12px 12px 0 12px;
+        border-radius: 10px;
     }
-    
+
     .service-image img {
-        border-radius: 8px 8px 0 0;
+        border-radius: 10px;
     }
-    
+
     .service-content {
         padding: 1.5rem;
     }
-    
+
     .service-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
     }
-    
+
     .service-name {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
     }
-    
+
     .service-description {
         font-size: 0.9rem;
     }
-    
+
     .service-features {
-        gap: 0.5rem;
+        gap: 0;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
     }
-    
+
     .service-features li {
         font-size: 0.85rem;
+        padding: 0.6rem 0.5rem 0.6rem 1.8rem;
+    }
+
+    .service-features li::before {
+        left: 0.5rem;
+    }
+
+    .service-cta {
+        width: 100%;
+        justify-content: center;
     }
 
     .products-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .product-card {
         flex-direction: column;
     }
-    
+
     .product-image {
         width: 100%;
         min-height: 250px;
     }
-    
+
     .product-content {
         padding: 1.5rem;
     }
@@ -855,11 +1004,11 @@
         grid-template-columns: 1fr;
         gap: 3rem;
     }
-    
+
     .info-block h4 {
         font-size: 1rem;
     }
-    
+
     .schedule-row {
         font-size: 0.85rem;
     }
@@ -873,7 +1022,7 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
-    
+
     .amenity-item {
         padding: 1.5rem 1rem;
     }
@@ -882,15 +1031,15 @@
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .benefit-item {
         font-size: 0.9rem;
     }
-    
+
     .membership-cta {
         padding: 3rem 2rem;
     }
-    
+
     .cta-title {
         font-size: 2.5rem;
     }
@@ -902,7 +1051,7 @@
         padding: 4rem 1.5rem 2.5rem;
         min-height: 60vh;
     }
-    
+
     .hero-logo-img {
         height: 90px;
     }
@@ -916,130 +1065,130 @@
         font-size: 0.85rem;
         line-height: 1.5;
     }
-    
+
     .scroll-indicator {
         font-size: 0.65rem;
         gap: 0.5rem;
     }
-    
+
     .scroll-arrow {
         font-size: 1.2rem;
     }
-    
+
     .services-featured {
         gap: 1.5rem;
     }
-    
+
     .service-card {
         border-radius: 8px;
     }
-    
+
     .service-image {
         min-height: 180px;
     }
-    
+
     .service-content {
         padding: 1.25rem;
     }
-    
+
     .service-meta {
         margin-bottom: 0.75rem;
     }
-    
+
     .service-duration,
     .service-price {
         font-size: 0.8rem;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .service-name {
         font-size: 1.1rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .service-description {
         font-size: 0.85rem;
         margin-bottom: 1rem;
     }
-    
+
     .service-features {
         gap: 0.4rem;
         margin-bottom: 1rem;
     }
-    
+
     .service-features li {
         font-size: 0.8rem;
         padding-left: 1.25rem;
     }
-    
+
     .service-cta {
         padding: 0.75rem 1.5rem;
         font-size: 0.85rem;
     }
-    
+
     .product-card {
         border-radius: 8px;
     }
-    
+
     .product-image {
         min-height: 200px;
     }
-    
+
     .product-badge {
         font-size: 0.65rem;
         padding: 0.35rem 0.8rem;
     }
-    
+
     .product-content {
         padding: 1.25rem;
     }
-    
+
     .product-name {
         font-size: 1.1rem;
     }
-    
+
     .product-description {
         font-size: 0.85rem;
     }
-    
+
     .product-meta {
         font-size: 0.75rem;
     }
-    
+
     .product-price {
         font-size: 1.3rem;
     }
-    
+
     .contact-container {
         gap: 2rem;
     }
-    
+
     .contact-title {
         font-size: 1.8rem;
     }
-    
+
     .info-block {
         margin-bottom: 1.5rem;
     }
-    
+
     .info-block h4 {
         font-size: 0.9rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .info-block p {
         font-size: 0.85rem;
     }
-    
+
     .schedule-row {
         font-size: 0.8rem;
         padding: 0.5rem 0;
     }
-    
+
     .map-placeholder {
         padding: 2rem 1rem;
     }
-    
+
     .map-icon {
         font-size: 2rem;
     }
@@ -1053,38 +1202,38 @@
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .amenity-item {
         padding: 1.25rem 1rem;
     }
-    
+
     .amenity-icon {
         font-size: 1.8rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .amenity-name {
         font-size: 0.85rem;
     }
-    
+
     .membership-cta {
         padding: 2.5rem 1.5rem;
     }
-    
+
     .cta-label {
         font-size: 0.65rem;
     }
-    
+
     .cta-title {
         font-size: 2rem;
         margin-bottom: 1rem;
     }
-    
+
     .cta-description {
         font-size: 0.85rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .benefit-item {
         font-size: 0.85rem;
         padding: 0.75rem 1rem;
@@ -1096,15 +1245,15 @@
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .service-name {
         font-size: 1rem;
     }
-    
+
     .product-name {
         font-size: 1rem;
     }
-    
+
     .cta-title {
         font-size: 1.75rem;
     }
@@ -1116,11 +1265,11 @@
         min-height: 100vh;
         padding: 3rem 2rem;
     }
-    
+
     .hero-content {
         max-width: 600px;
     }
-    
+
     .scroll-indicator {
         display: none;
     }

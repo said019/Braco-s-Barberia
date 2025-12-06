@@ -1,370 +1,502 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/gcalendar.css">
 </head>
+
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobile-overlay"></div>
-    
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;">
-            <span class="sidebar-subtitle">Admin</span>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="/admin/" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/admin/calendario.html" class="nav-item active">
-                <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
-                <span>Calendario</span>
-            </a>
-            <a href="/admin/clientes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-users"></i></span>
-                <span>Clientes</span>
-            </a>
-            <a href="/admin/membresias.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                <span>Membresías</span>
-            </a>
-            <a href="/admin/reportes.html" class="nav-item">
-                <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="main-header">
-            <div class="header-title">
-                <h2>Calendario de Citas</h2>
-                <p class="header-date" id="current-date"></p>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
             </div>
-            <div class="header-actions">
-                <select id="view-select" class="search-input" style="width: auto;">
-                    <option value="month">Vista Mensual</option>
-                    <option value="week">Vista Semanal</option>
-                    <option value="day">Vista Diaria</option>
-                </select>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item active">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
             </div>
-        </header>
-        
-        <!-- Calendar Header -->
-        <section class="content-section">
-            <div class="calendar-header">
-                <div class="calendar-nav">
-                    <button class="btn-icon" onclick="previousPeriod()">←</button>
-                    <h3 class="calendar-title" id="calendar-title">Diciembre 2024</h3>
-                    <button class="btn-icon" onclick="nextPeriod()">→</button>
-                    <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 1rem;">Hoy</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title">
+                    <h2>Calendario de Citas</h2>
+                    <p class="header-date" id="current-date"></p>
+                </div>
+                <div class="header-actions">
+                    <select id="view-select" class="search-input" style="width: auto;">
+                        <option value="month">Vista Mensual</option>
+                        <option value="week">Vista Semanal</option>
+                        <option value="day">Vista Diaria</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="openNewAppointmentModal(new Date(), '09:00')" style="margin-left: 1rem;">
+                        <i class="fas fa-plus"></i> Nueva Cita
+                    </button>
+                </div>
+            </header>
+
+            <!-- Calendar Header -->
+            <section class="content-section">
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="btn-icon" onclick="previousPeriod()">←</button>
+                        <h3 class="calendar-title" id="calendar-title">Diciembre 2024</h3>
+                        <button class="btn-icon" onclick="nextPeriod()">→</button>
+                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 1rem;">Hoy</button>
+                    </div>
+                </div>
+
+                <!-- Unified Calendar Container -->
+                <div id="calendar-main" class="calendar-main-container">
+                    <!-- El contenido cambia dinámicamente según la vista -->
+                </div>
+            </section>
+
+            <!-- Side Panel para detalles de cita - Google Calendar Style -->
+            <div id="appointment-side-panel" class="gcal-side-panel hidden">
+                <div class="gcal-side-panel-header">
+                    <button class="btn-icon" onclick="closeSidePanel()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="gcal-side-panel-content" id="side-panel-content">
+                    <!-- Contenido dinámico -->
                 </div>
             </div>
-            
-            <!-- Calendar Grid (Month View) -->
-            <div id="calendar-month-view" class="calendar-grid">
-                <!-- Se llena dinámicamente -->
-            </div>
-            
-            <!-- Week/Day View -->
-            <div id="calendar-list-view" class="hidden">
-                <div class="appointments-list" id="appointments-list">
-                    <!-- Se llena dinámicamente -->
+
+            <!-- Filters & Legend -->
+            <section class="content-section">
+                <div class="section-header" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--gold);">
+                        <i class="fas fa-filter"></i> Filtros y Estados
+                    </h3>
                 </div>
-            </div>
-        </section>
-        
-        <!-- Filters & Legend -->
-        <section class="content-section">
-            <div class="section-header">
-                <h3>Filtros</h3>
-            </div>
-            
-            <div class="filters-bar">
-                <select id="filter-status" class="search-input" style="width: auto;">
-                    <option value="">Todos los estados</option>
-                    <option value="scheduled">Agendadas</option>
-                    <option value="confirmed">Confirmadas</option>
-                    <option value="in_progress">En Curso</option>
-                    <option value="completed">Completadas</option>
-                    <option value="cancelled">Canceladas</option>
-                    <option value="no_show">No Asistió</option>
-                </select>
-                
-                <input type="text" id="filter-search" class="search-input" placeholder="Buscar por cliente o servicio...">
-            </div>
-            
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status scheduled">Agendada</span>
+
+                <div class="filters-bar">
+                    <select id="filter-status" class="search-input" style="width: auto;">
+                        <option value="">Todos los estados</option>
+                        <option value="scheduled">Agendadas</option>
+                        <option value="confirmed">Confirmadas</option>
+                        <option value="in_progress">En Curso</option>
+                        <option value="completed">Completadas</option>
+                        <option value="cancelled">Canceladas</option>
+                        <option value="no_show">No Asistió</option>
+                    </select>
+
+                    <input type="text" id="filter-search" class="search-input"
+                        placeholder="Buscar por cliente o servicio...">
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status confirmed">Confirmada</span>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status scheduled"><i class="far fa-calendar"></i> Agendada</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status confirmed"><i class="fas fa-check-circle"></i> Confirmada</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status in_progress"><i class="fas fa-clock"></i> En Curso</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status completed"><i class="fas fa-check-double"></i> Completada</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status cancelled"><i class="fas fa-times-circle"></i> Cancelada</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status no_show"><i class="fas fa-user-slash"></i> No Asistió</span>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status in_progress">En Curso</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status completed">Completada</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status cancelled">Cancelada</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="appointment-status no_show">No Asistió</span>
-                </div>
-            </div>
-        </section>
-    </main>
-    
+            </section>
+        </main>
+    </div>
+
     <script src="../js/admin.js"></script>
     <script>
         checkAuth();
-        
+
         // State
         let currentView = 'month';
         let currentDate = new Date();
         let allAppointments = [];
         let filteredAppointments = [];
-        
+        let allClients = [];
+        let allServices = [];
+
         // Initialize
-        document.getElementById('current-date').textContent = 
+        document.getElementById('current-date').textContent =
             new Date().toLocaleDateString('es-MX', {
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
             });
-        
+
         // Event Listeners
         document.getElementById('view-select').addEventListener('change', (e) => {
             currentView = e.target.value;
             renderCalendar();
         });
-        
+
         document.getElementById('filter-status').addEventListener('change', applyFilters);
         document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
-        
+
         // Load appointments
         async function loadAppointments() {
             try {
                 const startDate = getMonthStart(currentDate).toISOString().split('T')[0];
                 const endDate = getMonthEnd(currentDate).toISOString().split('T')[0];
-                
-                const data = await AdminAPI.getAppointments({ 
-                    start_date: startDate, 
-                    end_date: endDate 
+
+                console.log('Loading appointments from', startDate, 'to', endDate);
+
+                const data = await AdminAPI.getAppointments({
+                    start_date: startDate,
+                    end_date: endDate
                 });
-                
-                allAppointments = data.appointments || [];
+
+                console.log('API response:', data);
+
+                // data is an array from the API, normalize it
+                allAppointments = Array.isArray(data) ? data : (data.appointments || []);
+
+                console.log('Loaded appointments:', allAppointments.length);
+                if (allAppointments.length > 0) {
+                    console.log('Sample appointment:', allAppointments[0]);
+                }
+
                 applyFilters();
-                
+
             } catch (error) {
                 console.error('Error loading appointments:', error);
                 showToast('Error al cargar las citas', 'error');
             }
         }
-        
+
         function applyFilters() {
             const statusFilter = document.getElementById('filter-status').value;
             const searchFilter = document.getElementById('filter-search').value.toLowerCase();
-            
+
             filteredAppointments = allAppointments.filter(apt => {
                 // Status filter
                 if (statusFilter && apt.status !== statusFilter) return false;
-                
+
                 // Search filter
                 if (searchFilter) {
                     const searchText = `${apt.client_name} ${apt.service_name}`.toLowerCase();
                     if (!searchText.includes(searchFilter)) return false;
                 }
-                
+
                 return true;
             });
-            
+
+            console.log('Filtered appointments:', filteredAppointments.length);
+
             renderCalendar();
         }
-        
+
         function renderCalendar() {
+            console.log('Rendering calendar:', currentView, 'Appointments:', filteredAppointments.length);
+
+            // Render vista según el modo actual
             if (currentView === 'month') {
                 renderMonthView();
-            } else {
-                renderListView();
+            } else if (currentView === 'week') {
+                renderWeekView();
+            } else if (currentView === 'day') {
+                renderDayView();
             }
         }
-        
+
         function renderMonthView() {
-            document.getElementById('calendar-month-view').classList.remove('hidden');
-            document.getElementById('calendar-list-view').classList.add('hidden');
-            
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            
+
             // Update title
-            document.getElementById('calendar-title').textContent = 
+            document.getElementById('calendar-title').textContent =
                 currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
-            
+
             // Get first day of month and number of days
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
             const startingDayOfWeek = firstDay.getDay();
-            
+
             // Build calendar HTML
             let html = '';
-            
+
             // Day headers
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             dayNames.forEach(day => {
                 html += `<div class="calendar-day-header">${day}</div>`;
             });
-            
+
             // Empty cells before first day
             for (let i = 0; i < startingDayOfWeek; i++) {
                 html += '<div class="calendar-day other-month"></div>';
             }
-            
+
             // Days of month
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const dateStr = date.toISOString().split('T')[0];
                 const isToday = isSameDay(date, new Date());
-                
+
                 // Get appointments for this day
-                const dayAppointments = filteredAppointments.filter(apt => 
-                    apt.appointment_date === dateStr
-                );
-                
+                const dayAppointments = filteredAppointments.filter(apt => {
+                    // Normalize date format from database
+                    const aptDate = apt.appointment_date.split('T')[0];
+                    return aptDate === dateStr;
+                });
+
+                console.log(`Day ${day} (${dateStr}):`, dayAppointments.length, 'appointments');
+
                 html += `
                     <div class="calendar-day ${isToday ? 'today' : ''}">
                         <div class="calendar-day-number">${day}</div>
                         <div class="calendar-appointments">
                             ${dayAppointments.map(apt => `
-                                <div class="calendar-appointment ${apt.status}" 
+                                <div class="calendar-appointment ${apt.status}"
                                      onclick="viewAppointmentDetail(${apt.id})"
-                                     title="${apt.start_time.slice(0,5)} - ${apt.client_name}">
-                                    ${apt.start_time.slice(0,5)} ${apt.client_name}
+                                     title="${apt.start_time.slice(0, 5)} - ${apt.client_name}">
+                                    ${apt.start_time.slice(0, 5)} ${apt.client_name}
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 `;
             }
-            
+
             // Fill remaining cells
             const totalCells = Math.ceil((startingDayOfWeek + daysInMonth) / 7) * 7;
             const remainingCells = totalCells - (startingDayOfWeek + daysInMonth);
             for (let i = 0; i < remainingCells; i++) {
                 html += '<div class="calendar-day other-month"></div>';
             }
-            
-            document.getElementById('calendar-month-view').innerHTML = html;
-        }
-        
-        function renderListView() {
-            document.getElementById('calendar-month-view').classList.add('hidden');
-            document.getElementById('calendar-list-view').classList.remove('hidden');
-            
-            const container = document.getElementById('appointments-list');
-            
-            if (currentView === 'week') {
-                // Week view - get appointments for current week
-                const startOfWeek = new Date(currentDate);
-                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-                
-                document.getElementById('calendar-title').textContent = 
-                    `Semana del ${startOfWeek.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`;
-                
-            } else if (currentView === 'day') {
-                // Day view - get appointments for current day
-                document.getElementById('calendar-title').textContent = 
-                    currentDate.toLocaleDateString('es-MX', { 
-                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-                    });
-            }
-            
-            // Filter appointments for current view
-            let viewAppointments = filteredAppointments;
-            
-            if (currentView === 'week') {
-                const startOfWeek = new Date(currentDate);
-                startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-                const endOfWeek = addDays(startOfWeek, 6);
-                
-                viewAppointments = filteredAppointments.filter(apt => {
-                    const aptDate = new Date(apt.appointment_date);
-                    return aptDate >= startOfWeek && aptDate <= endOfWeek;
-                });
-            } else if (currentView === 'day') {
-                const dateStr = currentDate.toISOString().split('T')[0];
-                viewAppointments = filteredAppointments.filter(apt => 
-                    apt.appointment_date === dateStr
-                );
-            }
-            
-            // Sort by date and time
-            viewAppointments.sort((a, b) => {
-                const dateCompare = a.appointment_date.localeCompare(b.appointment_date);
-                if (dateCompare !== 0) return dateCompare;
-                return a.start_time.localeCompare(b.start_time);
-            });
-            
-            if (viewAppointments.length === 0) {
-                container.innerHTML = '<p class="empty-message">No hay citas en este período</p>';
-                return;
-            }
-            
-            // Render list
-            let html = '';
-            let lastDate = null;
-            
-            viewAppointments.forEach(apt => {
-                // Add date header if changed
-                if (apt.appointment_date !== lastDate) {
-                    html += `
-                        <div style="margin: 1.5rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(196, 163, 90, 0.2);">
-                            <strong>${formatDate(apt.appointment_date)}</strong>
-                        </div>
-                    `;
-                    lastDate = apt.appointment_date;
-                }
-                
-                html += `
-                    <div class="appointment-item">
-                        <div class="appointment-time">${apt.start_time.slice(0, 5)}</div>
-                        <div class="appointment-info">
-                            <span class="appointment-client" style="border-left: 3px solid ${apt.client_color || getClientColor(apt.client_id)}">
-                                ${apt.client_name}
-                            </span>
-                            <span class="appointment-service">${apt.service_name} - ${apt.duration} min</span>
-                        </div>
-                        <div class="appointment-status ${apt.status}">${getStatusLabel(apt.status)}</div>
-                        <div class="appointment-actions">
-                            <button class="btn-icon" onclick="viewAppointmentDetail(${apt.id})" title="Ver detalles">👁️</button>
-                            <button class="btn-icon" onclick="changeStatus(${apt.id})" title="Cambiar estado">✏️</button>
-                        </div>
-                    </div>
-                `;
-            });
-            
+
+            // Render into main container with calendar-grid class
+            const container = document.getElementById('calendar-main');
+            container.className = 'calendar-grid';
             container.innerHTML = html;
         }
-        
+
+        // Vista Semanal - Google Calendar Style
+        function renderWeekView() {
+            const startOfWeek = new Date(currentDate);
+            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+
+            document.getElementById('calendar-title').textContent =
+                `Semana del ${startOfWeek.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`;
+
+            // Generate week header
+            let headerHTML = '<div class="gcal-week-header-cell"></div>'; // Empty cell for time column
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            for (let i = 0; i < 7; i++) {
+                const date = addDays(startOfWeek, i);
+                const isToday = isSameDay(date, new Date());
+
+                headerHTML += `
+                    <div class="gcal-week-header-cell ${isToday ? 'today' : ''}">
+                        <div class="gcal-week-header-day">${dayNames[i]}</div>
+                        <div class="gcal-week-header-date">${date.getDate()}</div>
+                    </div>
+                `;
+            }
+
+            // Generate time grid (7 AM to 9 PM)
+            let gridHTML = '';
+            for (let hour = 7; hour <= 21; hour++) {
+                // Time label
+                gridHTML += `
+                    <div class="gcal-time-slot gcal-time-label">
+                        ${hour.toString().padStart(2, '0')}:00
+                    </div>
+                `;
+
+                // Day columns
+                for (let i = 0; i < 7; i++) {
+                    const date = addDays(startOfWeek, i);
+                    const dateStr = date.toISOString().split('T')[0];
+
+                    // Find appointments for this hour and day
+                    const hourAppointments = filteredAppointments.filter(apt => {
+                        const aptDate = apt.appointment_date.split('T')[0];
+                        if (aptDate !== dateStr) return false;
+                        const aptHour = parseInt(apt.start_time.split(':')[0]);
+                        return aptHour === hour;
+                    });
+
+                    gridHTML += `<div class="gcal-time-slot gcal-day-column"
+                                     onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                     style="cursor: pointer;">`;
+
+                    hourAppointments.forEach(apt => {
+                        const startMinutes = parseInt(apt.start_time.split(':')[1]);
+                        const endHour = parseInt(apt.end_time.split(':')[0]);
+                        const endMinutes = parseInt(apt.end_time.split(':')[1]);
+
+                        const duration = (endHour - hour) * 60 + (endMinutes - startMinutes);
+                        const height = (duration / 60) * 60; // 60px por hora
+                        const top = (startMinutes / 60) * 60;
+
+                        gridHTML += `
+                            <div class="gcal-appointment ${apt.status}"
+                                 onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
+                                 style="top: ${top}px; height: ${Math.max(height, 30)}px;">
+                                <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)}</span>
+                                <span class="gcal-appointment-client">${apt.client_name}</span>
+                                <span class="gcal-appointment-service">${apt.service_name}</span>
+                            </div>
+                        `;
+                    });
+
+                    gridHTML += `</div>`;
+                }
+            }
+
+            // Build complete week view HTML
+            const html = `
+                <div class="gcal-week-header">${headerHTML}</div>
+                <div class="gcal-week-grid">${gridHTML}</div>
+            `;
+
+            // Render into main container with week view class
+            const container = document.getElementById('calendar-main');
+            container.className = 'gcal-week-view';
+            container.innerHTML = html;
+        }
+
+        // Vista Diaria - Google Calendar Style
+        function renderDayView() {
+            document.getElementById('calendar-title').textContent =
+                currentDate.toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+            const dateStr = currentDate.toISOString().split('T')[0];
+
+            // Generate time grid (7 AM to 9 PM)
+            let gridHTML = '';
+            for (let hour = 7; hour <= 21; hour++) {
+                // Time label
+                gridHTML += `
+                    <div class="gcal-time-slot gcal-time-label">
+                        ${hour.toString().padStart(2, '0')}:00
+                    </div>
+                `;
+
+                // Find appointments for this hour
+                const hourAppointments = filteredAppointments.filter(apt => {
+                    const aptDate = apt.appointment_date.split('T')[0];
+                    if (aptDate !== dateStr) return false;
+                    const aptHour = parseInt(apt.start_time.split(':')[0]);
+                    return aptHour === hour;
+                });
+
+                gridHTML += `<div class="gcal-time-slot gcal-day-column"
+                                 onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                 style="cursor: pointer;">`;
+
+                hourAppointments.forEach(apt => {
+                    const startMinutes = parseInt(apt.start_time.split(':')[1]);
+                    const endHour = parseInt(apt.end_time.split(':')[0]);
+                    const endMinutes = parseInt(apt.end_time.split(':')[1]);
+
+                    const duration = (endHour - hour) * 60 + (endMinutes - startMinutes);
+                    const height = (duration / 60) * 60; // 60px por hora
+                    const top = (startMinutes / 60) * 60;
+
+                    gridHTML += `
+                        <div class="gcal-appointment ${apt.status}"
+                             onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
+                             style="top: ${top}px; height: ${Math.max(height, 40)}px;">
+                            <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)} - ${apt.end_time.slice(0, 5)}</span>
+                            <span class="gcal-appointment-client">${apt.client_name}</span>
+                            <span class="gcal-appointment-service">${apt.service_name}</span>
+                        </div>
+                    `;
+                });
+
+                gridHTML += `</div>`;
+            }
+
+            // Build complete day view HTML
+            const html = `<div class="gcal-day-grid">${gridHTML}</div>`;
+
+            // Render into main container with day view class
+            const container = document.getElementById('calendar-main');
+            container.className = 'gcal-day-view';
+            container.innerHTML = html;
+        }
+
         function previousPeriod() {
             if (currentView === 'month') {
                 currentDate = addMonths(currentDate, -1);
@@ -375,7 +507,7 @@
             }
             loadAppointments();
         }
-        
+
         function nextPeriod() {
             if (currentView === 'month') {
                 currentDate = addMonths(currentDate, 1);
@@ -386,43 +518,136 @@
             }
             loadAppointments();
         }
-        
+
         function goToday() {
             currentDate = new Date();
             loadAppointments();
         }
-        
+
         async function viewAppointmentDetail(id) {
             try {
+                // Find appointment in current data first for instant feedback
+                const apt = allAppointments.find(a => a.id === id);
+                if (apt) {
+                    openSidePanel(apt);
+                }
+
+                // Then fetch full details
                 const appointment = await AdminAPI.getAppointment(id);
-                
-                const content = `
-                    <div style="line-height: 1.8;">
-                        <p><strong>Cliente:</strong> ${appointment.client_name}</p>
-                        <p><strong>Teléfono:</strong> ${formatPhone(appointment.client_phone)}</p>
-                        <p><strong>Servicio:</strong> ${appointment.service_name}</p>
-                        <p><strong>Fecha:</strong> ${formatDate(appointment.appointment_date)}</p>
-                        <p><strong>Hora:</strong> ${appointment.start_time.slice(0,5)} - ${appointment.end_time.slice(0,5)}</p>
-                        <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
-                        <p><strong>Precio:</strong> ${formatCurrency(appointment.price)}</p>
-                        <p><strong>Estado:</strong> <span class="appointment-status ${appointment.status}">${getStatusLabel(appointment.status)}</span></p>
-                        ${appointment.notes ? `<p><strong>Notas:</strong> ${appointment.notes}</p>` : ''}
-                    </div>
-                `;
-                
-                const footer = `
-                    <button class="btn btn-secondary" onclick="appointmentDetailModal.close()">Cerrar</button>
-                    <button class="btn btn-primary" onclick="changeStatus(${id}); appointmentDetailModal.close();">Cambiar Estado</button>
-                `;
-                
-                window.appointmentDetailModal = showModal('appointmentDetailModal', 'Detalles de la Cita', content, footer);
-                
+                if (appointment) {
+                    openSidePanel(appointment);
+                }
+
             } catch (error) {
                 console.error('Error loading appointment:', error);
                 showToast('Error al cargar los detalles', 'error');
             }
         }
-        
+
+        function openSidePanel(appointment) {
+            const content = `
+                <div class="gcal-detail-section">
+                    <h2 class="gcal-detail-title">${appointment.service_name}</h2>
+                </div>
+
+                <div class="gcal-detail-section">
+                    <div class="gcal-detail-row">
+                        <i class="fas fa-clock gcal-detail-icon"></i>
+                        <div class="gcal-detail-content">
+                            <span class="gcal-detail-label">Fecha y hora</span>
+                            <div class="gcal-detail-value">
+                                ${formatDate(appointment.appointment_date)}<br>
+                                ${appointment.start_time.slice(0, 5)} - ${appointment.end_time.slice(0, 5)} (${appointment.duration || calculateDuration(appointment.start_time, appointment.end_time)} min)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gcal-detail-row">
+                        <i class="fas fa-user gcal-detail-icon"></i>
+                        <div class="gcal-detail-content">
+                            <span class="gcal-detail-label">Cliente</span>
+                            <div class="gcal-detail-value">${appointment.client_name}</div>
+                        </div>
+                    </div>
+
+                    <div class="gcal-detail-row">
+                        <i class="fas fa-phone gcal-detail-icon"></i>
+                        <div class="gcal-detail-content">
+                            <span class="gcal-detail-label">Teléfono</span>
+                            <div class="gcal-detail-value">${formatPhone(appointment.client_phone || appointment.phone)}</div>
+                        </div>
+                    </div>
+
+                    <div class="gcal-detail-row">
+                        <i class="fas fa-tag gcal-detail-icon"></i>
+                        <div class="gcal-detail-content">
+                            <span class="gcal-detail-label">Estado</span>
+                            <div class="gcal-detail-value">
+                                <span class="gcal-detail-badge ${appointment.status}">${getStatusLabel(appointment.status)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${appointment.price ? `
+                        <div class="gcal-detail-row">
+                            <i class="fas fa-dollar-sign gcal-detail-icon"></i>
+                            <div class="gcal-detail-content">
+                                <span class="gcal-detail-label">Precio</span>
+                                <div class="gcal-detail-value">${formatCurrency(appointment.service_price || appointment.price)}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${appointment.notes ? `
+                        <div class="gcal-detail-row">
+                            <i class="fas fa-sticky-note gcal-detail-icon"></i>
+                            <div class="gcal-detail-content">
+                                <span class="gcal-detail-label">Notas</span>
+                                <div class="gcal-detail-value">${appointment.notes}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="gcal-detail-actions">
+                    <button class="btn btn-secondary" onclick="closeSidePanel()">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                    <button class="btn btn-primary" onclick="changeStatus(${appointment.id})">
+                        <i class="fas fa-edit"></i> Cambiar Estado
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('side-panel-content').innerHTML = content;
+            document.getElementById('appointment-side-panel').classList.add('open');
+
+            // Add overlay for mobile
+            let overlay = document.getElementById('side-panel-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'side-panel-overlay';
+                overlay.className = 'gcal-side-panel-overlay';
+                overlay.onclick = closeSidePanel;
+                document.body.appendChild(overlay);
+            }
+            setTimeout(() => overlay.classList.add('active'), 10);
+        }
+
+        function closeSidePanel() {
+            document.getElementById('appointment-side-panel').classList.remove('open');
+            const overlay = document.getElementById('side-panel-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+
+        function calculateDuration(startTime, endTime) {
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            return (endHour * 60 + endMin) - (startHour * 60 + startMin);
+        }
+
         function changeStatus(id) {
             const content = `
                 <div class="form-group">
@@ -437,18 +662,18 @@
                     </select>
                 </div>
             `;
-            
+
             const footer = `
                 <button class="btn btn-secondary" onclick="statusModal.close()">Cancelar</button>
                 <button class="btn btn-primary" onclick="updateStatus(${id})">Guardar</button>
             `;
-            
+
             window.statusModal = showModal('statusModal', 'Cambiar Estado de Cita', content, footer);
         }
-        
+
         async function updateStatus(id) {
             const newStatus = document.getElementById('new-status').value;
-            
+
             try {
                 await AdminAPI.updateAppointmentStatus(id, newStatus);
                 showToast('Estado actualizado correctamente', 'success');
@@ -459,7 +684,7 @@
                 showToast('Error al actualizar el estado', 'error');
             }
         }
-        
+
         function getStatusLabel(status) {
             const labels = {
                 'scheduled': 'Agendada',
@@ -471,32 +696,113 @@
             };
             return labels[status] || status;
         }
-        
+
+        // Load clients and services
+        async function loadClientsAndServices() {
+            try {
+                const [clients, services] = await Promise.all([
+                    AdminAPI.getClients(),
+                    AdminAPI.getServices()
+                ]);
+
+                // Normalize responses - could be array or object with data property
+                allClients = Array.isArray(clients) ? clients : (clients.data || clients.clients || []);
+                allServices = Array.isArray(services) ? services : (services.data || services.services || []);
+
+                console.log('Loaded clients:', allClients.length);
+                console.log('Loaded services:', allServices.length);
+            } catch (error) {
+                console.error('Error loading clients/services:', error);
+                showToast('Error al cargar clientes/servicios', 'error');
+            }
+        }
+
+        // Open new appointment modal
+        function openNewAppointmentModal(date, time) {
+            const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+            const timeStr = time || '09:00';
+
+            const content = `
+                <div class="form-group">
+                    <label for="appointment-client">Cliente *</label>
+                    <select id="appointment-client" class="search-input" required>
+                        <option value="">Seleccionar cliente</option>
+                        ${allClients.map(c => `<option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointment-service">Servicio *</label>
+                    <select id="appointment-service" class="search-input" required>
+                        <option value="">Seleccionar servicio</option>
+                        ${allServices.map(s => `<option value="${s.id}" data-duration="${s.duration_minutes}">${s.name} - ${formatCurrency(s.price)} (${s.duration_minutes} min)</option>`).join('')}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointment-date">Fecha *</label>
+                    <input type="date" id="appointment-date" class="search-input" value="${dateStr}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointment-time">Hora de inicio *</label>
+                    <input type="time" id="appointment-time" class="search-input" value="${timeStr}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointment-notes">Notas</label>
+                    <textarea id="appointment-notes" class="search-input" rows="3" placeholder="Notas adicionales..."></textarea>
+                </div>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.newAppointmentModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="createNewAppointment()">Crear Cita</button>
+            `;
+
+            window.newAppointmentModal = showModal('newAppointmentModal', 'Nueva Cita', content, footer);
+        }
+
+        // Create new appointment
+        async function createNewAppointment() {
+            try {
+                const clientId = document.getElementById('appointment-client').value;
+                const serviceId = document.getElementById('appointment-service').value;
+                const date = document.getElementById('appointment-date').value;
+                const time = document.getElementById('appointment-time').value;
+                const notes = document.getElementById('appointment-notes').value;
+
+                if (!clientId || !serviceId || !date || !time) {
+                    showToast('Por favor completa todos los campos requeridos', 'error');
+                    return;
+                }
+
+                const appointmentData = {
+                    client_id: parseInt(clientId),
+                    service_id: parseInt(serviceId),
+                    appointment_date: date,
+                    start_time: time,
+                    notes: notes
+                };
+
+                await AdminAPI.createAppointment(appointmentData);
+                showToast('Cita creada exitosamente', 'success');
+                window.newAppointmentModal.close();
+                loadAppointments();
+
+            } catch (error) {
+                console.error('Error creating appointment:', error);
+                showToast(error.message || 'Error al crear la cita', 'error');
+            }
+        }
+
         // Initial load
+        loadClientsAndServices();
         loadAppointments();
     </script>
-    
+
     <!-- Mobile Menu Script -->
-    <script>
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobile-overlay');
-        
-        if (mobileMenuToggle && sidebar && mobileOverlay) {
-            mobileMenuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-            });
-            
-            mobileOverlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                });
-            });
-        }
-    </script>
+    <!-- Mobile Menu Script Removed -->
 </body>
+
 </html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos | Braco's Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas de Hoy</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Inventario de Productos</h1>
+                    <p class="text-muted">Gestiona el stock y precios de productos</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openProductModal()">
+                        <i class="fas fa-plus"></i> Nuevo Producto
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-product" placeholder="Buscar producto..."
+                            onkeyup="filterProducts()">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body">
+                            <tr>
+                                <td colspan="5" class="text-center p-3">Cargando productos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let allProducts = [];
+
+        async function init() {
+            checkAuth();
+            updateUserInfo();
+            await loadData();
+        }
+
+        function updateUserInfo() {
+            const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            document.getElementById('admin-name').textContent = admin.name || 'Admin';
+            document.getElementById('admin-role').textContent = admin.role || 'Administrador';
+            document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
+        }
+
+        async function loadData() {
+            try {
+                allProducts = await api.get('/admin/products');
+                renderTable(allProducts);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error al cargar datos: ' + error.message);
+            }
+        }
+
+        function renderTable(products) {
+            const tbody = document.getElementById('products-table-body');
+
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-3">No hay productos registrados</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = products.map(product => `
+                <tr>
+                    <td>
+                        <div class="font-medium">${product.name}</div>
+                        <div class="text-sm text-muted">${product.description || '-'}</div>
+                    </td>
+                    <td class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price)}</td>
+                    <td>
+                        <span class="badge ${product.stock > 5 ? 'active' : (product.stock > 0 ? 'expiring' : 'inactive')}">
+                            ${product.stock} un.
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${product.is_active ? 'active' : 'inactive'}">
+                            ${product.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-icon" onclick="openProductModal(${product.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="toggleProductStatus(${product.id}, ${product.is_active})" title="${product.is_active ? 'Desactivar' : 'Activar'}">
+                                <i class="fas fa-${product.is_active ? 'ban' : 'check-circle'}"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteProduct(${product.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('search-product').value.toLowerCase();
+            const filtered = allProducts.filter(p =>
+                p.name.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+
+        // Modal Logic
+        window.openProductModal = function (id = null) {
+            const product = id ? allProducts.find(p => p.id === id) : null;
+            const title = product ? 'Editar Producto' : 'Nuevo Producto';
+
+            const content = `
+                <form id="product-form" class="admin-form">
+                    <div class="form-group">
+                        <label for="product-name">Nombre *</label>
+                        <input type="text" id="product-name" value="${product ? product.name : ''}" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-price">Precio ($) *</label>
+                            <input type="number" id="product-price" value="${product ? product.price : ''}" required min="0" step="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-stock">Stock *</label>
+                            <input type="number" id="product-stock" value="${product ? product.stock : 0}" required min="0" step="1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-desc">Descripción</label>
+                        <textarea id="product-desc" rows="3">${product ? (product.description || '') : ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
+                            <input type="checkbox" id="product-active" ${!product || product.is_active ? 'checked' : ''}>
+                            <span>Producto Activo (Disponible para venta)</span>
+                        </label>
+                    </div>
+                </form>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.productModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveProduct(${id})">Guardar</button>
+            `;
+
+            showCustomModal('productModal', title, content, footer);
+        };
+
+        function showCustomModal(id, title, content, footer) {
+            const existing = document.getElementById(id);
+            if (existing) existing.remove();
+
+            const html = `
+                <div class="modal-overlay active" id="${id}">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h3>${title}</h3>
+                            <button class="modal-close" onclick="document.getElementById('${id}').remove()">×</button>
+                        </div>
+                        <div class="modal-body">${content}</div>
+                        <div class="modal-footer">${footer}</div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            window[id] = { close: () => document.getElementById(id).remove() };
+        }
+
+        async function saveProduct(id) {
+            const form = document.getElementById('product-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                name: document.getElementById('product-name').value,
+                price: parseFloat(document.getElementById('product-price').value),
+                stock: parseInt(document.getElementById('product-stock').value),
+                description: document.getElementById('product-desc').value,
+                is_active: document.getElementById('product-active').checked
+            };
+
+            try {
+                if (id) {
+                    await api.put(`/admin/products/${id}`, data);
+                } else {
+                    await api.post('/admin/products', data);
+                }
+                window.productModal.close();
+                loadData();
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
+        }
+
+        async function toggleProductStatus(id, currentStatus) {
+            if (!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este producto?`)) return;
+            const product = allProducts.find(p => p.id === id);
+            if (!product) return;
+
+            try {
+                const payload = { ...product, is_active: !currentStatus };
+                await api.put(`/admin/products/${id}`, payload);
+                loadData();
+            } catch (error) {
+                alert('Error al actualizar: ' + error.message);
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('¿Eliminar producto? Esta acción no se puede deshacer (se archivará).')) return;
+            try {
+                await api.delete(`/admin/products/${id}`);
+                loadData();
+            } catch (error) {
+                alert('Error al eliminar: ' + error.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

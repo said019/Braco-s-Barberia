@@ -25,7 +25,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
 
 async function fetchWithAuth(endpoint, options = {}) {
     const token = getAuthToken();
-    
+
     const config = {
         ...options,
         headers: {
@@ -34,24 +34,24 @@ async function fetchWithAuth(endpoint, options = {}) {
             ...options.headers
         }
     };
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-        
+
         // Si es 401, token inválido - redirigir a login
         if (response.status === 401) {
             logout();
             return;
         }
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(data.error || 'Error en la petición');
         }
-        
+
         return data;
-        
+
     } catch (error) {
         console.error('API Error:', error);
         throw error;
@@ -62,86 +62,100 @@ async function fetchWithAuth(endpoint, options = {}) {
 const AdminAPI = {
     // Dashboard
     getDashboard: () => fetchWithAuth('/admin/dashboard'),
-    
+
     // Appointments
     getAppointments: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/appointments${query ? '?' + query : ''}`);
     },
-    
-    getAppointment: (id) => fetchWithAuth(`/admin/appointments/${id}`),
-    
+
+    getAppointment: async (id) => {
+        const result = await fetchWithAuth(`/admin/appointments/${id}`);
+        return result?.data || result;
+    },
+
     updateAppointment: (id, data) => fetchWithAuth(`/admin/appointments/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
-    
+
+    createAppointment: (data) => fetchWithAuth('/admin/appointments', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+
     updateAppointmentStatus: (id, status) => fetchWithAuth(`/admin/appointments/${id}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
     }),
-    
+
     deleteAppointment: (id) => fetchWithAuth(`/admin/appointments/${id}`, {
         method: 'DELETE'
     }),
-    
+
+    // Services
+    getServices: (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return fetchWithAuth(`/admin/services${query ? '?' + query : ''}`);
+    },
+
     // Clients
     getClients: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/clients${query ? '?' + query : ''}`);
     },
-    
+
     getClient: (id) => fetchWithAuth(`/admin/clients/${id}`),
-    
+
     createClient: (data) => fetchWithAuth('/admin/clients', {
         method: 'POST',
         body: JSON.stringify(data)
     }),
-    
+
     updateClient: (id, data) => fetchWithAuth(`/admin/clients/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
-    
+
     deleteClient: (id) => fetchWithAuth(`/admin/clients/${id}`, {
         method: 'DELETE'
     }),
-    
+
     getClientHistory: (id) => fetchWithAuth(`/admin/clients/${id}/history`),
-    
+
     // Memberships
     getMemberships: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/memberships${query ? '?' + query : ''}`);
     },
-    
+
     getMembership: (id) => fetchWithAuth(`/admin/memberships/${id}`),
-    
+
     createMembership: (data) => fetchWithAuth('/admin/memberships', {
         method: 'POST',
         body: JSON.stringify(data)
     }),
-    
+
     updateMembership: (id, data) => fetchWithAuth(`/admin/memberships/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
-    
+
     cancelMembership: (id) => fetchWithAuth(`/admin/memberships/${id}/cancel`, {
         method: 'PUT'
     }),
-    
+
     // Reports
     getSalesReport: (params) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/reports/sales?${query}`);
     },
-    
+
     getServicesReport: (params) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/reports/services?${query}`);
     },
-    
+
     getMembershipsReport: (params) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/reports/memberships?${query}`);
@@ -200,11 +214,11 @@ class Modal {
         this.overlay = null;
         this.modal = null;
     }
-    
+
     create(title, content, footer) {
         // Remove existing modal
         this.destroy();
-        
+
         const html = `
             <div class="modal-overlay" id="${this.id}">
                 <div class="modal">
@@ -219,18 +233,18 @@ class Modal {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', html);
         this.overlay = document.getElementById(this.id);
         this.modal = this.overlay.querySelector('.modal');
-        
+
         // Close on overlay click
         this.overlay.addEventListener('click', (e) => {
             if (e.target === this.overlay) {
                 this.close();
             }
         });
-        
+
         // Close on ESC
         this.escHandler = (e) => {
             if (e.key === 'Escape') {
@@ -238,11 +252,11 @@ class Modal {
             }
         };
         document.addEventListener('keydown', this.escHandler);
-        
+
         // Store in window for easy access
         window[this.id] = this;
     }
-    
+
     open() {
         if (this.overlay) {
             setTimeout(() => {
@@ -250,7 +264,7 @@ class Modal {
             }, 10);
         }
     }
-    
+
     close() {
         if (this.overlay) {
             this.overlay.classList.remove('active');
@@ -259,7 +273,7 @@ class Modal {
             }, 300);
         }
     }
-    
+
     destroy() {
         if (this.overlay) {
             this.overlay.remove();
@@ -286,7 +300,7 @@ function showConfirm(title, message, onConfirm) {
         <button class="btn btn-secondary" onclick="window.confirmModal.close()">Cancelar</button>
         <button class="btn btn-primary" onclick="window.confirmCallback(); window.confirmModal.close();">Confirmar</button>
     `;
-    
+
     window.confirmCallback = onConfirm;
     window.confirmModal = showModal('confirmModal', title, content, footer);
 }
@@ -294,7 +308,7 @@ function showConfirm(title, message, onConfirm) {
 function showAlert(title, message, type = 'success') {
     const content = `<div class="alert ${type}">${message}</div>`;
     const footer = `<button class="btn btn-primary" onclick="window.alertModal.close()">Cerrar</button>`;
-    
+
     window.alertModal = showModal('alertModal', title, content, footer);
 }
 
@@ -306,14 +320,14 @@ function showToast(message, type = 'success', duration = 3000) {
     if (existing) {
         existing.remove();
     }
-    
+
     const colors = {
         success: '#4CAF50',
         error: '#E53935',
         warning: '#FF9800',
         info: '#2196F3'
     };
-    
+
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = message;
@@ -330,9 +344,9 @@ function showToast(message, type = 'success', duration = 3000) {
         animation: slideInRight 0.3s ease;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => toast.remove(), 300);
@@ -426,13 +440,13 @@ function exportToExcel(data, filename) {
         showToast('No hay datos para exportar', 'warning');
         return;
     }
-    
+
     // Get headers
     const headers = Object.keys(data[0]);
-    
+
     // Build CSV
     let csv = headers.join(',') + '\n';
-    
+
     data.forEach(row => {
         const values = headers.map(header => {
             const value = row[header];
@@ -444,20 +458,20 @@ function exportToExcel(data, filename) {
         });
         csv += values.join(',') + '\n';
     });
-    
+
     // Download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', `${filename}.csv`);
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     showToast('Archivo descargado correctamente', 'success');
 }
 
@@ -467,31 +481,31 @@ function createTable(data, columns) {
     if (!data || data.length === 0) {
         return '<p class="empty-message">No hay datos para mostrar</p>';
     }
-    
+
     let html = '<table class="data-table"><thead><tr>';
-    
+
     // Headers
     columns.forEach(col => {
         html += `<th>${col.label}</th>`;
     });
     html += '</tr></thead><tbody>';
-    
+
     // Rows
     data.forEach(row => {
         html += '<tr>';
         columns.forEach(col => {
             let value = row[col.field];
-            
+
             // Apply formatter if provided
             if (col.format && typeof col.format === 'function') {
                 value = col.format(value, row);
             }
-            
+
             html += `<td>${value !== null && value !== undefined ? value : '-'}</td>`;
         });
         html += '</tr>';
     });
-    
+
     html += '</tbody></table>';
     return html;
 }
@@ -524,7 +538,7 @@ function hideLoading(elementId) {
 
 function getRandomColor() {
     const colors = [
-        '#C4A35A', '#4CAF50', '#2196F3', '#FF9800', 
+        '#C4A35A', '#4CAF50', '#2196F3', '#FF9800',
         '#9C27B0', '#E91E63', '#00BCD4', '#8BC34A'
     ];
     return colors[Math.floor(Math.random() * colors.length)];
@@ -555,7 +569,7 @@ function debounce(func, wait) {
 function setActiveNavItem() {
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll('.nav-item');
-    
+
     navItems.forEach(item => {
         const href = item.getAttribute('href');
         if (href && currentPath.includes(href)) {
@@ -568,3 +582,50 @@ function setActiveNavItem() {
 
 // Set active nav on page load
 document.addEventListener('DOMContentLoaded', setActiveNavItem);
+
+// ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // Mobile Menu Injection
+    if (!document.querySelector('.mobile-menu-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'mobile-menu-toggle';
+        toggleBtn.id = 'mobile-menu-toggle';
+        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        document.body.appendChild(toggleBtn);
+    }
+    if (!document.querySelector('.mobile-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        overlay.id = 'mobile-overlay';
+        document.body.appendChild(overlay);
+    }
+    const toggleBtn = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    if (toggleBtn && sidebar && overlay) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    }
+    // Calendar Responsive Fix
+    const calendarGrid = document.querySelector('.calendar-grid');
+    if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'calendar-container';
+        calendarGrid.parentNode.insertBefore(wrapper, calendarGrid);
+        wrapper.appendChild(calendarGrid);
+    }
+});

@@ -27,7 +27,14 @@ const app = express();
 // ============================================
 
 // Seguridad
-app.use(helmet());
+if (config.env === 'production') {
+  app.use(helmet());
+} else {
+  // En desarrollo, deshabilitar CSP para permitir inline scripts
+  app.use(helmet({
+    contentSecurityPolicy: false
+  }));
+}
 
 // CORS
 app.use(cors(config.cors));
@@ -60,6 +67,14 @@ app.use('/api/', limiter);
 // ============================================
 // RUTAS
 // ============================================
+
+// Servir archivos estáticos (admin, css, js, assets)
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, '..')));
 
 // Ruta raíz
 app.get('/', (req, res) => {
@@ -100,7 +115,7 @@ const startServer = async () => {
     // Probar conexión a base de datos
     console.log('🔌 Probando conexión a base de datos...');
     const dbConnected = await testConnection();
-    
+
     if (!dbConnected) {
       console.error('❌ No se pudo conectar a la base de datos');
       process.exit(1);
