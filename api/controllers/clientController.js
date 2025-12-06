@@ -72,6 +72,19 @@ export const clientController = {
     }
   },
 
+  // GET /api/clients/:id/active-memberships - Obtener membresías activas (Público)
+  async getActiveMemberships(req, res, next) {
+    try {
+      const memberships = await Client.getActiveMemberships(req.params.id);
+      res.json({
+        success: true,
+        data: memberships
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // POST /api/clients - Crear cliente
   async create(req, res, next) {
     try {

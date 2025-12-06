@@ -11,6 +11,8 @@ router.get('/:id', authenticateToken, isAdmin, validateId, clientController.getB
 router.get('/phone/:phone', clientController.getByPhone);
 router.get('/:id/appointments', authenticateToken, isAdmin, validateId, clientController.getAppointments);
 router.get('/:id/memberships', authenticateToken, isAdmin, validateId, clientController.getMemberships);
+// Ruta pública para checkout - obtener membresías activas
+router.get('/:id/active-memberships', validateId, clientController.getActiveMemberships);
 
 // Crear cliente (público - para agendamiento)
 router.post('/', validateClient, clientController.create);
