@@ -310,10 +310,13 @@ nav {
     top: 70px;
     left: 0;
     right: 0;
-    background: rgba(45, 45, 45, 0.98);
+    bottom: 0;
+    background: var(--charcoal-dark);
     backdrop-filter: blur(10px);
     padding: 2rem;
     border-bottom: 1px solid rgba(196, 163, 90, 0.15);
+    z-index: 999;
+    overflow-y: auto;
 }
 
 .mobile-nav.active {
@@ -890,11 +893,11 @@ footer {
     .grid-3 {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .grid-2 {
         grid-template-columns: 1fr;
     }
-    
+
     header nav {
         padding: 0 1.5rem;
     }
@@ -918,15 +921,15 @@ footer {
     .mobile-menu-btn {
         display: flex;
     }
-    
+
     .mobile-nav {
         padding: 2rem 1.5rem;
     }
-    
+
     .mobile-nav ul {
         gap: 0.5rem;
     }
-    
+
     .mobile-nav a {
         padding: 1rem;
         font-size: 1rem;
@@ -941,11 +944,11 @@ footer {
     .section {
         padding: var(--spacing-lg) var(--spacing-sm);
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .section-subtitle {
         font-size: 0.95rem;
     }
@@ -954,11 +957,11 @@ footer {
         flex-direction: column;
         gap: 2rem;
     }
-    
+
     .footer-section {
         text-align: center;
     }
-    
+
     .footer-bottom {
         text-align: center;
     }
@@ -969,11 +972,11 @@ footer {
     html {
         font-size: 14px;
     }
-    
+
     header {
         padding: 0.75rem 1rem;
     }
-    
+
     .logo-img {
         height: 40px;
     }
@@ -981,20 +984,20 @@ footer {
     .logo-text {
         font-size: 1.5rem;
     }
-    
+
     .mobile-menu-btn {
         width: 35px;
         height: 35px;
     }
-    
+
     .mobile-menu-btn span {
         width: 20px;
     }
-    
+
     .mobile-nav {
         padding: 1.5rem 1rem;
     }
-    
+
     .mobile-nav a {
         padding: 0.875rem;
         font-size: 0.9rem;
@@ -1006,50 +1009,50 @@ footer {
         padding: 0.875rem 1.75rem;
         font-size: 0.75rem;
     }
-    
+
     .btn-large {
         padding: 1.25rem 2.5rem;
         font-size: 0.85rem;
     }
-    
+
     .btn-small {
         padding: 0.5rem 1rem;
         font-size: 0.7rem;
     }
-    
+
     .section {
         padding: var(--spacing-md) var(--spacing-xs);
     }
-    
+
     .section-title {
         font-size: 1.75rem;
     }
-    
+
     .section-label {
         font-size: 0.65rem;
     }
-    
+
     .section-subtitle {
         font-size: 0.85rem;
     }
-    
+
     footer {
         padding: var(--spacing-md) var(--spacing-xs);
     }
-    
+
     .footer-logo-img {
         height: 50px;
     }
-    
+
     .footer-section h4 {
         font-size: 0.9rem;
     }
-    
+
     .footer-section p,
     .footer-section a {
         font-size: 0.8rem;
     }
-    
+
     .footer-bottom p {
         font-size: 0.7rem;
     }
@@ -1060,11 +1063,11 @@ footer {
     html {
         font-size: 13px;
     }
-    
+
     .section-title {
         font-size: 1.5rem;
     }
-    
+
     .btn-primary,
     .btn-secondary,
     .btn-outline {
@@ -1078,7 +1081,7 @@ footer {
         max-height: 100vh;
         overflow-y: auto;
     }
-    
+
     .section {
         padding: var(--spacing-md) var(--spacing-sm);
     }
