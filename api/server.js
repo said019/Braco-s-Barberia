@@ -74,10 +74,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.static(path.join(__dirname, '..')));
+// API Routes PRIMERO (antes de archivos estáticos)
+app.use('/api', routes);
 
-// Ruta raíz
-app.get('/', (req, res) => {
+// Ruta raíz de la API
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: "Bienvenido a Braco's Barbería API",
@@ -91,15 +92,26 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
-app.use('/api', routes);
+// Servir archivos estáticos DESPUÉS (para que no interfiera con la API)
+app.use(express.static(path.join(__dirname, '..')));
+
+// Ruta catch-all para SPA (sirve index.html para rutas no encontradas)
+app.get('*', (req, res, next) => {
+  // Si la ruta es de API y no se encontró, pasar al error handler
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  // Para otras rutas, intentar servir el archivo estático (ya manejado arriba)
+  // Si no existe, retornar index.html (útil para SPAs)
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
 
 // ============================================
 // MANEJO DE ERRORES
 // ============================================
 
-// 404 - Ruta no encontrada
-app.use(notFound);
+// 404 - Ruta no encontrada (solo para API)
+app.use('/api/*', notFound);
 
 // Error handler global
 app.use(errorHandler);
