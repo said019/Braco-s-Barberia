@@ -34,6 +34,7 @@ if (config.env === 'production') {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
+        scriptSrcAttr: ["'unsafe-inline'"], // Permitir onclick y otros event handlers inline
         styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
         imgSrc: ["'self'", "data:", "https:", "http:"],
         connectSrc: ["'self'", "https:", "http:"],
