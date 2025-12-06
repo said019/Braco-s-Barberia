@@ -1126,22 +1126,23 @@ a {
     top: 1rem;
     left: 1rem;
     z-index: 1000;
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: var(--gold);
     border: none;
     color: var(--charcoal-dark);
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .mobile-menu-toggle:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(196, 163, 90, 0.5);
 }
 
 /* Mobile Overlay */
@@ -1153,11 +1154,27 @@ a {
     z-index: 99;
     opacity: 0;
     transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
 }
 
 .mobile-overlay.active {
     display: block;
     opacity: 1;
+}
+
+/* Tablet & Desktop Large (1024px+) */
+@media (min-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .content-section {
+        padding: 2.5rem 3rem;
+    }
+
+    .table-wrapper {
+        overflow-x: visible;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -1221,9 +1238,9 @@ a {
     /* Main Layout */
     .sidebar {
         transform: translateX(-100%);
-        width: 260px;
-        /* Full width drawer */
+        width: 280px;
         transition: transform 0.3s ease;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
     }
 
     .sidebar.open {
@@ -1236,7 +1253,6 @@ a {
     .nav-section-title,
     .nav-item span:not(.icon):not(.badge) {
         display: block;
-        /* Restore text in full drawer */
     }
 
     .sidebar-footer {
@@ -1260,14 +1276,12 @@ a {
     .main-content {
         margin-left: 0;
         padding: 1rem;
-        /* Reduced padding on mobile */
         padding-top: 5rem;
-        /* Space for toggle button */
+        width: 100%;
     }
 
     .mobile-menu-toggle {
         display: flex;
-        /* Show toggle */
     }
 
     .page-content {
@@ -1276,19 +1290,143 @@ a {
 
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
+    .stat-card {
+        padding: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+    }
+
+    /* Tablas responsive */
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    /* Filtros y búsqueda */
     .filters-bar {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.75rem;
     }
 
     .search-box {
         max-width: none;
+        width: 100%;
     }
 
+    .filter-select {
+        width: 100%;
+    }
+
+    /* Botones */
+    .btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+    }
+
+    /* Formularios */
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+
+    /* Modales */
+    .modal {
+        width: 95%;
+        max-width: none;
+        margin: 1rem;
+    }
+
+    .modal-header {
+        padding: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.15rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        padding: 1rem;
+        flex-direction: column-reverse;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    /* Cards */
+    .card {
+        padding: 1.25rem;
+    }
+
+    .card-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 1.15rem;
+    }
+
+    /* Calendario */
     .calendar-day {
         min-height: 80px;
+        padding: 0.35rem;
+    }
+
+    .calendar-day-number {
+        font-size: 0.8rem;
+    }
+
+    .calendar-appointment {
+        font-size: 0.65rem;
+        padding: 1px 3px;
     }
 
     .content-section {
@@ -1298,6 +1436,13 @@ a {
     .main-header {
         padding: 1rem;
         padding-top: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
     }
 
     .calendar-header {
@@ -1306,6 +1451,10 @@ a {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
+    }
+
+    .calendar-title {
+        font-size: 1.3rem;
     }
 
     #calendar-list-view {
@@ -1320,13 +1469,175 @@ a {
     }
 
     .appointment-time {
-        font-size: 1.1rem;
+        font-size: 1rem;
         min-width: auto;
+    }
+
+    .appointment-client {
+        font-size: 0.95rem;
+    }
+
+    .appointment-service {
+        font-size: 0.8rem;
     }
 
     .appointment-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+
+    /* Tabs */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab {
+        padding: 0.875rem 1rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    /* Alertas */
+    .alert {
+        padding: 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    /* Paginación */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Móviles pequeños (max 480px) */
+@media (max-width: 480px) {
+    .mobile-menu-toggle {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+
+    .main-content {
+        padding: 0.75rem;
+        padding-top: 4.5rem;
+    }
+
+    .content-section {
+        padding: 0.75rem;
+    }
+
+    .page-title {
+        font-size: 1.35rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .card-header {
+        padding: 0.75rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .btn {
+        padding: 0.65rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .calendar-day {
+        min-height: 70px;
+        padding: 0.25rem;
+    }
+
+    .calendar-day-number {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .calendar-appointment {
+        font-size: 0.6rem;
+        padding: 1px 2px;
+    }
+
+    .modal {
+        margin: 0.5rem;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.875rem;
+    }
+
+    .appointment-time {
+        font-size: 0.95rem;
+    }
+
+    .appointment-client {
+        font-size: 0.9rem;
+    }
+}
+
+/* Móviles muy pequeños (max 360px) */
+@media (max-width: 360px) {
+    .main-content {
+        padding: 0.5rem;
+        padding-top: 4rem;
+    }
+
+    .content-section {
+        padding: 0.5rem;
+    }
+
+    .page-title {
+        font-size: 1.2rem;
+    }
+
+    .stat-value {
+        font-size: 1.35rem;
+    }
+
+    .card {
+        padding: 0.875rem;
+    }
+
+    .btn {
+        padding: 0.6rem 0.875rem;
+        font-size: 0.75rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem 0.3rem;
+        font-size: 0.7rem;
     }
 }
 

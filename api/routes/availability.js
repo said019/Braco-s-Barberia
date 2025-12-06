@@ -8,7 +8,7 @@ import {
     formatTimeDisplay,
     timesOverlap,
     generateAvailableSlots
-} from '../../js/availability-engine.js';
+} from '../utils/availability-engine.js';
 
 const router = express.Router();
 
