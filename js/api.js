@@ -219,9 +219,16 @@ const API = {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                console.log('Error del servidor:', error);
-                throw new Error(error.message || 'Error al crear la cita');
+                const errorData = await response.json();
+                console.log('Error del servidor:', errorData);
+
+                // Si hay errores de validación específicos, mostrarlos
+                if (errorData.errors && errorData.errors.length > 0) {
+                    const errorMessages = errorData.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+                    throw new Error(errorMessages);
+                }
+
+                throw new Error(errorData.message || 'Error al crear la cita');
             }
 
             return await response.json();
