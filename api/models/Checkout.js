@@ -21,23 +21,7 @@ export const Checkout = {
 
             // ... (rest of code)
 
-            // 6. Crear transacción financiera
-            if (total > 0) {
-                console.log('Creating transaction for client:', client_id);
-                await client.query(`
-          INSERT INTO transactions (
-            checkout_id, client_id, type, description, 
-            amount, payment_method, transaction_date
-          )
-          VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
-        `, [
-                    checkoutId,
-                    client_id,
-                    `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
-                    total,
-                    payment_method
-                ]);
-            }
+
 
             // 1. Verificar estado de la cita
             const appointmentCheck = await client.query(
@@ -162,15 +146,20 @@ export const Checkout = {
             // 6. Crear transacción financiera
             // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
             // O si el total es > 0 (ej. propina o productos)
+            // 6. Crear transacción financiera
+            // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
+            // O si el total es > 0 (ej. propina o productos)
             if (total > 0) {
+                console.log('Creating transaction for client:', client_id);
                 await client.query(`
           INSERT INTO transactions (
-            checkout_id, type, description, 
+            checkout_id, client_id, type, description, 
             amount, payment_method, transaction_date
           )
-          VALUES ($1, 'service', $2, $3, $4, CURRENT_DATE)
+          VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
         `, [
                     checkoutId,
+                    client_id,
                     `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
                     total,
                     payment_method
