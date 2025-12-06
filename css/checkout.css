@@ -215,12 +215,12 @@
     transition: all 0.3s ease;
 }
 
-.checkbox-container input:checked + .checkmark {
+.checkbox-container input:checked+.checkmark {
     background: var(--gold);
     border-color: var(--gold);
 }
 
-.checkbox-container input:checked + .checkmark::after {
+.checkbox-container input:checked+.checkmark::after {
     content: '✓';
     position: absolute;
     top: 50%;
@@ -410,7 +410,7 @@
     display: none;
 }
 
-.payment-option input:checked + .payment-icon {
+.payment-option input:checked+.payment-icon {
     transform: scale(1.2);
 }
 
@@ -430,6 +430,20 @@
 }
 
 /* Success */
+.success-message {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: var(--cream);
+}
+
+.brand-name {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
 .loyalty-cta {
     text-align: center;
     padding-top: 2rem;
@@ -464,11 +478,11 @@
     .checkout-main {
         padding: 8rem 2rem 4rem;
     }
-    
+
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .payment-options {
         grid-template-columns: 1fr;
     }
@@ -479,208 +493,208 @@
     .checkout-main {
         padding: 6rem 1.5rem 3rem;
     }
-    
+
     .checkout-header h1 {
         font-size: 2rem;
     }
-    
+
     .checkout-header p {
         font-size: 0.9rem;
     }
-    
+
     .checkout-steps {
         gap: 0.5rem;
         padding: 0 1rem;
     }
-    
+
     .checkout-step {
         min-width: 80px;
     }
-    
+
     .step-number {
         width: 35px;
         height: 35px;
         font-size: 0.9rem;
     }
-    
+
     .step-line {
         width: 30px;
     }
-    
+
     .step-label {
         font-size: 0.65rem;
     }
-    
+
     .checkout-content {
         padding: 2rem 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.5rem;
     }
-    
+
     .code-inputs {
         gap: 0.5rem;
     }
-    
+
     .code-digit {
         width: 50px;
         height: 60px;
         font-size: 1.5rem;
     }
-    
+
     .info-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .info-section {
         padding: 1.5rem;
     }
-    
+
     .info-section h3 {
         font-size: 1.1rem;
     }
-    
+
     .info-item {
         padding: 0.875rem 0;
     }
-    
+
     .info-label {
         font-size: 0.8rem;
     }
-    
+
     .info-value {
         font-size: 0.95rem;
     }
-    
+
     .membership-card {
         flex-direction: column;
         align-items: flex-start;
         gap: 1.5rem;
         padding: 1.5rem;
     }
-    
+
     .membership-info {
         flex: none;
         width: 100%;
     }
-    
+
     .membership-tier {
         font-size: 1.25rem;
     }
-    
+
     .membership-status {
         font-size: 0.75rem;
     }
-    
+
     .membership-dates {
         font-size: 0.8rem;
     }
-    
+
     .membership-action {
         width: 100%;
         align-items: stretch;
     }
-    
+
     .membership-action .btn-outline {
         width: 100%;
         justify-content: center;
     }
-    
+
     .products-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .product-checkout-card {
         padding: 1.25rem;
     }
-    
+
     .product-image-checkout {
         width: 100px;
         height: 100px;
     }
-    
+
     .product-details h3 {
         font-size: 1rem;
     }
-    
+
     .product-description {
         font-size: 0.85rem;
     }
-    
+
     .product-price-checkout {
         font-size: 1.25rem;
     }
-    
+
     .quantity-controls {
         gap: 0.75rem;
     }
-    
+
     .quantity-btn {
         width: 32px;
         height: 32px;
         font-size: 1rem;
     }
-    
+
     .quantity-value {
         font-size: 1rem;
         min-width: 40px;
     }
-    
+
     .payment-options {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .payment-option {
         padding: 1.25rem;
     }
-    
+
     .payment-icon {
         width: 50px;
         height: 50px;
         font-size: 1.5rem;
     }
-    
+
     .payment-name {
         font-size: 1rem;
     }
-    
+
     .payment-description {
         font-size: 0.8rem;
     }
-    
+
     .payment-summary {
         position: static;
         margin-top: 2rem;
     }
-    
+
     .summary-title {
         font-size: 1.1rem;
     }
-    
+
     .summary-item-label {
         font-size: 0.8rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.9rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.9rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.5rem;
     }
-    
+
     .step-actions {
         gap: 1rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         padding: 1rem 2rem;
@@ -693,278 +707,278 @@
     .checkout-main {
         padding: 5rem 1rem 2rem;
     }
-    
+
     .checkout-header {
         margin-bottom: 2rem;
     }
-    
+
     .checkout-header h1 {
         font-size: 1.75rem;
     }
-    
+
     .checkout-header p {
         font-size: 0.85rem;
     }
-    
+
     .checkout-steps {
         gap: 0.25rem;
         padding: 0 0.5rem;
     }
-    
+
     .checkout-step {
         min-width: 60px;
     }
-    
+
     .step-number {
         width: 30px;
         height: 30px;
         font-size: 0.8rem;
     }
-    
+
     .step-line {
         width: 20px;
     }
-    
+
     .step-label {
         font-size: 0.6rem;
     }
-    
+
     .checkout-content {
         padding: 1.5rem 1rem;
         border-radius: 12px;
     }
-    
+
     .step-title {
         font-size: 1.25rem;
         margin-bottom: 1.25rem;
     }
-    
+
     .code-inputs {
         gap: 0.4rem;
     }
-    
+
     .code-digit {
         width: 45px;
         height: 55px;
         font-size: 1.3rem;
     }
-    
+
     .info-grid {
         gap: 1.25rem;
     }
-    
+
     .info-section {
         padding: 1.25rem;
     }
-    
+
     .info-section h3 {
         font-size: 1rem;
         margin-bottom: 1rem;
     }
-    
+
     .info-item {
         padding: 0.75rem 0;
     }
-    
+
     .info-label {
         font-size: 0.75rem;
     }
-    
+
     .info-value {
         font-size: 0.9rem;
     }
-    
+
     .membership-card {
         padding: 1.25rem;
         gap: 1.25rem;
     }
-    
+
     .membership-tier {
         font-size: 1.1rem;
     }
-    
+
     .membership-status {
         padding: 0.35rem 0.8rem;
         font-size: 0.7rem;
     }
-    
+
     .membership-dates {
         font-size: 0.75rem;
     }
-    
+
     .products-grid {
         gap: 1.25rem;
     }
-    
+
     .product-checkout-card {
         flex-direction: column;
         align-items: flex-start;
         padding: 1rem;
         gap: 1rem;
     }
-    
+
     .product-image-checkout {
         width: 100%;
         height: 180px;
         border-radius: 8px;
     }
-    
+
     .product-details {
         width: 100%;
     }
-    
+
     .product-details h3 {
         font-size: 0.95rem;
     }
-    
+
     .product-description {
         font-size: 0.8rem;
     }
-    
+
     .product-meta-checkout {
         font-size: 0.75rem;
     }
-    
+
     .product-footer-checkout {
         width: 100%;
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .product-price-checkout {
         font-size: 1.2rem;
     }
-    
+
     .quantity-controls {
         width: 100%;
         justify-content: center;
     }
-    
+
     .quantity-btn {
         width: 35px;
         height: 35px;
     }
-    
+
     .quantity-value {
         min-width: 50px;
     }
-    
+
     .payment-options {
         gap: 0.875rem;
     }
-    
+
     .payment-option {
         padding: 1rem;
     }
-    
+
     .payment-option-content {
         gap: 1rem;
     }
-    
+
     .payment-icon {
         width: 45px;
         height: 45px;
         font-size: 1.3rem;
     }
-    
+
     .payment-details {
         flex: 1;
     }
-    
+
     .payment-name {
         font-size: 0.95rem;
     }
-    
+
     .payment-description {
         font-size: 0.75rem;
     }
-    
+
     .payment-summary {
         padding: 1.25rem;
     }
-    
+
     .summary-title {
         font-size: 1rem;
         margin-bottom: 1rem;
     }
-    
+
     .summary-item {
         padding: 0.75rem 0;
     }
-    
+
     .summary-item-label {
         font-size: 0.75rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.85rem;
     }
-    
+
     .summary-total {
         padding-top: 1rem;
         margin-top: 1rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.85rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.3rem;
     }
-    
+
     .step-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         width: 100%;
         padding: 0.875rem 1.5rem;
         font-size: 0.8rem;
     }
-    
+
     .success-icon {
         width: 70px;
         height: 70px;
         font-size: 2rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .success-title {
         font-size: 1.75rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .success-message {
         font-size: 0.9rem;
         margin-bottom: 2rem;
     }
-    
+
     .success-details {
         padding: 1.25rem;
         margin-bottom: 2rem;
     }
-    
+
     .detail-item {
         padding: 0.75rem 0;
     }
-    
+
     .detail-label {
         font-size: 0.75rem;
     }
-    
+
     .detail-value {
         font-size: 0.9rem;
     }
-    
+
     .success-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .success-actions .btn-primary,
     .success-actions .btn-outline {
         width: 100%;
@@ -976,21 +990,21 @@
     .checkout-header h1 {
         font-size: 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.1rem;
     }
-    
+
     .code-digit {
         width: 40px;
         height: 50px;
         font-size: 1.2rem;
     }
-    
+
     .membership-tier {
         font-size: 1rem;
     }
-    
+
     .success-title {
         font-size: 1.5rem;
     }
@@ -1001,15 +1015,15 @@
     .checkout-main {
         padding: 4rem 1.5rem 2rem;
     }
-    
+
     .checkout-steps {
         margin-bottom: 1.5rem;
     }
-    
+
     .info-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .payment-options {
         grid-template-columns: repeat(2, 1fr);
     }

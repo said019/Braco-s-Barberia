@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout | Barbería</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/checkout.css">
 </head>
+
 <body>
     <!-- Header -->
     <header id="header">
@@ -21,7 +25,7 @@
             <a href="index.html" class="logo">
                 <img src="assets/logo.png" alt="Barbería" class="logo-img">
             </a>
-            
+
             <ul class="nav-links">
                 <li><a href="index.html">Inicio</a></li>
                 <li><a href="index.html#servicios">Servicios</a></li>
@@ -29,9 +33,9 @@
                 <li><a href="checkout.html" class="active">Checkout</a></li>
                 <li><a href="membresias.html">Membresías</a></li>
             </ul>
-            
+
             <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
-            
+
             <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
                 <span></span>
                 <span></span>
@@ -69,7 +73,7 @@
                     <div class="code-icon">🔐</div>
                     <h2 class="code-title">Ingresa tu Código de Cita</h2>
                     <p class="code-description">Recibiste este código de 4 dígitos al agendar tu cita</p>
-                    
+
                     <form id="code-form" class="code-form">
                         <div class="code-inputs">
                             <input type="text" maxlength="1" class="code-digit" id="digit1" pattern="[0-9]" required>
@@ -92,7 +96,7 @@
                         <h2>Información de tu Cita</h2>
                         <span class="appointment-code" id="display-code">----</span>
                     </div>
-                    
+
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">Cliente</span>
@@ -119,11 +123,12 @@
                         <span class="subtitle-icon">👑</span>
                         Membresía Activa
                     </h3>
-                    
+
                     <div class="membership-card" id="membership-card">
                         <div class="membership-info">
                             <h4 id="membership-name">Sin membresía activa</h4>
-                            <p id="membership-details">Considera adquirir una membresía para obtener beneficios exclusivos</p>
+                            <p id="membership-details">Considera adquirir una membresía para obtener beneficios
+                                exclusivos</p>
                         </div>
                         <div class="membership-action">
                             <label class="checkbox-container" id="use-membership-container" style="display: none;">
@@ -131,7 +136,8 @@
                                 <span class="checkmark"></span>
                                 <span class="checkbox-label">Usar servicio de membresía</span>
                             </label>
-                            <a href="membresias.html" class="btn-outline btn-small" id="get-membership-btn">Ver Membresías</a>
+                            <a href="membresias.html" class="btn-outline btn-small" id="get-membership-btn">Ver
+                                Membresías</a>
                         </div>
                     </div>
                 </div>
@@ -142,7 +148,7 @@
                         <span class="subtitle-icon">🧴</span>
                         Productos Disponibles
                     </h3>
-                    
+
                     <div class="products-grid" id="products-grid">
                         <!-- Se llena dinámicamente -->
                     </div>
@@ -151,7 +157,7 @@
                 <!-- Payment Summary -->
                 <div class="payment-summary">
                     <h3 class="summary-title">Resumen de Pago</h3>
-                    
+
                     <div class="summary-items">
                         <div class="summary-row">
                             <span>Servicio</span>
@@ -206,9 +212,9 @@
                     <div class="success-icon">✓</div>
                     <h2 class="success-title">¡Pago Completado!</h2>
                     <p class="success-message">
-                        Gracias por tu visita a <img src="assets/logo.png" alt="Logo" style="height: 1.5em; vertical-align: middle; display: inline-block;"> Barbería
+                        Gracias por tu visita a <span class="brand-name">Braco's Barbería</span>
                     </p>
-                    
+
                     <div class="success-details">
                         <div class="detail-row">
                             <span>Total Pagado</span>
@@ -262,4 +268,5 @@
     <script src="js/main.js"></script>
     <script src="js/checkout.js"></script>
 </body>
+
 </html>
