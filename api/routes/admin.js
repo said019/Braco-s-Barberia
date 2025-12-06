@@ -526,7 +526,9 @@ router.get('/memberships/:id', authenticateToken, async (req, res, next) => {
         const result = await db.query(`
             SELECT cm.*, c.name as client_name, c.phone as client_phone,
                    mt.name as type_name, mt.price as type_price,
-                   cm.total_services - cm.used_services as remaining_services
+                   cm.total_services - cm.used_services as remaining_services,
+                   cm.activation_date as start_date,
+                   cm.expiration_date as end_date
             FROM client_memberships cm
             JOIN clients c ON cm.client_id = c.id
             JOIN membership_types mt ON cm.membership_type_id = mt.id
