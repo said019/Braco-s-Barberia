@@ -27,8 +27,23 @@ const app = express();
 // ============================================
 
 // Seguridad
+// Seguridad
 if (config.env === 'production') {
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        connectSrc: ["'self'", "https:", "http:"],
+        fontSrc: ["'self'", "https:", "http:", "data:"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'self'"],
+      },
+    },
+  }));
 } else {
   // En desarrollo, deshabilitar CSP para permitir inline scripts
   app.use(helmet({
