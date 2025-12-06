@@ -511,7 +511,7 @@ router.get('/memberships', authenticateToken, async (req, res, next) => {
             ORDER BY cm.created_at DESC
         `);
 
-        res.json(result.rows);
+        res.json({ memberships: result.rows });
 
     } catch (error) {
         next(error);
