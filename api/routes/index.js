@@ -4,6 +4,7 @@ import clientsRoutes from './clients.js';
 import appointmentsRoutes from './appointments.js';
 import availabilityRoutes from './availability.js';
 import adminRoutes from './admin.js';
+import checkoutRoutes from './checkout.js';
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.use('/clients', clientsRoutes);
 router.use('/appointments', appointmentsRoutes);
 router.use('/availability', availabilityRoutes);
 router.use('/admin', adminRoutes);
+router.use('/checkout', checkoutRoutes);
 
 export default router;
 

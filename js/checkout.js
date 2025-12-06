@@ -366,24 +366,49 @@ async function completeCheckout() {
     btn.textContent = 'Procesando pago...';
 
     try {
+        // Calcular totales
+        const servicePrice = parseFloat(state.checkoutData.service_price);
+
+        // Calcular total de productos
+        const productsTotal = Object.entries(state.cart).reduce((sum, [id, qty]) => {
+            const product = state.products.find(p => p.id == id);
+            return sum + (product ? parseFloat(product.price) * qty : 0);
+        }, 0);
+
+        // Calcular descuento
+        let discount = 0;
+        if (state.useMembership && state.clientMemberships.length > 0) {
+            discount = servicePrice;
+        }
+
+        const total = (servicePrice + productsTotal) - discount;
+
         // Preparar datos del checkout
         const checkoutPayload = {
+            appointment_id: state.checkoutData.id,
+            client_id: state.checkoutData.client_id,
+            service_cost: servicePrice,
+            products_cost: productsTotal,
+            discount: discount,
+            total: total,
             use_membership: state.useMembership,
             payment_method: state.paymentMethod,
             products: Object.entries(state.cart).map(([id, qty]) => ({
                 product_id: parseInt(id),
                 quantity: qty
-            }))
+            })),
+            notes: `Checkout desde web - Código: ${state.checkoutData.checkout_code}`
         };
 
-        // Enviar a API (adaptar cuando esté disponible)
-        // const result = await API.completeCheckout(state.checkoutData.id, checkoutPayload);
+        // Enviar a API
+        const result = await API.completeCheckout(checkoutPayload);
 
-        // Simulación
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Mostrar pantalla de éxito
-        showSuccessScreen();
+        if (result.success) {
+            // Mostrar pantalla de éxito
+            showSuccessScreen();
+        } else {
+            throw new Error(result.message || 'Error al procesar el pago');
+        }
 
     } catch (error) {
         console.error('Error:', error);

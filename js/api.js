@@ -340,43 +340,19 @@ const API = {
     // ========================================================================
 
     /**
-     * Busca checkout por código
+     * Completa el proceso de checkout
      */
-    async getCheckoutByCode(code) {
+    async completeCheckout(checkoutData) {
         try {
-            const response = await fetch(`${API_BASE_URL}/checkouts/code/${code}`, {
-                method: 'GET',
-                headers: this.getHeaders()
-            });
-
-            if (response.status === 404) {
-                return null;
-            }
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            return this.handleError(error);
-        }
-    },
-
-    /**
-     * Completa un checkout
-     */
-    async completeCheckout(checkoutId, checkoutData) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/checkouts/${checkoutId}/complete`, {
+            const response = await fetch(`${API_BASE_URL}/checkout`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(checkoutData)
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Error al completar el checkout');
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
             return await response.json();
@@ -384,6 +360,7 @@ const API = {
             return this.handleError(error);
         }
     },
+
 
     // ========================================================================
     // HEALTH CHECK
