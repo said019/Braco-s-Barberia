@@ -965,9 +965,12 @@
             };
 
             try {
+                console.log(`Saving day ${day}:`, data);
                 await api.put(`/admin/business-hours/${day}`, data);
+                console.log(`Day ${day} saved successfully`);
                 // Optional: show mini success indicator?
             } catch (error) {
+                console.error(`Error saving day ${day}:`, error);
                 alert('Error al guardar horario: ' + error.message);
                 loadHours(); // Revert on error
             }
