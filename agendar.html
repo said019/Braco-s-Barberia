@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Cita | Barbería</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/agendar.css">
 </head>
+
 <body>
     <!-- Header -->
     <header id="header">
@@ -21,7 +25,7 @@
             <a href="index.html" class="logo">
                 <img src="assets/logo.png" alt="Barbería" class="logo-img">
             </a>
-            
+
             <ul class="nav-links">
                 <li><a href="index.html">Inicio</a></li>
                 <li><a href="index.html#servicios">Servicios</a></li>
@@ -29,9 +33,9 @@
                 <li><a href="checkout.html">Checkout</a></li>
                 <li><a href="membresias.html">Membresías</a></li>
             </ul>
-            
+
             <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
-            
+
             <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
                 <span></span>
                 <span></span>
@@ -84,7 +88,7 @@
             <!-- Step 1: Service Selection -->
             <section class="booking-step" id="step-1">
                 <h2 class="step-title">¿Qué servicio te gustaría?</h2>
-                
+
                 <!-- Category Tabs -->
                 <div class="category-tabs">
                     <button class="category-tab active" data-category="all">Todos</button>
@@ -105,7 +109,7 @@
             <!-- Step 2: Date & Time -->
             <section class="booking-step hidden" id="step-2">
                 <h2 class="step-title">Elige fecha y hora</h2>
-                
+
                 <div class="datetime-container">
                     <!-- Calendar -->
                     <div class="calendar-wrapper">
@@ -139,7 +143,7 @@
                 </div>
 
                 <div class="step-actions">
-                    <button class="btn-secondary" onclick="goToStep(1)">Atrás</button>
+                    <button class="btn-secondary" id="btn-back-to-step1">Atrás</button>
                     <button class="btn-primary" id="btn-to-step3" disabled>Continuar</button>
                 </div>
             </section>
@@ -147,7 +151,7 @@
             <!-- Step 3: Confirmation -->
             <section class="booking-step hidden" id="step-3">
                 <h2 class="step-title">Confirma tus datos</h2>
-                
+
                 <!-- Summary -->
                 <div class="booking-summary">
                     <div class="summary-item">
@@ -176,23 +180,20 @@
                 <form class="booking-form" id="booking-form">
                     <div class="form-group">
                         <label for="client-name">Nombre completo *</label>
-                        <input type="text" id="client-name" name="name" required 
-                               placeholder="Ej: Juan Pérez García">
+                        <input type="text" id="client-name" name="name" required placeholder="Ej: Juan Pérez García">
                     </div>
                     <div class="form-group">
                         <label for="client-phone">Teléfono (WhatsApp) *</label>
-                        <input type="tel" id="client-phone" name="phone" required 
-                               placeholder="Ej: 55 1234 5678"
-                               pattern="[0-9]{10}"
-                               maxlength="10">
+                        <input type="tel" id="client-phone" name="phone" required placeholder="Ej: 55 1234 5678"
+                            pattern="[0-9]{10}" maxlength="10">
                         <span class="form-hint">Te enviaremos confirmación y recordatorio por WhatsApp</span>
                     </div>
                     <div class="form-group">
                         <label for="client-notes">Notas adicionales (opcional)</label>
                         <textarea id="client-notes" name="notes" rows="3"
-                                  placeholder="Algún detalle especial que debamos saber..."></textarea>
+                            placeholder="Algún detalle especial que debamos saber..."></textarea>
                     </div>
-                    
+
                     <div class="form-notice">
                         <p>
                             ✓ Al confirmar aceptas recibir notificaciones por WhatsApp<br>
@@ -202,7 +203,7 @@
                 </form>
 
                 <div class="step-actions">
-                    <button class="btn-secondary" onclick="goToStep(2)">Atrás</button>
+                    <button class="btn-secondary" id="btn-back-to-step2">Atrás</button>
                     <button class="btn-primary" type="submit" form="booking-form" id="btn-confirm">
                         Confirmar Cita
                     </button>
@@ -217,7 +218,7 @@
                     <p class="success-message">
                         Hemos enviado la confirmación a tu WhatsApp
                     </p>
-                    
+
                     <div class="success-details">
                         <div class="detail-row">
                             <span>Código de cita</span>
@@ -236,14 +237,14 @@
                             <strong id="success-price">-</strong>
                         </div>
                     </div>
-                    
+
                     <div class="success-notice">
                         <p>
-                            <strong>Importante:</strong> Guarda tu código de cita. 
+                            <strong>Importante:</strong> Guarda tu código de cita.
                             Lo necesitarás al finalizar tu servicio para realizar el checkout.
                         </p>
                     </div>
-                    
+
                     <div class="success-actions">
                         <a href="index.html" class="btn-outline">Volver al Inicio</a>
                         <a href="agendar.html" class="btn-primary">Agendar Otra Cita</a>
@@ -270,4 +271,5 @@
     <script src="js/main.js"></script>
     <script src="js/agendar.js"></script>
 </body>
+
 </html>

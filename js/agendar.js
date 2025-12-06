@@ -429,6 +429,17 @@ function setupEventListeners() {
         renderCalendar();
     });
 
+    // Botones "Atrás" - usando event listeners en lugar de onclick inline (bloqueado por CSP)
+    const btnBackToStep1 = document.getElementById('btn-back-to-step1');
+    if (btnBackToStep1) {
+        btnBackToStep1.addEventListener('click', () => goToStep(1));
+    }
+
+    const btnBackToStep2 = document.getElementById('btn-back-to-step2');
+    if (btnBackToStep2) {
+        btnBackToStep2.addEventListener('click', () => goToStep(2));
+    }
+
     // Botón continuar a paso 3
     elements.btnToStep3.addEventListener('click', () => goToStep(3));
 
