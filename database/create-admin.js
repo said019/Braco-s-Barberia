@@ -21,6 +21,21 @@ async function createAdminUser() {
     try {
         console.log('🔐 Creando usuario administrador...\n');
 
+        // Asegurar que la tabla existe
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                role VARCHAR(20) DEFAULT 'admin',
+                is_active BOOLEAN DEFAULT TRUE,
+                last_login TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+
         // Datos del admin
         const username = 'admin';
         const password = 'admin123';
