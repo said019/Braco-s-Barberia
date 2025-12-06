@@ -235,7 +235,10 @@ const API = {
                 throw new Error(errorData.message || 'Error al crear la cita');
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('Respuesta del servidor:', result);
+            // El backend devuelve { success: true, data: appointment }
+            return result.data;
         } catch (error) {
             return this.handleError(error);
         }
