@@ -134,6 +134,7 @@
 
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
+    <script src="../js/admin.js"></script>
     <script>
         let todayAppointments = [];
 
@@ -262,14 +263,25 @@
         }
 
         async function updateStatus(id, newStatus) {
-            if (!confirm(`¿Cambiar estado a ${newStatus}?`)) return;
-            try {
-                await api.put(`/admin/appointments/${id}/status`, { status: newStatus });
-                // Reload
-                loadData();
-            } catch (error) {
-                alert('Error al actualizar: ' + error.message);
-            }
+            const statusLabels = {
+                'in_progress': 'En Curso',
+                'completed': 'Completada',
+                'cancelled': 'Cancelada'
+            };
+
+            showConfirm(
+                'Cambiar Estado',
+                `¿Deseas cambiar el estado de esta cita a "${statusLabels[newStatus] || newStatus}"?`,
+                async () => {
+                    try {
+                        await api.put(`/admin/appointments/${id}/status`, { status: newStatus });
+                        showToast('Estado actualizado correctamente', 'success');
+                        loadData();
+                    } catch (error) {
+                        showToast('Error al actualizar: ' + error.message, 'error');
+                    }
+                }
+            );
         }
 
         init();
