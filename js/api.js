@@ -284,7 +284,8 @@ const API = {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const result = await response.json();
+            return result.data || [];
         } catch (error) {
             return this.handleError(error);
         }
