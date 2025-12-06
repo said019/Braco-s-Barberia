@@ -189,7 +189,7 @@
             return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         }
 
-        function getStatusBadge(status) {
+        function getStatusBadge(status, appointmentId) {
             const styles = {
                 scheduled: 'background: rgba(196,163,90,0.3); color: var(--cream);',
                 confirmed: 'background: rgba(76,175,80,0.3); color: var(--success);',
@@ -206,7 +206,7 @@
                 cancelled: 'Cancelada',
                 no_show: 'No Asistió'
             };
-            return `<span class="badge" style="${styles[status]}">${labels[status]}</span>`;
+            return `<span class="badge" style="${styles[status]} cursor: pointer;" onclick="openStatusModal(${appointmentId}, '${status}')" title="Clic para cambiar estado">${labels[status]}</span>`;
         }
 
         function renderTable(appointments) {
@@ -228,7 +228,7 @@
                         <div>${app.service_name}</div>
                         <div class="text-sm text-muted">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(app.service_price)}</div>
                     </td>
-                    <td>${getStatusBadge(app.status)}</td>
+                    <td>${getStatusBadge(app.status, app.id)}</td>
                     <td>
                         <div class="actions">
                             ${getActionButtons(app)}
@@ -260,6 +260,61 @@
             }
 
             return buttons || '-';
+        }
+
+        function openStatusModal(appointmentId, currentStatus) {
+            const allStatuses = [
+                { value: 'scheduled', label: 'Programada', icon: 'far fa-calendar', color: 'rgba(196,163,90,0.3)' },
+                { value: 'confirmed', label: 'Confirmada', icon: 'fas fa-check', color: 'rgba(76,175,80,0.3)' },
+                { value: 'in_progress', label: 'En Curso', icon: 'fas fa-play', color: 'rgba(255,152,0,0.3)' },
+                { value: 'completed', label: 'Completada', icon: 'fas fa-check-double', color: 'rgba(76,175,80,0.5)' },
+                { value: 'cancelled', label: 'Cancelada', icon: 'fas fa-times', color: 'rgba(229,57,53,0.3)' },
+                { value: 'no_show', label: 'No Asistió', icon: 'fas fa-user-slash', color: 'rgba(158,158,158,0.3)' }
+            ];
+
+            const content = `
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    ${allStatuses.map(s => `
+                        <button 
+                            class="status-option-btn ${s.value === currentStatus ? 'current' : ''}"
+                            onclick="selectNewStatus(${appointmentId}, '${s.value}')"
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 1rem;
+                                padding: 1rem 1.25rem;
+                                background: ${s.value === currentStatus ? s.color : 'rgba(196,163,90,0.05)'};
+                                border: 1px solid ${s.value === currentStatus ? 'var(--gold)' : 'rgba(196,163,90,0.2)'};
+                                border-radius: 8px;
+                                color: var(--cream);
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-family: 'Montserrat', sans-serif;
+                                font-size: 0.9rem;
+                            "
+                            onmouseover="this.style.background='${s.color}'; this.style.borderColor='var(--gold)';"
+                            onmouseout="this.style.background='${s.value === currentStatus ? s.color : 'rgba(196,163,90,0.05)'}'; this.style.borderColor='${s.value === currentStatus ? 'var(--gold)' : 'rgba(196,163,90,0.2)'}'"
+                        >
+                            <i class="${s.icon}" style="width: 20px; color: var(--gold);"></i>
+                            <span>${s.label}</span>
+                            ${s.value === currentStatus ? '<span style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;">(Actual)</span>' : ''}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            window.statusChangeModal = showModal('statusChangeModal', '<i class="fas fa-exchange-alt"></i> Cambiar Estado', content, '');
+        }
+
+        async function selectNewStatus(appointmentId, newStatus) {
+            try {
+                await api.put(`/admin/appointments/${appointmentId}/status`, { status: newStatus });
+                showToast('Estado actualizado correctamente', 'success');
+                window.statusChangeModal.close();
+                loadData();
+            } catch (error) {
+                showToast('Error al actualizar: ' + error.message, 'error');
+            }
         }
 
         async function updateStatus(id, newStatus) {
