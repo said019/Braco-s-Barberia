@@ -132,6 +132,12 @@ async function searchCheckout() {
 
         state.checkoutData = checkoutData;
 
+        // Si la cita ya está completada, mostrar pantalla de éxito directamente
+        if (checkoutData.status === 'completed') {
+            showSuccessScreen();
+            return;
+        }
+
         // Cargar membresías del cliente si existe
         if (checkoutData.client_id) {
             await loadClientMemberships(checkoutData.client_id);
@@ -383,6 +389,14 @@ async function completeCheckout() {
 
         const total = (servicePrice + productsTotal) - discount;
 
+        // Mapear método de pago
+        const paymentMethodMap = {
+            'efectivo': 'cash',
+            'tarjeta': 'card',
+            'transferencia': 'transfer'
+        };
+        const backendPaymentMethod = paymentMethodMap[state.paymentMethod] || 'cash';
+
         // Preparar datos del checkout
         const checkoutPayload = {
             appointment_id: state.checkoutData.id,
@@ -392,7 +406,7 @@ async function completeCheckout() {
             discount: discount,
             total: total,
             use_membership: state.useMembership,
-            payment_method: state.paymentMethod,
+            payment_method: backendPaymentMethod,
             products: Object.entries(state.cart).map(([id, qty]) => ({
                 product_id: parseInt(id),
                 quantity: qty

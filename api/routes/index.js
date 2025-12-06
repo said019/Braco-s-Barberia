@@ -5,6 +5,7 @@ import appointmentsRoutes from './appointments.js';
 import availabilityRoutes from './availability.js';
 import adminRoutes from './admin.js';
 import checkoutRoutes from './checkout.js';
+import productsRoutes from './products.js';
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.use('/appointments', appointmentsRoutes);
 router.use('/availability', availabilityRoutes);
 router.use('/admin', adminRoutes);
 router.use('/checkout', checkoutRoutes);
+router.use('/products', productsRoutes);
 
 export default router;
 
