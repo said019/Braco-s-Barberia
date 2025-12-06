@@ -181,7 +181,8 @@ async function getCheckoutData(code) {
 async function loadClientMemberships(clientId) {
     try {
         const memberships = await API.getClientMemberships(clientId);
-        state.clientMemberships = memberships.filter(m => m.services_remaining > 0);
+        // Backend devuelve 'remaining_services', no 'services_remaining'
+        state.clientMemberships = memberships.filter(m => m.remaining_services > 0);
 
         if (state.clientMemberships.length > 0) {
             displayActiveMembership(state.clientMemberships[0]);
@@ -202,9 +203,10 @@ function displayActiveMembership(membership) {
 
     card.classList.add('active');
 
-    document.getElementById('membership-name').textContent = membership.membership_type_name;
+    // Backend devuelve 'membership_name' y 'remaining_services'
+    document.getElementById('membership-name').textContent = membership.membership_name;
     document.getElementById('membership-details').textContent =
-        `Servicios restantes: ${membership.services_remaining} | Válida hasta: ${formatDate(new Date(membership.end_date), { day: 'numeric', month: 'short', year: 'numeric' })}`;
+        `Servicios restantes: ${membership.remaining_services} | Válida hasta: ${formatDate(new Date(membership.expiration_date), { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
     useMembershipContainer.style.display = 'flex';
     getMembershipBtn.style.display = 'none';
