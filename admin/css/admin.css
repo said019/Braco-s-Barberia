@@ -767,6 +767,75 @@ a {
     gap: 1rem;
 }
 
+/* MODAL FORM ELEMENTS - Estilos para formularios dentro de modales */
+.modal input[type="text"],
+.modal input[type="email"],
+.modal input[type="tel"],
+.modal input[type="number"],
+.modal input[type="password"],
+.modal input[type="date"],
+.modal input[type="time"],
+.modal input[type="datetime-local"],
+.modal select,
+.modal textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: var(--charcoal-dark);
+    border: 1px solid rgba(196, 163, 90, 0.25);
+    border-radius: 4px;
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.1);
+}
+
+.modal input::placeholder,
+.modal textarea::placeholder {
+    color: rgba(245, 243, 238, 0.4);
+}
+
+.modal select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C4A35A' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.modal select option {
+    background: var(--charcoal-dark);
+    color: var(--cream);
+    padding: 0.5rem;
+}
+
+.modal label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.modal .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.modal .form-hint {
+    font-size: 0.75rem;
+    color: rgba(245, 243, 238, 0.5);
+    margin-top: 0.4rem;
+}
+
 /* TABS */
 .tabs {
     display: flex;
