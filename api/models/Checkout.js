@@ -144,13 +144,12 @@ export const Checkout = {
             if (total > 0) {
                 await client.query(`
           INSERT INTO transactions (
-            checkout_id, client_id, type, description, 
+            checkout_id, type, description, 
             amount, payment_method, transaction_date
           )
-          VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
+          VALUES ($1, 'service', $2, $3, $4, CURRENT_DATE)
         `, [
                     checkoutId,
-                    client_id,
                     `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
                     total,
                     payment_method
