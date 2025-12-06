@@ -71,21 +71,28 @@ const AdminAPI = {
         return fetchWithAuth(`/admin/appointments${query ? '?' + query : ''}`);
     },
 
+<<<<<<< HEAD
     getAppointment: async (id) => {
         const result = await fetchWithAuth(`/admin/appointments/${id}`);
         return result?.data || result;
     },
+=======
+    getAppointment: (id) => fetchWithAuth(`/admin/appointments/${id}`),
+>>>>>>> ec56639 (Fix: API URL detection for production and back button navigation)
 
     updateAppointment: (id, data) => fetchWithAuth(`/admin/appointments/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
 
+<<<<<<< HEAD
     createAppointment: (data) => fetchWithAuth('/admin/appointments', {
         method: 'POST',
         body: JSON.stringify(data)
     }),
 
+=======
+>>>>>>> ec56639 (Fix: API URL detection for production and back button navigation)
     updateAppointmentStatus: (id, status) => fetchWithAuth(`/admin/appointments/${id}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status })
@@ -95,12 +102,15 @@ const AdminAPI = {
         method: 'DELETE'
     }),
 
+<<<<<<< HEAD
     // Services
     getServices: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return fetchWithAuth(`/admin/services${query ? '?' + query : ''}`);
     },
 
+=======
+>>>>>>> ec56639 (Fix: API URL detection for production and back button navigation)
     // Clients
     getClients: (params = {}) => {
         const query = new URLSearchParams(params).toString();

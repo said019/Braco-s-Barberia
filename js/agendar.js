@@ -243,10 +243,20 @@ function goToStep(step) {
         if (index + 1 === step) indicator.classList.add('active');
     });
 
-    // Mostrar/ocultar secciones
-    elements.steps.forEach((section, index) => {
-        section.classList.toggle('hidden', index + 1 !== step);
+    // Mostrar/ocultar secciones (solo los pasos numerados, no el success)
+    const stepSections = ['step-1', 'step-2', 'step-3'];
+    stepSections.forEach((stepId, index) => {
+        const section = document.getElementById(stepId);
+        if (section) {
+            section.classList.toggle('hidden', index + 1 !== step);
+        }
     });
+
+    // Asegurar que el paso success esté oculto durante la navegación normal
+    const successStep = document.getElementById('step-success');
+    if (successStep) {
+        successStep.classList.add('hidden');
+    }
 
     // Si es paso 2 y hay fecha seleccionada, cargar disponibilidad
     if (step === 2 && state.selectedDate) {
