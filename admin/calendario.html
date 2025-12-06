@@ -96,30 +96,37 @@
                     <h2>Calendario de Citas</h2>
                     <p class="header-date" id="current-date"></p>
                 </div>
-                <div class="header-actions">
-                    <select id="view-select" class="search-input" style="width: auto;">
-                        <option value="month">Vista Mensual</option>
-                        <option value="week">Vista Semanal</option>
-                        <option value="day">Vista Diaria</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="openNewAppointmentModal(new Date(), '09:00')" style="margin-left: 1rem;">
-                        <i class="fas fa-plus"></i> Nueva Cita
-                    </button>
-                </div>
             </header>
 
-            <!-- Calendar Header -->
-            <section class="content-section">
-                <div class="calendar-header">
-                    <div class="calendar-nav">
+            <!-- Calendar Controls Bar -->
+            <section class="content-section" style="padding: 1rem 1.5rem;">
+                <div
+                    style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                    <!-- Left: Navigation -->
+                    <div class="calendar-nav" style="display: flex; align-items: center; gap: 0.5rem;">
                         <button class="btn-icon" onclick="previousPeriod()">←</button>
-                        <h3 class="calendar-title" id="calendar-title">Diciembre 2024</h3>
+                        <h3 class="calendar-title" id="calendar-title"
+                            style="margin: 0; min-width: 180px; text-align: center;">Diciembre 2024</h3>
                         <button class="btn-icon" onclick="nextPeriod()">→</button>
-                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 1rem;">Hoy</button>
+                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 0.5rem;">Hoy</button>
+                    </div>
+
+                    <!-- Right: View + New Appointment -->
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <select id="view-select" class="search-input" style="width: auto; min-width: 140px;">
+                            <option value="month">Vista Mensual</option>
+                            <option value="week">Vista Semanal</option>
+                            <option value="day">Vista Diaria</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openNewAppointmentModal(new Date(), '09:00')">
+                            <i class="fas fa-plus"></i> Nueva Cita
+                        </button>
                     </div>
                 </div>
+            </section>
 
-                <!-- Unified Calendar Container -->
+            <!-- Unified Calendar Container -->
+            <section class="content-section">
                 <div id="calendar-main" class="calendar-main-container">
                     <!-- El contenido cambia dinámicamente según la vista -->
                 </div>
@@ -137,7 +144,8 @@
 
             <!-- Filters & Legend -->
             <section class="content-section">
-                <div class="section-header" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                <div class="section-header"
+                    style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
                     <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--gold);">
                         <i class="fas fa-filter"></i> Filtros y Estados
                     </h3>

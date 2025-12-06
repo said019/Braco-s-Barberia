@@ -26,31 +26,11 @@ const app = express();
 // MIDDLEWARE GLOBAL
 // ============================================
 
-// Seguridad
-// Seguridad
-if (config.env === 'production') {
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
-        scriptSrcAttr: ["'unsafe-inline'"], // Permitir onclick y otros event handlers inline
-        styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-        imgSrc: ["'self'", "data:", "https:", "http:"],
-        connectSrc: ["'self'", "https:", "http:"],
-        fontSrc: ["'self'", "https:", "http:", "data:"],
-        objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        frameSrc: ["'self'"],
-      },
-    },
-  }));
-} else {
-  // En desarrollo, deshabilitar CSP para permitir inline scripts
-  app.use(helmet({
-    contentSecurityPolicy: false
-  }));
-}
+// Seguridad - Deshabilitar CSP temporalmente para permitir todos los scripts inline
+// TODO: Refactorizar el código para usar event listeners en lugar de onclick inline
+app.use(helmet({
+  contentSecurityPolicy: false  // Deshabilitado temporalmente para permitir onclick inline
+}));
 
 // CORS
 app.use(cors(config.cors));
