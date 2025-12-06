@@ -75,6 +75,29 @@ export const Appointment = {
     return result.rows[0];
   },
 
+  // Obtener cita por código de checkout
+  async getByCheckoutCode(code) {
+    const sql = `
+      SELECT 
+        a.*,
+        c.id as client_id,
+        c.name as client_name,
+        c.phone as client_phone,
+        c.email as client_email,
+        s.name as service_name,
+        s.duration_minutes,
+        s.price as service_price
+      FROM appointments a
+      JOIN clients c ON a.client_id = c.id
+      JOIN services s ON a.service_id = s.id
+      WHERE a.checkout_code = $1
+      ORDER BY a.appointment_date DESC
+      LIMIT 1
+    `;
+    const result = await query(sql, [code]);
+    return result.rows[0];
+  },
+
   // Obtener cita por UUID
   async getByUuid(uuid) {
     const sql = `
@@ -114,7 +137,7 @@ export const Appointment = {
     }
 
     const businessHours = hoursResult.rows[0];
-    
+
     // Obtener citas existentes
     const appointmentsResult = await query(
       `SELECT start_time, end_time FROM appointments 
@@ -123,7 +146,7 @@ export const Appointment = {
     );
 
     const bookedSlots = appointmentsResult.rows;
-    
+
     // Generar slots disponibles
     const slots = [];
     const slotInterval = 30; // minutos
@@ -180,7 +203,7 @@ export const Appointment = {
   // Crear cita
   async create(appointmentData) {
     const { client_id, service_id, appointment_date, start_time, end_time, notes, created_by } = appointmentData;
-    
+
     // Generar código de checkout
     const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
     const checkout_code = codeResult.rows[0].code;

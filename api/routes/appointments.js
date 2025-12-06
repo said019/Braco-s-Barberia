@@ -9,6 +9,7 @@ const router = express.Router();
 
 // Rutas públicas
 router.get('/available-slots', appointmentController.getAvailableSlots);
+router.get('/by-code/:code', appointmentController.getByCheckoutCode);
 router.post('/', validateAppointment, appointmentController.create);
 
 // Rutas protegidas (admin)

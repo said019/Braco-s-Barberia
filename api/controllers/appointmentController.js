@@ -87,6 +87,30 @@ export const appointmentController = {
     }
   },
 
+  // GET /api/appointments/by-code/:code - Buscar cita por código de checkout
+  async getByCheckoutCode(req, res, next) {
+    try {
+      const { code } = req.params;
+
+      if (!code || code.length !== 4) {
+        throw new AppError('Código de checkout inválido', 400);
+      }
+
+      const appointment = await Appointment.getByCheckoutCode(code);
+
+      if (!appointment) {
+        throw new AppError('No se encontró ninguna cita con ese código', 404);
+      }
+
+      res.json({
+        success: true,
+        data: appointment
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // POST /api/appointments - Crear cita
   async create(req, res, next) {
     try {
