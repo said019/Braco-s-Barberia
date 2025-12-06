@@ -4,6 +4,7 @@ import { AppError } from '../middleware/errorHandler.js';
 export const Checkout = {
     // Procesar checkout completo
     async process(data) {
+        console.log('Processing checkout with data:', JSON.stringify(data, null, 2));
         return transaction(async (client) => {
             const {
                 appointment_id,
@@ -17,6 +18,26 @@ export const Checkout = {
                 products = [],
                 notes
             } = data;
+
+            // ... (rest of code)
+
+            // 6. Crear transacción financiera
+            if (total > 0) {
+                console.log('Creating transaction for client:', client_id);
+                await client.query(`
+          INSERT INTO transactions (
+            checkout_id, client_id, type, description, 
+            amount, payment_method, transaction_date
+          )
+          VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
+        `, [
+                    checkoutId,
+                    client_id,
+                    `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
+                    total,
+                    payment_method
+                ]);
+            }
 
             // 1. Verificar estado de la cita
             const appointmentCheck = await client.query(
