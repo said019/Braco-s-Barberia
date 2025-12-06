@@ -518,6 +518,45 @@ router.get('/memberships', authenticateToken, async (req, res, next) => {
     }
 });
 
+// GET /api/admin/memberships/:id
+router.get('/memberships/:id', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(`
+            SELECT cm.*, c.name as client_name, c.phone as client_phone,
+                   mt.name as type_name, mt.price as type_price,
+                   cm.total_services - cm.used_services as remaining_services
+            FROM client_memberships cm
+            JOIN clients c ON cm.client_id = c.id
+            JOIN membership_types mt ON cm.membership_type_id = mt.id
+            WHERE cm.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Membresía no encontrada' });
+        }
+
+        // Get payment history
+        const payments = await db.query(`
+            SELECT amount, transaction_date as payment_date, payment_method
+            FROM transactions
+            WHERE client_id = $1 AND type = 'membership'
+            ORDER BY transaction_date DESC
+        `, [result.rows[0].client_id]);
+
+        const membership = {
+            ...result.rows[0],
+            payment_history: payments.rows
+        };
+
+        res.json(membership);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /api/admin/memberships
 router.post('/memberships', authenticateToken, async (req, res, next) => {
     try {
@@ -584,6 +623,29 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
         );
 
         res.status(201).json(result.rows[0]);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// PUT /api/admin/memberships/:id/cancel
+router.put('/memberships/:id/cancel', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(`
+            UPDATE client_memberships 
+            SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1 AND status = 'active'
+            RETURNING *
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Membresía no encontrada o ya cancelada' });
+        }
+
+        res.json({ success: true, message: 'Membresía cancelada', data: result.rows[0] });
 
     } catch (error) {
         next(error);
