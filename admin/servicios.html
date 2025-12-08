@@ -103,7 +103,7 @@
                 <div class="filters-bar">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="search-service" placeholder="Buscar servicio..."
+                        <input type="text" id="search-service" class="search-input" placeholder="Buscar servicio..."
                             onkeyup="filterServices()">
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                     api.get('/admin/service-categories'),
                     api.get('/admin/services')
                 ]);
-                
+
                 serviceCategories = cats || [];
                 allServices = srvs || [];
                 renderTable(allServices);
@@ -171,7 +171,7 @@
 
         function renderTable(services) {
             const tbody = document.getElementById('services-table-body');
-            
+
             if (services.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">No hay servicios registrados</td></tr>`;
                 return;
@@ -210,20 +210,20 @@
 
         function filterServices() {
             const query = document.getElementById('search-service').value.toLowerCase();
-            const filtered = allServices.filter(s => 
-                s.name.toLowerCase().includes(query) || 
+            const filtered = allServices.filter(s =>
+                s.name.toLowerCase().includes(query) ||
                 (s.category_name && s.category_name.toLowerCase().includes(query))
             );
             renderTable(filtered);
         }
 
         // Modal Logic
-        window.openServiceModal = function(id = null) {
+        window.openServiceModal = function (id = null) {
             const service = id ? allServices.find(s => s.id === id) : null;
             const title = service ? 'Editar Servicio' : 'Nuevo Servicio';
-            
+
             // Build Category Options
-            const categoryOptions = serviceCategories.map(c => 
+            const categoryOptions = serviceCategories.map(c =>
                 `<option value="${c.id}" ${service && service.category_id === c.id ? 'selected' : ''}>${c.name}</option>`
             ).join('');
 
@@ -282,14 +282,14 @@
             // SOLUTION: Include simple modal logic here or rely on global if we include js/admin.js
             // But this is "admin/servicios.html" -> New Page.
             // I'll add simple modal logic inside the script or just inject HTML.
-            
+
             showCustomModal('serviceModal', title, content, footer);
         };
 
         // Simple Modal Helper (since api.js doesn't have it)
         function showCustomModal(id, title, content, footer) {
             const existing = document.getElementById(id);
-            if(existing) existing.remove();
+            if (existing) existing.remove();
 
             const html = `
                 <div class="modal-overlay active" id="${id}">
@@ -309,7 +309,7 @@
 
         async function saveService(id) {
             const form = document.getElementById('service-form');
-            if(!form.checkValidity()) {
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
@@ -337,12 +337,12 @@
         }
 
         async function toggleServiceStatus(id, currentStatus) {
-            if(!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este servicio?`)) return;
+            if (!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este servicio?`)) return;
             // Assuming API supports partial update or we fetch full?
             // The API PUT expects full object.
             // To be safe, find service and flip status.
             const service = allServices.find(s => s.id === id);
-            if(!service) return;
+            if (!service) return;
 
             try {
                 // Construct full update payload (Backend expects all fields for PUT)
@@ -355,11 +355,11 @@
         }
 
         async function deleteService(id) {
-            if(!confirm('¿Eliminar servicio? Esta acción no se puede deshacer (se archivará).')) return;
+            if (!confirm('¿Eliminar servicio? Esta acción no se puede deshacer (se archivará).')) return;
             try {
                 await api.delete(`/admin/services/${id}`);
                 loadData();
-            } catch(error) {
+            } catch (error) {
                 alert('Error al eliminar: ' + error.message);
             }
         }
