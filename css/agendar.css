@@ -603,11 +603,11 @@
     .booking-main {
         padding: 8rem 2rem 4rem;
     }
-    
+
     .services-select-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(5, 1fr);
     }
@@ -618,180 +618,180 @@
     .booking-main {
         padding: 6rem 1.5rem 3rem;
     }
-    
+
     .booking-header h1 {
         font-size: 2rem;
     }
-    
+
     .booking-header p {
         font-size: 0.9rem;
     }
-    
+
     .booking-steps {
         gap: 0.5rem;
         padding: 0 1rem;
     }
-    
+
     .step {
         min-width: 60px;
     }
-    
+
     .step-number {
         width: 35px;
         height: 35px;
         font-size: 0.9rem;
     }
-    
+
     .step-line {
         width: 30px;
         height: 2px;
     }
-    
+
     .step-label {
         font-size: 0.65rem;
     }
-    
+
     .booking-content {
         padding: 2rem 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.5rem;
     }
-    
+
     .category-tabs {
         flex-wrap: wrap;
         gap: 0.75rem;
     }
-    
+
     .category-tab {
         flex: 1 1 auto;
         min-width: 120px;
         padding: 0.75rem 1rem;
         font-size: 0.75rem;
     }
-    
+
     .services-select-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .service-option {
         padding: 1.25rem;
     }
-    
+
     .service-option-header h3 {
         font-size: 1rem;
     }
-    
+
     .service-duration,
     .service-price {
         font-size: 0.75rem;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .service-option-description {
         font-size: 0.85rem;
     }
-    
+
     .service-option-features li {
         font-size: 0.8rem;
     }
-    
+
     .datetime-container {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .calendar-widget {
         padding: 1.5rem;
     }
-    
+
     .calendar-header h3 {
         font-size: 1.1rem;
     }
-    
+
     .calendar-nav {
         gap: 1rem;
     }
-    
+
     .calendar-nav button {
         width: 35px;
         height: 35px;
         font-size: 1rem;
     }
-    
+
     .calendar-grid {
         gap: 0.25rem;
     }
-    
+
     .calendar-day {
         padding: 0.75rem 0.5rem;
         font-size: 0.85rem;
     }
-    
+
     .time-selection {
         padding: 1.5rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(4, 1fr);
         gap: 0.75rem;
     }
-    
+
     .time-slot {
         padding: 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
         gap: 1.25rem;
     }
-    
+
     .form-label {
         font-size: 0.8rem;
     }
-    
+
     .form-input,
     .form-textarea {
         padding: 0.875rem;
         font-size: 0.9rem;
     }
-    
+
     .booking-summary {
         padding: 1.5rem;
     }
-    
+
     .summary-title {
         font-size: 1.1rem;
     }
-    
+
     .summary-item-label {
         font-size: 0.8rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.9rem;
     }
-    
+
     .summary-total {
         padding-top: 1rem;
         margin-top: 1rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.9rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.5rem;
     }
-    
+
     .step-actions {
         gap: 1rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         padding: 1rem 2rem;
@@ -804,244 +804,244 @@
     .booking-main {
         padding: 5rem 1rem 2rem;
     }
-    
+
     .booking-header {
         margin-bottom: 2rem;
     }
-    
+
     .booking-header h1 {
         font-size: 1.75rem;
     }
-    
+
     .booking-header p {
         font-size: 0.85rem;
     }
-    
+
     .booking-steps {
         gap: 0.25rem;
         padding: 0 0.5rem;
     }
-    
+
     .step {
         min-width: 50px;
     }
-    
+
     .step-number {
         width: 30px;
         height: 30px;
         font-size: 0.8rem;
     }
-    
+
     .step-line {
         width: 20px;
     }
-    
+
     .step-label {
         font-size: 0.6rem;
     }
-    
+
     .booking-content {
         padding: 1.5rem 1rem;
         border-radius: 12px;
     }
-    
+
     .step-title {
         font-size: 1.25rem;
         margin-bottom: 1.25rem;
     }
-    
+
     .category-tabs {
         gap: 0.5rem;
         flex-direction: column;
     }
-    
+
     .category-tab {
         width: 100%;
         padding: 0.625rem 1rem;
         font-size: 0.7rem;
     }
-    
+
     .services-select-grid {
         gap: 0.875rem;
     }
-    
+
     .service-option {
         padding: 1rem;
     }
-    
+
     .service-option-header {
         margin-bottom: 0.75rem;
     }
-    
+
     .service-option-header h3 {
         font-size: 0.95rem;
     }
-    
+
     .service-option-meta {
         gap: 0.5rem;
     }
-    
+
     .service-duration,
     .service-price {
         font-size: 0.7rem;
         padding: 0.35rem 0.7rem;
     }
-    
+
     .service-option-description {
         font-size: 0.8rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .service-option-features {
         gap: 0.35rem;
     }
-    
+
     .service-option-features li {
         font-size: 0.75rem;
         padding-left: 1.25rem;
     }
-    
+
     .calendar-widget,
     .time-selection {
         padding: 1.25rem;
     }
-    
+
     .calendar-header h3 {
         font-size: 1rem;
     }
-    
+
     .calendar-nav {
         gap: 0.75rem;
     }
-    
+
     .calendar-nav button {
         width: 32px;
         height: 32px;
         font-size: 0.9rem;
     }
-    
+
     .calendar-grid {
         gap: 0.15rem;
         font-size: 0.75rem;
     }
-    
+
     .calendar-day {
         padding: 0.5rem 0.25rem;
         font-size: 0.8rem;
     }
-    
+
     .time-selection h3 {
         font-size: 1rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.5rem;
     }
-    
+
     .time-slot {
         padding: 0.625rem;
         font-size: 0.8rem;
     }
-    
+
     .form-grid {
         gap: 1rem;
     }
-    
+
     .form-label {
         font-size: 0.75rem;
     }
-    
+
     .form-input,
     .form-textarea {
         padding: 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .form-textarea {
         min-height: 100px;
     }
-    
+
     .booking-summary {
         padding: 1.25rem;
     }
-    
+
     .summary-title {
         font-size: 1rem;
         margin-bottom: 1rem;
     }
-    
+
     .summary-item {
         padding: 0.75rem 0;
     }
-    
+
     .summary-item-label {
         font-size: 0.75rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.85rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.85rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.3rem;
     }
-    
+
     .step-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         width: 100%;
         padding: 0.875rem 1.5rem;
         font-size: 0.8rem;
     }
-    
+
     .success-icon {
         width: 70px;
         height: 70px;
         font-size: 2rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .success-title {
         font-size: 1.75rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .success-message {
         font-size: 0.9rem;
         margin-bottom: 2rem;
     }
-    
+
     .success-details {
         padding: 1.25rem;
         margin-bottom: 2rem;
     }
-    
+
     .detail-item {
         padding: 0.75rem 0;
     }
-    
+
     .detail-label {
         font-size: 0.75rem;
     }
-    
+
     .detail-value {
         font-size: 0.9rem;
     }
-    
+
     .success-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .success-actions .btn-primary,
     .success-actions .btn-outline {
         width: 100%;
@@ -1053,19 +1053,19 @@
     .booking-header h1 {
         font-size: 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.1rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .service-option-header h3 {
         font-size: 0.9rem;
     }
-    
+
     .success-title {
         font-size: 1.5rem;
     }
@@ -1076,12 +1076,82 @@
     .booking-main {
         padding: 4rem 1.5rem 2rem;
     }
-    
+
     .booking-steps {
         margin-bottom: 1.5rem;
     }
-    
+
     .datetime-container {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Payment Options in Modal */
+.bank-details-container {
+    background: rgba(196, 163, 90, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.section-label {
+    font-size: 0.85rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.payment-option {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-option:last-child {
+    margin-bottom: 0;
+}
+
+.payment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--cream);
+    font-size: 0.95rem;
+}
+
+.payment-icon {
+    font-size: 1.2rem;
+}
+
+.payment-info {
+    padding-left: 2rem;
+    font-size: 0.9rem;
+    color: rgba(245, 245, 240, 0.8);
+}
+
+.payment-info p {
+    margin: 0.2rem 0;
+}
+
+.copyable {
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    user-select: all;
+    color: var(--gold);
+}
+
+.beneficiary {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-style: italic;
 }

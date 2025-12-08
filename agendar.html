@@ -263,13 +263,44 @@
                     Notamos que es tu primera vez con nosotros. Para confirmar tu cita, requerimos un <strong>depósito
                         de $100 MXN</strong>.
                 </p>
-                <div class="bank-details">
-                    <p><strong>Cuenta para depósito:</strong></p>
-                    <p class="account-number">BBVA: 1234 5678 9012 3456</p>
-                    <p class="account-name">Braco's Barbería</p>
+                <div class="bank-details-container">
+                    <p class="section-label">Opciones de pago:</p>
+
+                    <div class="payment-option">
+                        <div class="payment-header">
+                            <span class="payment-icon">💳</span>
+                            <strong>Transferencia (NU México)</strong>
+                        </div>
+                        <div class="payment-info">
+                            <p>CLABE: <span class="copyable">638180000176357788</span></p>
+                            <p class="beneficiary">Miguel Alejandro Trujillo Revuelta</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-option">
+                        <div class="payment-header">
+                            <span class="payment-icon">📱</span>
+                            <strong>Mercado Pago</strong>
+                        </div>
+                        <div class="payment-info">
+                            <p>CLABE: <span class="copyable">722969010620447083</span></p>
+                            <p class="beneficiary">Miguel Alejandro Trujillo Revuelta</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-option">
+                        <div class="payment-header">
+                            <span class="payment-icon">🏪</span>
+                            <strong>Depósito OXXO</strong>
+                        </div>
+                        <div class="payment-info">
+                            <p>Tarjeta: <span class="copyable">4217 4700 9774 4441</span></p>
+                        </div>
+                    </div>
                 </div>
+
                 <p class="modal-text-small">
-                    Por favor, envía tu comprobante por WhatsApp para confirmar tu espacio.
+                    Realiza tu depósito y envía el comprobante por WhatsApp para confirmar.
                 </p>
                 <div class="modal-actions">
                     <button class="btn-whatsapp" onclick="sendDepositWhatsApp()">

@@ -210,25 +210,23 @@ const SERVICES_DATA = [
         price: 4800,
         duration: 180,
         image: "assets/instalacio_protesis.jpeg",
-        description: `Las prótesis o remplazo capilar es una solución inovadora y efectiva para aquellos que experimenta perida de cabello o calvicie severa
-Tiempo aproximado 180 minutos (3 horas)
--Diagnostico
--Prótesis capilar
--Visagismo
--Personalización`
+        description: `Las prótesis o reemplazo capilar representan una solución innovadora y efectiva para aquellos que experimentan pérdida de cabello.
+-Mejora instantánea en la apariencia y confianza.
+-Solución no quirúrgica y resultados naturales.
+-Personalización total y fácil mantenimiento.
+-No afecta el crecimiento del cabello natural.
+-Durabilidad a largo plazo.`
     },
     {
         id: 6,
-        name: "MANTENIMIENTO DE PROTESIS CAPILAR",
+        name: "MANTENIMIENTO DE PRÓTESIS CAPILAR",
         price: 650,
         duration: 120,
         image: "assets/mant_protesis.jpeg",
-        description: `Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación
-Tiempo aproximado 120 minutos (2 horas)
--Retiro seguro
--Limpieza profesional
--Ajuste de adhesivos
--Colocación segura`
+        description: `Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación.
+-Retiro seguro y limpieza profesional.
+-Ajuste de adhesivos y colocación segura.
+-Hidratación de la pieza.`
     },
     {
         id: 7,
@@ -236,14 +234,12 @@ Tiempo aproximado 120 minutos (2 horas)
         price: 550,
         duration: 60,
         image: "assets/TIC.jpeg",
-        description: `Recomendado para las personas que inician con un problema de calvicie de leve a moderada 
-El TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo con el objetivo de lograr un cuero cabelludo sano y por lo tanto un cabello grueso y en ocasiones abundante
--Duración 60minutos
--Exfoliación capilar
--Alta Frecuencia
--Fotobiomodulación
--Ozonoterapia
--Aplicación de productos Premium`
+        description: `Braco’s NeoCapilar: Salud y prevención de la caída del cabello. Restaura, fortalece y estimula el crecimiento natural.
+-Ozonoterapia: Purifica y oxigena.
+-Alta Frecuencia: Estimula irrigación sanguínea.
+-Fotobiomodulación (Luz LED): Regeneración celular.
+-Productos dermatológicos premium.
+-Diagnóstico inicial requerido.`
     },
     {
         id: 8,
