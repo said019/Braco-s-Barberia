@@ -273,6 +273,11 @@
                     `
                 },
                 {
+                    field: 'folio_number',
+                    label: 'Folio',
+                    format: (value) => value ? `<span class="badge" style="background: rgba(196, 163, 90, 0.1); color: var(--primary-gold);">${value}</span>` : '-'
+                },
+                {
                     field: 'membership_type',
                     label: 'Plan',
                     format: (value) => `<span class="font-medium text-gold">${value}</span>`
@@ -287,12 +292,12 @@
                     label: 'Vencimiento',
                     format: (value, row) => {
                         if (!value) return '<span class="text-success">Lifetime</span>';
-                        
+
                         const date = new Date(value);
                         const today = new Date();
                         const diffTime = date - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         let badge = '';
                         if (diffDays < 0) {
                             badge = ' <span class="badge inactive">Vencida</span>';
@@ -306,7 +311,7 @@
                     field: 'remaining_services',
                     label: 'Servicios',
                     format: (value, row) => {
-                         // Check for unlimited (e.g. Black) based on type or value
+                        // Check for unlimited (e.g. Black) based on type or value
                         if (row.membership_type.toLowerCase() === 'black') return '♾️';
                         return `${value !== undefined ? value : '?'} est.`;
                     }
@@ -368,11 +373,16 @@
                             <select id="membership-type" required onchange="updateMembershipPreview()">
                                 <option value="">Selecciona un plan</option>
                                 ${membershipTypes.map(t => `
-                                    <option value="${t.id}" data-price="${t.price}" data-services="${t.total_services || 0}">
+                                    <option value="${t.id}" data-price="${t.price}" data-services="${t.total_services || 0}" data-transferable="${t.is_transferable}">
                                         ${t.name} - ${formatCurrency(t.price)}
                                     </option>
                                 `).join('')}
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="membership-folio">Folio *</label>
+                            <input type="text" id="membership-folio" required placeholder="Ingrese el folio de la tarjeta" class="form-control">
                         </div>
 
                         <div class="form-group">
@@ -438,7 +448,8 @@
             details.innerHTML = `
                 Plan: ${typeName}<br>
                 Precio: ${formatCurrency(price)}<br>
-                Servicios mensuales: ${services > 0 ? services : 'Ilimitados'}<br>
+                Servicios: ${services > 0 ? services : 'Ilimitados'}<br>
+                Transferible: ${option.dataset.transferable === 'true' ? 'Sí' : 'No'}<br>
                 Inicio: ${formatDate(startDate)}<br>
                 Vencimiento: ${endDate}
             `;
@@ -456,7 +467,8 @@
             const membershipData = {
                 client_id: parseInt(document.getElementById('membership-client').value),
                 membership_type_id: parseInt(document.getElementById('membership-type').value),
-                payment_method: document.getElementById('payment-method').value
+                payment_method: document.getElementById('payment-method').value,
+                folio_number: document.getElementById('membership-folio').value
             };
 
             try {
@@ -480,6 +492,7 @@
                         <p><strong>Cliente:</strong> ${membership.client_name}</p>
                         <p><strong>Teléfono:</strong> ${formatPhone(membership.client_phone)}</p>
                         <p><strong>Plan:</strong> ${membership.type_name}</p>
+                        <p><strong>Folio:</strong> ${membership.folio_number || 'N/A'}</p>
                         <p><strong>Precio:</strong> ${formatCurrency(membership.type_price)}</p>
                         <p><strong>Fecha de Inicio:</strong> ${formatDate(membership.start_date)}</p>
                         <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vencimiento (Lifetime)'}</p>

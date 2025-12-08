@@ -504,7 +504,8 @@ router.get('/memberships', authenticateToken, async (req, res, next) => {
         const result = await db.query(`
             SELECT cm.*, c.name as client_name, c.phone as client_phone,
                    mt.name as membership_type, mt.price,
-                   cm.total_services - cm.used_services as remaining_services
+                   cm.total_services - cm.used_services as remaining_services,
+                   cm.folio_number
             FROM client_memberships cm
             JOIN clients c ON cm.client_id = c.id
             JOIN membership_types mt ON cm.membership_type_id = mt.id
@@ -528,7 +529,8 @@ router.get('/memberships/:id', authenticateToken, async (req, res, next) => {
                    mt.name as type_name, mt.price as type_price,
                    cm.total_services - cm.used_services as remaining_services,
                    cm.activation_date as start_date,
-                   cm.expiration_date as end_date
+                   cm.expiration_date as end_date,
+                   cm.folio_number
             FROM client_memberships cm
             JOIN clients c ON cm.client_id = c.id
             JOIN membership_types mt ON cm.membership_type_id = mt.id
@@ -562,7 +564,12 @@ router.get('/memberships/:id', authenticateToken, async (req, res, next) => {
 // POST /api/admin/memberships
 router.post('/memberships', authenticateToken, async (req, res, next) => {
     try {
-        const { client_id, membership_type_id, payment_method } = req.body;
+        const { client_id, membership_type_id, payment_method, folio_number } = req.body;
+
+        // Validaciones
+        if (!client_id || !membership_type_id || !payment_method) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
 
         // Get membership type
         const typeResult = await db.query(
@@ -576,15 +583,31 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
 
         const membershipType = typeResult.rows[0];
 
-        // Check existing active membership
+        // Validar Folio (obligatorio para Golden Cards)
+        if (!folio_number || folio_number.trim() === '') {
+            return res.status(400).json({ error: 'El folio de la tarjeta es obligatorio' });
+        }
+
+        // Check if folio already exists
+        const existingFolio = await db.query(
+            'SELECT id FROM client_memberships WHERE folio_number = $1 AND status != \'cancelled\'',
+            [folio_number]
+        );
+
+        if (existingFolio.rows.length > 0) {
+            return res.status(409).json({ error: 'Este folio ya está registrado' });
+        }
+
+        // Check existing active membership for THIS TYPE
+        // Ahora permitimos múltiples membresías activas si son de diferente tipo (ej: Corte y NeoCapilar)
         const existing = await db.query(
             `SELECT id FROM client_memberships 
-             WHERE client_id = $1 AND status = 'active'`,
-            [client_id]
+             WHERE client_id = $1 AND membership_type_id = $2 AND status = 'active'`,
+            [client_id, membership_type_id]
         );
 
         if (existing.rows.length > 0) {
-            return res.status(409).json({ error: 'El cliente ya tiene una membresía activa' });
+            return res.status(409).json({ error: 'El cliente ya tiene una membresía de este tipo activa' });
         }
 
         // Calculate expiration date
@@ -596,8 +619,8 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
         const result = await db.query(
             `INSERT INTO client_memberships 
              (client_id, membership_type_id, status, total_services, used_services,
-              purchase_date, activation_date, expiration_date, payment_method, payment_amount)
-             VALUES ($1, $2, 'active', $3, 0, $4, $4, $5, $6, $7)
+              purchase_date, activation_date, expiration_date, payment_method, payment_amount, folio_number)
+             VALUES ($1, $2, 'active', $3, 0, $4, $4, $5, $6, $7, $8)
              RETURNING *`,
             [
                 client_id,
@@ -606,7 +629,8 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
                 purchaseDate.toISOString().split('T')[0],
                 expirationDate.toISOString().split('T')[0],
                 payment_method,
-                membershipType.price
+                membershipType.price,
+                folio_number
             ]
         );
 
