@@ -498,58 +498,59 @@ async function submitBooking() {
                 appointment_date: state.selectedDate.toISOString().split('T')[0]
             };
 
-            name: data.name,
-                phone: data.phone,
-                    service: state.selectedService.name, // state.selectedService is already the object
-                        date: data.appointment_date, // Formato YYYY-MM-DD
-                            displayDate: new Date(`${data.appointment_date}T00:00:00`).toLocaleDateString('es-MX', {
-                                weekday: 'long',
-                                day: 'numeric',
-                                month: 'long'
-                            }),
-                                time: state.selectedTime,
-                                    start_time: state.selectedTime // Necesario para crear la cita
-        };
-
-        // 2. Crear cliente
-        try {
-            const newClient = await API.createClient({
+            state.tempClient = {
                 name: data.name,
-                phone: data.phone
-            });
+                phone: data.phone,
+                service: state.selectedService.name, // state.selectedService is already the object
+                date: data.appointment_date, // Formato YYYY-MM-DD
+                displayDate: new Date(`${data.appointment_date}T00:00:00`).toLocaleDateString('es-MX', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                }),
+                time: state.selectedTime,
+                start_time: state.selectedTime // Necesario para crear la cita
+            };
 
-            if (newClient && newClient.id) {
-                state.clientCode = newClient.code; // Store code just in case
+            // 2. Crear cliente
+            try {
+                const newClient = await API.createClient({
+                    name: data.name,
+                    phone: data.phone
+                });
 
-                // 3. Crear Cita con estado PENDING
-                const appointmentData = {
-                    client_id: newClient.id,
-                    service_id: state.selectedService.id, // Use .id here
-                    appointment_date: state.selectedDate.toISOString().split('T')[0], // Ensure YYYY-MM-DD
-                    start_time: state.selectedTime,
-                    notes: 'Cliente Nuevo - Pendiente de Depósito',
-                    status: 'pending' // Estado especial
-                };
+                if (newClient && newClient.id) {
+                    state.clientCode = newClient.code; // Store code just in case
 
-                const appointment = await API.createAppointment(appointmentData);
+                    // 3. Crear Cita con estado PENDING
+                    const appointmentData = {
+                        client_id: newClient.id,
+                        service_id: state.selectedService.id, // Use .id here
+                        appointment_date: state.selectedDate.toISOString().split('T')[0], // Ensure YYYY-MM-DD
+                        start_time: state.selectedTime,
+                        notes: 'Cliente Nuevo - Pendiente de Depósito',
+                        status: 'pending' // Estado especial
+                    };
 
-                if (appointment && appointment.success) {
-                    // 4. Mostrar modal de depósito
-                    showDepositModal(state.tempClient);
+                    const appointment = await API.createAppointment(appointmentData);
+
+                    if (appointment && appointment.success) {
+                        // 4. Mostrar modal de depósito
+                        showDepositModal(state.tempClient);
+                    } else {
+                        throw new Error('No se pudo pre-agendar la cita.');
+                    }
                 } else {
-                    throw new Error('No se pudo pre-agendar la cita.');
+                    throw new Error('Error al registrar cliente.');
                 }
-            } else {
-                throw new Error('Error al registrar cliente.');
+            } catch (error) {
+                console.error('Error flow nuevo cliente:', error);
+                showToast('Error al procesar registro: ' + error.message, 'error');
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = originalText;
             }
-        } catch (error) {
-            console.error('Error flow nuevo cliente:', error);
-            showToast('Error al procesar registro: ' + error.message, 'error');
-            btnConfirm.disabled = false;
-            btnConfirm.textContent = originalText;
+            return; // Detener flujo normal
         }
-        return; // Detener flujo normal
-    }
 
         /*
         // Lógica anterior de creación automática
@@ -563,24 +564,24 @@ async function submitBooking() {
 
         // Crear la cita
         const bookingData = {
-        client_id: client.id,
-        service_id: state.selectedService.id,
-        appointment_date: state.selectedDate.toISOString().split('T')[0],
-        start_time: state.selectedTime,
-        notes: formData.get('notes') || null
-    };
+            client_id: client.id,
+            service_id: state.selectedService.id,
+            appointment_date: state.selectedDate.toISOString().split('T')[0],
+            start_time: state.selectedTime,
+            notes: formData.get('notes') || null
+        };
 
-    const result = await API.createAppointment(bookingData);
+        const result = await API.createAppointment(bookingData);
 
-    // Mostrar pantalla de éxito
-    showSuccess(result);
+        // Mostrar pantalla de éxito
+        showSuccess(result);
 
-} catch (error) {
-    console.error('Error:', error);
-    showToast(error.message || 'Error al agendar la cita', 'error');
-    btnConfirm.disabled = false;
-    btnConfirm.textContent = originalText;
-}
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message || 'Error al agendar la cita', 'error');
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = originalText;
+    }
 }
 
 // ============================================================================
