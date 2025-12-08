@@ -156,7 +156,8 @@ export const appointmentController = {
         appointment_date,
         start_time,
         end_time,
-        notes
+        notes,
+        status: req.body.status // Pass status if provided (e.g., 'pending')
       });
 
       res.status(201).json({

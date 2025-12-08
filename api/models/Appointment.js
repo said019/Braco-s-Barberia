@@ -202,20 +202,23 @@ export const Appointment = {
 
   // Crear cita
   async create(appointmentData) {
-    const { client_id, service_id, appointment_date, start_time, end_time, notes, created_by } = appointmentData;
+    const { client_id, service_id, appointment_date, start_time, end_time, notes, created_by, status } = appointmentData;
 
     // Generar código de checkout
     const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
     const checkout_code = codeResult.rows[0].code;
 
+    // Use provided status or default to 'scheduled'
+    const appointmentStatus = status || 'scheduled';
+
     const sql = `
       INSERT INTO appointments 
-        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     const result = await query(sql, [
-      client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by || 'client'
+      client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by || 'client', appointmentStatus
     ]);
     return result.rows[0];
   },
