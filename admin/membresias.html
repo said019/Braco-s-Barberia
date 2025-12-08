@@ -100,6 +100,72 @@
                 </div>
             </header>
 
+            <!-- Catalog Section -->
+            <section class="membership-catalog-section">
+                <div class="section-header">
+                    <h3>Catálogo de Membresías</h3>
+                    <p class="text-muted">Planes disponibles para venta</p>
+                </div>
+                <div class="membership-cards-grid">
+                    <!-- Golden Card Corte -->
+                    <div class="membership-card-display golden">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-cut"></i></span>
+                            <h4>Golden Card Corte</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $1,500 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 6 Servicios Totales</li>
+                            <li><i class="fas fa-check"></i> Corte de Cabello</li>
+                            <li><i class="fas fa-check"></i> Ritual de Barba</li>
+                            <li class="restricted"><i class="fas fa-user-lock"></i> Intransferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block" onclick="openActivateMembershipModal(8)">Vender
+                            Plan</button>
+                    </div>
+
+                    <!-- Golden Card NeoCapilar -->
+                    <div class="membership-card-display golden">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-spa"></i></span>
+                            <h4>Golden NeoCapilar</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $3,850 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 8 Servicios Totales (Paga 7)</li>
+                            <li><i class="fas fa-check"></i> Terapia Integral Capilar (TIC)</li>
+                            <li><i class="fas fa-check"></i> Salud y Prevención</li>
+                            <li class="restricted"><i class="fas fa-user-lock"></i> Intransferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block" onclick="openActivateMembershipModal(9)">Vender
+                            Plan</button>
+                    </div>
+
+                    <!-- Black Card -->
+                    <div class="membership-card-display black">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-crown"></i></span>
+                            <h4>Black Card</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $3,300 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 12 Servicios Totales (Paga 11)</li>
+                            <li><i class="fas fa-check"></i> Cortes, Barba, Mascarillas</li>
+                            <li><i class="fas fa-check"></i> Manicura y Pedicura</li>
+                            <li class="highlight"><i class="fas fa-share-alt"></i> Transferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block"
+                            onclick="openActivateMembershipModal(10)">Vender Plan</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- Stats -->
             <section class="stats-grid">
                 <div class="stat-card">
@@ -344,7 +410,7 @@
             container.innerHTML = createTable(filteredMemberships, columns);
         }
 
-        async function openActivateMembershipModal() {
+        async function openActivateMembershipModal(preSelectedTypeId = null) {
             // Load clients and membership types for dropdown
             try {
                 // Use fetchWithAuth for secured types endpoint
@@ -414,6 +480,12 @@
 
                 window.activateMembershipModal = showModal('activateMembershipModal', 'Activar Membresía', content, footer);
 
+                if (preSelectedTypeId) {
+                    const typeSelect = document.getElementById('membership-type');
+                    typeSelect.value = preSelectedTypeId;
+                    updateMembershipPreview();
+                }
+
             } catch (error) {
                 console.error('Error loading data:', error);
                 showToast('Error al cargar los datos', 'error');
@@ -422,11 +494,11 @@
 
         function updateMembershipPreview() {
             const typeSelect = document.getElementById('membership-type');
-            const startDate = document.getElementById('membership-start-date').value;
+            const startDate = document.getElementById('membership-start-date') ? document.getElementById('membership-start-date').value : new Date().toISOString().split('T')[0];
             const preview = document.getElementById('membership-preview');
             const details = document.getElementById('preview-details');
 
-            if (!typeSelect.value || !startDate) {
+            if (!typeSelect.value) {
                 preview.style.display = 'none';
                 return;
             }
