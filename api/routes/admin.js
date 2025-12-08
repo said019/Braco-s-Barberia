@@ -549,9 +549,18 @@ router.get('/memberships/:id', authenticateToken, async (req, res, next) => {
             ORDER BY transaction_date DESC
         `, [result.rows[0].client_id]);
 
+        // Get usage history
+        const usage = await db.query(`
+            SELECT mu.*
+            FROM membership_usage mu
+            WHERE mu.membership_id = $1
+            ORDER BY mu.used_at DESC
+        `, [id]);
+
         const membership = {
             ...result.rows[0],
-            payment_history: payments.rows
+            payment_history: payments.rows,
+            usage_history: usage.rows
         };
 
         res.json(membership);

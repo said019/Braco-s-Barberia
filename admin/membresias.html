@@ -507,11 +507,32 @@
                                 <p><strong>Historial de Pagos:</strong></p>
                                 ${membership.payment_history.map(p => `
                                     <div style="padding: 0.5rem 0;">
-                                        ${formatDate(p.payment_date)} - ${formatCurrency(p.amount)}
+                                        ${formatDate(p.payment_date)} - ${formatCurrency(p.amount)} <small>(${p.payment_method})</small>
                                     </div>
                                 `).join('')}
                             </div>
                         ` : ''}
+
+                        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(196, 163, 90, 0.1);">
+                            <p><strong>Historial de Uso (Sellos):</strong></p>
+                            ${membership.usage_history && membership.usage_history.length > 0 ?
+                        membership.usage_history.map(u => `
+                                    <div style="padding: 0.8rem; margin-bottom: 0.5rem; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4CAF50; border-radius: 4px;">
+                                        <div style="font-weight: 500; color: #4CAF50;">✅ Servicio Completado</div>
+                                        <div style="font-size: 0.9em;">${u.service_name || 'Servicio'}</div>
+                                        <div style="font-size: 0.8em; color: #666;">${formatDate(u.used_at)}</div>
+                                    </div>
+                                `).join('')
+                        : '<p style="color: #999; font-style: italic;">Sin uso registrado</p>'
+                    }
+                            ${(membership.total_services - membership.used_services) > 0 ?
+                        ` <div style="padding: 0.8rem; margin-top: 0.5rem; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px;">
+                                    <div style="font-weight: 500; color: #2196F3;">🔵 Servicios Restantes</div>
+                                    <div style="font-size: 0.9em;">${membership.total_services - membership.used_services} Disponibles</div>
+                                  </div>`
+                        : ''
+                    }
+                        </div>
                     </div>
                 `;
 

@@ -252,6 +252,33 @@
                 </div>
             </section>
         </div>
+
+        <!-- Deposit Modal -->
+        <div id="deposit-modal" class="modal-overlay hidden">
+            <div class="modal-content deposit-modal">
+                <button class="modal-close" onclick="closeDepositModal()">&times;</button>
+                <div class="modal-icon">👋</div>
+                <h3 class="modal-title">¡Bienvenido a Braco's!</h3>
+                <p class="modal-text">
+                    Notamos que es tu primera vez con nosotros. Para confirmar tu cita, requerimos un <strong>depósito
+                        de $100 MXN</strong>.
+                </p>
+                <div class="bank-details">
+                    <p><strong>Cuenta para depósito:</strong></p>
+                    <p class="account-number">BBVA: 1234 5678 9012 3456</p>
+                    <p class="account-name">Braco's Barbería</p>
+                </div>
+                <p class="modal-text-small">
+                    Por favor, envía tu comprobante por WhatsApp para confirmar tu espacio.
+                </p>
+                <div class="modal-actions">
+                    <button class="btn-whatsapp" onclick="sendDepositWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> Enviar Comprobante
+                    </button>
+                    <button class="btn-secondary" onclick="closeDepositModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->

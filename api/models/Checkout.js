@@ -43,34 +43,42 @@ export const Checkout = {
             // 2. Procesar membresía si se solicita
             if (use_membership) {
                 // Buscar membresía activa válida para este servicio
-                // Nota: Por ahora asumimos que cualquier membresía activa cubre el servicio
-                // En un futuro se podría validar tipos de servicio específicos
                 const membershipResult = await client.query(`
-          SELECT cm.*, mt.name as membership_name 
+          SELECT cm.*, mt.name as membership_name, mt.applicable_services
           FROM client_memberships cm
           JOIN membership_types mt ON cm.membership_type_id = mt.id
           WHERE cm.client_id = $1 
           AND cm.status = 'active'
           AND cm.expiration_date >= CURRENT_DATE
           AND (cm.total_services - cm.used_services) > 0
+          AND $2 = ANY(mt.applicable_services)
           ORDER BY cm.expiration_date ASC
           LIMIT 1
-        `, [client_id]);
+        `, [client_id, serviceId]);
 
                 if (membershipResult.rows.length === 0) {
-                    throw new AppError('No hay membresía activa con servicios disponibles', 400);
+                    throw new AppError('No hay membresía activa válida para este servicio', 400);
                 }
 
                 const membership = membershipResult.rows[0];
                 membershipId = membership.id;
 
-                // Descontar servicio
+                // Obtener costo de uso del servicio (sellos)
+                const serviceInfo = await client.query('SELECT usage_cost FROM services WHERE id = $1', [serviceId]);
+                const usageCost = serviceInfo.rows[0]?.usage_cost || 1;
+
+                // Verificar si alcanzan los sellos
+                if ((membership.total_services - membership.used_services) < usageCost) {
+                    throw new AppError(`Membresía insuficiente. Se requieren ${usageCost} sellos, tienes ${membership.total_services - membership.used_services}`, 400);
+                }
+
+                // Descontar servicio(s)
                 await client.query(`
           UPDATE client_memberships 
-          SET used_services = used_services + 1,
+          SET used_services = used_services + $2,
               updated_at = CURRENT_TIMESTAMP
           WHERE id = $1
-        `, [membershipId]);
+        `, [membershipId, usageCost]);
 
                 // Registrar uso en bitácora
                 await client.query(`

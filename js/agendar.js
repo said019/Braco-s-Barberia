@@ -484,13 +484,31 @@ async function submitBooking() {
         // Verificar si el cliente existe
         let client = await API.getClientByPhone(phone);
 
-        // Si no existe, crear nuevo cliente
+        // Si no existe (es nuevo), mostrar modal de depósito
+        if (!client) {
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = originalText;
+
+            // Guardar datos temporales para el mensaje de WhatsApp
+            state.tempClient = {
+                name: formData.get('name'),
+                phone: phone,
+                notes: formData.get('notes')
+            };
+
+            showDepositModal();
+            return;
+        }
+
+        /* 
+        // Lógica anterior de creación automática
         if (!client) {
             client = await API.createClient({
                 name: formData.get('name'),
                 phone: phone
             });
         }
+        */
 
         // Crear la cita
         const bookingData = {
@@ -535,3 +553,41 @@ function showSuccess(appointmentData) {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// ============================================================================
+// DEPOSIT MODAL LOGIC
+// ============================================================================
+
+function showDepositModal() {
+    const modal = document.getElementById('deposit-modal');
+    modal.classList.remove('hidden');
+    // Ensure modal is displayed
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closeDepositModal() {
+    const modal = document.getElementById('deposit-modal');
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+function sendDepositWhatsApp() {
+    if (!state.tempClient) return;
+
+    const name = state.tempClient.name;
+    const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+    const time = state.selectedTime;
+    const serviceName = state.selectedService.name;
+
+    const message = `Hola, soy *${name}*.%0AQuiero agendar una cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A%0ASoy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+
+    const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+
+    closeDepositModal();
+}
+
+// Make functions global
+window.showDepositModal = showDepositModal;
+window.closeDepositModal = closeDepositModal;
+window.sendDepositWhatsApp = sendDepositWhatsApp;
