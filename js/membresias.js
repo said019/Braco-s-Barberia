@@ -15,27 +15,27 @@ const PLAN_FEATURES = {
         'Prioridad en agenda'
     ],
     'Golden NeoCapilar': [
-        '4 Sesiones al mes',
+        '8 Servicios Premium',
         'Terapia Integral Capilar (TIC)',
+        'Exfoliación + Alta Frecuencia',
+        'Ozonoterapia + Mascarillas',
         'Mantenimiento de Prótesis',
-        'Mascarillas Faciales',
-        'Incluye lavado y peinado',
         'Bebidas Premium'
     ],
     'Black Card': [
-        'Servicios ILIMITADOS de Corte',
-        'Servicios ILIMITADOS de Barba',
-        'Acceso a todos los servicios',
+        '12 Servicios (Pagas 11)',
+        'Corte de Cabello o Barba',
+        'Vigencia: 1 Año',
+        'Tú decides cuándo usarlos',
         'Máxima prioridad en agenda',
-        'Descuentos en productos',
-        'Membresía Vitalicia (Renovación anual opcional)'
+        'Descuentos en productos'
     ]
 };
 
 const PLAN_ICONS = {
-    'Golden Card Corte': '👑',
-    'Golden NeoCapilar': '💆',
-    'Black Card': '⚜️'
+    'Golden Card Corte': '<i class="fas fa-crown"></i>',
+    'Golden NeoCapilar': '<i class="fas fa-spa"></i>',
+    'Black Card': '<i class="fas fa-gem"></i>'
 };
 
 const PLAN_BADGES = {
@@ -69,10 +69,15 @@ async function loadMembershipPlans() {
 
         plans.forEach(plan => {
             const features = PLAN_FEATURES[plan.name] || ['Servicios Premium', 'Atención Personalizada'];
-            const icon = PLAN_ICONS[plan.name] || '✂️';
+            const icon = PLAN_ICONS[plan.name] || '<i class="fas fa-cut"></i>';
             const badge = PLAN_BADGES[plan.name] || 'Premium';
             const styleClass = PLAN_STYLES[plan.name] || '';
             const isBlack = plan.name.includes('Black');
+
+            // Fix formatting
+            const validity = plan.validity_days || 30;
+            const durationText = validity >= 300 ? '1 año' : `${validity} días`;
+            const servicesText = isBlack ? 'Paquete Anual Flexible' : `Incluye ${plan.total_services} servicios`;
 
             // Determine styling classes
             let cardClass = 'plan-card';
@@ -82,27 +87,29 @@ async function loadMembershipPlans() {
                 <div class="${cardClass}">
                     <div class="plan-badge ${isBlack ? 'premium' : ''}">${badge}</div>
                     <div class="plan-header">
-                        <div class="plan-icon">${icon}</div>
+                        <div class="plan-icon" style="font-size: 3rem; margin-bottom: 1rem; color: var(--gold);">${icon}</div>
                         <h3 class="plan-name">${plan.name}</h3>
                         <p class="plan-tagline">
-                           ${isBlack ? 'Acceso Total Ilimitado' : `Include ${plan.total_services} servicios`}
+                           ${servicesText}
                         </p>
                     </div>
                     <div class="plan-price">
                         <span class="price-amount">$${parseFloat(plan.price).toLocaleString()}</span>
-                        <span class="price-period">/ ${plan.duration_days} días</span>
+                        <span class="price-period">/ ${durationText}</span>
                     </div>
                     <div class="plan-features">
                         ${features.map(f => `
                             <div class="feature-item">
-                                <span class="feature-icon">✓</span>
+                                <span class="feature-icon"><i class="fas fa-check"></i></span>
                                 <span>${f}</span>
                             </div>
                         `).join('')}
                     </div>
                     <a href="https://wa.me/525573432027?text=Hola,%20me%20interesa%20la%20membresía%20${encodeURIComponent(plan.name)}" 
-                       class="${isBlack ? 'btn-outline' : 'btn-primary'} btn-block" target="_blank">
-                       Adquirir ${plan.name}
+                       class="btn-primary btn-block" 
+                       style="color: #000; background-color: var(--gold); border: none; font-weight: 600;"
+                       target="_blank">
+                       ADQUIRIR ${plan.name.toUpperCase()}
                     </a>
                 </div>
             `;
