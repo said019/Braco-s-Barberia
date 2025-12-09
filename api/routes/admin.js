@@ -884,17 +884,16 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
 
         // Daily sales
         const dailySales = await db.query(
-            `SELECT DATE(created_at) as date, 
+            `SELECT transaction_date as date, 
                     SUM(amount) as total,
                     COUNT(*) as transactions
              FROM transactions
-             WHERE DATE(created_at) BETWEEN $1 AND $2
-             GROUP BY DATE(created_at)
+             WHERE transaction_date BETWEEN $1 AND $2
+             GROUP BY transaction_date
              ORDER BY date`,
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
-        // Sales by service
         // Sales by service (Corrected to reflect actual revenue)
         const servicesSales = await db.query(
             `SELECT s.name, 
@@ -919,7 +918,7 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
                     0 as membership_usage_count
              FROM client_memberships cm
              JOIN membership_types mt ON cm.membership_type_id = mt.id
-             WHERE DATE(cm.created_at) BETWEEN $1 AND $2
+             WHERE cm.purchase_date BETWEEN $1 AND $2
              GROUP BY mt.name
              ORDER BY total DESC`,
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
@@ -935,7 +934,7 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
                 COUNT(*) as total_transactions,
                 AVG(amount) as avg_ticket
              FROM transactions
-             WHERE DATE(created_at) BETWEEN $1 AND $2`,
+             WHERE transaction_date BETWEEN $1 AND $2`,
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
