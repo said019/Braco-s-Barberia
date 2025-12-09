@@ -705,18 +705,38 @@
             );
         }
 
-        function exportMemberships() {
-            const exportData = filteredMemberships.map(m => ({
-                'Cliente': m.client_name,
-                'Plan': m.type_name,
-                'Precio': m.type_price,
-                'Inicio': formatDate(m.start_date),
-                'Vencimiento': m.end_date ? formatDate(m.end_date) : 'Lifetime',
-                'Servicios Restantes': m.type_name === 'black' ? 'Ilimitados' : m.remaining_services,
-                'Estado': m.status === 'active' ? 'Activa' : 'Cancelada'
-            }));
+        async function exportMemberships() {
+            try {
+                showToast('Generando reporte detallado...', 'info');
 
-            exportToExcel(exportData, `membresias_${new Date().toISOString().split('T')[0]}`);
+                const response = await api.get('/admin/memberships/export/data');
+
+                if (!response || response.length === 0) {
+                    showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+
+                const exportData = response.map(m => ({
+                    'Folio': m.folio || 'S/N',
+                    'Cliente': m.client_name,
+                    'Plan': m.plan_name,
+                    'Precio': formatCurrency(m.price),
+                    'Estado': m.status === 'active' ? 'Activa' : 'Cancelada',
+                    'Inicio': formatDate(m.start_date),
+                    'Vencimiento': m.end_date ? formatDate(m.end_date) : 'N/A',
+                    'Servicios Restantes': m.remaining_services,
+                    'Servicio Usado': m.used_service || 'Sin uso',
+                    'Fecha Uso': m.usage_date ? formatDateTime(m.usage_date) : '-',
+                    'Valor Uso': m.usage_value ? formatCurrency(m.usage_value) : '-',
+                    'Sellos': m.stamps_used || '-'
+                }));
+
+                exportToExcel(exportData, `Membresias_Detalle_${new Date().toISOString().split('T')[0]}`);
+
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('Error al exportar: ' + error.message, 'error');
+            }
         }
 
         // Initial load
