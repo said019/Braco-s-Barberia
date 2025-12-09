@@ -326,6 +326,12 @@ router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
 
+        // Manejar borrado en cascada manualmente
+        await db.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
+        await db.query('DELETE FROM appointments WHERE client_id = $1', [id]);
+        await db.query('DELETE FROM transactions WHERE client_id = $1', [id]);
+        // TODO: Borrar otros registros vinculados si existen (ej: client_services_history si existe tabla separada)
+
         await db.query('DELETE FROM clients WHERE id = $1', [id]);
         res.json({ success: true });
 
