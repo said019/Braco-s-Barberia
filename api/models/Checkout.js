@@ -91,14 +91,14 @@ export const Checkout = {
             // 3. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, service_cost, products_cost, 
+          appointment_id, client_id, service_cost, products_cost, 
           discount, total, payment_method, used_membership, 
           membership_id, notes
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING id, uuid
       `, [
-                appointment_id, service_cost, products_cost,
+                appointment_id, client_id, service_cost, products_cost,
                 discount, total, payment_method, use_membership,
                 membershipId, notes
             ]);

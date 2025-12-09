@@ -88,8 +88,8 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         );
 
         const salesToday = await db.query(
-            `SELECT COALESCE(SUM(total), 0) as total FROM checkouts 
-             WHERE DATE(completed_at) = $1`,
+            `SELECT COALESCE(SUM(amount), 0) as total FROM transactions 
+             WHERE DATE(created_at) = $1`,
             [today]
         );
 
@@ -666,7 +666,7 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
         let newTypeId = 2; // Default Recurrente
         if (membership_type_id == 8) newTypeId = 3;
         if (membership_type_id == 9) newTypeId = 4;
-        if (membership_type_id == 10) newTypeId = 5;
+        if (membership_type_id == 10) newTypeId = 4; // Fallback to 4 (VIP not seeded)
 
         // Only update if it's a membership type
         if (newTypeId > 2) {
@@ -680,11 +680,14 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
             [client_id, membershipType.price, `Membresía ${membershipType.name}`, payment_method]
         );
 
-        // Update client type to Premium/VIP
+        // Update client type to Premium/VIP (Graceful fallback)
+        let targetTypeId = membershipType.client_type_id;
+        if (targetTypeId === 5) targetTypeId = 4;
+
         await db.query(
             `UPDATE clients SET client_type_id = $2, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1 AND client_type_id = 1`,
-            [client_id, membershipType.client_type_id]
+            [client_id, targetTypeId]
         );
 
         res.status(201).json(result.rows[0]);
@@ -891,10 +894,15 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
         );
 
         // Sales by service
+        // Sales by service (Corrected to reflect actual revenue)
         const servicesSales = await db.query(
-            `SELECT s.name, COUNT(*) as count, SUM(s.price) as total
+            `SELECT s.name, 
+                    COUNT(*) as count, 
+                    COALESCE(SUM(ch.service_cost), 0) as total,
+                    COUNT(CASE WHEN ch.used_membership = true THEN 1 END) as membership_usage_count
              FROM appointments a
              JOIN services s ON a.service_id = s.id
+             LEFT JOIN checkouts ch ON a.id = ch.appointment_id
              WHERE a.status = 'completed'
              AND a.appointment_date BETWEEN $1 AND $2
              GROUP BY s.id, s.name
