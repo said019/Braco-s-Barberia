@@ -154,6 +154,7 @@
                 <div class="filters-bar">
                     <select id="filter-status" class="search-input" style="width: auto;">
                         <option value="">Todos los estados</option>
+                        <option value="pending">Pendientes (Depósito)</option>
                         <option value="scheduled">Agendadas</option>
                         <option value="confirmed">Confirmadas</option>
                         <option value="in_progress">En Curso</option>
@@ -167,6 +168,9 @@
                 </div>
 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status pending"><i class="fas fa-hourglass-half"></i> Pendiente</span>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span class="appointment-status scheduled"><i class="far fa-calendar"></i> Agendada</span>
                     </div>
@@ -661,6 +665,7 @@
                 <div class="form-group">
                     <label for="new-status">Nuevo Estado</label>
                     <select id="new-status" class="search-input">
+                        <option value="pending">Pendiente (Depósito)</option>
                         <option value="scheduled">Agendada</option>
                         <option value="confirmed">Confirmada</option>
                         <option value="in_progress">En Curso</option>
@@ -695,6 +700,7 @@
 
         function getStatusLabel(status) {
             const labels = {
+                'pending': '⏳ Pendiente',
                 'scheduled': 'Agendada',
                 'confirmed': 'Confirmada',
                 'in_progress': 'En Curso',

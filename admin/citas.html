@@ -101,6 +101,7 @@
             <div class="page-content">
                 <!-- Status Legend -->
                 <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
+                    <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;">Pendiente</span>
                     <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);">Programada</span>
                     <span class="badge"
                         style="background: rgba(76,175,80,0.3); color: var(--success);">Confirmada</span>
@@ -191,6 +192,7 @@
 
         function getStatusBadge(status, appointmentId) {
             const styles = {
+                pending: 'background: rgba(255,235,59,0.3); color: #FDD835;',
                 scheduled: 'background: rgba(196,163,90,0.3); color: var(--cream);',
                 confirmed: 'background: rgba(76,175,80,0.3); color: var(--success);',
                 in_progress: 'background: rgba(255,152,0,0.2); color: var(--warning);',
@@ -199,6 +201,7 @@
                 no_show: 'background: rgba(158,158,158,0.2); color: #9E9E9E;'
             };
             const labels = {
+                pending: '⏳ Pendiente',
                 scheduled: 'Programada',
                 confirmed: 'Confirmada',
                 in_progress: 'En Curso',
@@ -206,7 +209,7 @@
                 cancelled: 'Cancelada',
                 no_show: 'No Asistió'
             };
-            return `<span class="badge" style="${styles[status]} cursor: pointer;" onclick="openStatusModal(${appointmentId}, '${status}')" title="Clic para cambiar estado">${labels[status]}</span>`;
+            return `<span class="badge" style="${styles[status] || styles.scheduled} cursor: pointer;" onclick="openStatusModal(${appointmentId}, '${status}')" title="Clic para cambiar estado">${labels[status] || status}</span>`;
         }
 
         function renderTable(appointments) {
@@ -240,14 +243,13 @@
 
         function getActionButtons(app) {
             const id = app.id;
-            // State transitions
-            /*
-            Scheduled -> Confirmed, In Progress, Cancelled
-            Confirmed -> In Progress, Cancelled, No Show
-            In Progress -> Completed
-            Completed -> (None or Payment?)
-            */
             let buttons = '';
+
+            // Pending -> can be confirmed/scheduled or cancelled
+            if (app.status === 'pending') {
+                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check" style="color: #4CAF50;"></i></button>`;
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
+            }
 
             if (['scheduled', 'confirmed'].includes(app.status)) {
                 buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
@@ -264,6 +266,7 @@
 
         function openStatusModal(appointmentId, currentStatus) {
             const allStatuses = [
+                { value: 'pending', label: 'Pendiente (Depósito)', icon: 'fas fa-hourglass-half', color: 'rgba(255,235,59,0.3)' },
                 { value: 'scheduled', label: 'Programada', icon: 'far fa-calendar', color: 'rgba(196,163,90,0.3)' },
                 { value: 'confirmed', label: 'Confirmada', icon: 'fas fa-check', color: 'rgba(76,175,80,0.3)' },
                 { value: 'in_progress', label: 'En Curso', icon: 'fas fa-play', color: 'rgba(255,152,0,0.3)' },
