@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membresía Digital | Braco's</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --gold: #C4A35A;
+            --dark-gold: #8a733e;
+            --black: #1A1A1A;
+            --charcoal: #2C2C2C;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--black);
+            font-family: 'Montserrat', sans-serif;
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 400px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 1) 0%, rgba(44, 44, 44, 1) 100%);
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .card-header {
+            background: var(--gold);
+            color: var(--black);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .membership-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-body {
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .client-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .folio {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: white;
+            margin: 0 auto 25px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: left;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .info-item label {
+            display: block;
+            color: #888;
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .status-expired {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+        }
+
+        .btn-download {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn-download:hover {
+            background: var(--gold);
+            color: var(--black);
+        }
+
+        /* Card Theme Variations */
+        .theme-black .card-header {
+            background: #000;
+            color: var(--gold);
+            border-bottom: 1px solid var(--gold);
+        }
+
+        .theme-gold .card-header {
+            background: linear-gradient(45deg, #FFD700, #FDB931);
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card-container" id="card">
+        <div class="card-header">
+            <div class="logo">BRACO'S</div>
+            <div class="membership-name" id="plan-name">Cargando...</div>
+        </div>
+        <div class="card-body">
+            <h2 class="client-name" id="client-name">...</h2>
+            <div class="folio" id="folio">...</div>
+
+            <!-- QR Code generated by JS -->
+            <div id="qrcode" class="qr-placeholder"></div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Válida Desde</label>
+                    <span id="start-date">...</span>
+                </div>
+                <div class="info-item">
+                    <label>Vence</label>
+                    <span id="end-date">...</span>
+                </div>
+                <div class="info-item">
+                    <label>Servicios</label>
+                    <span id="services">...</span>
+                </div>
+                <div class="info-item">
+                    <label>Estado</label>
+                    <span id="status-badge" class="status-badge">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="downloadCard()" class="btn-download">
+            <i class="fas fa-download"></i> Guardar Tarjeta
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        const API_URL = '/api'; // Relative path assuming served from same origin
+
+        async function loadCard() {
+            const params = new URLSearchParams(window.location.search);
+            const uuid = params.get('id');
+
+            if (!uuid) {
+                alert('ID de tarjeta no válido');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/public/membership/${uuid}`);
+                if (!response.ok) throw new Error('Membresía no encontrada');
+
+                const data = await response.json();
+                renderCard(data);
+            } catch (error) {
+                document.body.innerHTML = '<h3 style="color: white;">Error: Tarjeta no encontrada o inválida</h3>';
+            }
+        }
+
+        function renderCard(data) {
+            document.title = `Membresía ${data.clientName} - Braco's`;
+
+            document.getElementById('plan-name').textContent = data.plan;
+            document.getElementById('client-name').textContent = data.clientName;
+            document.getElementById('folio').textContent = `FOLIO: ${data.folio || 'N/A'}`;
+            document.getElementById('start-date').textContent = formatDate(data.startDate);
+            document.getElementById('end-date').textContent = data.endDate ? formatDate(data.endDate) : 'Lifetime';
+            document.getElementById('services').textContent = `${data.services.remaining}/${data.services.total}`;
+
+            const badge = document.getElementById('status-badge');
+            badge.textContent = data.status === 'active' ? 'ACTIVA' : 'INACTIVA';
+            badge.className = `status-badge ${data.status === 'active' ? 'status-active' : 'status-expired'}`;
+
+            // Theme adjustment
+            const cardContainer = document.querySelector('.card-container');
+            if (data.plan.toLowerCase().includes('black')) {
+                cardContainer.classList.add('theme-black');
+            } else {
+                cardContainer.classList.add('theme-gold');
+            }
+
+            // QR Code
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href,
+                width: 128,
+                height: 128,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function downloadCard() {
+            const card = document.getElementById('card');
+            html2canvas(card, {
+                scale: 2,
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Membresia_Bracos.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        loadCard();
+    </script>
+</body>
+
+</html>

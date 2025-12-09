@@ -549,14 +549,55 @@
 
             try {
                 // AdminAPI.createMembership uses POST /api/admin/memberships
-                await AdminAPI.createMembership(membershipData);
-                showToast('Membresía activada correctamente', 'success');
+                const response = await AdminAPI.createMembership(membershipData);
+
+                // Show Success Modal with Share Link
                 window.activateMembershipModal.close();
+
+                const uuid = response.uuid;
+                const shareLink = `${window.location.origin}/tarjeta.html?id=${uuid}`;
+                const whatsappMsg = `¡Hola! Aquí tienes tu Membresía Digital de Braco's Barbería: ${shareLink}`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMsg)}`;
+
+                const successContent = `
+                    <div style="text-align: center; padding: 1rem;">
+                        <div style="background: rgba(76, 175, 80, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <i class="fas fa-check" style="font-size: 2rem; color: #4CAF50;"></i>
+                        </div>
+                        <h3 style="color: var(--gold); margin-bottom: 0.5rem;">¡Membresía Activada!</h3>
+                        <p style="color: #ccc; margin-bottom: 1.5rem;">La membresía se ha registrado correctamente.</p>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <p style="font-size: 0.8rem; color: #888; margin-bottom: 0.5rem;">ENLACE DIGITAL</p>
+                            <input type="text" value="${shareLink}" readonly 
+                                style="width: 100%; background: transparent; border: 1px solid #444; color: #fff; padding: 0.5rem; text-align: center; font-size: 0.9rem; border-radius: 4px;"
+                                onclick="this.select()">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <a href="${whatsappUrl}" target="_blank" class="btn btn-success" style="background: #25D366; border-color: #25D366; color: white;">
+                                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                            </a>
+                            <button onclick="copyToClipboard('${shareLink}')" class="btn btn-secondary">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                window.successModal = showModal('successModal', 'Operación Exitosa', successContent, '<button class="btn btn-primary" onclick="window.successModal.close()">Cerrar</button>');
+
                 loadMemberships();
             } catch (error) {
                 console.error('Error activating membership:', error);
                 showToast(error.message || 'Error al activar la membresía', 'error');
             }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Enlace copiado al portapapeles', 'success');
+            }).catch(console.error);
         }
 
         async function viewMembershipDetail(id) {
