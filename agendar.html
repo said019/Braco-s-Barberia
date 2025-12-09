@@ -253,60 +253,84 @@
             </section>
         </div>
 
-        <!-- Deposit Modal -->
+        <!-- Deposit Modal - Alert Style -->
         <div id="deposit-modal" class="modal-overlay hidden">
-            <div class="modal-content deposit-modal">
+            <div class="modal-content deposit-modal-alert">
                 <button class="modal-close" onclick="closeDepositModal()">&times;</button>
-                <div class="modal-icon">👋</div>
-                <h3 class="modal-title">¡Bienvenido a Braco's!</h3>
-                <p class="modal-text">
-                    Notamos que es tu primera vez con nosotros. Para confirmar tu cita, requerimos un <strong>depósito
-                        de $100 MXN</strong>.
-                </p>
-                <div class="bank-details-container">
-                    <p class="section-label">Opciones de pago:</p>
 
-                    <div class="payment-option">
-                        <div class="payment-header">
-                            <span class="payment-icon">💳</span>
-                            <strong>Transferencia (NU México)</strong>
-                        </div>
-                        <div class="payment-info">
-                            <p>CLABE: <span class="copyable">638180000176357788</span></p>
-                            <p class="beneficiary">Miguel Alejandro Trujillo Revuelta</p>
-                        </div>
+                <!-- Alert Header -->
+                <div class="deposit-alert-header">
+                    <div class="alert-icon-container">
+                        <i class="fas fa-exclamation-triangle"></i>
                     </div>
-
-                    <div class="payment-option">
-                        <div class="payment-header">
-                            <span class="payment-icon">📱</span>
-                            <strong>Mercado Pago</strong>
-                        </div>
-                        <div class="payment-info">
-                            <p>CLABE: <span class="copyable">722969010620447083</span></p>
-                            <p class="beneficiary">Miguel Alejandro Trujillo Revuelta</p>
-                        </div>
-                    </div>
-
-                    <div class="payment-option">
-                        <div class="payment-header">
-                            <span class="payment-icon">🏪</span>
-                            <strong>Depósito OXXO</strong>
-                        </div>
-                        <div class="payment-info">
-                            <p>Tarjeta: <span class="copyable">4217 4700 9774 4441</span></p>
-                        </div>
-                    </div>
+                    <h3 class="alert-title">¡Apartado Requerido!</h3>
+                    <p class="alert-subtitle">Cliente Nuevo Detectado</p>
                 </div>
 
-                <p class="modal-text-small">
-                    Realiza tu depósito y envía el comprobante por WhatsApp para confirmar.
-                </p>
-                <div class="modal-actions">
-                    <button class="btn-whatsapp" onclick="sendDepositWhatsApp()">
-                        <i class="fab fa-whatsapp"></i> Enviar Comprobante
+                <!-- Alert Body -->
+                <div class="deposit-alert-body">
+                    <div class="alert-message-box">
+                        <p>
+                            <strong>Hola, bienvenido a Braco's.</strong><br>
+                            Como es tu primera cita con nosotros, necesitamos un pequeño <strong>depósito de $100
+                                MXN</strong> para confirmar tu reservación.
+                        </p>
+                        <p class="alert-note">
+                            <i class="fas fa-info-circle"></i>
+                            Este monto se descuenta del total de tu servicio.
+                        </p>
+                    </div>
+
+                    <!-- Appointment Summary -->
+                    <div class="deposit-appointment-summary">
+                        <h4><i class="fas fa-calendar-check"></i> Tu Cita</h4>
+                        <div class="summary-row">
+                            <span>Servicio:</span>
+                            <strong id="deposit-service">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Fecha:</span>
+                            <strong id="deposit-date">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Hora:</span>
+                            <strong id="deposit-time">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Payment Options - Collapsible -->
+                    <details class="payment-details">
+                        <summary><i class="fas fa-credit-card"></i> Ver Opciones de Pago</summary>
+                        <div class="payment-options-compact">
+                            <div class="payment-row">
+                                <span class="payment-label">💳 NU México (CLABE):</span>
+                                <code class="copyable"
+                                    onclick="copyToClipboard('638180000176357788')">638180000176357788</code>
+                            </div>
+                            <div class="payment-row">
+                                <span class="payment-label">📱 Mercado Pago:</span>
+                                <code class="copyable"
+                                    onclick="copyToClipboard('722969010620447083')">722969010620447083</code>
+                            </div>
+                            <div class="payment-row">
+                                <span class="payment-label">🏪 OXXO (Tarjeta):</span>
+                                <code class="copyable"
+                                    onclick="copyToClipboard('4217470097744441')">4217 4700 9774 4441</code>
+                            </div>
+                            <p class="beneficiary-name">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Alert Actions -->
+                <div class="deposit-alert-actions">
+                    <button class="btn-whatsapp-lg" onclick="sendDepositWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        Enviar Comprobante por WhatsApp
                     </button>
-                    <button class="btn-secondary" onclick="closeDepositModal()">Cancelar</button>
+                    <button class="btn-cancel-subtle" onclick="closeDepositModal()">
+                        Cancelar Reservación
+                    </button>
                 </div>
             </div>
         </div>

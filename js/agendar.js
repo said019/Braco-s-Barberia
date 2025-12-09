@@ -613,6 +613,18 @@ function showSuccess(appointmentData) {
 
 function showDepositModal() {
     const modal = document.getElementById('deposit-modal');
+
+    // Populate appointment summary
+    if (state.tempClient) {
+        const serviceEl = document.getElementById('deposit-service');
+        const dateEl = document.getElementById('deposit-date');
+        const timeEl = document.getElementById('deposit-time');
+
+        if (serviceEl) serviceEl.textContent = state.selectedService?.name || '-';
+        if (dateEl) dateEl.textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        if (timeEl) timeEl.textContent = state.selectedTime || '-';
+    }
+
     modal.classList.remove('hidden');
     // Ensure modal is displayed
     setTimeout(() => modal.classList.add('visible'), 10);
@@ -640,7 +652,16 @@ function sendDepositWhatsApp() {
     closeDepositModal();
 }
 
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('¡Copiado al portapapeles!', 'success');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+    });
+}
+
 // Make functions global
 window.showDepositModal = showDepositModal;
 window.closeDepositModal = closeDepositModal;
 window.sendDepositWhatsApp = sendDepositWhatsApp;
+window.copyToClipboard = copyToClipboard;

@@ -1155,3 +1155,272 @@
     opacity: 0.7;
     font-style: italic;
 }
+
+/* ============================================================================
+   DEPOSIT MODAL - ALERT STYLE
+   ============================================================================ */
+
+.deposit-modal-alert {
+    max-width: 480px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+    border: 2px solid rgba(255, 193, 7, 0.4);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Alert Header */
+.deposit-alert-header {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.alert-icon-container {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.4);
+}
+
+.alert-icon-container i {
+    font-size: 2rem;
+    color: #1a1a1a;
+}
+
+.alert-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: #FFC107;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.alert-subtitle {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+}
+
+/* Alert Body */
+.deposit-alert-body {
+    padding: 1.5rem 2rem;
+}
+
+.alert-message-box {
+    background: rgba(255, 193, 7, 0.08);
+    border-left: 3px solid #FFC107;
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.5rem;
+}
+
+.alert-message-box p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--cream);
+    font-size: 0.95rem;
+}
+
+.alert-message-box p strong {
+    color: #FFC107;
+}
+
+.alert-note {
+    margin-top: 1rem !important;
+    font-size: 0.85rem !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-note i {
+    color: #64B5F6;
+}
+
+/* Appointment Summary */
+.deposit-appointment-summary {
+    background: rgba(196, 163, 90, 0.08);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.deposit-appointment-summary h4 {
+    font-size: 0.9rem;
+    color: var(--gold);
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.1);
+    font-size: 0.9rem;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-row span {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.summary-row strong {
+    color: var(--cream);
+}
+
+/* Payment Details - Collapsible */
+.payment-details {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 0;
+}
+
+.payment-details summary {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--cream);
+    font-size: 0.9rem;
+    font-weight: 500;
+    list-style: none;
+    transition: background 0.2s ease;
+}
+
+.payment-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.payment-details summary::after {
+    content: '▼';
+    margin-left: auto;
+    font-size: 0.7rem;
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+}
+
+.payment-details[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.payment-details summary:hover {
+    background: rgba(196, 163, 90, 0.1);
+}
+
+.payment-details summary i {
+    color: var(--gold);
+}
+
+.payment-options-compact {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.payment-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+}
+
+.payment-row:last-of-type {
+    border-bottom: none;
+}
+
+.payment-label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.payment-row code.copyable {
+    font-family: 'Roboto Mono', monospace;
+    background: rgba(196, 163, 90, 0.15);
+    color: var(--gold);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.payment-row code.copyable:hover {
+    background: rgba(196, 163, 90, 0.25);
+}
+
+.beneficiary-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    margin: 0.75rem 0 0;
+    text-align: center;
+}
+
+/* Alert Actions */
+.deposit-alert-actions {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-whatsapp-lg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-whatsapp-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.btn-whatsapp-lg i {
+    font-size: 1.3rem;
+}
+
+.btn-cancel-subtle {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.btn-cancel-subtle:hover {
+    color: #E57373;
+}
