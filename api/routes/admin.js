@@ -1525,4 +1525,38 @@ router.post('/debug/seed-database', authenticateToken, async (req, res, next) =>
     }
 });
 
+// ============================
+// DEBUG: MIGRATE SCHEMA (FIX REPORTS)
+// ============================
+router.post('/debug/migrate-schema', authenticateToken, async (req, res, next) => {
+    try {
+        await transaction(async (client) => {
+            // 1. Add Columns to membership_usage
+            await client.query(`
+                ALTER TABLE membership_usage
+                ADD COLUMN IF NOT EXISTS service_value DECIMAL(10,2),
+                ADD COLUMN IF NOT EXISTS stamps_used INTEGER DEFAULT 1,
+                ADD COLUMN IF NOT EXISTS notes TEXT
+            `);
+
+            // 2. Create Indexes
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_membership_usage_date ON membership_usage(used_at)`);
+            await client.query(`CREATE INDEX IF NOT EXISTS idx_membership_usage_membership ON membership_usage(membership_id)`);
+
+            // 3. Backfill existing data
+            await client.query(`
+                UPDATE membership_usage mu
+                SET service_value = s.price
+                FROM services s
+                WHERE mu.service_id = s.id
+                  AND mu.service_value IS NULL
+            `);
+        });
+
+        res.json({ message: 'Esquema migrado: Se agregaron las columnas para reportes exitosamente.' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
