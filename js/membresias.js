@@ -107,7 +107,7 @@ async function loadMembershipPlans() {
                     </div>
                     <a href="https://wa.me/525573432027?text=Hola,%20me%20interesa%20la%20membresía%20${encodeURIComponent(plan.name)}" 
                        class="btn-primary btn-block" 
-                       style="color: #000; background-color: var(--gold); border: none; font-weight: 600;"
+                       style="color: #000; background-color: var(--gold); border: none; font-weight: 600; white-space: normal; height: auto; padding: 15px 10px; line-height: 1.2;"
                        target="_blank">
                        ADQUIRIR ${plan.name.toUpperCase()}
                     </a>
