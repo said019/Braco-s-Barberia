@@ -10,7 +10,7 @@ router.get('/membership/:uuid', async (req, res, next) => {
 
         const result = await db.query(`
             SELECT cm.uuid, cm.folio_number, cm.activation_date, cm.expiration_date,
-                   cm.status, cm.remaining_services, cm.total_services,
+                   cm.status, cm.total_services, cm.used_services,
                    c.name as client_name, c.client_type_id,
                    mt.name as membership_type, mt.price,
                    ct.name as client_type_name
