@@ -1009,10 +1009,26 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
             ORDER BY total DESC
         `, [startDate, endDate]);
 
+        // Detailed Transactions for Export
+        const detailedTransactions = await db.query(`
+            SELECT 
+                t.transaction_date,
+                t.type,
+                t.description,
+                t.payment_method,
+                t.amount,
+                c.first_name || ' ' || c.last_name as client_name
+            FROM transactions t
+            LEFT JOIN clients c ON t.client_id = c.id
+            WHERE t.transaction_date BETWEEN $1 AND $2
+            ORDER BY t.transaction_date DESC, t.created_at DESC
+        `, [startDate, endDate]);
+
         res.json({
             daily_revenue: dailyRevenue.rows,
             revenue_by_type: revenueByType.rows,
             payment_methods: paymentMethods.rows,
+            detailed_transactions: detailedTransactions.rows,
             totals: totals.rows[0]
         });
 
