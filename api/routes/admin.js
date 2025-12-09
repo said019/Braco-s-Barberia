@@ -959,15 +959,15 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
         // Ingresos por día y tipo
         const dailyRevenue = await db.query(`
             SELECT
-                DATE(created_at) as date,
+                transaction_date as date,
                 SUM(CASE WHEN type = 'membership' THEN amount ELSE 0 END) as membership_sales,
                 SUM(CASE WHEN type = 'service' THEN amount ELSE 0 END) as service_sales,
                 SUM(CASE WHEN type = 'product' THEN amount ELSE 0 END) as product_sales,
                 SUM(amount) as total_revenue,
                 COUNT(*) as transaction_count
             FROM transactions
-            WHERE DATE(created_at) BETWEEN $1 AND $2
-            GROUP BY DATE(created_at)
+            WHERE transaction_date BETWEEN $1 AND $2
+            GROUP BY transaction_date
             ORDER BY date
         `, [startDate, endDate]);
 
@@ -979,7 +979,7 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
                 COUNT(*) as count,
                 AVG(amount) as average
             FROM transactions
-            WHERE DATE(created_at) BETWEEN $1 AND $2
+            WHERE transaction_date BETWEEN $1 AND $2
             GROUP BY type
             ORDER BY total DESC
         `, [startDate, endDate]);
@@ -994,7 +994,7 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
                 SUM(CASE WHEN type = 'service' THEN amount ELSE 0 END) as total_services,
                 SUM(CASE WHEN type = 'product' THEN amount ELSE 0 END) as total_products
             FROM transactions
-            WHERE DATE(created_at) BETWEEN $1 AND $2
+            WHERE transaction_date BETWEEN $1 AND $2
         `, [startDate, endDate]);
 
         // Métodos de pago
@@ -1004,7 +1004,7 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
                 SUM(amount) as total,
                 COUNT(*) as count
             FROM transactions
-            WHERE DATE(created_at) BETWEEN $1 AND $2
+            WHERE transaction_date BETWEEN $1 AND $2
             GROUP BY payment_method
             ORDER BY total DESC
         `, [startDate, endDate]);
