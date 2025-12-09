@@ -47,4 +47,17 @@ router.get('/membership/:uuid', async (req, res, next) => {
     }
 });
 
+// GET /api/public/membership-types
+router.get('/membership-types', async (req, res, next) => {
+    try {
+        const result = await db.query(`
+            SELECT * FROM membership_types 
+            ORDER BY price ASC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
