@@ -159,6 +159,16 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 // GET /api/admin/clients
 router.get('/clients', authenticateToken, async (req, res, next) => {
     try {
+        // Maintenance: Expire memberships and downgrade clients
+        await db.query(`UPDATE client_memberships SET status = 'expired' WHERE status = 'active' AND expiration_date < CURRENT_DATE`);
+        // Downgrade clients with no active membership to 'Recurrente' (ID 2) if they are currently Membership Types (3,4,5)
+        await db.query(`
+            UPDATE clients 
+            SET client_type_id = 2 
+            WHERE client_type_id IN (3, 4, 5) 
+            AND NOT EXISTS (SELECT 1 FROM client_memberships WHERE client_id = clients.id AND status = 'active')
+        `);
+
         const result = await db.query(`
             SELECT c.*, ct.name as client_type_name, ct.color as client_color,
                    CASE WHEN cm.id IS NOT NULL THEN true ELSE false END as has_active_membership,
@@ -643,6 +653,20 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
             ]
         );
 
+        // Update Client Type based on Membership
+        // 8: Golden Card Corte -> 3: Golden Card
+        // 9: Golden NeoCapilar -> 4: NeoCapilar
+        // 10: Black Card -> 5: Black Card
+        let newTypeId = 2; // Default Recurrente
+        if (membership_type_id == 8) newTypeId = 3;
+        if (membership_type_id == 9) newTypeId = 4;
+        if (membership_type_id == 10) newTypeId = 5;
+
+        // Only update if it's a membership type
+        if (newTypeId > 2) {
+            await db.query('UPDATE clients SET client_type_id = $1 WHERE id = $2', [newTypeId, client_id]);
+        }
+
         // Record transaction
         await db.query(
             `INSERT INTO transactions (client_id, type, amount, description, payment_method, transaction_date)
@@ -682,6 +706,22 @@ router.put('/memberships/:id/cancel', authenticateToken, async (req, res, next) 
 
         res.json({ success: true, message: 'Membresía cancelada', data: result.rows[0] });
 
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/admin/memberships/export
+router.get('/memberships/export', authenticateToken, async (req, res, next) => {
+    try {
+        const result = await db.query(`
+            SELECT cm.*, c.name as client_name, mt.name as membership_type 
+            FROM client_memberships cm
+            JOIN clients c ON cm.client_id = c.id
+            JOIN membership_types mt ON cm.membership_type_id = mt.id
+            ORDER BY cm.created_at DESC
+        `);
+        res.json(result.rows);
     } catch (error) {
         next(error);
     }
