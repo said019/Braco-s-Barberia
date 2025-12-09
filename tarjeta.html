@@ -223,12 +223,20 @@
 
             try {
                 const response = await fetch(`${API_URL}/public/membership/${uuid}`);
-                if (!response.ok) throw new Error('Membresía no encontrada');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+                }
 
                 const data = await response.json();
                 renderCard(data);
             } catch (error) {
-                document.body.innerHTML = '<h3 style="color: white;">Error: Tarjeta no encontrada o inválida</h3>';
+                console.error(error);
+                document.body.innerHTML = `<div style="text-align:center; padding: 20px;">
+                    <h3 style="color: white; margin-bottom: 10px;">Error al cargar la tarjeta</h3>
+                    <p style="color: #ff6b6b; font-family: monospace;">${error.message}</p>
+                    <p style="color: #888; font-size: 0.8em; margin-top: 20px;">ID: ${uuid}</p>
+                </div>`;
             }
         }
 
