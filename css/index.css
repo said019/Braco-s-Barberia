@@ -905,7 +905,11 @@
     }
 
     .hero-logo-img {
-        height: 120px;
+        height: auto;
+        max-height: 150px;
+        width: auto;
+        max-width: 90vw;
+        object-fit: contain;
     }
 
     .hero-title {
@@ -1053,7 +1057,11 @@
     }
 
     .hero-logo-img {
-        height: 90px;
+        height: auto;
+        max-height: 120px;
+        width: auto;
+        max-width: 90vw;
+        object-fit: contain;
     }
 
     .hero-title {
