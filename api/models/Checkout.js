@@ -80,12 +80,15 @@ export const Checkout = {
           WHERE id = $1
         `, [membershipId, usageCost]);
 
-                // Registrar uso en bitácora
+                // Registrar uso en bitácora con valor del servicio
                 await client.query(`
-          INSERT INTO membership_usage (membership_id, appointment_id, service_id, service_name)
-          SELECT $1, $2, s.id, s.name
+          INSERT INTO membership_usage (
+            membership_id, appointment_id, service_id, service_name,
+            service_value, stamps_used
+          )
+          SELECT $1, $2, s.id, s.name, s.price, $4
           FROM services s WHERE s.id = $3
-        `, [membershipId, appointment_id, serviceId]);
+        `, [membershipId, appointment_id, serviceId, usageCost]);
             }
 
             // 3. Crear registro de checkout

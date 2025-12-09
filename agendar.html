@@ -260,9 +260,6 @@
 
                 <!-- Alert Header -->
                 <div class="deposit-alert-header">
-                    <div class="alert-icon-container">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
                     <h3 class="alert-title">¡Apartado Requerido!</h3>
                     <p class="alert-subtitle">Cliente Nuevo Detectado</p>
                 </div>
@@ -298,28 +295,48 @@
                         </div>
                     </div>
 
-                    <!-- Payment Options - Collapsible -->
-                    <details class="payment-details">
-                        <summary><i class="fas fa-credit-card"></i> Ver Opciones de Pago</summary>
-                        <div class="payment-options-compact">
-                            <div class="payment-row">
-                                <span class="payment-label">💳 NU México (CLABE):</span>
-                                <code class="copyable"
-                                    onclick="copyToClipboard('638180000176357788')">638180000176357788</code>
+                    <!-- Payment Options - Button & Card -->
+                    <div class="payment-section">
+                        <button id="btn-show-bank-details" class="btn-secondary btn-block"
+                            onclick="toggleBankDetails()">
+                            <i class="fas fa-credit-card"></i> Ver Datos Bancarios
+                        </button>
+
+                        <div id="bank-details-card" class="bank-details-card hidden">
+                            <div class="card-header">
+                                <span><i class="fas fa-university"></i> Datos de Transferencia</span>
                             </div>
-                            <div class="payment-row">
-                                <span class="payment-label">📱 Mercado Pago:</span>
-                                <code class="copyable"
-                                    onclick="copyToClipboard('722969010620447083')">722969010620447083</code>
-                            </div>
-                            <div class="payment-row">
-                                <span class="payment-label">🏪 OXXO (Tarjeta):</span>
-                                <code class="copyable"
-                                    onclick="copyToClipboard('4217470097744441')">4217 4700 9774 4441</code>
+                            <div class="payment-options-list">
+                                <div class="payment-option-item" onclick="copyToClipboard('638180000176357788')">
+                                    <div class="option-icon"><img src="assets/nu_logo.png" alt="NU"
+                                            onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/f/f7/Nu_bank_logo.png'">
+                                    </div>
+                                    <div class="option-details">
+                                        <span class="bank-name">NU México (CLABE)</span>
+                                        <code class="bank-number">638180000176357788</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
+                                <div class="payment-option-item" onclick="copyToClipboard('722969010620447083')">
+                                    <div class="option-icon"><i class="fas fa-mobile-alt"></i></div>
+                                    <div class="option-details">
+                                        <span class="bank-name">Mercado Pago</span>
+                                        <code class="bank-number">722969010620447083</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
+                                <div class="payment-option-item" onclick="copyToClipboard('4217470097744441')">
+                                    <div class="option-icon"><i class="fas fa-store"></i></div>
+                                    <div class="option-details">
+                                        <span class="bank-name">OXXO (Tarjeta)</span>
+                                        <code class="bank-number">4217 4700 9774 4441</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
                             </div>
                             <p class="beneficiary-name">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
                         </div>
-                    </details>
+                    </div>
                 </div>
 
                 <!-- Alert Actions -->

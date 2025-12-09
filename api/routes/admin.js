@@ -932,6 +932,271 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
     }
 });
 
+// GET /api/admin/reports/revenue - Reporte de ingresos reales (cash flow)
+router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
+    try {
+        const { start_date, end_date } = req.query;
+        const startDate = start_date || '2024-01-01';
+        const endDate = end_date || new Date().toISOString().split('T')[0];
+
+        // Ingresos por día y tipo
+        const dailyRevenue = await db.query(`
+            SELECT
+                DATE(created_at) as date,
+                SUM(CASE WHEN type = 'membership' THEN amount ELSE 0 END) as membership_sales,
+                SUM(CASE WHEN type = 'service' THEN amount ELSE 0 END) as service_sales,
+                SUM(CASE WHEN type = 'product' THEN amount ELSE 0 END) as product_sales,
+                SUM(amount) as total_revenue,
+                COUNT(*) as transaction_count
+            FROM transactions
+            WHERE DATE(created_at) BETWEEN $1 AND $2
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        `, [startDate, endDate]);
+
+        // Totales por tipo de transacción
+        const revenueByType = await db.query(`
+            SELECT
+                type,
+                SUM(amount) as total,
+                COUNT(*) as count,
+                AVG(amount) as average
+            FROM transactions
+            WHERE DATE(created_at) BETWEEN $1 AND $2
+            GROUP BY type
+            ORDER BY total DESC
+        `, [startDate, endDate]);
+
+        // Totales generales
+        const totals = await db.query(`
+            SELECT
+                SUM(amount) as total_revenue,
+                COUNT(*) as total_transactions,
+                AVG(amount) as avg_transaction,
+                SUM(CASE WHEN type = 'membership' THEN amount ELSE 0 END) as total_memberships,
+                SUM(CASE WHEN type = 'service' THEN amount ELSE 0 END) as total_services,
+                SUM(CASE WHEN type = 'product' THEN amount ELSE 0 END) as total_products
+            FROM transactions
+            WHERE DATE(created_at) BETWEEN $1 AND $2
+        `, [startDate, endDate]);
+
+        // Métodos de pago
+        const paymentMethods = await db.query(`
+            SELECT
+                payment_method,
+                SUM(amount) as total,
+                COUNT(*) as count
+            FROM transactions
+            WHERE DATE(created_at) BETWEEN $1 AND $2
+            GROUP BY payment_method
+            ORDER BY total DESC
+        `, [startDate, endDate]);
+
+        res.json({
+            daily_revenue: dailyRevenue.rows,
+            revenue_by_type: revenueByType.rows,
+            payment_methods: paymentMethods.rows,
+            totals: totals.rows[0]
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/admin/reports/services-provided - Reporte de servicios prestados
+router.get('/reports/services-provided', authenticateToken, async (req, res, next) => {
+    try {
+        const { start_date, end_date } = req.query;
+        const startDate = start_date || '2024-01-01';
+        const endDate = end_date || new Date().toISOString().split('T')[0];
+
+        // Servicios prestados por tipo (pagados vs membresía)
+        const servicesBreakdown = await db.query(`
+            SELECT
+                s.id,
+                s.name,
+                s.price as standard_price,
+
+                -- Servicios PAGADOS
+                COUNT(a.id) FILTER (WHERE ch.used_membership = false) as paid_services_count,
+                COALESCE(SUM(ch.service_cost) FILTER (WHERE ch.used_membership = false), 0) as paid_services_revenue,
+
+                -- Servicios con MEMBRESÍA (valor prestado, NO es ingreso nuevo)
+                COUNT(a.id) FILTER (WHERE ch.used_membership = true) as membership_services_count,
+                COALESCE(SUM(mu.service_value), 0) as membership_services_value,
+                COALESCE(SUM(mu.stamps_used), 0) as total_stamps_used,
+
+                -- Totales
+                COUNT(a.id) as total_services_provided,
+                COALESCE(SUM(ch.service_cost) FILTER (WHERE ch.used_membership = false), 0) +
+                COALESCE(SUM(mu.service_value), 0) as total_value_provided
+
+            FROM services s
+            LEFT JOIN appointments a ON a.service_id = s.id AND a.status = 'completed'
+            LEFT JOIN checkouts ch ON ch.appointment_id = a.id
+            LEFT JOIN membership_usage mu ON mu.appointment_id = a.id
+            WHERE a.appointment_date BETWEEN $1 AND $2
+            GROUP BY s.id, s.name, s.price
+            HAVING COUNT(a.id) > 0
+            ORDER BY total_services_provided DESC
+        `, [startDate, endDate]);
+
+        // Resumen general
+        const summary = await db.query(`
+            SELECT
+                -- Servicios pagados
+                COUNT(a.id) FILTER (WHERE ch.used_membership = false) as total_paid_services,
+                COALESCE(SUM(ch.service_cost) FILTER (WHERE ch.used_membership = false), 0) as total_paid_revenue,
+
+                -- Servicios con membresía
+                COUNT(a.id) FILTER (WHERE ch.used_membership = true) as total_membership_services,
+                COALESCE(SUM(mu.service_value), 0) as total_membership_value,
+
+                -- Totales
+                COUNT(a.id) as total_services_provided
+
+            FROM appointments a
+            LEFT JOIN checkouts ch ON ch.appointment_id = a.id
+            LEFT JOIN membership_usage mu ON mu.appointment_id = a.id
+            WHERE a.status = 'completed'
+            AND a.appointment_date BETWEEN $1 AND $2
+        `, [startDate, endDate]);
+
+        res.json({
+            services_breakdown: servicesBreakdown.rows,
+            summary: summary.rows[0]
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/admin/reports/membership-roi - Reporte de ROI de membresías
+router.get('/reports/membership-roi', authenticateToken, async (req, res, next) => {
+    try {
+        const { start_date, end_date, status } = req.query;
+        const startDate = start_date || '2024-01-01';
+        const endDate = end_date || new Date().toISOString().split('T')[0];
+
+        // ROI por membresía individual
+        const membershipRoi = await db.query(`
+            SELECT
+                cm.id,
+                cm.uuid,
+                c.name as client_name,
+                c.phone as client_phone,
+                mt.name as membership_type,
+
+                -- Datos financieros
+                cm.payment_amount as amount_paid,
+                COALESCE(SUM(mu.service_value), 0) as value_delivered,
+                cm.payment_amount - COALESCE(SUM(mu.service_value), 0) as remaining_value,
+
+                -- ROI para el cliente (% de ahorro)
+                CASE
+                    WHEN cm.payment_amount > 0 THEN
+                        ROUND((COALESCE(SUM(mu.service_value), 0) / cm.payment_amount - 1) * 100, 2)
+                    ELSE 0
+                END as client_roi_percentage,
+
+                -- Uso de servicios
+                cm.used_services as stamps_used,
+                cm.total_services as stamps_total,
+                cm.total_services - cm.used_services as stamps_remaining,
+                ROUND((cm.used_services::decimal / cm.total_services) * 100, 2) as usage_percentage,
+
+                -- Fechas y estado
+                cm.purchase_date,
+                cm.activation_date,
+                cm.expiration_date,
+                cm.status,
+                CASE
+                    WHEN cm.status = 'active' AND cm.expiration_date < CURRENT_DATE THEN 'expired'
+                    ELSE cm.status
+                END as actual_status,
+
+                -- Métrica de negocio: ¿Fue rentable?
+                CASE
+                    WHEN COALESCE(SUM(mu.service_value), 0) < cm.payment_amount THEN 'profitable'
+                    WHEN COALESCE(SUM(mu.service_value), 0) = cm.payment_amount THEN 'break_even'
+                    ELSE 'loss'
+                END as business_outcome
+
+            FROM client_memberships cm
+            JOIN clients c ON c.id = cm.client_id
+            JOIN membership_types mt ON mt.id = cm.membership_type_id
+            LEFT JOIN membership_usage mu ON mu.membership_id = cm.id
+            WHERE DATE(cm.purchase_date) BETWEEN $1 AND $2
+            ${status ? 'AND cm.status = $3' : ''}
+            GROUP BY cm.id, c.name, c.phone, mt.name, cm.payment_amount,
+                     cm.used_services, cm.total_services, cm.purchase_date,
+                     cm.activation_date, cm.expiration_date, cm.status
+            ORDER BY cm.purchase_date DESC
+        `, status ? [startDate, endDate, status] : [startDate, endDate]);
+
+        // Resumen general de ROI
+        const roiSummary = await db.query(`
+            SELECT
+                COUNT(cm.id) as total_memberships,
+                SUM(cm.payment_amount) as total_revenue,
+                COALESCE(SUM(mu.total_value), 0) as total_value_delivered,
+                SUM(cm.payment_amount) - COALESCE(SUM(mu.total_value), 0) as net_difference,
+
+                -- Promedio de uso
+                AVG(cm.used_services::decimal / cm.total_services * 100) as avg_usage_percentage,
+
+                -- Conteo por outcome
+                COUNT(*) FILTER (WHERE mu.total_value < cm.payment_amount) as profitable_count,
+                COUNT(*) FILTER (WHERE mu.total_value >= cm.payment_amount) as loss_or_breakeven_count,
+
+                -- Por estado
+                COUNT(*) FILTER (WHERE cm.status = 'active') as active_count,
+                COUNT(*) FILTER (WHERE cm.status = 'expired') as expired_count,
+                COUNT(*) FILTER (WHERE cm.status = 'cancelled') as cancelled_count
+
+            FROM client_memberships cm
+            LEFT JOIN (
+                SELECT membership_id, SUM(service_value) as total_value
+                FROM membership_usage
+                GROUP BY membership_id
+            ) mu ON mu.membership_id = cm.id
+            WHERE DATE(cm.purchase_date) BETWEEN $1 AND $2
+        `, [startDate, endDate]);
+
+        // Top clientes que más usan sus membresías
+        const topUsers = await db.query(`
+            SELECT
+                c.name as client_name,
+                mt.name as membership_type,
+                cm.used_services as stamps_used,
+                cm.total_services as stamps_total,
+                COALESCE(SUM(mu.service_value), 0) as value_extracted,
+                cm.payment_amount as amount_paid,
+                ROUND((COALESCE(SUM(mu.service_value), 0) / cm.payment_amount - 1) * 100, 2) as roi_percentage
+            FROM client_memberships cm
+            JOIN clients c ON c.id = cm.client_id
+            JOIN membership_types mt ON mt.id = cm.membership_type_id
+            LEFT JOIN membership_usage mu ON mu.membership_id = cm.id
+            WHERE DATE(cm.purchase_date) BETWEEN $1 AND $2
+            GROUP BY c.name, mt.name, cm.used_services, cm.total_services, cm.payment_amount
+            HAVING SUM(mu.service_value) > 0
+            ORDER BY roi_percentage DESC
+            LIMIT 10
+        `, [startDate, endDate]);
+
+        res.json({
+            memberships: membershipRoi.rows,
+            summary: roiSummary.rows[0],
+            top_users: topUsers.rows
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ============================
 // HORARIOS DE NEGOCIO (Ya existentes)
 // ============================

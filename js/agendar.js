@@ -652,6 +652,21 @@ function sendDepositWhatsApp() {
     closeDepositModal();
 }
 
+function toggleBankDetails() {
+    const card = document.getElementById('bank-details-card');
+    const btn = document.getElementById('btn-show-bank-details');
+
+    if (card.classList.contains('hidden')) {
+        card.classList.remove('hidden');
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar Datos';
+    } else {
+        card.classList.add('hidden');
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-credit-card"></i> Ver Datos Bancarios';
+    }
+}
+
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast('¡Copiado al portapapeles!', 'success');
@@ -664,4 +679,5 @@ function copyToClipboard(text) {
 window.showDepositModal = showDepositModal;
 window.closeDepositModal = closeDepositModal;
 window.sendDepositWhatsApp = sendDepositWhatsApp;
+window.toggleBankDetails = toggleBankDetails;
 window.copyToClipboard = copyToClipboard;
