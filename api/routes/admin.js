@@ -910,6 +910,23 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
+        // Membership sales
+        const membershipSales = await db.query(
+            `SELECT 'Membresía ' || mt.name as name, 
+                    COUNT(*) as count, 
+                    SUM(cm.payment_amount) as total,
+                    0 as membership_usage_count
+             FROM client_memberships cm
+             JOIN membership_types mt ON cm.membership_type_id = mt.id
+             WHERE DATE(cm.created_at) BETWEEN $1 AND $2
+             GROUP BY mt.name
+             ORDER BY total DESC`,
+            [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
+        );
+
+        // Combine and sort
+        const combinedSales = [...servicesSales.rows, ...membershipSales.rows].sort((a, b) => parseFloat(b.total) - parseFloat(a.total));
+
         // Totals
         const totals = await db.query(
             `SELECT 
@@ -923,7 +940,7 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
 
         res.json({
             daily_sales: dailySales.rows,
-            services_sales: servicesSales.rows,
+            services_sales: combinedSales,
             totals: totals.rows[0]
         });
 
