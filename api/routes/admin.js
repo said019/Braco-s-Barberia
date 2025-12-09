@@ -1466,4 +1466,29 @@ router.put('/settings/:key', authenticateToken, async (req, res, next) => {
     }
 });
 
+// ============================
+// DEBUG: RESET MEMBERSHIPS
+// ============================
+router.post('/debug/reset-memberships', authenticateToken, async (req, res, next) => {
+    try {
+        await transaction(async (client) => {
+            // 1. Delete membership usage history
+            await client.query('DELETE FROM membership_usage');
+
+            // 2. Delete transactions related to memberships
+            await client.query("DELETE FROM transactions WHERE type = 'membership'");
+
+            // 3. Delete client memberships
+            await client.query('DELETE FROM client_memberships');
+
+            // 4. Reset client types to 'normal' (ID 1)
+            await client.query("UPDATE clients SET client_type_id = 1 WHERE client_type_id > 1");
+        });
+
+        res.json({ message: 'Se han eliminado todas las membresías y reiniciado los clientes correctamente.' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
