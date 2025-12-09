@@ -141,6 +141,38 @@
                             <p class="stat-label">Ticket Promedio</p>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(156,39,176,0.2); color: #9C27B0;">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 class="stat-value" id="membership-sales">$0.00</h3>
+                            <p class="stat-label">Venta de Membresías</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Breakdown -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar" style="margin-right: 0.5rem;"></i>Desglose de Ingresos</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: rgba(76,175,80,0.1); border-radius: var(--radius-sm);">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);" id="services-revenue">$0.00</div>
+                                <div class="text-muted">Servicios Pagados</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(156,39,176,0.1); border-radius: var(--radius-sm);">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #9C27B0;" id="memberships-revenue">$0.00</div>
+                                <div class="text-muted">Membresías Vendidas</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: rgba(255,152,0,0.1); border-radius: var(--radius-sm);">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #FF9800;" id="products-revenue">$0.00</div>
+                                <div class="text-muted">Productos</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
@@ -157,7 +189,7 @@
                     <!-- Top Services -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Servicios Top</h3>
+                            <h3>Servicios Top (Ingresos)</h3>
                         </div>
                         <div class="card-body" style="overflow-y: auto; max-height: 350px;">
                             <table class="data-table" style="font-size: 0.9rem;">
@@ -172,6 +204,47 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Membership Usage Section -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3><i class="fas fa-id-card" style="margin-right: 0.5rem; color: #9C27B0;"></i>Uso de Membresías</h3>
+                        <span class="badge" style="background: rgba(156,39,176,0.2); color: #9C27B0; padding: 0.5rem 1rem;">
+                            No suma a ventas
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted" style="margin-bottom: 1rem;">
+                            Servicios prestados usando beneficios de membresía. Estos no generan ingreso adicional ya que fueron pagados al comprar la membresía.
+                        </p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                <div style="font-size: 2rem; font-weight: bold; color: #9C27B0;" id="membership-usage-count">0</div>
+                                <div class="text-muted">Servicios con Membresía</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--text-secondary);" id="membership-usage-value">$0.00</div>
+                                <div class="text-muted">Valor Prestado</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--gold);" id="stamps-used">0</div>
+                                <div class="text-muted">Sellos Utilizados</div>
+                            </div>
+                        </div>
+                        <table class="data-table" style="font-size: 0.9rem;">
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th class="text-center">Usos</th>
+                                    <th class="text-right">Valor Prestado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membership-usage-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -198,13 +271,16 @@
         }
 
         function setupDates() {
-            // Default: Current Month
-            const date = new Date();
-            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            // Default: Current Week (Monday to Sunday)
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
 
-            document.getElementById('start-date').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('end-date').value = lastDay.toISOString().split('T')[0];
+            document.getElementById('start-date').value = monday.toISOString().split('T')[0];
+            document.getElementById('end-date').value = sunday.toISOString().split('T')[0];
         }
 
         async function loadReports() {
@@ -212,33 +288,48 @@
             const end = document.getElementById('end-date').value;
 
             try {
-                const data = await api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`);
-                updateDashboard(data);
+                // Load both reports in parallel
+                const [salesData, revenueData, servicesData] = await Promise.all([
+                    api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`),
+                    api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`),
+                    api.get(`/admin/reports/services-provided?start_date=${start}&end_date=${end}`)
+                ]);
+                
+                updateDashboard(salesData, revenueData, servicesData);
             } catch (error) {
                 console.error('Error loading reports:', error);
                 alert('Error al cargar reporte: ' + error.message);
             }
         }
 
-        function updateDashboard(data) {
-            // Unpack Data
-            const { daily_sales, services_sales, totals } = data;
+        function updateDashboard(salesData, revenueData, servicesData) {
+            const { daily_sales, services_sales, totals } = salesData;
+            const revenueTotals = revenueData.totals || {};
+            const servicesSummary = servicesData.summary || {};
 
-            // 1. Update Cards
+            // 1. Update Main Cards
             const revenue = totals?.total_revenue || 0;
             const transactions = totals?.total_transactions || 0;
             const avg = totals?.avg_ticket || 0;
+            const membershipSales = revenueTotals.total_memberships || 0;
 
             document.getElementById('total-revenue').textContent = formatCurrency(revenue);
             document.getElementById('total-transactions').textContent = transactions;
             document.getElementById('avg-ticket').textContent = formatCurrency(avg);
+            document.getElementById('membership-sales').textContent = formatCurrency(membershipSales);
 
-            // 2. Update Chart
+            // 2. Update Revenue Breakdown
+            document.getElementById('services-revenue').textContent = formatCurrency(revenueTotals.total_services || 0);
+            document.getElementById('memberships-revenue').textContent = formatCurrency(revenueTotals.total_memberships || 0);
+            document.getElementById('products-revenue').textContent = formatCurrency(revenueTotals.total_products || 0);
+
+            // 3. Update Chart
             updateChart(daily_sales);
 
-            // 3. Update Top Services
+            // 4. Update Top Services (only paid services)
             const tbody = document.getElementById('top-services-body');
-            tbody.innerHTML = (services_sales || []).map(s => `
+            const paidServices = (services_sales || []).filter(s => parseFloat(s.total) > 0);
+            tbody.innerHTML = paidServices.map(s => `
                 <tr>
                     <td>
                         <div class="font-medium">${s.name}</div>
@@ -246,17 +337,40 @@
                     </td>
                     <td class="text-right font-medium">${formatCurrency(s.total)}</td>
                 </tr>
-            `).join('');
+            `).join('') || '<tr><td colspan="2" class="text-center text-muted">Sin datos</td></tr>';
+
+            // 5. Update Membership Usage Section
+            const membershipUsageCount = servicesSummary.total_membership_services || 0;
+            const membershipUsageValue = servicesSummary.total_membership_value || 0;
+            
+            document.getElementById('membership-usage-count').textContent = membershipUsageCount;
+            document.getElementById('membership-usage-value').textContent = formatCurrency(membershipUsageValue);
+            
+            // Calculate total stamps used
+            const servicesBreakdown = servicesData.services_breakdown || [];
+            const totalStamps = servicesBreakdown.reduce((sum, s) => sum + (parseInt(s.total_stamps_used) || 0), 0);
+            document.getElementById('stamps-used').textContent = totalStamps;
+
+            // Update membership usage table
+            const usageBody = document.getElementById('membership-usage-body');
+            const membershipServices = servicesBreakdown.filter(s => parseInt(s.membership_services_count) > 0);
+            usageBody.innerHTML = membershipServices.map(s => `
+                <tr>
+                    <td>
+                        <div class="font-medium">${s.name}</div>
+                        <div class="text-sm text-muted">${s.total_stamps_used || s.membership_services_count} sellos usados</div>
+                    </td>
+                    <td class="text-center">${s.membership_services_count}</td>
+                    <td class="text-right" style="color: var(--text-secondary);">${formatCurrency(s.membership_services_value)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="text-center text-muted">Sin usos de membresía en este período</td></tr>';
         }
 
         function updateChart(dailyData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
 
-            // Prepare Data
             const labels = dailyData.map(d => {
-                const date = new Date(d.date); // d.date is string YYYY-MM-DD
-                // Adjust for timezone offset if necessary or just split
-                // Best to display visual date
+                const date = new Date(d.date);
                 return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
             });
             const values = dailyData.map(d => d.total);
@@ -272,7 +386,7 @@
                     datasets: [{
                         label: 'Ventas ($)',
                         data: values,
-                        borderColor: '#C4A35A', // Gold
+                        borderColor: '#C4A35A',
                         backgroundColor: 'rgba(196, 163, 90, 0.1)',
                         borderWidth: 2,
                         fill: true,
@@ -307,10 +421,8 @@
         }
 
         function exportReport() {
-            // Simple CSV export of daily sales
             const start = document.getElementById('start-date').value;
             const end = document.getElementById('end-date').value;
-            // Ideally trigger backend export or just download current chart data
             alert('Funcionalidad de exportación detallada en desarrollo. Captura de pantalla recomendada.');
         }
 

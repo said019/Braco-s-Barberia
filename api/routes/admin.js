@@ -681,11 +681,11 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
                 await client.query('UPDATE clients SET client_type_id = $1 WHERE id = $2', [newTypeId, client_id]);
             }
 
-            // Record transaction
+            // Record transaction with membership_purchase_id for proper tracking
             await client.query(
-                `INSERT INTO transactions (client_id, type, amount, description, payment_method, transaction_date)
-                 VALUES ($1, 'membership', $2, $3, $4, CURRENT_DATE)`,
-                [client_id, membershipType.price, `Membresía ${membershipType.name}`, dbPaymentMethod]
+                `INSERT INTO transactions (membership_purchase_id, client_id, type, amount, description, payment_method, transaction_date)
+                 VALUES ($1, $2, 'membership', $3, $4, $5, CURRENT_DATE)`,
+                [res.rows[0].id, client_id, membershipType.price, `Membresía ${membershipType.name}`, dbPaymentMethod]
             );
 
             return res;
