@@ -534,7 +534,8 @@ async function submitBooking() {
 
                     const appointment = await API.createAppointment(appointmentData);
 
-                    if (appointment && appointment.success) {
+                    // API returns appointment data directly, not { success, data }
+                    if (appointment && appointment.id) {
                         // 4. Mostrar modal de depósito
                         showDepositModal(state.tempClient);
                     } else {
