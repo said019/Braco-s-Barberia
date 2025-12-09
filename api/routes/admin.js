@@ -670,18 +670,14 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
             );
 
             // Update Client Type logic
-            let newTypeId = 2; // Default
-            if (membership_type_id == 8) newTypeId = 3; // Golden Corte -> VIP (ID 3)
-            if (membership_type_id == 9) newTypeId = 4; // Golden Neo -> Black Card (ID 4)
-            if (membership_type_id == 10) newTypeId = 4; // Black Card -> Black Card (ID 4)
+            // Use the client_type_id defined in the membership_types table
+            let newTypeId = membershipType.client_type_id;
 
-            // Graceful fallback from seeded logical IDs
-            let targetTypeId = membershipType.client_type_id;
-            if (targetTypeId > newTypeId) newTypeId = targetTypeId;
-            // Handle ID 5 mapping if legacy
-            if (newTypeId === 5) newTypeId = 4;
+            // Ensure we don't downgrade a client if they are already a higher level (optional but good practice)
+            // But here we might want to strictly set it to the membership level. 
+            // Let's assume we update to the new level.
 
-            if (newTypeId > 2) {
+            if (newTypeId > 1) {
                 await client.query('UPDATE clients SET client_type_id = $1 WHERE id = $2', [newTypeId, client_id]);
             }
 
