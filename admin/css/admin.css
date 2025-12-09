@@ -1949,3 +1949,18 @@ a {
     width: 100%;
     justify-content: center;
 }
+
+/* FILTER LABELS */
+.filter-label {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pending-row {
+    background: rgba(255, 235, 59, 0.05) !important;
+    border-left: 3px solid #FDD835;
+}

@@ -31,7 +31,7 @@
                     </a>
                     <a href="citas.html" class="nav-item active">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -88,26 +88,78 @@
         <main class="main-content">
             <header class="top-header">
                 <div>
-                    <h1 class="page-title">Citas de Hoy</h1>
-                    <p class="text-muted" id="today-date"></p>
+                    <h1 class="page-title">Citas</h1>
+                    <p class="text-muted">Gestión completa de citas</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="window.location.href='calendario.html'">
-                        <i class="far fa-calendar-alt"></i> Ver Calendario Completo
+                        <i class="far fa-calendar-alt"></i> Calendario
                     </button>
                 </div>
             </header>
 
             <div class="page-content">
+                <!-- Filters Section -->
+                <div class="filters-section" style="margin-bottom: 1.5rem;">
+                    <div class="filters-row" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                        <!-- Date Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">Desde</label>
+                            <input type="date" id="filter-start-date" class="search-input" style="width: 160px;">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Hasta</label>
+                            <input type="date" id="filter-end-date" class="search-input" style="width: 160px;">
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">Estado</label>
+                            <select id="filter-status" class="search-input" style="width: 160px;">
+                                <option value="">Todos</option>
+                                <option value="pending">⏳ Pendiente</option>
+                                <option value="scheduled">📅 Programada</option>
+                                <option value="confirmed">✅ Confirmada</option>
+                                <option value="in_progress">🔄 En Curso</option>
+                                <option value="completed">✔️ Completada</option>
+                                <option value="cancelled">❌ Cancelada</option>
+                                <option value="no_show">👤 No Asistió</option>
+                            </select>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="filter-group" style="flex: 1; min-width: 200px;">
+                            <label class="filter-label">Buscar</label>
+                            <input type="text" id="filter-search" class="search-input"
+                                placeholder="Cliente o servicio...">
+                        </div>
+
+                        <!-- Quick Filters -->
+                        <div class="quick-filters" style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('today')">Hoy</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('week')">Semana</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('month')">Mes</button>
+                            <button class="btn btn-secondary btn-sm"
+                                onclick="setQuickFilter('pending')">Pendientes</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Status Legend -->
                 <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
-                    <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;">Pendiente</span>
+                    <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;">⏳ Pendiente</span>
                     <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);">Programada</span>
                     <span class="badge"
                         style="background: rgba(76,175,80,0.3); color: var(--success);">Confirmada</span>
                     <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);">En Curso</span>
                     <span class="badge"
                         style="background: rgba(76,175,80,0.15); color: var(--success);">Completada</span>
+                    <span class="badge" style="background: rgba(229,57,53,0.15); color: var(--error);">Cancelada</span>
+                </div>
+
+                <!-- Results Count -->
+                <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <p class="text-muted" id="results-count">Cargando...</p>
                 </div>
 
                 <!-- Table -->
@@ -115,6 +167,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Fecha</th>
                                 <th>Hora</th>
                                 <th>Cliente</th>
                                 <th>Servicio</th>
@@ -124,7 +177,7 @@
                         </thead>
                         <tbody id="appointments-table-body">
                             <tr>
-                                <td colspan="5" class="text-center p-3">Cargando citas...</td>
+                                <td colspan="6" class="text-center p-3">Cargando citas...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -137,19 +190,77 @@
     <script src="js/api.js"></script>
     <script src="../js/admin.js"></script>
     <script>
-        let todayAppointments = [];
+        let allAppointments = [];
+        let filteredAppointments = [];
 
         async function init() {
             checkAuth();
             updateUserInfo();
-            setupDate();
-            await loadData();
+            setupFilters();
+            setQuickFilter('today'); // Default to today
         }
 
-        function setupDate() {
+        function setupFilters() {
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filter-start-date').value = today;
+            document.getElementById('filter-end-date').value = today;
+
+            // Event listeners
+            document.getElementById('filter-start-date').addEventListener('change', loadData);
+            document.getElementById('filter-end-date').addEventListener('change', loadData);
+            document.getElementById('filter-status').addEventListener('change', applyFilters);
+            document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function setQuickFilter(type) {
             const today = new Date();
-            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('today-date').textContent = today.toLocaleDateString('es-MX', options);
+            let startDate, endDate;
+
+            switch (type) {
+                case 'today':
+                    startDate = endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    startDate = weekStart.toISOString().split('T')[0];
+                    endDate = weekEnd.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+                    break;
+                case 'pending':
+                    // Last 30 days with pending filter
+                    startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    endDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    document.getElementById('filter-status').value = 'pending';
+                    break;
+            }
+
+            document.getElementById('filter-start-date').value = startDate;
+            document.getElementById('filter-end-date').value = endDate;
+
+            if (type !== 'pending') {
+                document.getElementById('filter-status').value = '';
+            }
+
+            loadData();
         }
 
         function updateUserInfo() {
@@ -161,15 +272,45 @@
 
         async function loadData() {
             try {
-                // Get today's date in YYYY-MM-DD local
-                const today = new Date().toISOString().split('T')[0];
-                todayAppointments = await api.get(`/admin/appointments?date=${today}`);
-                renderTable(todayAppointments);
-                updateBadge(todayAppointments.length);
+                const startDate = document.getElementById('filter-start-date').value;
+                const endDate = document.getElementById('filter-end-date').value;
+
+                if (!startDate || !endDate) return;
+
+                document.getElementById('results-count').textContent = 'Cargando...';
+
+                allAppointments = await api.get(`/admin/appointments?start_date=${startDate}&end_date=${endDate}`);
+                applyFilters();
+                updateBadge(allAppointments.filter(a => a.status === 'pending').length);
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="5" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="6" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+                document.getElementById('results-count').textContent = 'Error al cargar';
             }
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+
+            filteredAppointments = allAppointments.filter(app => {
+                if (statusFilter && app.status !== statusFilter) return false;
+                if (searchFilter) {
+                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone}`.toLowerCase();
+                    if (!searchText.includes(searchFilter)) return false;
+                }
+                return true;
+            });
+
+            // Sort by date and time
+            filteredAppointments.sort((a, b) => {
+                const dateCompare = a.appointment_date.localeCompare(b.appointment_date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.start_time.localeCompare(b.start_time);
+            });
+
+            renderTable(filteredAppointments);
+            document.getElementById('results-count').textContent = `${filteredAppointments.length} cita(s) encontrada(s)`;
         }
 
         function updateBadge(count) {
@@ -181,13 +322,18 @@
         }
 
         function formatTime(timeStr) {
-            // HH:MM:SS -> HH:MM AM/PM
             if (!timeStr) return '';
             const [hours, minutes] = timeStr.split(':');
             const date = new Date();
             date.setHours(parseInt(hours));
             date.setMinutes(parseInt(minutes));
             return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
         }
 
         function getStatusBadge(status, appointmentId) {
@@ -216,12 +362,13 @@
             const tbody = document.getElementById('appointments-table-body');
 
             if (appointments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-3">No hay citas para hoy</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">No se encontraron citas</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = appointments.map(app => `
-                <tr>
+                <tr class="${app.status === 'pending' ? 'pending-row' : ''}">
+                    <td class="text-muted">${formatDate(app.appointment_date)}</td>
                     <td class="font-medium text-gold">${formatTime(app.start_time)}</td>
                     <td>
                         <div class="font-medium">${app.client_name}</div>
@@ -245,23 +392,20 @@
             const id = app.id;
             let buttons = '';
 
-            // Pending -> can be confirmed/scheduled or cancelled
             if (app.status === 'pending') {
                 buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check" style="color: #4CAF50;"></i></button>`;
-                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Rechazar/Cancelar"><i class="fas fa-times-circle"></i></button>`;
             }
 
             if (['scheduled', 'confirmed'].includes(app.status)) {
                 buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
             }
             if (app.status === 'in_progress') {
                 buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
             }
-            if (['scheduled', 'confirmed'].includes(app.status)) {
-                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
-            }
 
-            return buttons || '-';
+            return buttons || '<span class="text-muted">-</span>';
         }
 
         function openStatusModal(appointmentId, currentStatus) {
@@ -322,6 +466,7 @@
 
         async function updateStatus(id, newStatus) {
             const statusLabels = {
+                'confirmed': 'Confirmada',
                 'in_progress': 'En Curso',
                 'completed': 'Completada',
                 'cancelled': 'Cancelada'
