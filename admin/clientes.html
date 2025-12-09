@@ -32,7 +32,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -101,7 +101,7 @@
                     <div class="search-box">
                         <span class="search-icon"><i class="fas fa-search"></i></span>
                         <input type="text" id="search-client" class="search-input" placeholder="Buscar cliente..."
-                            onkeyup="filterClients()">
+                            oninput="filterClients()">
                     </div>
 
                     <select class="filter-select" id="filter-type">
@@ -267,7 +267,8 @@
         }
 
         function renderClients() {
-            const search = document.getElementById('search-clients').value.toLowerCase();
+            const searchEl = document.getElementById('search-client');
+            const search = searchEl ? searchEl.value.toLowerCase() : '';
             const typeFilter = document.getElementById('filter-type').value;
             const membershipFilter = document.getElementById('filter-membership').value;
 
@@ -376,7 +377,7 @@
         }
 
         // Eventos de filtros
-        document.getElementById('search-clients').addEventListener('input', () => {
+        document.getElementById('search-client').addEventListener('input', () => {
             currentPage = 1;
             renderClients();
         });
