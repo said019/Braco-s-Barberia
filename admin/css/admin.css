@@ -1969,16 +1969,29 @@ a {
 input[type="date"] {
     cursor: pointer;
     color-scheme: dark;
+    position: relative;
+    padding-left: 2.5rem;
+    /* Space for icon on left */
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    filter: invert(1);
-    opacity: 0.7;
+    /* Gold filter for #C4A35A */
+    filter: invert(74%) sepia(21%) saturate(996%) hue-rotate(359deg) brightness(89%) contrast(92%);
+    opacity: 0.8;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+    padding: 0;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
+    transform: translateY(-50%) scale(1.1);
 }
 
 /* BADGE IMPROVEMENTS */
