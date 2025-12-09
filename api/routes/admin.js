@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '../config/database.js';
+import db, { transaction } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -640,55 +640,60 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
         const expirationDate = new Date(purchaseDate);
         expirationDate.setDate(expirationDate.getDate() + membershipType.validity_days);
 
-        // Create membership
-        const result = await db.query(
-            `INSERT INTO client_memberships 
-             (client_id, membership_type_id, status, total_services, used_services,
-              purchase_date, activation_date, expiration_date, payment_method, payment_amount, folio_number, uuid)
-             VALUES ($1, $2, 'active', $3, 0, $4, $4, $5, $6, $7, $8, gen_random_uuid())
-             RETURNING *, (SELECT name FROM membership_types WHERE id = $2) as type_name`,
-            [
-                client_id,
-                membership_type_id,
-                membershipType.total_services,
-                purchaseDate.toISOString().split('T')[0],
-                expirationDate.toISOString().split('T')[0],
-                payment_method,
-                membershipType.price,
-                folio_number
-            ]
-        );
+        // Map payment methods to English if needed (safe fallback)
+        const methodMap = {
+            'efectivo': 'cash',
+            'tarjeta': 'card',
+            'transferencia': 'transfer'
+        };
+        const dbPaymentMethod = methodMap[payment_method.toLowerCase()] || payment_method;
 
-        // Update Client Type based on Membership
-        // 8: Golden Card Corte -> 3: Golden Card
-        // 9: Golden NeoCapilar -> 4: NeoCapilar
-        // 10: Black Card -> 5: Black Card
-        let newTypeId = 2; // Default Recurrente
-        if (membership_type_id == 8) newTypeId = 3;
-        if (membership_type_id == 9) newTypeId = 4;
-        if (membership_type_id == 10) newTypeId = 4; // Fallback to 4 (VIP not seeded)
+        // Execute in transaction
+        const result = await transaction(async (client) => {
+            // Create membership
+            const res = await client.query(
+                `INSERT INTO client_memberships 
+                 (client_id, membership_type_id, status, total_services, used_services,
+                  purchase_date, activation_date, expiration_date, payment_method, payment_amount, folio_number, uuid)
+                 VALUES ($1, $2, 'active', $3, 0, $4, $4, $5, $6, $7, $8, gen_random_uuid())
+                 RETURNING *, (SELECT name FROM membership_types WHERE id = $2) as type_name`,
+                [
+                    client_id,
+                    membership_type_id,
+                    membershipType.total_services,
+                    purchaseDate.toISOString().split('T')[0],
+                    expirationDate.toISOString().split('T')[0],
+                    dbPaymentMethod,
+                    membershipType.price,
+                    folio_number
+                ]
+            );
 
-        // Only update if it's a membership type
-        if (newTypeId > 2) {
-            await db.query('UPDATE clients SET client_type_id = $1 WHERE id = $2', [newTypeId, client_id]);
-        }
+            // Update Client Type logic
+            let newTypeId = 2; // Default
+            if (membership_type_id == 8) newTypeId = 3; // Golden Corte -> VIP (ID 3)
+            if (membership_type_id == 9) newTypeId = 4; // Golden Neo -> Black Card (ID 4)
+            if (membership_type_id == 10) newTypeId = 4; // Black Card -> Black Card (ID 4)
 
-        // Record transaction
-        await db.query(
-            `INSERT INTO transactions (client_id, type, amount, description, payment_method, transaction_date)
-             VALUES ($1, 'membership', $2, $3, $4, CURRENT_DATE)`,
-            [client_id, membershipType.price, `Membresía ${membershipType.name}`, payment_method]
-        );
+            // Graceful fallback from seeded logical IDs
+            let targetTypeId = membershipType.client_type_id;
+            if (targetTypeId > newTypeId) newTypeId = targetTypeId;
+            // Handle ID 5 mapping if legacy
+            if (newTypeId === 5) newTypeId = 4;
 
-        // Update client type to Premium/VIP (Graceful fallback)
-        let targetTypeId = membershipType.client_type_id;
-        if (targetTypeId === 5) targetTypeId = 4;
+            if (newTypeId > 2) {
+                await client.query('UPDATE clients SET client_type_id = $1 WHERE id = $2', [newTypeId, client_id]);
+            }
 
-        await db.query(
-            `UPDATE clients SET client_type_id = $2, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $1 AND client_type_id = 1`,
-            [client_id, targetTypeId]
-        );
+            // Record transaction
+            await client.query(
+                `INSERT INTO transactions (client_id, type, amount, description, payment_method, transaction_date)
+                 VALUES ($1, 'membership', $2, $3, $4, CURRENT_DATE)`,
+                [client_id, membershipType.price, `Membresía ${membershipType.name}`, dbPaymentMethod]
+            );
+
+            return res;
+        });
 
         res.status(201).json(result.rows[0]);
 
