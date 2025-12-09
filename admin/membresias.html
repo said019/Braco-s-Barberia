@@ -452,7 +452,10 @@
 
                         <div class="form-group">
                             <label for="membership-folio">Folio *</label>
-                            <input type="text" id="membership-folio" required placeholder="Ingrese el folio de la tarjeta" class="form-control">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span id="folio-prefix" style="background: rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 4px; color: var(--gold); font-weight: bold; min-width: 50px; text-align: center;">-</span>
+                                <input type="number" id="membership-folio" required placeholder="Número (ej: 1)" class="form-control" style="flex: 1;">
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -490,10 +493,22 @@
                     updateMembershipPreview();
                 }
 
+                // Initialize prefix if empty selection (or just trigger update)
+                updateMembershipPreview();
+
             } catch (error) {
                 console.error('Error loading data:', error);
                 showToast('Error al cargar los datos', 'error');
             }
+        }
+
+        function getPrefixForType(name) {
+            const lower = name.toLowerCase();
+            if (lower.includes('black')) return 'BC';
+            if (lower.includes('neocapilar')) return 'GN';
+            if (lower.includes('corte')) return 'GC';
+            if (lower.includes('golden')) return 'GC'; // Fallback for other golden
+            return 'MB';
         }
 
         function updateMembershipPreview() {
@@ -521,6 +536,11 @@
                 endDate = formatDate(end.toISOString().split('T')[0]);
             }
 
+            // Update Prefix
+            const prefix = getPrefixForType(typeName);
+            const prefixSpan = document.getElementById('folio-prefix');
+            if (prefixSpan) prefixSpan.textContent = prefix;
+
             details.innerHTML = `
                 Plan: ${typeName}<br>
                 Precio: ${formatCurrency(price)}<br>
@@ -544,7 +564,7 @@
                 client_id: parseInt(document.getElementById('membership-client').value),
                 membership_type_id: parseInt(document.getElementById('membership-type').value),
                 payment_method: document.getElementById('payment-method').value,
-                folio_number: document.getElementById('membership-folio').value
+                folio_number: document.getElementById('folio-prefix').textContent + document.getElementById('membership-folio').value
             };
 
             try {
