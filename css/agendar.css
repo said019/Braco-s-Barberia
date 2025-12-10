@@ -1157,87 +1157,136 @@
 }
 
 /* ============================================================================
-   DEPOSIT MODAL - ALERT STYLE
+   DEPOSIT MODAL - POPUP STYLE
    ============================================================================ */
 
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 .deposit-modal-alert {
-    max-width: 480px;
-    background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-    border: 2px solid rgba(255, 193, 7, 0.4);
-    border-radius: 16px;
-    padding: 0;
+    background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 20px;
     overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Close Button */
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--cream);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: rgba(229, 57, 53, 0.8);
+    border-color: rgba(229, 57, 53, 0.8);
+    transform: rotate(90deg);
 }
 
 /* Alert Header */
 .deposit-alert-header {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.15) 0%, rgba(196, 163, 90, 0.05) 100%);
     padding: 2rem 2rem 1.5rem;
     text-align: center;
-    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
-}
-
-.alert-icon-container {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.4);
-}
-
-.alert-icon-container i {
-    font-size: 2rem;
-    color: #1a1a1a;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
 }
 
 .alert-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.8rem;
-    color: #FFC107;
+    font-size: 1.75rem;
+    color: var(--gold);
     margin: 0 0 0.5rem;
     font-weight: 600;
 }
 
 .alert-subtitle {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     margin: 0;
 }
 
 /* Alert Body */
 .deposit-alert-body {
-    padding: 1.5rem 2rem;
+    padding: 1.5rem;
 }
 
 .alert-message-box {
-    background: rgba(255, 193, 7, 0.08);
-    border-left: 3px solid #FFC107;
+    background: rgba(196, 163, 90, 0.08);
+    border-left: 3px solid var(--gold);
     padding: 1rem 1.25rem;
-    border-radius: 0 8px 8px 0;
-    margin-bottom: 1.5rem;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 1.25rem;
 }
 
 .alert-message-box p {
     margin: 0;
     line-height: 1.6;
     color: var(--cream);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .alert-message-box p strong {
-    color: #FFC107;
+    color: var(--gold);
 }
 
 .alert-note {
-    margin-top: 1rem !important;
-    font-size: 0.85rem !important;
-    color: rgba(255, 255, 255, 0.6) !important;
+    margin-top: 0.75rem !important;
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.5) !important;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1249,140 +1298,196 @@
 
 /* Appointment Summary */
 .deposit-appointment-summary {
-    background: rgba(196, 163, 90, 0.08);
-    border: 1px solid rgba(196, 163, 90, 0.2);
-    border-radius: 10px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
 }
 
 .deposit-appointment-summary h4 {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--gold);
-    margin: 0 0 1rem;
+    margin: 0 0 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
-.summary-row {
+.deposit-appointment-summary .summary-row {
     display: flex;
     justify-content: space-between;
     padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(196, 163, 90, 0.1);
-    font-size: 0.9rem;
-}
-
-.summary-row:last-child {
-    border-bottom: none;
-}
-
-.summary-row span {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.summary-row strong {
-    color: var(--cream);
-}
-
-/* Payment Details - Collapsible */
-.payment-details {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    margin-bottom: 0;
-}
-
-.payment-details summary {
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--cream);
-    font-size: 0.9rem;
-    font-weight: 500;
-    list-style: none;
-    transition: background 0.2s ease;
-}
-
-.payment-details summary::-webkit-details-marker {
-    display: none;
-}
-
-.payment-details summary::after {
-    content: '▼';
-    margin-left: auto;
-    font-size: 0.7rem;
-    opacity: 0.5;
-    transition: transform 0.2s ease;
-}
-
-.payment-details[open] summary::after {
-    transform: rotate(180deg);
-}
-
-.payment-details summary:hover {
-    background: rgba(196, 163, 90, 0.1);
-}
-
-.payment-details summary i {
-    color: var(--gold);
-}
-
-.payment-options-compact {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid rgba(196, 163, 90, 0.1);
-}
-
-.payment-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 0.85rem;
 }
 
-.payment-row:last-of-type {
+.deposit-appointment-summary .summary-row:last-child {
     border-bottom: none;
 }
 
-.payment-label {
-    color: rgba(255, 255, 255, 0.7);
+.deposit-appointment-summary .summary-row span {
+    color: rgba(255, 255, 255, 0.5);
 }
 
-.payment-row code.copyable {
-    font-family: 'Roboto Mono', monospace;
-    background: rgba(196, 163, 90, 0.15);
+.deposit-appointment-summary .summary-row strong {
+    color: var(--cream);
+    font-weight: 500;
+}
+
+/* Payment Section */
+.payment-section {
+    margin-top: 1rem;
+}
+
+.payment-section .btn-secondary {
+    background: rgba(196, 163, 90, 0.1);
+    border: 1px solid rgba(196, 163, 90, 0.3);
     color: var(--gold);
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    font-size: 0.8rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
 }
 
-.payment-row code.copyable:hover {
-    background: rgba(196, 163, 90, 0.25);
+.payment-section .btn-secondary:hover {
+    background: rgba(196, 163, 90, 0.2);
+    border-color: var(--gold);
+}
+
+/* Bank Details Card */
+.bank-details-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 12px;
+    margin-top: 1rem;
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bank-details-card.hidden {
+    display: none;
+}
+
+.bank-details-card .card-header {
+    background: rgba(196, 163, 90, 0.1);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.15);
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-options-list {
+    padding: 0.5rem;
+}
+
+.payment-option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.payment-option-item:hover {
+    background: rgba(196, 163, 90, 0.1);
+    border-color: rgba(196, 163, 90, 0.2);
+}
+
+.payment-option-item:active {
+    transform: scale(0.98);
+}
+
+.option-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: var(--gold);
+    font-size: 1rem;
+}
+
+.option-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.option-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.bank-name {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.bank-number {
+    font-family: 'SF Mono', 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: var(--cream);
+    letter-spacing: 0.02em;
+    display: block;
+}
+
+.copy-icon {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.payment-option-item:hover .copy-icon {
+    color: var(--gold);
 }
 
 .beneficiary-name {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
-    font-style: italic;
-    margin: 0.75rem 0 0;
+    color: rgba(255, 255, 255, 0.4);
     text-align: center;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 0;
 }
 
 /* Alert Actions */
 .deposit-alert-actions {
-    padding: 1.5rem 2rem 2rem;
+    padding: 1rem 1.5rem 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-whatsapp-lg {
@@ -1394,8 +1499,8 @@
     background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
     color: white;
     border: none;
-    border-radius: 50px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1404,25 +1509,79 @@
 
 .btn-whatsapp-lg:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 6px 25px rgba(37, 211, 102, 0.4);
+}
+
+.btn-whatsapp-lg:active {
+    transform: translateY(0);
 }
 
 .btn-whatsapp-lg i {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
 }
 
 .btn-cancel-subtle {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.4);
     padding: 0.75rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: color 0.2s ease;
+    text-align: center;
 }
 
 .btn-cancel-subtle:hover {
     color: #E57373;
+}
+
+/* Modal Responsive */
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 0.75rem;
+        align-items: flex-end;
+    }
+    
+    .modal-content {
+        max-height: 85vh;
+    }
+    
+    .deposit-modal-alert {
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .deposit-alert-header {
+        padding: 1.5rem 1.25rem 1.25rem;
+    }
+    
+    .alert-title {
+        font-size: 1.5rem;
+    }
+    
+    .deposit-alert-body {
+        padding: 1.25rem;
+    }
+    
+    .alert-message-box {
+        padding: 0.875rem 1rem;
+    }
+    
+    .alert-message-box p {
+        font-size: 0.85rem;
+    }
+    
+    .deposit-appointment-summary {
+        padding: 0.875rem 1rem;
+    }
+    
+    .deposit-alert-actions {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+    
+    .btn-whatsapp-lg {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
 }/* Bank Details Card */
 .bank-details-card {
     background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
