@@ -202,7 +202,18 @@ export const Appointment = {
 
   // Crear cita
   async create(appointmentData) {
-    const { client_id, service_id, appointment_date, start_time, end_time, notes, created_by, status } = appointmentData;
+    const { 
+      client_id, 
+      service_id, 
+      appointment_date, 
+      start_time, 
+      end_time, 
+      notes, 
+      created_by, 
+      status,
+      deposit_required,
+      deposit_amount 
+    } = appointmentData;
 
     // Generar código de checkout
     const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
@@ -213,13 +224,38 @@ export const Appointment = {
 
     const sql = `
       INSERT INTO appointments 
-        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status, deposit_required, deposit_amount)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `;
     const result = await query(sql, [
-      client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by || 'client', appointmentStatus
+      client_id, 
+      service_id, 
+      appointment_date, 
+      start_time, 
+      end_time, 
+      checkout_code, 
+      notes, 
+      created_by || 'client', 
+      appointmentStatus,
+      deposit_required || false,
+      deposit_amount || 0
     ]);
+    return result.rows[0];
+  },
+
+  // Marcar depósito como pagado
+  async markDepositPaid(id) {
+    const sql = `
+      UPDATE appointments 
+      SET deposit_paid = TRUE, 
+          deposit_paid_at = CURRENT_TIMESTAMP,
+          status = 'scheduled',
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await query(sql, [id]);
     return result.rows[0];
   },
 

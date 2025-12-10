@@ -165,9 +165,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 // CARGAR SERVICIOS
 // ============================================================================
 async function loadServices() {
-    // Usar servicios estáticos directamente
-    state.services = SERVICIOS_BRACOS;
+    try {
+        // Intentar cargar servicios desde la API
+        const apiServices = await API.getServices();
+        if (apiServices && apiServices.length > 0) {
+            // Mapear servicios de la API al formato esperado
+            state.services = apiServices.map(s => ({
+                id: s.id,
+                name: s.name,
+                description: s.description || '',
+                duration_minutes: s.duration_minutes,
+                price: s.price,
+                category_id: s.category_id,
+                image_url: getServiceImage(s.id, s.name)
+            }));
+            console.log('Servicios cargados desde API:', state.services);
+        } else {
+            // Fallback a servicios estáticos
+            state.services = SERVICIOS_BRACOS;
+            console.log('Usando servicios estáticos');
+        }
+    } catch (error) {
+        console.error('Error cargando servicios, usando fallback:', error);
+        state.services = SERVICIOS_BRACOS;
+    }
     renderServices(state.services);
+}
+
+// Helper para obtener imagen del servicio
+function getServiceImage(id, name) {
+    const imageMap = {
+        'corte de cabello para caballero': 'assets/corte_caballero.jpeg',
+        'corte de cabello niño': 'assets/corte_nino.jpeg',
+        'ritual tradicional de barba': 'assets/ritual_barba.jpeg',
+        'dúo': 'assets/duo.png',
+        'instalación de prótesis capilar': 'assets/instalacio_protesis.jpeg',
+        'mantenimiento de prótesis capilar': 'assets/mant_protesis.jpeg',
+        'terapia integral capilar': 'assets/TIC.jpeg',
+        'mascarilla plastificada negra': 'assets/mascarilla_negra.jpeg',
+        'mascarilla de arcilla': 'assets/arcilla.jpeg',
+        'manicura caballero': 'assets/manicura_caballero.jpeg',
+        'pedicura caballero': 'assets/pedicura.jpeg',
+        'paquete nupcial': 'assets/pqte_dlux.jpeg'
+    };
+    
+    const nameLower = name.toLowerCase();
+    for (const [key, value] of Object.entries(imageMap)) {
+        if (nameLower.includes(key)) {
+            return value;
+        }
+    }
+    return 'assets/logo.png';
 }
 
 // ============================================================================
@@ -525,12 +573,17 @@ async function submitBooking() {
                     // 3. Crear Cita con estado PENDING
                     const appointmentData = {
                         client_id: newClient.id,
-                        service_id: state.selectedService.id, // Use .id here
-                        appointment_date: state.selectedDate.toISOString().split('T')[0], // Ensure YYYY-MM-DD
+                        service_id: state.selectedService.id,
+                        appointment_date: state.selectedDate.toISOString().split('T')[0],
                         start_time: state.selectedTime,
-                        notes: 'Cliente Nuevo - Pendiente de Depósito',
-                        status: 'pending' // Estado especial
+                        notes: 'Cliente Nuevo - Pendiente de Depósito $100',
+                        status: 'pending',
+                        deposit_required: true,
+                        deposit_amount: 100
                     };
+
+                    console.log('Creando cita con datos:', appointmentData);
+                    console.log('Servicio seleccionado:', state.selectedService);
 
                     const appointment = await API.createAppointment(appointmentData);
 
@@ -621,19 +674,59 @@ function showDepositModal() {
         const timeEl = document.getElementById('deposit-time');
 
         if (serviceEl) serviceEl.textContent = state.selectedService?.name || '-';
-        if (dateEl) dateEl.textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        if (dateEl) dateEl.textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         if (timeEl) timeEl.textContent = state.selectedTime || '-';
     }
 
     modal.classList.remove('hidden');
-    // Ensure modal is displayed
     setTimeout(() => modal.classList.add('visible'), 10);
 }
 
 function closeDepositModal() {
     const modal = document.getElementById('deposit-modal');
     modal.classList.remove('visible');
-    setTimeout(() => modal.classList.add('hidden'), 300);
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        // Mostrar pantalla de éxito con info de depósito pendiente
+        showSuccessWithDepositInfo();
+    }, 300);
+}
+
+function showSuccessWithDepositInfo() {
+    // Ocultar todos los pasos
+    elements.steps.forEach(s => s.classList.add('hidden'));
+
+    // Mostrar pantalla de éxito
+    const successStep = document.getElementById('step-success');
+    successStep.classList.remove('hidden');
+
+    // Llenar datos
+    document.getElementById('success-code').textContent = '----';
+    document.getElementById('success-service').textContent = state.selectedService.name;
+    document.getElementById('success-datetime').textContent =
+        `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
+    document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
+
+    // Agregar aviso de depósito pendiente
+    const successNotice = document.querySelector('.success-notice');
+    if (successNotice) {
+        successNotice.innerHTML = `
+            <p style="color: #FFC107; margin-bottom: 1rem;">
+                <strong>⚠️ DEPÓSITO PENDIENTE</strong><br>
+                Tu cita está pre-agendada pero requiere un depósito de <strong>$100 MXN</strong> para confirmarse.
+            </p>
+            <p><strong>Datos para transferencia:</strong></p>
+            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-size: 0.9rem;">
+                <p style="margin: 0.5rem 0;"><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></p>
+                <p style="margin: 0.5rem 0;"><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></p>
+                <p style="margin: 0.5rem 0;"><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></p>
+                <p style="margin: 0.5rem 0; font-size: 0.8rem; opacity: 0.7;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+            </div>
+            <p>Envía tu comprobante por WhatsApp al <a href="https://wa.me/525573432027" style="color: var(--gold);">55 7343 2027</a></p>
+        `;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function sendDepositWhatsApp() {
@@ -649,6 +742,7 @@ function sendDepositWhatsApp() {
     const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
     window.open(whatsappUrl, '_blank');
 
+    // Después de enviar WhatsApp, mostrar pantalla de éxito
     closeDepositModal();
 }
 

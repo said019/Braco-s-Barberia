@@ -22,15 +22,10 @@ export const Checkout = {
             // ... (rest of code)
 
 
-            // 1. Obtener datos del cliente
-            const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
-            const clientData = clientResult.rows[0];
-            const clientName = clientData?.name || 'Cliente';
-            const clientPhone = clientData?.phone || '0000000000';
-
-            // 2. Verificar estado de la cita
+            // 1. Verificar estado de la cita y obtener info de depósito
             const appointmentCheck = await client.query(
-                'SELECT status, service_id, checkout_code FROM appointments WHERE id = $1',
+                `SELECT status, service_id, checkout_code, deposit_required, deposit_amount, deposit_paid 
+                 FROM appointments WHERE id = $1`,
                 [appointment_id]
             );
 
@@ -96,21 +91,32 @@ export const Checkout = {
         `, [membershipId, appointment_id, serviceId, usageCost]);
             }
 
-            // 4. Crear registro de checkout
-            const subtotal = Number(service_cost) + Number(products_cost);
+            // 4. Verificar si hay depósito pagado para aplicar como descuento
+            const appointmentData = appointmentCheck.rows[0];
+            let depositApplied = 0;
+            
+            if (appointmentData.deposit_paid && appointmentData.deposit_amount > 0) {
+                depositApplied = Number(appointmentData.deposit_amount);
+                console.log(`Aplicando depósito de $${depositApplied} como descuento`);
+            }
 
+            // Calcular total final con depósito aplicado
+            const finalDiscount = Number(discount) + depositApplied;
+            const finalTotal = Math.max(0, Number(total) - depositApplied);
+
+            // 5. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, client_id, client_name, client_phone, 
-          service_cost, products_cost, subtotal, discount, total, 
-          payment_method, used_membership, membership_id, notes
+          appointment_id, client_id, service_cost, products_cost, 
+          discount, total, payment_method, used_membership, 
+          membership_id, notes, deposit_applied
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING *
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING id, uuid
       `, [
-                appointment_id, client_id, clientName, clientPhone,
-                service_cost, products_cost, subtotal, discount, total,
-                payment_method, use_membership, membershipId, notes
+                appointment_id, client_id, service_cost, products_cost,
+                finalDiscount, finalTotal, payment_method, use_membership,
+                membershipId, notes, depositApplied
             ]);
 
             const checkoutId = checkoutResult.rows[0].id;
