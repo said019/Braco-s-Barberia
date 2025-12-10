@@ -16,7 +16,7 @@
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
@@ -422,40 +422,43 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    async function exportReport() {
+                    maintainAspectRatio: false
+                }
+            });
+
+            async function exportReport() {
                 const start = document.getElementById('start-date').value;
                 const end = document.getElementById('end-date').value;
 
                 try {
                     showToast('Generando reporte...', 'info');
 
-                // Fetch detailed data specifically for export
-                const response = await api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`);
+                    // Fetch detailed data specifically for export
+                    const response = await api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`);
 
-                    if(!response || !response.detailed_transactions || response.detailed_transactions.length === 0) {
-                showToast('No hay datos para exportar en el rango seleccionado', 'warning');
-                return;
+                    if (!response || !response.detailed_transactions || response.detailed_transactions.length === 0) {
+                        showToast('No hay datos para exportar en el rango seleccionado', 'warning');
+                        return;
+                    }
+
+                    const data = response.detailed_transactions.map(t => ({
+                        'Fecha': formatDate(t.transaction_date),
+                        'Cliente': t.client_name || 'Público General',
+                        'Concepto': t.description || t.type,
+                        'Tipo': t.type === 'service' ? 'Servicio' : (t.type === 'membership' ? 'Membresía' : 'Producto'),
+                        'Método Pago': t.payment_method === 'cash' ? 'Efectivo' : (t.payment_method === 'card' ? 'Tarjeta' : 'Transferencia'),
+                        'Monto': formatCurrency(t.amount)
+                    }));
+
+                    exportToExcel(data, `Ventas_Bracos_${start}_${end}`);
+
+                } catch (error) {
+                    console.error('Export error:', error);
+                    showToast('Error al exportar: ' + error.message, 'error');
+                }
             }
 
-            const data = response.detailed_transactions.map(t => ({
-                'Fecha': formatDate(t.transaction_date),
-                'Cliente': t.client_name || 'Público General',
-                'Concepto': t.description || t.type,
-                'Tipo': t.type === 'service' ? 'Servicio' : (t.type === 'membership' ? 'Membresía' : 'Producto'),
-                'Método Pago': t.payment_method === 'cash' ? 'Efectivo' : (t.payment_method === 'card' ? 'Tarjeta' : 'Transferencia'),
-                'Monto': formatCurrency(t.amount)
-            }));
-
-            exportToExcel(data, `Ventas_Bracos_${start}_${end}`);
-
-        } catch (error) {
-            console.error('Export error:', error);
-            showToast('Error al exportar: ' + error.message, 'error');
-        }
-        }
-
-        init();
+            init();
     </script>
 </body>
 
