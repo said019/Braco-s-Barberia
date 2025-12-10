@@ -572,7 +572,8 @@ async function submitBooking() {
                 if (isBrandNew) {
                     const newClient = await API.createClient({
                         name: data.name,
-                        phone: data.phone
+                        phone: data.phone,
+                        email: data.email || null
                     });
                     if (newClient && newClient.id) {
                         client = newClient; // Asignar para usar abajo
