@@ -38,7 +38,8 @@ router.get('/membership/:uuid', async (req, res, next) => {
             status: membership.status,
             services: {
                 total: membership.total_services,
-                remaining: membership.total_services - (membership.used_services || 0) // used_services is not in SELECT above, need to add it or calc
+                used: membership.used_services || 0,
+                remaining: membership.total_services - (membership.used_services || 0)
             }
         });
 
