@@ -364,36 +364,61 @@
 
     <div id="card-container">
         <!-- Rendered by JS -->
-        <div style="text-align: center; color: #888;">Cargando tarjeta...</div>
+        <div style="text-align: center; color: #888;">
+            <div id="status-text">Cargando tarjeta...</div>
+            <div id="debug-log"
+                style="font-size: 0.7em; margin-top:10px; color: #444; font-family: monospace; text-align: left; max-width: 300px; margin: 10px auto;">
+            </div>
+        </div>
     </div>
 
-    <div style="margin-top: 20px; text-align: center;">
-        <button onclick="downloadCard()" class="btn-download">
-            <i class="fas fa-download"></i> Guardar Imagen
-        </button>
-        <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Haz clic en la tarjeta para ver el reverso</p>
-    </div>
+    <!-- ... existing button ... -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
         const API_URL = '/api';
 
+        function log(msg) {
+            console.log(msg);
+            const el = document.getElementById('debug-log');
+            if (el) el.innerHTML += `> ${msg}<br>`;
+        }
+
         async function loadCard() {
+            log('Iniciando carga de tarjeta...');
+
+            // Validate dependencies
+            if (typeof QRCode === 'undefined') log('WARN: QRCode lib not loaded');
+            if (typeof html2canvas === 'undefined') log('WARN: html2canvas lib not loaded');
+
             const params = new URLSearchParams(window.location.search);
             const uuid = params.get('id');
+            log(`UUID detectado: ${uuid}`);
 
             if (!uuid) return showError('ID de tarjeta no válido');
 
             try {
+                log(`Haciendo fetch a ${API_URL}/public/membership/${uuid}`);
                 const response = await fetch(`${API_URL}/public/membership/${uuid}`);
-                if (!response.ok) throw new Error('Tarjeta no encontrada');
+                log(`Status respuesta: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+                }
+
+                log('Parseando JSON...');
                 const data = await response.json();
+                log('Datos recibidos. Renderizando...');
                 renderCard(data);
+                log('Render completo.');
             } catch (error) {
+                log(`ERROR: ${error.message}`);
                 showError(error.message);
             }
         }
+
 
         function showError(msg) {
             document.getElementById('card-container').innerHTML = `<p style="color:#ef5350;">${msg}</p>`;
