@@ -216,7 +216,8 @@
         }
 
         .diamond.empty svg {
-            opacity: 0.3;
+            /* User requested more visible grey for empty state */
+            opacity: 0.7;
         }
 
         .diamond.filled svg {
@@ -512,12 +513,12 @@
 
                     // Detailed 3-part diamond path for depth
                     diamondsHtml += `
-                        <div class="${diamondClass}">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <!-- Base outline/shape -->
-                               <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.2}"/>
-                               ${isFilled ? `
-                               <!-- Inner facets for 3D look -->
+                            <div class="${diamondClass}">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <!-- Base outline/shape -->
+                                   <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.5}"/>
+                                   ${isFilled ? `
+                                   <!-- Inner facets for 3D look -->
                                <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}"/>
                                <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}"/>
                                ` : ''}
