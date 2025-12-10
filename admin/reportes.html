@@ -104,12 +104,12 @@
                 <!-- Date Filter -->
                 <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
                     <div class="date-range-picker"
-                        style="display: flex; gap: 0.5rem; align-items: center; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                        <input type="date" id="start-date" class="form-control-sm"
-                            style="border: none; background: transparent; color: var(--text-primary);">
+                        style="display: flex; gap: 0.5rem; align-items: center; background: var(--charcoal-dark); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(196,163,90,0.2);">
+                        <input type="date" id="start-date" class="form-input"
+                            style="border: none; background: transparent; color: var(--cream); padding: 0.5rem;">
                         <span class="text-muted">a</span>
-                        <input type="date" id="end-date" class="form-control-sm"
-                            style="border: none; background: transparent; color: var(--text-primary);">
+                        <input type="date" id="end-date" class="form-input"
+                            style="border: none; background: transparent; color: var(--cream); padding: 0.5rem;">
                         <button class="btn-icon" onclick="loadReports()" title="Filtrar"
                             style="width: 30px; height: 30px;"><i class="fas fa-filter"></i></button>
                     </div>
@@ -168,19 +168,19 @@
                     <div class="card-body">
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                             <div
-                                style="text-align: center; padding: 1rem; background: rgba(76,175,80,0.1); border-radius: var(--radius-sm);">
+                                style="text-align: center; padding: 1rem; background: rgba(76,175,80,0.1); border-radius: 4px;">
                                 <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);"
                                     id="services-revenue">$0.00</div>
                                 <div class="text-muted">Servicios Pagados</div>
                             </div>
                             <div
-                                style="text-align: center; padding: 1rem; background: rgba(156,39,176,0.1); border-radius: var(--radius-sm);">
+                                style="text-align: center; padding: 1rem; background: rgba(156,39,176,0.1); border-radius: 4px;">
                                 <div style="font-size: 1.5rem; font-weight: bold; color: #9C27B0;"
                                     id="memberships-revenue">$0.00</div>
                                 <div class="text-muted">Membresías Vendidas</div>
                             </div>
                             <div
-                                style="text-align: center; padding: 1rem; background: rgba(255,152,0,0.1); border-radius: var(--radius-sm);">
+                                style="text-align: center; padding: 1rem; background: rgba(255,152,0,0.1); border-radius: 4px;">
                                 <div style="font-size: 1.5rem; font-weight: bold; color: #FF9800;"
                                     id="products-revenue">$0.00</div>
                                 <div class="text-muted">Productos</div>
@@ -240,19 +240,19 @@
                         <div
                             style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                             <div
-                                style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                style="text-align: center; padding: 1rem; background: var(--charcoal-dark); border-radius: 4px; border: 1px solid rgba(196,163,90,0.15);">
                                 <div style="font-size: 2rem; font-weight: bold; color: #9C27B0;"
                                     id="membership-usage-count">0</div>
                                 <div class="text-muted">Servicios con Membresía</div>
                             </div>
                             <div
-                                style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                                <div style="font-size: 2rem; font-weight: bold; color: var(--text-secondary);"
+                                style="text-align: center; padding: 1rem; background: var(--charcoal-dark); border-radius: 4px; border: 1px solid rgba(196,163,90,0.15);">
+                                <div style="font-size: 2rem; font-weight: bold; color: var(--cream);"
                                     id="membership-usage-value">$0.00</div>
                                 <div class="text-muted">Valor Prestado</div>
                             </div>
                             <div
-                                style="text-align: center; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                style="text-align: center; padding: 1rem; background: var(--charcoal-dark); border-radius: 4px; border: 1px solid rgba(196,163,90,0.15);">
                                 <div style="font-size: 2rem; font-weight: bold; color: var(--gold);" id="stamps-used">0
                                 </div>
                                 <div class="text-muted">Sellos Utilizados</div>
@@ -422,43 +422,36 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
                 }
             });
+        }
 
-            async function exportReport() {
-                const start = document.getElementById('start-date').value;
-                const end = document.getElementById('end-date').value;
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+        }
 
-                try {
-                    showToast('Generando reporte...', 'info');
+        function exportReport() {
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+            alert('Funcionalidad de exportación detallada en desarrollo. Captura de pantalla recomendada.');
+        }
 
-                    // Fetch detailed data specifically for export
-                    const response = await api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`);
-
-                    if (!response || !response.detailed_transactions || response.detailed_transactions.length === 0) {
-                        showToast('No hay datos para exportar en el rango seleccionado', 'warning');
-                        return;
-                    }
-
-                    const data = response.detailed_transactions.map(t => ({
-                        'Fecha': formatDate(t.transaction_date),
-                        'Cliente': t.client_name || 'Público General',
-                        'Concepto': t.description || t.type,
-                        'Tipo': t.type === 'service' ? 'Servicio' : (t.type === 'membership' ? 'Membresía' : 'Producto'),
-                        'Método Pago': t.payment_method === 'cash' ? 'Efectivo' : (t.payment_method === 'card' ? 'Tarjeta' : 'Transferencia'),
-                        'Monto': formatCurrency(t.amount)
-                    }));
-
-                    exportToExcel(data, `Ventas_Bracos_${start}_${end}`);
-
-                } catch (error) {
-                    console.error('Export error:', error);
-                    showToast('Error al exportar: ' + error.message, 'error');
-                }
-            }
-
-            init();
+        init();
     </script>
 </body>
 
