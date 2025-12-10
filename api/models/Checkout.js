@@ -110,7 +110,7 @@ export const Checkout = {
       `, [
                 appointment_id, client_id, clientName, clientPhone,
                 service_cost, products_cost, subtotal, discount, total,
-                payment_method, used_membership: use_membership, membership_id, notes
+                payment_method, use_membership, membershipId, notes
             ]);
 
             const checkoutId = checkoutResult.rows[0].id;
