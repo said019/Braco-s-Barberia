@@ -245,6 +245,11 @@
             const today = new Date();
             let startDate, endDate;
 
+            // Update active button state
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.btn-filter[onclick*="${type}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
             switch (type) {
                 case 'today':
                     startDate = endDate = today.toISOString().split('T')[0];
@@ -427,16 +432,16 @@
             let buttons = '';
 
             if (app.status === 'pending') {
-                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check" style="color: #4CAF50;"></i></button>`;
+                buttons += `<button class="btn-icon confirm" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check"></i></button>`;
                 buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Rechazar/Cancelar"><i class="fas fa-times-circle"></i></button>`;
             }
 
             if (['scheduled', 'confirmed'].includes(app.status)) {
-                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
+                buttons += `<button class="btn-icon play" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
                 buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
             }
             if (app.status === 'in_progress') {
-                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
+                buttons += `<button class="btn-icon confirm" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
             }
 
             return buttons || '<span class="text-muted">-</span>';

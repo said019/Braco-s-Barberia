@@ -426,16 +426,60 @@ a {
 }
 
 .btn-icon {
-    padding: 0.5rem;
-    background: transparent;
+    padding: 0.5rem 0.65rem;
+    background: rgba(196, 163, 90, 0.08);
     border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 6px;
     color: var(--cream);
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
 }
 
 .btn-icon:hover {
+    background: rgba(196, 163, 90, 0.15);
     border-color: var(--gold);
     color: var(--gold);
+    transform: translateY(-1px);
+}
+
+/* Botón de acción confirmar/completar */
+.btn-icon.confirm,
+.btn-icon:has(i[style*="color: #4CAF50"]) {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.btn-icon.confirm:hover,
+.btn-icon:has(i[style*="color: #4CAF50"]):hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: var(--success);
+}
+
+/* Botón de acción eliminar/cancelar */
+.btn-icon.delete {
+    background: rgba(229, 57, 53, 0.08);
+    border-color: rgba(229, 57, 53, 0.25);
+}
+
+.btn-icon.delete:hover {
+    background: rgba(229, 57, 53, 0.15);
+    border-color: var(--error);
+    color: var(--error);
+}
+
+/* Botón de acción iniciar/play */
+.btn-icon.play,
+.btn-icon:has(i.fa-play) {
+    background: rgba(255, 152, 0, 0.08);
+    border-color: rgba(255, 152, 0, 0.25);
+}
+
+.btn-icon.play:hover,
+.btn-icon:has(i.fa-play):hover {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: var(--warning);
+    color: var(--warning);
 }
 
 /* TABLAS */
@@ -472,6 +516,21 @@ a {
 .data-table .actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
+
+/* Mejoras para botones de acción en tablas */
+.data-table .actions .btn-icon {
+    min-width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-table .actions .btn-icon i {
+    font-size: 0.85rem;
 }
 
 /* BADGES/TAGS */
@@ -1963,6 +2022,90 @@ a {
 .pending-row {
     background: rgba(255, 235, 59, 0.05) !important;
     border-left: 3px solid #FDD835;
+}
+
+/* QUICK FILTER BUTTONS */
+.quick-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.btn-filter {
+    padding: 0.5rem 1rem;
+    background: rgba(196, 163, 90, 0.08);
+    border: 1px solid rgba(196, 163, 90, 0.25);
+    border-radius: 20px;
+    color: var(--cream);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-filter:hover {
+    background: rgba(196, 163, 90, 0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.btn-filter.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--charcoal-dark);
+}
+
+/* FILTERS CONTAINER */
+.filters-container {
+    background: rgba(196, 163, 90, 0.03);
+    border: 1px solid rgba(196, 163, 90, 0.1);
+    border-radius: 8px;
+    padding: 1.25rem !important;
+}
+
+.filters-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group.search-group {
+    grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .filter-group.search-group {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .filters-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-group.search-group {
+        grid-column: span 1;
+    }
+    
+    .quick-filters {
+        justify-content: center;
+    }
 }
 
 /* DATE INPUT STYLING */
