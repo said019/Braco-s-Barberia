@@ -23,8 +23,10 @@ export const Checkout = {
 
 
             // 1. Obtener datos del cliente
-            const clientResult = await client.query('SELECT name FROM clients WHERE id = $1', [client_id]);
-            const clientName = clientResult.rows[0]?.name || 'Cliente';
+            const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
+            const clientData = clientResult.rows[0];
+            const clientName = clientData?.name || 'Cliente';
+            const clientPhone = clientData?.phone || '0000000000';
 
             // 2. Verificar estado de la cita
             const appointmentCheck = await client.query(
@@ -97,14 +99,14 @@ export const Checkout = {
             // 4. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, client_id, client_name, service_cost, products_cost, 
+          appointment_id, client_id, client_name, client_phone, service_cost, products_cost, 
           discount, total, payment_method, used_membership, 
           membership_id, notes
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *
       `, [
-                appointment_id, client_id, clientName, service_cost, products_cost,
+                appointment_id, client_id, clientName, clientPhone, service_cost, products_cost,
                 discount, total, payment_method, use_membership,
                 membershipId, notes
             ]);
