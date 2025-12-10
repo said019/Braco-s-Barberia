@@ -1616,6 +1616,7 @@ body {
     border-radius: 16px;
 }
 
+/* Card Back */
 .card-back {
     transform: rotateY(180deg);
     background: linear-gradient(135deg, #2D2D2D, #3D3D3D);
