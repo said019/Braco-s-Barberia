@@ -314,9 +314,61 @@ Duración 240minutos (4horas)
 // ============================================================================
 // CARGAR SERVICIOS
 // ============================================================================
-function loadServices() {
-    // Usamos los datos locales directamente
+// ============================================================================
+// CARGAR SERVICIOS
+// ============================================================================
+async function loadServices() {
+    try {
+        if (typeof API !== 'undefined') {
+            const apiServices = await API.getServices();
+            if (apiServices && apiServices.length > 0) {
+                // Mapear servicios de API al formato de visualización
+                const mappedServices = apiServices.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    price: s.price,
+                    duration: s.duration_minutes,
+                    image: getServiceImage(s.name),
+                    description: s.description || ''
+                }));
+                console.log('Servicios cargados desde API (Landing):', mappedServices);
+                renderServices(mappedServices);
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Error cargando servicios API en landing:', e);
+    }
+
+    // Fallback a datos locales
+    console.log('Usando servicios locales (Fallback)');
     renderServices(SERVICES_DATA);
+}
+
+// Helper para obtener imagen (copiado de agendar.js para consistencia visual)
+function getServiceImage(name) {
+    const imageMap = {
+        'corte de cabello para caballero': 'assets/corte_caballero.jpeg',
+        'corte de cabello niño': 'assets/corte_nino.jpeg',
+        'ritual tradicional de barba': 'assets/ritual_barba.jpeg',
+        'dúo': 'assets/duo.png',
+        'instalación de prótesis capilar': 'assets/instalacio_protesis.jpeg',
+        'mantenimiento de prótesis capilar': 'assets/mant_protesis.jpeg',
+        'terapia integral capilar': 'assets/TIC.jpeg',
+        'mascarilla plastificada negra': 'assets/mascarilla_negra.jpeg',
+        'mascarilla de arcilla': 'assets/arcilla.jpeg',
+        'manicura caballero': 'assets/manicura_caballero.jpeg',
+        'pedicura caballero': 'assets/pedicura.jpeg',
+        'paquete nupcial': 'assets/pqte_dlux.jpeg'
+    };
+
+    const nameLower = name.toLowerCase();
+    for (const [key, value] of Object.entries(imageMap)) {
+        if (nameLower.includes(key)) {
+            return value;
+        }
+    }
+    return 'assets/logo.png';
 }
 
 /**
