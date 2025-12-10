@@ -1551,24 +1551,35 @@ router.post('/debug/migrate-schema', authenticateToken, async (req, res, next) =
                 ALTER TABLE membership_usage
                 ADD COLUMN IF NOT EXISTS service_value DECIMAL(10,2),
                 ADD COLUMN IF NOT EXISTS stamps_used INTEGER DEFAULT 1,
-                ADD COLUMN IF NOT EXISTS notes TEXT
+                ADD COLUMN IF NOT EXISTS notes TEXT;
             `);
 
-            // 2. Create Indexes
-            await client.query(`CREATE INDEX IF NOT EXISTS idx_membership_usage_date ON membership_usage(used_at)`);
-            await client.query(`CREATE INDEX IF NOT EXISTS idx_membership_usage_membership ON membership_usage(membership_id)`);
+            // 2. Add client_id to checkouts (Fix for checkout error)
+            await client.query(`
+                ALTER TABLE checkouts
+                ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id);
+                
+                -- Create index for performance
+                CREATE INDEX IF NOT EXISTS idx_checkouts_client ON checkouts(client_id);
+            `);
 
-            // 3. Backfill existing data
+            // 3. Create Indexes for membership_usage
+            await client.query(`
+                CREATE INDEX IF NOT EXISTS idx_membership_usage_date ON membership_usage(used_at);
+                CREATE INDEX IF NOT EXISTS idx_membership_usage_service ON membership_usage(service_id);
+            `);
+
+            // 4. Backfill service_value if empty
             await client.query(`
                 UPDATE membership_usage mu
                 SET service_value = s.price
                 FROM services s
                 WHERE mu.service_id = s.id
-                  AND mu.service_value IS NULL
+                AND mu.service_value IS NULL;
             `);
         });
 
-        res.json({ message: 'Esquema migrado: Se agregaron las columnas para reportes exitosamente.' });
+        res.json({ message: 'Esquema migrado: Se agregaron las columnas faltantes (checkouts.client_id y membership_usage).' });
     } catch (error) {
         next(error);
     }
