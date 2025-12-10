@@ -298,6 +298,74 @@ body {
     color: var(--success);
 }
 
+/* ========== FILTERS ========== */
+.filters-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.search-group {
+    flex: 1;
+    min-width: 250px;
+}
+
+.filter-label {
+    font-size: 0.8rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.search-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    color: var(--cream);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--gold);
+    outline: none;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.quick-filters {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.btn-filter {
+    background: transparent;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    color: var(--cream);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-filter:hover {
+    background: rgba(196, 163, 90, 0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
 .appointment-status.in_progress {
     background: rgba(255, 152, 0, 0.2);
     color: var(--warning);

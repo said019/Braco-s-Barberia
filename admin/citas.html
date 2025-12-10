@@ -110,90 +110,92 @@
                 </div>
             </header>
 
-            <div class="page-content">
-                <!-- Filters Section -->
-                <!-- Date Range -->
-                <div class="filter-group">
-                    <label class="filter-label">Desde</label>
-                    <input type="date" id="filter-start-date" class="search-input" style="width: 160px;">
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Hasta</label>
-                    <input type="date" id="filter-end-date" class="search-input" style="width: 160px;">
-                </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">Estado</label>
-                    <select id="filter-status" class="search-input" style="width: 160px;">
-                        <option value="">Todos</option>
-                        <option value="pending">Pendiente</option>
-                        <option value="scheduled">Programada</option>
-                        <option value="confirmed">Confirmada</option>
-                        <option value="in_progress">En Curso</option>
-                        <option value="completed">Completada</option>
-                        <option value="cancelled">Cancelada</option>
-                        <option value="no_show">No Asistió</option>
-                    </select>
-                </div>
-
-                <!-- Search -->
-                <div class="filter-group" style="flex: 1; min-width: 200px;">
-                    <label class="filter-label">Buscar</label>
-                    <input type="text" id="filter-search" class="search-input" placeholder="Cliente o servicio...">
+            <!-- Filters Section -->
+            <div class="content-section filters-container">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Desde</label>
+                        <input type="date" id="filter-start-date" class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Hasta</label>
+                        <input type="date" id="filter-end-date" class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Estado</label>
+                        <select id="filter-status" class="search-input">
+                            <option value="">Todos</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="scheduled">Programada</option>
+                            <option value="confirmed">Confirmada</option>
+                            <option value="in_progress">En Curso</option>
+                            <option value="completed">Completada</option>
+                            <option value="cancelled">Cancelada</option>
+                            <option value="no_show">No Asistió</option>
+                        </select>
+                    </div>
+                    <div class="filter-group search-group">
+                        <label class="filter-label">Buscar</label>
+                        <input type="text" id="filter-search" class="search-input"
+                            placeholder="Cliente, servicio o código...">
+                    </div>
                 </div>
 
                 <!-- Quick Filters -->
-                <div class="quick-filters" style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('today')">Hoy</button>
-                    <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('week')">Semana</button>
-                    <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('month')">Mes</button>
-                    <button class="btn btn-secondary btn-sm" onclick="setQuickFilter('pending')">Pendientes</button>
+                <div class="quick-filters">
+                    <span class="filter-label" style="margin-right: 10px; align-self: center;">Rápido:</span>
+                    <button class="btn-filter" onclick="setQuickFilter('today')">Hoy</button>
+                    <button class="btn-filter" onclick="setQuickFilter('week')">Semana</button>
+                    <button class="btn-filter" onclick="setQuickFilter('month')">Mes</button>
+                    <button class="btn-filter" onclick="setQuickFilter('pending')">Pendientes</button>
                 </div>
             </div>
-    </div>
 
-    <!-- Status Legend -->
-    <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
-        <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;"><i
-                class="fas fa-hourglass-half"></i> Pendiente</span>
-        <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);"><i
-                class="far fa-calendar"></i> Programada</span>
-        <span class="badge" style="background: rgba(76,175,80,0.3); color: var(--success);"><i class="fas fa-check"></i>
-            Confirmada</span>
-        <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);"><i class="fas fa-play"></i>
-            En Curso</span>
-        <span class="badge" style="background: rgba(76,175,80,0.15); color: var(--success);"><i
-                class="fas fa-check-double"></i> Completada</span>
-        <span class="badge" style="background: rgba(229,57,53,0.15); color: var(--error);"><i class="fas fa-times"></i>
-            Cancelada</span>
-    </div>
+            <!-- Status Legend -->
+            <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
+                <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;"><i
+                        class="fas fa-hourglass-half"></i> Pendiente</span>
+                <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);"><i
+                        class="far fa-calendar"></i> Programada</span>
+                <span class="badge" style="background: rgba(76,175,80,0.3); color: var(--success);"><i
+                        class="fas fa-check"></i>
+                    Confirmada</span>
+                <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);"><i
+                        class="fas fa-play"></i>
+                    En Curso</span>
+                <span class="badge" style="background: rgba(76,175,80,0.15); color: var(--success);"><i
+                        class="fas fa-check-double"></i> Completada</span>
+                <span class="badge" style="background: rgba(229,57,53,0.15); color: var(--error);"><i
+                        class="fas fa-times"></i>
+                    Cancelada</span>
+            </div>
 
-    <!-- Results Count -->
-    <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-        <p class="text-muted" id="results-count">Cargando...</p>
-    </div>
+            <!-- Results Count -->
+            <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <p class="text-muted" id="results-count">Cargando...</p>
+            </div>
 
-    <!-- Table -->
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Cód.</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Cliente</th>
-                    <th>Servicio</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="appointments-table-body">
-                <tr>
-                    <td colspan="7" class="text-center p-3">Cargando citas...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <!-- Table -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Cód.</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center p-3">Cargando citas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
     </div>
     </main>
     </div>
