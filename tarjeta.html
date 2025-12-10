@@ -489,18 +489,31 @@
                 typeSubtitle = 'TRATAMIENTO';
             }
 
-            // Diamonds Logic
+            // Diamond Logic in renderCard
             const total = parseInt(data.services.total || 0);
             const used = parseInt(data.services.used || 0);
             // User Request: Diamonds start full and are removed as used.
-            // So filled diamonds = remaining services.
             const remaining = (data.services.remaining !== undefined) ? parseInt(data.services.remaining) : (total - used);
             const filledCount = remaining;
 
             // Logic for card theme affecting diamonds
             const isSilver = cardClass === 'card-black';
-            const gradientPrefix = isSilver ? 'silver' : 'gold';
             const strokeColor = isSilver ? '#666' : '#8B7335';
+
+            // Solid Colors for robustness (html2canvas fails with gradients sometimes)
+            // GOLD Colors
+            const gBase = '#FFD700';
+            const gFacet1 = '#FDB931';
+            const gFacet2 = '#DAA520';
+
+            // SILVER Colors
+            const sBase = '#E0E0E0';
+            const sFacet1 = '#F5F5F5';
+            const sFacet2 = '#BDBDBD';
+
+            const cBase = isSilver ? sBase : gBase;
+            const cFacet1 = isSilver ? sFacet1 : gFacet1;
+            const cFacet2 = isSilver ? sFacet2 : gFacet2;
 
             let diamondsHtml = '';
             if (total > 0 && total <= 12) {
@@ -513,15 +526,16 @@
                     const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
 
                     // Detailed 3-part diamond path for depth
+                    // USING SOLID FILLS to ensure they look "LLENO" (Full) in download
                     diamondsHtml += `
-                            <div class="${diamondClass}">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <!-- Base outline/shape -->
-                                   <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.5}"/>
-                                   ${isFilled ? `
-                                   <!-- Inner facets for 3D look -->
-                               <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}"/>
-                               <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}"/>
+                        <div class="${diamondClass}">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <!-- Base outline/shape -->
+                               <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="${cBase}" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.5}"/>
+                               ${isFilled ? `
+                               <!-- Inner facets for 3D look -->
+                               <path d="M12 2L7 9H17L12 2Z" fill="${cFacet1}" opacity="${isSilver ? 0.8 : 0.7}"/>
+                               <path d="M7 9L12 22L2 9H7Z" fill="${cFacet2}" opacity="${isSilver ? 0.6 : 0.5}"/>
                                ` : ''}
                             </svg>
                         </div>
