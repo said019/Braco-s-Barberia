@@ -194,7 +194,7 @@ const SERVICES_DATA = [
 -Productos Premium`
     },
     {
-        id: 4,
+        id: 11,
         name: "DÚO",
         price: 550,
         duration: 120,
@@ -205,7 +205,7 @@ const SERVICES_DATA = [
 -Ritual tradicional para rasurado o arreglo de barba y bigote`
     },
     {
-        id: 5,
+        id: 4,
         name: "INSTALACIÓN DE PRÓTESIS CAPILAR",
         price: 4800,
         duration: 180,
@@ -218,7 +218,7 @@ const SERVICES_DATA = [
 -Durabilidad a largo plazo.`
     },
     {
-        id: 6,
+        id: 5,
         name: "MANTENIMIENTO DE PRÓTESIS CAPILAR",
         price: 650,
         duration: 120,
@@ -229,7 +229,7 @@ const SERVICES_DATA = [
 -Hidratación de la pieza.`
     },
     {
-        id: 7,
+        id: 6,
         name: "TERAPIA INTEGRAL CAPILAR (TIC)",
         price: 550,
         duration: 60,
@@ -242,7 +242,7 @@ const SERVICES_DATA = [
 -Diagnóstico inicial requerido.`
     },
     {
-        id: 8,
+        id: 7,
         name: "MASCARILLA PLASTIFICADA NEGRA",
         price: 300,
         duration: 60,
@@ -255,7 +255,7 @@ const SERVICES_DATA = [
 -Masaje facial`
     },
     {
-        id: 9,
+        id: 8,
         name: "MASCARILLA DE ARCILLA",
         price: 300,
         duration: 60,
@@ -268,7 +268,7 @@ const SERVICES_DATA = [
 -Masaje facial`
     },
     {
-        id: 10,
+        id: 9,
         name: "MANICURA CABALLERO",
         price: 300,
         duration: 60,
@@ -282,7 +282,7 @@ const SERVICES_DATA = [
 -Masaje de manos y dedos`
     },
     {
-        id: 11,
+        id: 10,
         name: "PEDICURA  CABALLERO",
         price: 300,
         duration: 60,

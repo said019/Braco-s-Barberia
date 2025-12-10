@@ -46,7 +46,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/ritual_barba.jpeg"
     },
     {
-        id: 4,
+        id: 11,
         name: "DÚO",
         description: "Duración 120min (2horas)\n• Visagismo\n• Corte de cabello\n• Ritual tradicional para rasurado o arreglo de barba y bigote",
         duration_minutes: 120,
@@ -55,7 +55,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/duo.png"
     },
     {
-        id: 5,
+        id: 4,
         name: "INSTALACIÓN DE PRÓTESIS CAPILAR",
         description: "Las prótesis o reemplazo capilar representan una solución innovadora y efectiva para aquellos que experimentan pérdida de cabello.\n\n• Mejora instantánea en la apariencia y confianza\n• Solución no quirúrgica y resultados naturales\n• Personalización total y fácil mantenimiento\n• No afecta el crecimiento del cabello natural\n• Durabilidad a largo plazo",
         duration_minutes: 180,
@@ -64,7 +64,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/instalacio_protesis.jpeg"
     },
     {
-        id: 6,
+        id: 5,
         name: "MANTENIMIENTO DE PRÓTESIS CAPILAR",
         description: "Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación.\n\n• Retiro seguro y limpieza profesional\n• Ajuste de adhesivos y colocación segura\n• Hidratación de la pieza",
         duration_minutes: 120,
@@ -73,7 +73,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/mant_protesis.jpeg"
     },
     {
-        id: 7,
+        id: 6,
         name: "TERAPIA INTEGRAL CAPILAR (TIC)",
         description: "Braco’s NeoCapilar: Salud y prevención de la caída del cabello. Restaura, fortalece y estimula el crecimiento natural.\n\n• Ozonoterapia: Purifica y oxigena\n• Alta Frecuencia: Estimula irrigación sanguínea\n• Fotobiomodulación (Luz LED): Regeneración celular\n• Productos dermatológicos premium\n• Diagnóstico inicial requerido",
         duration_minutes: 60,
@@ -82,7 +82,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/TIC.jpeg"
     },
     {
-        id: 8,
+        id: 7,
         name: "MASCARILLA PLASTIFICADA NEGRA",
         description: "Recomendada para obtener un rostro limpio de puntos negros y espinillas.\n\nDuración 60 minutos\n• Limpieza de rostro\n• Aplicación y retiro de mascarilla\n• Aplicación de productos Premium\n• Masaje facial",
         duration_minutes: 60,
@@ -91,7 +91,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/mascarilla_negra.jpeg"
     },
     {
-        id: 9,
+        id: 8,
         name: "MASCARILLA DE ARCILLA",
         description: "Después de la aplicación de la mascarilla plástica recomendamos como mantenimiento la mascarilla de arcilla que exfolia el rostro de una manera más amigable y sutil pero sin perder efectividad en el proceso.\n\nDuración 60 minutos\n• Limpieza de rostro\n• Aplicación y retiro de mascarilla\n• Aplicación de productos Premium\n• Masaje facial",
         duration_minutes: 60,
@@ -100,7 +100,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/arcilla.jpeg"
     },
     {
-        id: 10,
+        id: 9,
         name: "MANICURA CABALLERO",
         description: "Duración aproximada 60 minutos\n• Retiro de cutícula\n• Exfoliación de manos\n• Recorte de uñas\n• Arreglo de uñas\n• Humectación de manos\n• Masaje de manos y dedos",
         duration_minutes: 60,
@@ -109,7 +109,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/manicura_caballero.jpeg"
     },
     {
-        id: 11,
+        id: 10,
         name: "PEDICURA CABALLERO",
         description: "Duración aproximada 60 minutos\n• Retiro de cutícula\n• Exfoliación de pies\n• Recorte y limado de uñas\n• Limado de callosidad\n• Humectación de pies\n• Masaje de pies",
         duration_minutes: 60,
@@ -208,7 +208,7 @@ function getServiceImage(id, name) {
         'pedicura caballero': 'assets/pedicura.jpeg',
         'paquete nupcial': 'assets/pqte_dlux.jpeg'
     };
-    
+
     const nameLower = name.toLowerCase();
     for (const [key, value] of Object.entries(imageMap)) {
         if (nameLower.includes(key)) {
