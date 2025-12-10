@@ -22,8 +22,11 @@ export const Checkout = {
             // ... (rest of code)
 
 
+            // 1. Obtener datos del cliente
+            const clientResult = await client.query('SELECT name FROM clients WHERE id = $1', [client_id]);
+            const clientName = clientResult.rows[0]?.name || 'Cliente';
 
-            // 1. Verificar estado de la cita
+            // 2. Verificar estado de la cita
             const appointmentCheck = await client.query(
                 'SELECT status, service_id, checkout_code FROM appointments WHERE id = $1',
                 [appointment_id]
@@ -40,7 +43,7 @@ export const Checkout = {
             const serviceId = appointmentCheck.rows[0].service_id;
             let membershipId = null;
 
-            // 2. Procesar membresía si se solicita
+            // 3. Procesar membresía si se solicita
             if (use_membership) {
                 // Buscar membresía activa válida para este servicio
                 const membershipResult = await client.query(`
@@ -91,17 +94,17 @@ export const Checkout = {
         `, [membershipId, appointment_id, serviceId, usageCost]);
             }
 
-            // 3. Crear registro de checkout
+            // 4. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, client_id, service_cost, products_cost, 
+          appointment_id, client_id, client_name, service_cost, products_cost, 
           discount, total, payment_method, used_membership, 
           membership_id, notes
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING id, uuid
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING *
       `, [
-                appointment_id, client_id, service_cost, products_cost,
+                appointment_id, client_id, clientName, service_cost, products_cost,
                 discount, total, payment_method, use_membership,
                 membershipId, notes
             ]);
