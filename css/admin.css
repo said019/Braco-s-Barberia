@@ -1148,3 +1148,453 @@ body {
 .mb-1 { margin-bottom: 0.5rem; }
 .mb-2 { margin-bottom: 1rem; }
 .hidden { display: none !important; }
+
+/* ====================================
+   LOYALTY CARDS (ADDED)
+   ==================================== */
+.loyalty-card {
+    width: 380px;
+    height: 240px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 50px rgba(0,0,0,0.5),
+        0 0 100px rgba(196, 163, 90, 0.1);
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    margin: 0 auto;
+}
+
+.loyalty-card:hover {
+    transform: translateY(-10px) rotateX(5deg);
+    box-shadow: 
+        0 35px 60px rgba(0,0,0,0.6),
+        0 0 120px rgba(196, 163, 90, 0.2);
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+}
+
+/* Shine effect */
+.card-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.1),
+        transparent
+    );
+    transform: skewX(-25deg);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.loyalty-card:hover .card-shine {
+    animation: shine 1s ease-in-out;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    100% { left: 150%; }
+}
+
+/* ====================================
+   GOLDEN CARD
+   ==================================== */
+.card-golden {
+    background: 
+        linear-gradient(135deg, 
+            #2D2D2D 0%, 
+            #3D3D3D 30%, 
+            #2D2D2D 50%, 
+            #3D3D3D 70%, 
+            #2D2D2D 100%);
+}
+
+.card-golden::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: 
+        linear-gradient(135deg,
+            #8B7335 0%,
+            #C4A35A 20%,
+            #E8D5A3 40%,
+            #C4A35A 60%,
+            #8B7335 80%,
+            #C4A35A 100%);
+    clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0% 100%);
+    z-index: 1;
+}
+
+.card-golden::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.1;
+    clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0% 100%);
+    z-index: 1;
+    mix-blend-mode: overlay;
+}
+
+/* ====================================
+   NEOCAPILAR CARD
+   ==================================== */
+.card-neocapilar {
+    background: 
+        linear-gradient(135deg, 
+            #1a1a1a 0%, 
+            #2a2a2a 30%, 
+            #1a1a1a 50%, 
+            #2a2a2a 70%, 
+            #1a1a1a 100%);
+}
+
+.card-neocapilar::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: 
+        linear-gradient(135deg,
+            #6B5B35 0%,
+            #9C8A4A 20%,
+            #C4A35A 40%,
+            #D4B76A 50%,
+            #C4A35A 60%,
+            #9C8A4A 80%,
+            #6B5B35 100%);
+    clip-path: polygon(0 50%, 30% 20%, 100% 35%, 100% 100%, 0% 100%);
+    z-index: 1;
+}
+
+/* ====================================
+   BLACK CARD
+   ==================================== */
+.card-black {
+    background: 
+        linear-gradient(135deg, 
+            #0a0a0a 0%, 
+            #1a1a1a 25%, 
+            #252525 50%, 
+            #1a1a1a 75%, 
+            #0a0a0a 100%);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+}
+
+.card-black::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(ellipse at 30% 70%, rgba(60,60,60,0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 30%, rgba(80,80,80,0.3) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(40,40,40,0.5) 0%, transparent 60%);
+    z-index: 1;
+    animation: smoke 8s ease-in-out infinite;
+}
+
+@keyframes smoke {
+    0%, 100% { 
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+.card-black::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C4A35A, transparent);
+    z-index: 3;
+}
+
+/* ====================================
+   CARD CONTENT
+   ==================================== */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: auto;
+}
+
+.card-logo {
+    width: 110px;
+    height: auto;
+}
+
+.card-type-wrapper {
+    text-align: right;
+}
+
+.card-type {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.card-golden .card-type {
+    font-size: 1.4rem;
+    color: #C4A35A;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.card-neocapilar .card-type {
+    font-size: 1.2rem;
+    color: #D4B76A;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.card-black .card-type {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #C4A35A, #E8D5A3, #C4A35A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.card-type-sub {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+}
+
+/* ====================================
+   DIAMONDS
+   ==================================== */
+.diamonds-container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+    position: relative;
+    z-index: 5;
+}
+
+.diamond {
+    width: 28px;
+    height: 28px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.diamond svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.diamond.empty svg {
+    opacity: 0.3;
+}
+
+.diamond.filled svg {
+    filter: drop-shadow(0 0 8px rgba(196, 163, 90, 0.5));
+}
+
+.diamond:hover {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.diamonds-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.4rem;
+    justify-items: center;
+    margin: 0.75rem 0;
+    position: relative;
+    z-index: 5;
+}
+
+.diamonds-grid .diamond {
+    width: 24px;
+    height: 24px;
+}
+
+/* ====================================
+   CARD FOOTER
+   ==================================== */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    position: relative;
+    z-index: 5;
+}
+
+.card-number {
+    background: rgba(255,255,255,0.95);
+    color: #1a1a1a;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.card-black .card-number {
+    background: linear-gradient(135deg, #C4A35A, #E8D5A3);
+    color: #1a1a1a;
+}
+
+.contact-info {
+    text-align: right;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.5;
+}
+
+.contact-info .phone {
+    color: #C4A35A;
+    font-weight: 500;
+    font-size: 0.7rem;
+}
+
+.contact-info .social {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 2px;
+}
+
+/* ====================================
+   SPARKLES
+   ==================================== */
+.sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #C4A35A;
+    border-radius: 50%;
+    z-index: 3;
+    animation: sparkle 2s ease-in-out infinite;
+    box-shadow: 0 0 6px #C4A35A;
+}
+
+@keyframes sparkle {
+    0% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0); }
+}
+
+.sparkle:nth-child(1) { top: 20%; left: 15%; animation-delay: 0s; }
+.sparkle:nth-child(2) { top: 35%; left: 45%; animation-delay: 0.5s; }
+.sparkle:nth-child(3) { top: 25%; left: 75%; animation-delay: 1s; }
+.sparkle:nth-child(4) { top: 50%; left: 25%; animation-delay: 1.5s; }
+.sparkle:nth-child(5) { top: 45%; left: 65%; animation-delay: 0.3s; }
+
+/* ====================================
+   FLIP LOGIC
+   ==================================== */
+.card-wrapper {
+    perspective: 1000px;
+    margin: 0 auto;
+}
+
+.card-flipper {
+    position: relative;
+    width: 380px;
+    height: 240px;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.card-wrapper.flipped .card-flipper {
+    transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, #2D2D2D, #3D3D3D);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(196, 163, 90, 0.1);
+}
+
+.card-back .address {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+}
+
+.card-back .address strong {
+    color: #C4A35A;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+}
+
+.card-back .qr-placeholder {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: #333;
+}
+
+.card-back-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.card-back .back-logo {
+    width: 80px;
+    height: auto;
+    opacity: 0.9;
+}

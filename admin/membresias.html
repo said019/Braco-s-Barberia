@@ -17,7 +17,7 @@
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
@@ -411,6 +411,7 @@
                     format: (value, row) => `
                         <div class="actions">
                             <button class="btn-icon" onclick="viewMembershipDetail(${value})" title="Ver detalles"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="viewCard(${value})" title="Ver Tarjeta Digital"><i class="fas fa-id-card"></i></button>
                             ${row.status === 'active' ?
                             `<button class="btn-icon" onclick="cancelMembership(${value})" title="Cancelar"><i class="fas fa-ban"></i></button>`
                             : ''}
@@ -421,6 +422,183 @@
 
             container.innerHTML = createTable(filteredMemberships, columns);
         }
+
+        // ... existing openActivateMembershipModal ...
+
+        function getCardHtml(membership) {
+            const type = membership.membership_type.toLowerCase();
+            let cardClass = '';
+            let typeTitle = '';
+            let typeSubtitle = '';
+            let totalDiamonds = 0;
+
+            // Configuration based on type
+            if (type.includes('black')) {
+                cardClass = 'card-black';
+                typeTitle = 'BLACK CARD';
+                typeSubtitle = 'Exclusivo • 12 Servicios';
+                totalDiamonds = 12;
+            } else if (type.includes('neocapilar')) {
+                cardClass = 'card-neocapilar';
+                typeTitle = 'NEOCAPILAR';
+                typeSubtitle = 'Tratamiento Premium';
+                totalDiamonds = 8;
+            } else {
+                cardClass = 'card-golden';
+                typeTitle = 'GOLDEN CARD';
+                typeSubtitle = 'Barbería & Peluquería';
+                totalDiamonds = 6;
+            }
+
+            // Generate Diamonds
+            const usedServices = membership.used_services || 0;
+            // For Black Card (grid layout) vs others (flex)
+            const isGrid = totalDiamonds > 8;
+            const containerClass = isGrid ? 'diamonds-grid' : 'diamonds-container';
+
+            let diamondsHtml = `<div class="${containerClass}">`;
+
+            for (let i = 0; i < totalDiamonds; i++) {
+                const isFilled = i < usedServices;
+                const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
+
+                // SVG differences (Gold vs Silver gradients)
+                const isSilver = cardClass === 'card-black';
+                const gradientPrefix = isSilver ? 'silver' : 'gold';
+                const strokeColor = isSilver ? '#666' : '#8B7335';
+
+                // Define gradients once if not exists (handled in modal wrapper or inline)
+                // For simplicity, we'll embed defs in the first diamond or use a shared SVG definition
+
+                diamondsHtml += `
+                    <div class="${diamondClass}">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5"/>
+                            ${isFilled ? `
+                            <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}"/>
+                            <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}"/>
+                            ` : ''}
+                        </svg>
+                    </div>
+                `;
+            }
+            diamondsHtml += '</div>';
+
+            // SVG Definitions (Hidden but accessible for URL references)
+            const defs = `
+                <svg width="0" height="0" style="position: absolute;">
+                    <defs>
+                        <linearGradient id="goldGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E8D5A3"/>
+                            <stop offset="50%" style="stop-color:#C4A35A"/>
+                            <stop offset="100%" style="stop-color:#8B7335"/>
+                        </linearGradient>
+                        <linearGradient id="goldGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFF8E7"/>
+                            <stop offset="100%" style="stop-color:#C4A35A"/>
+                        </linearGradient>
+                        <linearGradient id="goldGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#8B7335"/>
+                            <stop offset="100%" style="stop-color:#5C4D23"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E8E8E8"/>
+                            <stop offset="30%" style="stop-color:#C0C0C0"/>
+                            <stop offset="50%" style="stop-color:#A8A8A8"/>
+                            <stop offset="70%" style="stop-color:#C0C0C0"/>
+                            <stop offset="100%" style="stop-color:#808080"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFFFFF"/>
+                            <stop offset="100%" style="stop-color:#C0C0C0"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#808080"/>
+                            <stop offset="100%" style="stop-color:#404040"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            `;
+
+            return `
+                ${defs}
+                <div class="card-wrapper" onclick="this.classList.toggle('flipped')">
+                    <div class="card-flipper">
+                        <div class="card-front loyalty-card ${cardClass}">
+                            <div class="card-shine"></div>
+                            ${[...Array(6)].map(() => '<div class="sparkle"></div>').join('')}
+                            
+                            <div class="card-inner">
+                                <div class="card-header">
+                                    <img src="../assets/logo.png" alt="Braco's" class="card-logo">
+                                    <div class="card-type-wrapper">
+                                        <div class="card-type">${typeTitle}</div>
+                                        <div class="card-type-sub">${typeSubtitle}</div>
+                                    </div>
+                                </div>
+
+                                ${diamondsHtml}
+
+                                <div class="card-footer">
+                                    <div class="card-number">No. ${membership.folio_number || '---'}</div>
+                                    <div class="contact-info">
+                                        <div class="phone">${formatPhone(membership.client_phone)}</div>
+                                        <div class="social">
+                                            <span>◉</span> @bracosbarberia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-back" ${cardClass === 'card-black' ? 'style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a); border: 1px solid rgba(196, 163, 90, 0.3);"' : ''}>
+                            <div class="address">
+                                <strong>UBICACIÓN</strong>
+                                Heroico Colegio Militar No. 46, Local J<br>
+                                Plaza Comercial Hacienda<br>
+                                Tequisquiapan, Qro.
+                            </div>
+                            <div class="card-back-footer">
+                                <img src="../assets/logo.png" alt="Braco's" class="back-logo">
+                                <div class="qr-placeholder">QR CODE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #888;">Clic en la tarjeta para ver reverso</p>
+            `;
+        }
+
+        function viewCard(id) {
+            const membership = allMemberships.find(m => m.id === id);
+            if (!membership) return;
+
+            const content = `
+                <div style="padding: 2rem 0; display: flex; justify-content: center;">
+                    ${getCardHtml(membership)}
+                </div>
+            `;
+
+            showModal('cardModal', 'Tarjeta Digital', content);
+        }
+
+        // ... existing activateMembership ...
+
+        // Update success modal to show card
+        // In activateMembership function:
+        /*
+            const uuid = response.uuid;
+            // Fetch the just created membership to get types and details, or construct pseudo-object
+            // For now, let's just construct a pseudo object from form data + prefix/folio
+            const pseudoMembership = {
+                 membership_type: document.getElementById('membership-type').options[document.getElementById('membership-type').selectedIndex].text.split(' - ')[0],
+                 folio_number: document.getElementById('folio-prefix').textContent + document.getElementById('membership-folio').value,
+                 client_phone: '55...', // fetch from client select or just leave placeholder
+                 used_services: 0
+            };
+            // Actually, better to just show successful creation and a button to "Ver Tarjeta"
+        */
+
 
         async function openActivateMembershipModal(preSelectedTypeId = null) {
             // Load clients and membership types for dropdown
