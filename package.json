@@ -23,7 +23,8 @@
         "helmet": "^7.1.0",
         "jsonwebtoken": "^9.0.2",
         "morgan": "^1.10.0",
-        "pg": "^8.16.3"
+        "pg": "^8.16.3",
+        "resend": "^4.1.2"
     },
     "devDependencies": {
         "nodemon": "^3.0.2"
