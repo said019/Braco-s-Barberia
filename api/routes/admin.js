@@ -1017,7 +1017,7 @@ router.get('/reports/revenue', authenticateToken, async (req, res, next) => {
                 t.description,
                 t.payment_method,
                 t.amount,
-                c.first_name || ' ' || c.last_name as client_name
+                c.name as client_name
             FROM transactions t
             LEFT JOIN clients c ON t.client_id = c.id
             WHERE t.transaction_date BETWEEN $1 AND $2
