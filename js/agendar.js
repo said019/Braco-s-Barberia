@@ -529,18 +529,25 @@ async function submitBooking() {
     const phone = formData.get('phone').replace(/\D/g, '');
 
     try {
-        // Verificar si el cliente existe
+        // Verificar si el cliente existe y su tipo
         let client = await API.getClientByPhone(phone);
 
-        // Si no existe (es nuevo), mostrar modal de depósito
-        if (!client) {
+        // Determinar si requiere depósito:
+        // 1. Si NO existe (es brand new)
+        // 2. Si existe PERO es tipo "Nuevo" (ID 1)
+        const isBrandNew = !client;
+        const isExistingNew = client && client.client_type_id === 1; // 1 = Nuevo (según update_client_types.sql)
+
+        const requiresDeposit = isBrandNew || isExistingNew;
+
+        // Si requiere depósito, mostrar modal
+        if (requiresDeposit) {
             btnConfirm.disabled = false;
             btnConfirm.textContent = originalText;
 
-            // Cliente NUEVO - Requiere depósito
-            // 1. Guardar datos temporales para el modal
+            // Datos temporales para el modal
             const data = {
-                name: formData.get('name'),
+                name: isBrandNew ? formData.get('name') : client.name, // Usar nombre de form o de DB
                 phone: phone,
                 notes: formData.get('notes'),
                 appointment_date: state.selectedDate.toISOString().split('T')[0]
@@ -549,57 +556,55 @@ async function submitBooking() {
             state.tempClient = {
                 name: data.name,
                 phone: data.phone,
-                service: state.selectedService.name, // state.selectedService is already the object
-                date: data.appointment_date, // Formato YYYY-MM-DD
+                service: state.selectedService.name,
+                date: data.appointment_date,
                 displayDate: new Date(`${data.appointment_date}T00:00:00`).toLocaleDateString('es-MX', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long'
                 }),
                 time: state.selectedTime,
-                start_time: state.selectedTime // Necesario para crear la cita
+                start_time: state.selectedTime
             };
 
-            // 2. Crear cliente
             try {
-                const newClient = await API.createClient({
-                    name: data.name,
-                    phone: data.phone
-                });
-
-                if (newClient && newClient.id) {
-                    state.clientCode = newClient.code; // Store code just in case
-
-                    // 3. Crear Cita con estado PENDING
-                    const appointmentData = {
-                        client_id: newClient.id,
-                        service_id: state.selectedService.id,
-                        appointment_date: state.selectedDate.toISOString().split('T')[0],
-                        start_time: state.selectedTime,
-                        notes: 'Cliente Nuevo - Pendiente de Depósito $100',
-                        status: 'pending',
-                        deposit_required: true,
-                        deposit_amount: 100
-                    };
-
-                    console.log('Creando cita con datos:', appointmentData);
-                    console.log('Servicio seleccionado:', state.selectedService);
-
-                    const appointment = await API.createAppointment(appointmentData);
-
-                    // API returns appointment data directly, not { success, data }
-                    if (appointment && appointment.id) {
-                        // 4. Mostrar modal de depósito
-                        showDepositModal(state.tempClient);
+                // Si es nuevo de verdad, crearlo ahora
+                if (isBrandNew) {
+                    const newClient = await API.createClient({
+                        name: data.name,
+                        phone: data.phone
+                    });
+                    if (newClient && newClient.id) {
+                        client = newClient; // Asignar para usar abajo
                     } else {
-                        throw new Error('No se pudo pre-agendar la cita.');
+                        throw new Error('Error al registrar cliente.');
                     }
-                } else {
-                    throw new Error('Error al registrar cliente.');
                 }
+
+                // Crear Cita con estado PENDING (Depósito requerido)
+                const appointmentData = {
+                    client_id: client.id,
+                    service_id: state.selectedService.id,
+                    appointment_date: state.selectedDate.toISOString().split('T')[0],
+                    start_time: state.selectedTime,
+                    notes: (data.notes || '') + ' - Pendiente de Depósito $100',
+                    status: 'pending',
+                    deposit_required: true,
+                    deposit_amount: 100
+                };
+
+                const appointment = await API.createAppointment(appointmentData);
+
+                if (appointment && appointment.id) {
+                    state.clientCode = client.code;
+                    showDepositModal(state.tempClient);
+                } else {
+                    throw new Error('No se pudo pre-agendar la cita.');
+                }
+
             } catch (error) {
-                console.error('Error flow nuevo cliente:', error);
-                showToast('Error al procesar registro: ' + error.message, 'error');
+                console.error('Error flow depósito:', error);
+                showToast('Error: ' + error.message, 'error');
                 btnConfirm.disabled = false;
                 btnConfirm.textContent = originalText;
             }

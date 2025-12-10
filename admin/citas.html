@@ -14,7 +14,7 @@
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
@@ -178,6 +178,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Cód.</th>
                                 <th>Fecha</th>
                                 <th>Hora</th>
                                 <th>Cliente</th>
@@ -188,7 +189,7 @@
                         </thead>
                         <tbody id="appointments-table-body">
                             <tr>
-                                <td colspan="6" class="text-center p-3">Cargando citas...</td>
+                                <td colspan="7" class="text-center p-3">Cargando citas...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -295,7 +296,7 @@
                 updateBadge(allAppointments.filter(a => a.status === 'pending').length);
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="6" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="7" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
                 document.getElementById('results-count').textContent = 'Error al cargar';
             }
         }
@@ -307,7 +308,7 @@
             filteredAppointments = allAppointments.filter(app => {
                 if (statusFilter && app.status !== statusFilter) return false;
                 if (searchFilter) {
-                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone}`.toLowerCase();
+                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone} ${app.checkout_code || ''}`.toLowerCase();
                     if (!searchText.includes(searchFilter)) return false;
                 }
                 return true;
@@ -393,12 +394,13 @@
             const tbody = document.getElementById('appointments-table-body');
 
             if (appointments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">No se encontraron citas</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-3">No se encontraron citas</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = appointments.map(app => `
                 <tr class="${app.status === 'pending' ? 'pending-row' : ''}">
+                    <td class="font-mono text-sm text-gold">${app.checkout_code || '-'}</td>
                     <td class="text-muted">${formatDate(app.appointment_date)}</td>
                     <td class="font-medium text-gold">${formatTime(app.start_time)}</td>
                     <td>
