@@ -185,12 +185,28 @@
             margin: 1rem 0;
             position: relative;
             z-index: 5;
+            max-width: 90%;
+            /* Ensure it wraps if needed, but flex handles it usually */
+        }
+
+        /* Special Grid for 12 items (Black Card) to force 6 and 6 */
+        .diamonds-grid-12 {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.6rem;
+            /* Slightly larger gap */
+            margin: 1.5rem auto;
+            position: relative;
+            z-index: 5;
+            width: fit-content;
         }
 
         .diamond {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            /* Slightly smaller for grid */
+            height: 24px;
             position: relative;
+            margin: 0 auto;
         }
 
         .diamond svg {
@@ -485,7 +501,10 @@
 
             let diamondsHtml = '';
             if (total > 0 && total <= 12) {
-                diamondsHtml = '<div class="diamonds-container">';
+                // If 12 items (Black Card), use the 6x6 grid. Else use flex.
+                const containerClass = (total === 12) ? 'diamonds-grid-12' : 'diamonds-container';
+
+                diamondsHtml = `<div class="${containerClass}">`;
                 for (let i = 0; i < total; i++) {
                     const isFilled = i < filledCount;
                     const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
