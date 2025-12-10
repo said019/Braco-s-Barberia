@@ -350,20 +350,25 @@ body {
 }
 
 .btn-filter {
-    background: transparent;
-    border: 1px solid rgba(196, 163, 90, 0.3);
-    color: var(--cream);
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
+    background: rgba(196, 163, 90, 0.1);
+    border: 1px solid rgba(196, 163, 90, 0.4);
+    color: var(--gold);
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .btn-filter:hover {
-    background: rgba(196, 163, 90, 0.1);
+    background: var(--gold);
+    color: var(--charcoal-dark);
     border-color: var(--gold);
-    color: var(--gold);
+    box-shadow: 0 0 10px rgba(196, 163, 90, 0.2);
 }
 
 .appointment-status.in_progress {
