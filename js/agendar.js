@@ -611,29 +611,33 @@ async function submitBooking() {
             return; // Detener flujo normal
         }
 
-        /*
-        // Lógica anterior de creación automática
-        if (!client) {
-            client = await API.createClient({
-                name: formData.get('name'),
-                phone: phone
-            });
-        }
-        */
+        // =====================================================
+        // RECURRING CLIENT FLOW - Show Payment Options Modal
+        // =====================================================
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = originalText;
 
-        // Crear la cita
-        const bookingData = {
-            client_id: client.id,
-            service_id: state.selectedService.id,
-            appointment_date: state.selectedDate.toISOString().split('T')[0],
-            start_time: state.selectedTime,
-            notes: formData.get('notes') || null
+        // Store client & form data for later use
+        state.recurringClient = client;
+        state.recurringFormData = {
+            notes: formData.get('notes') || ''
         };
 
-        const result = await API.createAppointment(bookingData);
+        // Check for memberships
+        let memberships = [];
+        try {
+            memberships = await API.getClientMemberships(client.id);
+            // Filter to only active with remaining services
+            memberships = memberships.filter(m => m.remaining_services > 0);
+        } catch (e) {
+            console.log('No memberships or error fetching:', e);
+        }
 
-        // Mostrar pantalla de éxito
-        showSuccess(result);
+        state.clientMemberships = memberships;
+
+        // Show payment options modal
+        showPaymentOptionsModal(client, memberships);
+        return;
 
     } catch (error) {
         console.error('Error:', error);
@@ -780,3 +784,107 @@ window.closeDepositModal = closeDepositModal;
 window.sendDepositWhatsApp = sendDepositWhatsApp;
 window.toggleBankDetails = toggleBankDetails;
 window.copyToClipboard = copyToClipboard;
+
+// ============================================================================
+// PAYMENT OPTIONS MODAL (RECURRING CLIENTS)
+// ============================================================================
+
+function showPaymentOptionsModal(client, memberships) {
+    const modal = document.getElementById('payment-options-modal');
+
+    // Populate data
+    document.getElementById('po-client-name').textContent = client.name.split(' ')[0]; // First name
+    document.getElementById('po-service').textContent = state.selectedService?.name || '-';
+    document.getElementById('po-date').textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('po-time').textContent = state.selectedTime || '-';
+
+    // Show membership option if available
+    const membershipOption = document.getElementById('po-membership-option');
+    if (memberships && memberships.length > 0) {
+        membershipOption.classList.remove('hidden');
+        const m = memberships[0];
+        document.getElementById('po-membership-name').textContent = `${m.membership_name} (${m.remaining_services} servicios)`;
+        state.selectedMembership = m;
+    } else {
+        membershipOption.classList.add('hidden');
+        state.selectedMembership = null;
+    }
+
+    // Hide bank details initially
+    document.getElementById('po-bank-details').classList.add('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closePaymentOptionsModal() {
+    const modal = document.getElementById('payment-options-modal');
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+async function selectPaymentOption(option) {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    let appointmentNotes = notes;
+
+    if (option === 'membership') {
+        // Record intent to use membership
+        const m = state.selectedMembership;
+        appointmentNotes = `${notes} [INTENCIÓN: Usar membresía ${m.membership_name}]`.trim();
+        await createRecurringAppointment(client, appointmentNotes);
+        closePaymentOptionsModal();
+
+    } else if (option === 'prepay') {
+        // Show bank details section
+        document.getElementById('po-bank-details').classList.remove('hidden');
+        // Scroll to it
+        document.getElementById('po-bank-details').scrollIntoView({ behavior: 'smooth' });
+
+    } else if (option === 'skip') {
+        // Just create appointment normally
+        await createRecurringAppointment(client, appointmentNotes);
+        closePaymentOptionsModal();
+    }
+}
+
+async function confirmPrepayOption() {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
+    await createRecurringAppointment(client, appointmentNotes);
+    closePaymentOptionsModal();
+
+    // Open WhatsApp for sending proof
+    const message = `Hola, soy *${client.name}*.%0AHe agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.%0A%0AAnexo mi comprobante de pago anticipado.`;
+    const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+async function createRecurringAppointment(client, notes) {
+    try {
+        const bookingData = {
+            client_id: client.id,
+            service_id: state.selectedService.id,
+            appointment_date: state.selectedDate.toISOString().split('T')[0],
+            start_time: state.selectedTime,
+            notes: notes || null,
+            status: 'scheduled' // Recurring clients get scheduled directly
+        };
+
+        const result = await API.createAppointment(bookingData);
+        showSuccess(result);
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        showToast(error.message || 'Error al crear la cita', 'error');
+    }
+}
+
+// Export payment options functions
+window.showPaymentOptionsModal = showPaymentOptionsModal;
+window.closePaymentOptionsModal = closePaymentOptionsModal;
+window.selectPaymentOption = selectPaymentOption;
+window.confirmPrepayOption = confirmPrepayOption;

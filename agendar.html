@@ -352,6 +352,117 @@
                 </div>
             </div>
         </div>
+
+        <!-- Payment Options Modal (Recurring Clients) -->
+        <div id="payment-options-modal" class="modal-overlay hidden">
+            <div class="modal-content deposit-modal-alert">
+                <button class="modal-close" onclick="closePaymentOptionsModal()">&times;</button>
+
+                <!-- Header -->
+                <div class="deposit-alert-header">
+                    <h3 class="alert-title">¡Hola, <span id="po-client-name">Cliente</span>!</h3>
+                    <p class="alert-subtitle">Bienvenido de vuelta</p>
+                </div>
+
+                <!-- Body -->
+                <div class="deposit-alert-body">
+                    <div class="alert-message-box">
+                        <p>
+                            <strong>Tu cita está casi lista.</strong><br>
+                            ¿Deseas realizar alguna acción adicional?
+                        </p>
+                    </div>
+
+                    <!-- Appointment Summary -->
+                    <div class="deposit-appointment-summary">
+                        <h4><i class="fas fa-calendar-check"></i> Tu Cita</h4>
+                        <div class="summary-row">
+                            <span>Servicio:</span>
+                            <strong id="po-service">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Fecha:</span>
+                            <strong id="po-date">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Hora:</span>
+                            <strong id="po-time">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="payment-options-container">
+                        <!-- Option: Use Membership (conditional) -->
+                        <div id="po-membership-option" class="payment-option-card hidden"
+                            onclick="selectPaymentOption('membership')">
+                            <div class="option-icon-lg"><i class="fas fa-crown"></i></div>
+                            <div class="option-content">
+                                <strong>Usar Membresía</strong>
+                                <span id="po-membership-name">-</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <!-- Option: Pay Now -->
+                        <div class="payment-option-card" onclick="selectPaymentOption('prepay')">
+                            <div class="option-icon-lg"><i class="fas fa-credit-card"></i></div>
+                            <div class="option-content">
+                                <strong>Pagar Ahora</strong>
+                                <span>Transfiere por adelantado</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <!-- Option: Continue Without Payment -->
+                        <div class="payment-option-card" onclick="selectPaymentOption('skip')">
+                            <div class="option-icon-lg"><i class="fas fa-arrow-right"></i></div>
+                            <div class="option-content">
+                                <strong>Continuar Sin Pago</strong>
+                                <span>Pagar al llegar</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details (shown when prepay selected) -->
+                    <div id="po-bank-details" class="bank-details-card hidden" style="margin-top: 1rem;">
+                        <div class="card-header">
+                            <span><i class="fas fa-university"></i> Datos de Transferencia</span>
+                        </div>
+                        <div class="payment-options-list">
+                            <div class="payment-option-item" onclick="copyToClipboard('638180000176357788')">
+                                <div class="option-icon"><i class="fas fa-building-columns"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">NU México (CLABE)</span>
+                                    <code class="bank-number">638180000176357788</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                            <div class="payment-option-item" onclick="copyToClipboard('722969010620447083')">
+                                <div class="option-icon"><i class="fas fa-mobile-alt"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">Mercado Pago</span>
+                                    <code class="bank-number">722969010620447083</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                            <div class="payment-option-item" onclick="copyToClipboard('4217470097744441')">
+                                <div class="option-icon"><i class="fas fa-store"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">OXXO (Tarjeta)</span>
+                                    <code class="bank-number">4217 4700 9774 4441</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                        </div>
+                        <p class="beneficiary-name">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                        <button class="btn-primary btn-block" style="margin-top: 1rem;" onclick="confirmPrepayOption()">
+                            <i class="fab fa-whatsapp"></i> Enviar Comprobante
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->
