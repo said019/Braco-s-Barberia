@@ -380,101 +380,227 @@
                 <stop offset="0%" style="stop-color:#E0E0E0" />
                 <stop offset="100%" style="stop-color:#9E9E9E" />
             </linearGradient>
-
-            <!-- NEO GRADIENTS (optional, re-use Gold for now or custom) -->
         </defs>
     </svg>
 
-    <!-- ... -->
-
-    // Diamond Logic in renderCard
-    const total = parseInt(data.services.total || 0);
-    const used = parseInt(data.services.used || 0);
-    const filledCount = used;
-
-    // Logic for card theme affecting diamonds
-    const isSilver = cardClass === 'card-black';
-    const gradientPrefix = isSilver ? 'silver' : 'gold';
-    const strokeColor = isSilver ? '#666' : '#8B7335';
-
-    let diamondsHtml = '';
-    if (total > 0 && total <= 12) { diamondsHtml='<div class="diamonds-container">' ; for (let i=0; i < total; i++) {
-        const isFilled=i < filledCount; const diamondClass=isFilled ? 'diamond filled' : 'diamond empty' ; // Detailed
-        3-part diamond path for depth diamondsHtml +=` <div class="${diamondClass}">
-        <svg viewBox="0 0 24 24" fill="none">
-            <!-- Base outline/shape -->
-            <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}"
-                stroke-width="0.5" opacity="${isFilled ? 1 : 0.2}" />
-            ${isFilled ? `
-            <!-- Inner facets for 3D look -->
-            <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}" />
-            <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}" />
-            ` : ''}
-        </svg>
+    <div id="card-container">
+        <!-- Rendered by JS -->
+        <div style="text-align: center; color: #888;">
+            <div id="status-text">Cargando tarjeta...</div>
+            <div id="debug-log"
+                style="font-size: 0.7em; margin-top:10px; color: #444; font-family: monospace; text-align: left; max-width: 300px; margin: 10px auto;">
+            </div>
         </div>
-        `;
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="downloadCard()" class="btn-download">
+            <i class="fas fa-download"></i> Guardar Imagen
+        </button>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Haz clic en la tarjeta para ver el reverso</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        const API_URL = '/api';
+
+        // FORCE ALERT TO CONFIRM UPDATE
+        // window.alert('DEBUG: Página actualizada v4 (RESTORED)');
+
+        function log(msg) {
+            console.log(msg);
+            const el = document.getElementById('debug-log');
+            if (el) el.innerHTML += `> ${msg}<br>`;
         }
-        diamondsHtml += '</div>';
-        } else {
-        // ... number display ...
+
+        async function loadCard() {
+            log('Iniciando carga de tarjeta...');
+
+            // Validate dependencies
+            if (typeof QRCode === 'undefined') log('WARN: QRCode lib not loaded');
+            if (typeof html2canvas === 'undefined') log('WARN: html2canvas lib not loaded');
+
+            const params = new URLSearchParams(window.location.search);
+            const uuid = params.get('id');
+            log(`UUID detectado: ${uuid}`);
+
+            if (!uuid) return showError('ID de tarjeta no válido');
+
+            try {
+                log(`Haciendo fetch a ${API_URL}/public/membership/${uuid}`);
+                const response = await fetch(`${API_URL}/public/membership/${uuid}`);
+                log(`Status respuesta: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+                }
+
+                log('Parseando JSON...');
+                const data = await response.json();
+                log('Datos recibidos. Renderizando...');
+                renderCard(data);
+                log('Render completo.');
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+                showError(error.message);
+            }
+        }
 
 
-        <!-- BACK -->
-        <div class="card-back" ${cardClass==='card-black'
-            ? 'style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a); border: 1px solid rgba(196, 163, 90, 0.3);"'
-            : '' }>
-            <div class="address">
-                <strong>UBICACIÓN</strong>
-                Heroico Colegio Militar No. 46, Local J<br>
-                Plaza Comercial Hacienda<br>
-                Tequisquiapan, Qro.
-            </div>
-            <div class="card-back-footer">
-                <img src="assets/logo.png" alt="Braco's" class="back-logo"
-                    style="width: 50px !important; height: auto !important;">
-                <div id="qrcode-target" class="qr-placeholder"></div>
-            </div>
-        </div>
-        </div>
-        </div>
-        `;
+        function showError(msg) {
+            document.getElementById('card-container').innerHTML = `<p style="color:#ef5350;">${msg}</p>`;
+        }
 
-        document.getElementById('card-container').innerHTML = html;
+        function renderCard(data) {
+            // Determine styles
+            const lowerPlan = (data.plan || '').toLowerCase();
+            let cardClass = 'card-golden';
+            let typeTitle = 'GOLDEN CARD';
+            let typeSubtitle = 'MEMBRESÍA EXCLUSIVA';
 
-        // Generate QR
-        setTimeout(() => {
-        new QRCode(document.getElementById("qrcode-target"), {
-        text: window.location.href,
-        width: 64,
-        height: 64,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-        });
-        }, 100);
+            if (lowerPlan.includes('black')) {
+                cardClass = 'card-black';
+                typeTitle = 'BLACK CARD';
+                typeSubtitle = 'ACCESO TOTAL';
+            } else if (lowerPlan.includes('neocapilar')) {
+                cardClass = 'card-neocapilar';
+                typeTitle = 'NEOCAPILAR';
+                typeSubtitle = 'TRATAMIENTO';
+            }
+
+            // Diamonds Logic
+            const total = parseInt(data.services.total || 0);
+            const used = parseInt(data.services.used || 0);
+            const filledCount = used;
+
+            // Logic for card theme affecting diamonds
+            const isSilver = cardClass === 'card-black';
+            const gradientPrefix = isSilver ? 'silver' : 'gold';
+            const strokeColor = isSilver ? '#666' : '#8B7335';
+
+            let diamondsHtml = '';
+            if (total > 0 && total <= 12) {
+                diamondsHtml = '<div class="diamonds-container">';
+                for (let i = 0; i < total; i++) {
+                    const isFilled = i < filledCount;
+                    const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
+
+                    // Detailed 3-part diamond path for depth
+                    diamondsHtml += `
+                        <div class="${diamondClass}">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <!-- Base outline/shape -->
+                               <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.2}"/>
+                               ${isFilled ? `
+                               <!-- Inner facets for 3D look -->
+                               <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}"/>
+                               <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}"/>
+                               ` : ''}
+                            </svg>
+                        </div>
+                    `;
+                }
+                diamondsHtml += '</div>';
+            } else {
+                diamondsHtml = `
+                    <div style="text-align: center; margin: 1.5rem 0;">
+                        <div style="font-size: 0.8rem; color: #ccc;">SERVICIOS DISPONIBLES</div>
+                        <div style="font-size: 2.5rem; font-weight: 300; color: #C4A35A; letter-spacing: 2px;">
+                           ${data.services.remaining === undefined ? '∞' : data.services.remaining}
+                        </div>
+                    </div>
+                 `;
+            }
+
+            const html = `
+                <div class="card-wrapper" onclick="this.classList.toggle('flipped')">
+                    <div class="card-flipper">
+                        <!-- FRONT -->
+                        <div class="card-front ${cardClass}">
+                             <div class="card-inner">
+                                <div class="card-header">
+                                    <img src="assets/logo.png" alt="Braco's" class="card-logo" style="width: 80px !important; height: auto !important; max-width: 80px;">
+                                    <div class="card-type-wrapper">
+                                        <div class="card-type">${typeTitle}</div>
+                                        <div class="card-type-sub">${typeSubtitle}</div>
+                                    </div>
+                                </div>
+
+                                ${diamondsHtml}
+
+                                <!-- Sparkles (Decoration) -->
+                                <div class="sparkle" style="top:20%; left:15%;"></div>
+                                <div class="sparkle" style="top:70%; left:85%; animation-delay:1s;"></div>
+                                <div class="sparkle" style="top:40%; left:60%; animation-delay:0.5s;"></div>
+
+                                <div class="card-footer">
+                                    <div class="card-number">No. ${data.folio || '---'}</div>
+                                    <div class="contact-info">
+                                        <div class="phone">${data.clientPhone || '55...'}</div>
+                                        <div class="social">
+                                            <span>◉</span> @bracosbarberia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BACK -->
+                        <div class="card-back" ${cardClass === 'card-black' ? 'style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a); border: 1px solid rgba(196, 163, 90, 0.3);"' : ''}>
+                             <div class="address">
+                                <strong>UBICACIÓN</strong>
+                                Heroico Colegio Militar No. 46, Local J<br>
+                                Plaza Comercial Hacienda<br>
+                                Tequisquiapan, Qro.
+                            </div>
+                            <div class="card-back-footer">
+                                <img src="assets/logo.png" alt="Braco's" class="back-logo" style="width: 50px !important; height: auto !important;">
+                                <div id="qrcode-target" class="qr-placeholder"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('card-container').innerHTML = html;
+
+            // Generate QR
+            setTimeout(() => {
+                new QRCode(document.getElementById("qrcode-target"), {
+                    text: window.location.href,
+                    width: 64,
+                    height: 64,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }, 100);
         }
 
         function downloadCard() {
-        // We want to capture the Front face regardless of current rotation
-        const front = document.querySelector('.card-front');
-        if (!front) return;
+            // We want to capture the Front face regardless of current rotation
+            const front = document.querySelector('.card-front');
+            if (!front) return;
 
-        html2canvas(front, {
-        scale: 3,
-        backgroundColor: null,
-        useCORS: true,
-        logging: false
-        }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'Membresia_Bracos.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        });
+            html2canvas(front, {
+                scale: 3,
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Membresia_Bracos.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
         }
 
         // Start loading
         loadCard();
-        </script>
+    </script>
 </body>
 
 </html>
+```
