@@ -39,8 +39,9 @@ export const errorHandler = (err, req, res, next) => {
       return res.status(400).json({
         success: false,
         error: 'Campo requerido faltante',
-        message: 'Campo requerido faltante',
-        detail: err.detail
+        message: `Campo requerido faltante: ${err.column || err.detail || 'Desconocido'}`,
+        detail: err.detail,
+        column: err.column
       });
     }
   }
