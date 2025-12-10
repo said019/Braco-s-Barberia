@@ -97,18 +97,20 @@ export const Checkout = {
             }
 
             // 4. Crear registro de checkout
+            const subtotal = Number(service_cost) + Number(products_cost);
+
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, client_id, client_name, client_phone, service_cost, products_cost, 
-          discount, total, payment_method, used_membership, 
-          membership_id, notes
+          appointment_id, client_id, client_name, client_phone, 
+          service_cost, products_cost, subtotal, discount, total, 
+          payment_method, used_membership, membership_id, notes
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `, [
-                appointment_id, client_id, clientName, clientPhone, service_cost, products_cost,
-                discount, total, payment_method, use_membership,
-                membershipId, notes
+                appointment_id, client_id, clientName, clientPhone,
+                service_cost, products_cost, subtotal, discount, total,
+                payment_method, used_membership, membershipId, notes
             ]);
 
             const checkoutId = checkoutResult.rows[0].id;
