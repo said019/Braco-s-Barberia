@@ -590,7 +590,8 @@ async function submitBooking() {
                     notes: (data.notes || '') + ' - Pendiente de Depósito $100',
                     status: 'pending',
                     deposit_required: true,
-                    deposit_amount: 100
+                    deposit_amount: 100,
+                    email: data.email || null
                 };
 
                 const appointment = await API.createAppointment(appointmentData);
@@ -866,13 +867,18 @@ async function confirmPrepayOption() {
 
 async function createRecurringAppointment(client, notes) {
     try {
+        // Get email from form if available
+        const emailInput = document.getElementById('client-email');
+        const email = emailInput ? emailInput.value : null;
+
         const bookingData = {
             client_id: client.id,
             service_id: state.selectedService.id,
             appointment_date: state.selectedDate.toISOString().split('T')[0],
             start_time: state.selectedTime,
             notes: notes || null,
-            status: 'scheduled' // Recurring clients get scheduled directly
+            status: 'scheduled', // Recurring clients get scheduled directly
+            email: email || null
         };
 
         const result = await API.createAppointment(bookingData);

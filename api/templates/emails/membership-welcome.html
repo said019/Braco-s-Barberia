@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a tu Membresía - Braco's Barbería</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a1a; color: #f5f5f0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1a1a1a;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+                    style="max-width: 600px; background-color: #2a2a2a; border: 1px solid rgba(196, 163, 90, 0.3);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 40px 40px 30px; border-bottom: 1px solid rgba(196, 163, 90, 0.2);">
+                            <img src="https://bracosbarberia.com/assets/logo.png" alt="Braco's Barbería" width="80"
+                                style="display: block; margin-bottom: 20px;">
+                            <div style="font-size: 48px; margin-bottom: 15px;">👑</div>
+                            <h1
+                                style="margin: 0; font-size: 28px; font-weight: 300; color: #C4A35A; letter-spacing: 2px;">
+                                ¡BIENVENIDO!</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 18px; color: #f5f5f0;">
+                                Hola <strong style="color: #C4A35A;">{{clientName}}</strong>,
+                            </p>
+                            <p
+                                style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: rgba(245, 245, 240, 0.8);">
+                                ¡Felicidades! Ahora eres miembro de <strong
+                                    style="color: #C4A35A;">{{membershipName}}</strong>.
+                            </p>
+
+                            <!-- Membership Details -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                style="background: linear-gradient(135deg, #2a2a2a, #1a1a1a); border: 2px solid #C4A35A; margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 30px;">
+                                        <h2
+                                            style="margin: 0 0 20px; font-size: 24px; color: #C4A35A; text-align: center; text-transform: uppercase; letter-spacing: 3px;">
+                                            {{membershipName}}
+                                        </h2>
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td
+                                                    style="padding: 10px 0; border-bottom: 1px solid rgba(196, 163, 90, 0.2);">
+                                                    <span
+                                                        style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(245, 245, 240, 0.5);">Servicios
+                                                        Incluidos</span><br>
+                                                    <span
+                                                        style="font-size: 24px; font-weight: bold; color: #C4A35A;">{{totalServices}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0;">
+                                                    <span
+                                                        style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(245, 245, 240, 0.5);">Vigencia</span><br>
+                                                    <span style="font-size: 16px; color: #f5f5f0;">Hasta
+                                                        {{expirationDate}}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p
+                                style="margin: 0 0 25px; font-size: 14px; line-height: 1.6; color: rgba(245, 245, 240, 0.7); text-align: center;">
+                                Tu tarjeta digital de membresía está lista. Preséntala en cada visita.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <a href="{{cardUrl}}"
+                                            style="display: inline-block; padding: 18px 50px; background-color: #C4A35A; color: #1a1a1a; text-decoration: none; font-size: 14px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+                                            VER MI TARJETA
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 30px 40px; background-color: #1a1a1a; border-top: 1px solid rgba(196, 163, 90, 0.2);">
+                            <p style="margin: 0 0 10px; font-size: 12px; color: rgba(245, 245, 240, 0.5);">
+                                Braco's Barbería | Experiencia Premium
+                            </p>
+                            <p style="margin: 0; font-size: 11px; color: rgba(245, 245, 240, 0.3);">
+                                © {{year}} Braco's Barbería. Todos los derechos reservados.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

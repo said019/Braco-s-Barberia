@@ -2,6 +2,7 @@ import Appointment from '../models/Appointment.js';
 import Service from '../models/Service.js';
 import Client from '../models/Client.js';
 import { AppError } from '../middleware/errorHandler.js';
+import emailService from '../services/emailService.js';
 
 export const appointmentController = {
   // GET /api/appointments - Obtener citas con filtros
@@ -114,7 +115,7 @@ export const appointmentController = {
   // POST /api/appointments - Crear cita
   async create(req, res, next) {
     try {
-      const { client_id, service_id, appointment_date, start_time, notes } = req.body;
+      const { client_id, service_id, appointment_date, start_time, notes, email } = req.body;
       let { end_time } = req.body;
 
       // Verificar que el servicio existe
@@ -159,6 +160,29 @@ export const appointmentController = {
         notes,
         status: req.body.status // Pass status if provided (e.g., 'pending')
       });
+
+      // Send confirmation email if email provided
+      const clientEmail = email || client.email;
+      if (clientEmail) {
+        try {
+          const dateObj = new Date(appointment_date + 'T12:00:00');
+          const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          await emailService.sendBookingConfirmation({
+            email: clientEmail,
+            name: client.name,
+            service: service.name,
+            date: formattedDate,
+            time: start_time,
+            code: appointment.checkout_code
+          });
+        } catch (emailError) {
+          console.error('Error sending booking confirmation email:', emailError);
+          // Don't fail the request if email fails
+        }
+      }
 
       res.status(201).json({
         success: true,
@@ -237,6 +261,28 @@ export const appointmentController = {
       if (!appointment) {
         throw new AppError('Cita no encontrada', 404);
       }
+
+      // Send deposit accepted email if client has email
+      if (appointment.client_email) {
+        try {
+          const dateObj = new Date(appointment.appointment_date);
+          const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          await emailService.sendDepositAccepted({
+            email: appointment.client_email,
+            name: appointment.client_name,
+            service: appointment.service_name,
+            date: formattedDate,
+            time: appointment.start_time,
+            code: appointment.checkout_code
+          });
+        } catch (emailError) {
+          console.error('Error sending deposit accepted email:', emailError);
+        }
+      }
+
       res.json({
         success: true,
         message: 'Cita confirmada exitosamente',
