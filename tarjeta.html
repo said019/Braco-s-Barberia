@@ -473,7 +473,10 @@
             // Diamonds Logic
             const total = parseInt(data.services.total || 0);
             const used = parseInt(data.services.used || 0);
-            const filledCount = used;
+            // User Request: Diamonds start full and are removed as used.
+            // So filled diamonds = remaining services.
+            const remaining = (data.services.remaining !== undefined) ? parseInt(data.services.remaining) : (total - used);
+            const filledCount = remaining;
 
             // Logic for card theme affecting diamonds
             const isSilver = cardClass === 'card-black';
