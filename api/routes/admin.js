@@ -1557,10 +1557,23 @@ router.post('/debug/migrate-schema', authenticateToken, async (req, res, next) =
             // 2. Add client_id to checkouts (Fix for checkout error)
             await client.query(`
                 ALTER TABLE checkouts
-                ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id);
+                ADD COLUMN IF NOT EXISTS client_id INTEGER REFERENCES clients(id),
+                ADD COLUMN IF NOT EXISTS client_name VARCHAR(100),
+                ADD COLUMN IF NOT EXISTS client_phone VARCHAR(20),
+                ADD COLUMN IF NOT EXISTS subtotal DECIMAL(10,2),
+                ADD COLUMN IF NOT EXISTS deposit_applied DECIMAL(10,2) DEFAULT 0;
                 
                 -- Create index for performance
                 CREATE INDEX IF NOT EXISTS idx_checkouts_client ON checkouts(client_id);
+            `);
+
+            // 3. Add deposit columns to appointments
+            await client.query(`
+                ALTER TABLE appointments
+                ADD COLUMN IF NOT EXISTS deposit_required BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS deposit_amount DECIMAL(10,2) DEFAULT 0,
+                ADD COLUMN IF NOT EXISTS deposit_paid BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS deposit_paid_at TIMESTAMP;
             `);
 
             // 3. Create Indexes for membership_usage

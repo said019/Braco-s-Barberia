@@ -33,6 +33,12 @@ export const Checkout = {
                 throw new AppError('Cita no encontrada', 404);
             }
 
+            // 1.5 Obtener datos del cliente (Fix for mandatory fields)
+            const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
+            const clientData = clientResult.rows[0];
+            const clientName = clientData?.name || 'Cliente';
+            const clientPhone = clientData?.phone || '0000000000';
+
             if (['completed', 'cancelled'].includes(appointmentCheck.rows[0].status)) {
                 throw new AppError('Esta cita ya ha sido procesada o cancelada', 400);
             }
@@ -94,7 +100,7 @@ export const Checkout = {
             // 4. Verificar si hay depósito pagado para aplicar como descuento
             const appointmentData = appointmentCheck.rows[0];
             let depositApplied = 0;
-            
+
             if (appointmentData.deposit_paid && appointmentData.deposit_amount > 0) {
                 depositApplied = Number(appointmentData.deposit_amount);
                 console.log(`Aplicando depósito de $${depositApplied} como descuento`);
@@ -104,17 +110,22 @@ export const Checkout = {
             const finalDiscount = Number(discount) + depositApplied;
             const finalTotal = Math.max(0, Number(total) - depositApplied);
 
+            // Calcular subtotal (Requerido por DB producción)
+            const subtotal = Number(service_cost) + Number(products_cost);
+
             // 5. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, client_id, service_cost, products_cost, 
+          appointment_id, client_id, client_name, client_phone,
+          service_cost, products_cost, subtotal, 
           discount, total, payment_method, used_membership, 
           membership_id, notes, deposit_applied
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id, uuid
       `, [
-                appointment_id, client_id, service_cost, products_cost,
+                appointment_id, client_id, clientName, clientPhone,
+                service_cost, products_cost, subtotal,
                 finalDiscount, finalTotal, payment_method, use_membership,
                 membershipId, notes, depositApplied
             ]);
