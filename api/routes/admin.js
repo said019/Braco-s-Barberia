@@ -100,7 +100,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 
         const totalClients = await db.query('SELECT COUNT(*) as count FROM clients');
 
-        // Upcoming appointments
+        // Upcoming appointments (Scheduled/Confirmed from today onwards)
         const upcomingAppointments = await db.query(
             `SELECT a.*, c.name as client_name, c.phone as client_phone,
                     ct.color as client_color, s.name as service_name
@@ -108,31 +108,29 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN clients c ON a.client_id = c.id
              JOIN client_types ct ON c.client_type_id = ct.id
              JOIN services s ON a.service_id = s.id
-             WHERE a.appointment_date = $1 AND a.status NOT IN ('cancelled', 'completed')
-             ORDER BY a.start_time LIMIT 10`,
+             WHERE a.appointment_date >= $1 
+             AND a.status IN ('scheduled', 'confirmed')
+             ORDER BY a.appointment_date ASC, a.start_time ASC LIMIT 10`,
             [today]
         );
 
-        // Expiring memberships
-        const expiringMemberships = await db.query(
-            `SELECT cm.*, c.name as client_name, mt.name as membership_type,
-                    cm.total_services - cm.used_services AS remaining_services
-             FROM client_memberships cm
-             JOIN clients c ON cm.client_id = c.id
-             JOIN membership_types mt ON cm.membership_type_id = mt.id
-             WHERE cm.status = 'active' 
-             AND cm.expiration_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
-             ORDER BY cm.expiration_date LIMIT 5`
+        // Pending appointments (Need confirmation/deposit)
+        const pendingAppointments = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.status = 'pending'
+             ORDER BY a.appointment_date ASC, a.start_time ASC LIMIT 10`
         );
 
-        // Recent transactions
+        // Recent transactions (Global last 10, not just today)
         const recentTransactions = await db.query(
-            `SELECT t.*, c.name as client_name
+            `SELECT t.*, c.name as client_name, t.payment_method
              FROM transactions t
              JOIN clients c ON t.client_id = c.id
-             WHERE DATE(t.created_at) = $1
-             ORDER BY t.created_at DESC LIMIT 5`,
-            [today]
+             ORDER BY t.created_at DESC LIMIT 10`
         );
 
         res.json({
@@ -143,7 +141,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
                 total_clients: parseInt(totalClients.rows[0].count)
             },
             upcoming_appointments: upcomingAppointments.rows,
-            expiring_memberships: expiringMemberships.rows,
+            pending_appointments: pendingAppointments.rows,
             recent_transactions: recentTransactions.rows
         });
 
@@ -352,11 +350,13 @@ router.get('/appointments', authenticateToken, async (req, res, next) => {
         let query = `
             SELECT a.*, c.name as client_name, c.phone as client_phone,
                    ct.color as client_color, s.name as service_name, s.price as service_price,
-                   s.duration_minutes as duration
+                   s.duration_minutes as duration,
+                   ch.payment_method, ch.total as checkout_total
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
             JOIN client_types ct ON c.client_type_id = ct.id
             JOIN services s ON a.service_id = s.id
+            LEFT JOIN checkouts ch ON a.id = ch.appointment_id
             WHERE 1=1
         `;
         const params = [];

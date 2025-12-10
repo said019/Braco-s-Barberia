@@ -18,7 +18,7 @@
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobile-overlay"></div>
 
@@ -146,24 +146,24 @@
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <!-- Próximas Citas -->
+                    <!-- Citas por Confirmar (Pendientes) -->
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title">Próximas Citas</h3>
-                                <p class="card-subtitle">Citas programadas para hoy</p>
+                                <h3 class="card-title text-warning">Citas por Confirmar</h3>
+                                <p class="card-subtitle">Requieren atención/depósito</p>
                             </div>
-                            <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                            <a href="citas.html?status=pending" class="btn btn-secondary btn-sm">Ver Pendientes</a>
                         </div>
 
                         <div class="table-container">
-                            <table class="data-table" id="upcoming-appointments">
+                            <table class="data-table" id="pending-appointments">
                                 <thead>
                                     <tr>
-                                        <th>Hora</th>
+                                        <th>Fecha</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
-                                        <th>Estado</th>
+                                        <th>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -173,24 +173,24 @@
                         </div>
                     </div>
 
-                    <!-- Membresías por Vencer -->
+                    <!-- Próximas Citas (Agendadas/Confirmadas) -->
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title">Membresías por Vencer</h3>
-                                <p class="card-subtitle">Próximos 30 días</p>
+                                <h3 class="card-title">Próximas Citas</h3>
+                                <p class="card-subtitle">Programadas a futuro</p>
                             </div>
-                            <a href="membresias.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                            <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
                         </div>
 
                         <div class="table-container">
-                            <table class="data-table" id="expiring-memberships">
+                            <table class="data-table" id="upcoming-appointments">
                                 <thead>
                                     <tr>
+                                        <th>Fecha/Hora</th>
                                         <th>Cliente</th>
-                                        <th>Plan</th>
-                                        <th>Restantes</th>
-                                        <th>Vence</th>
+                                        <th>Servicio</th>
+                                        <th>Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -206,7 +206,7 @@
                     <div class="card-header">
                         <div>
                             <h3 class="card-title">Últimas Transacciones</h3>
-                            <p class="card-subtitle">Ventas de hoy</p>
+                            <p class="card-subtitle">Movimientos recientes</p>
                         </div>
                         <a href="reportes.html" class="btn btn-secondary btn-sm">Ver Reporte</a>
                     </div>
@@ -215,7 +215,7 @@
                         <table class="data-table" id="recent-transactions">
                             <thead>
                                 <tr>
-                                    <th>Hora</th>
+                                    <th>Fecha</th>
                                     <th>Cliente</th>
                                     <th>Concepto</th>
                                     <th>Método</th>
@@ -266,101 +266,59 @@
                 // Badge del nav
                 document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
 
-                // Próximas citas
-                renderUpcomingAppointments(data.upcoming_appointments);
-
-                // Membresías por vencer
-                renderExpiringMemberships(data.expiring_memberships || []);
-
-                // Transacciones
+                // Render Tables
+                renderPendingAppointments(data.pending_appointments || []);
+                renderUpcomingAppointments(data.upcoming_appointments || []);
                 renderRecentTransactions(data.recent_transactions || []);
 
             } catch (error) {
                 console.error('Error:', error);
-                // Datos de ejemplo para desarrollo
-                loadDemoData();
+                // Demo data fallback handled if needed, usually just show empty
+                document.querySelector('#pending-appointments tbody').innerHTML = `<tr><td colspan="4" class="text-center p-3 text-error">Error cargando datos</td></tr>`;
             }
         }
 
-        function renderUpcomingAppointments(appointments) {
-            const tbody = document.querySelector('#upcoming-appointments tbody');
-
-            if (!appointments || appointments.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas programadas para hoy
-                        </td>
-                    </tr>
-                `;
+        function renderPendingAppointments(appointments) {
+            const tbody = document.querySelector('#pending-appointments tbody');
+            if (!appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay citas por confirmar</td></tr>`;
                 return;
             }
-
-            tbody.innerHTML = appointments.slice(0, 5).map(apt => `
+            tbody.innerHTML = appointments.map(apt => `
                 <tr>
-                    <td>
-                        <strong>${apt.start_time.slice(0, 5)}</strong>
-                    </td>
-                    <td>
-                        <span class="client-type-dot" style="background: ${apt.client_color}"></span>
-                        ${apt.client_name}
-                    </td>
+                    <td>${formatDateShort(apt.appointment_date)}</td>
+                    <td>${apt.client_name}<br><small class="text-muted">${apt.client_phone}</small></td>
                     <td>${apt.service_name}</td>
-                    <td>
-                        <span class="badge badge-${getStatusBadge(apt.status)}">${getStatusText(apt.status)}</span>
-                    </td>
+                    <td><a href="citas.html?search=${apt.client_phone}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Revisar</a></td>
                 </tr>
             `).join('');
         }
 
-        function renderExpiringMemberships(memberships) {
-            const tbody = document.querySelector('#expiring-memberships tbody');
-
-            if (!memberships || memberships.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay membresías por vencer
-                        </td>
-                    </tr>
-                `;
+        function renderUpcomingAppointments(appointments) {
+            const tbody = document.querySelector('#upcoming-appointments tbody');
+            if (!appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay próximas citas</td></tr>`;
                 return;
             }
-
-            tbody.innerHTML = memberships.slice(0, 5).map(m => {
-                const daysLeft = Math.ceil((new Date(m.expiration_date) - new Date()) / (1000 * 60 * 60 * 24));
-                return `
-                    <tr>
-                        <td>${m.client_name}</td>
-                        <td>${m.membership_type}</td>
-                        <td>${m.remaining_services}/${m.total_services}</td>
-                        <td>
-                            <span class="badge ${daysLeft <= 7 ? 'badge-error' : 'badge-warning'}">
-                                ${daysLeft} días
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            tbody.innerHTML = appointments.map(apt => `
+                <tr>
+                    <td>${formatDateShort(apt.appointment_date)}<br><strong>${apt.start_time.slice(0, 5)}</strong></td>
+                    <td>${apt.client_name}</td>
+                    <td>${apt.service_name}</td>
+                    <td><span class="badge badge-${getStatusBadge(apt.status)}">${getStatusText(apt.status)}</span></td>
+                </tr>
+            `).join('');
         }
 
         function renderRecentTransactions(transactions) {
             const tbody = document.querySelector('#recent-transactions tbody');
-
-            if (!transactions || transactions.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay transacciones hoy
-                        </td>
-                    </tr>
-                `;
+            if (!transactions.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted p-3">No hay movimientos recientes</td></tr>`;
                 return;
             }
-
-            tbody.innerHTML = transactions.slice(0, 5).map(t => `
+            tbody.innerHTML = transactions.map(t => `
                 <tr>
-                    <td>${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td>${formatDateShort(t.created_at)} ${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${t.client_name}</td>
                     <td>${t.description}</td>
                     <td>${getPaymentMethodText(t.payment_method)}</td>
@@ -369,67 +327,24 @@
             `).join('');
         }
 
+        function formatDateShort(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+
         function getStatusBadge(status) {
-            const badges = {
-                'scheduled': 'info',
-                'confirmed': 'success',
-                'in_progress': 'warning',
-                'completed': 'gold',
-                'cancelled': 'error',
-                'no_show': 'error'
-            };
+            const badges = { 'scheduled': 'info', 'confirmed': 'success', 'in_progress': 'warning', 'completed': 'gold', 'cancelled': 'error', 'no_show': 'error', 'pending': 'warning' };
             return badges[status] || 'info';
         }
 
         function getStatusText(status) {
-            const texts = {
-                'scheduled': 'Agendada',
-                'confirmed': 'Confirmada',
-                'in_progress': 'En Progreso',
-                'completed': 'Completada',
-                'cancelled': 'Cancelada',
-                'no_show': 'No Asistió'
-            };
+            const texts = { 'scheduled': 'Programada', 'confirmed': 'Confirmada', 'in_progress': 'En Curso', 'completed': 'Completada', 'cancelled': 'Cancelada', 'no_show': 'No Asistió', 'pending': 'Por Confirmar' };
             return texts[status] || status;
         }
 
         function getPaymentMethodText(method) {
-            const methods = {
-                'cash': '<i class="fas fa-money-bill-wave"></i> Efectivo',
-                'card': '<i class="fas fa-credit-card"></i> Tarjeta',
-                'transfer': '<i class="fas fa-mobile-alt"></i> Transferencia'
-            };
+            const methods = { 'cash': '💵 Efectivo', 'card': '💳 Tarjeta', 'transfer': '📱 Transferencia', 'membership': '👑 Membresía' };
             return methods[method] || method;
-        }
-
-        function loadDemoData() {
-            document.getElementById('stat-citas-hoy').textContent = '8';
-            document.getElementById('stat-ventas-hoy').textContent = '$4,350';
-            document.getElementById('stat-membresias').textContent = '24';
-            document.getElementById('stat-clientes').textContent = '156';
-            document.getElementById('nav-badge-citas').textContent = '8';
-
-            // Demo citas
-            const demoAppointments = [
-                { start_time: '10:00', client_name: 'Carlos Mendoza', client_color: '#C4A35A', service_name: 'Corte Caballero', status: 'confirmed' },
-                { start_time: '11:00', client_name: 'Roberto García', client_color: '#D4B76A', service_name: 'DÚO (Corte + Barba)', status: 'scheduled' },
-                { start_time: '13:00', client_name: 'Miguel Torres', client_color: '#1A1A1A', service_name: 'Ritual de Barba', status: 'scheduled' }
-            ];
-            renderUpcomingAppointments(demoAppointments);
-
-            // Demo membresías
-            const demoMemberships = [
-                { client_name: 'Juan López', membership_type: 'Premium', remaining_services: 2, total_services: 6, expiration_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) },
-                { client_name: 'Pedro Sánchez', membership_type: 'VIP', remaining_services: 5, total_services: 12, expiration_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) }
-            ];
-            renderExpiringMemberships(demoMemberships);
-
-            // Demo transacciones
-            const demoTransactions = [
-                { created_at: new Date(), client_name: 'Carlos Mendoza', description: 'Corte Caballero', payment_method: 'card', amount: 300 },
-                { created_at: new Date(), client_name: 'Roberto García', description: 'DÚO + Productos', payment_method: 'cash', amount: 750 }
-            ];
-            renderRecentTransactions(demoTransactions);
         }
 
         // Inicializar
