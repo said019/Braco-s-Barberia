@@ -367,7 +367,8 @@
 <body>
 
     <!-- SVG Defs for Gradients/Diamonds -->
-    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+    <svg style="width:1px;height:1px;position:absolute;top:-1px;left:-1px;overflow:hidden;opacity:0.01;pointer-events:none;"
+        aria-hidden="true" focusable="false">
         <defs>
             <!-- GOLD GRADIENTS -->
             <linearGradient id="goldGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -417,7 +418,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         const API_URL = '/api';
 
