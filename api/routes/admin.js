@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db, { transaction } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -690,6 +691,38 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
 
             return res;
         });
+
+        // ==========================================
+        // ENVIAR CORREO DE BIENVENIDA
+        // ==========================================
+        try {
+            // Get client details for email
+            const clientResult = await db.query('SELECT name, email FROM clients WHERE id = $1', [client_id]);
+            const client = clientResult.rows[0];
+
+            if (client && client.email) {
+                const expirationDateStr = expirationDate.toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                // Generar URL pública de la tarjeta (si existe vista pública)
+                // Por ahora usamos una URL genérica o la del API pública
+                const cardUrl = `${process.env.PUBLIC_URL || 'https://bracosbarberia.com'}/membership-view.html?uuid=${result.rows[0].uuid}`;
+
+                await emailService.sendMembershipWelcome({
+                    email: client.email,
+                    name: client.name,
+                    membershipName: membershipType.name,
+                    totalServices: membershipType.total_services,
+                    expirationDate: expirationDateStr,
+                    cardUrl: cardUrl
+                });
+                console.log(`Correo de membresía enviado a ${client.email}`);
+            }
+        } catch (emailError) {
+            console.error('Error enviando correo de membresía:', emailError);
+            // No fallamos la request si el correo falla, pero lo logueamos
+        }
 
         res.status(201).json(result.rows[0]);
 
