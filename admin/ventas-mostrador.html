@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto de Venta | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .pos-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 140px);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .product-card {
+            background: var(--charcoal);
+            border: 1px solid rgba(196, 163, 90, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            background: rgba(196, 163, 90, 0.05);
+        }
+
+        .product-price {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+        }
+
+        .product-stock {
+            font-size: 0.75rem;
+            color: rgba(245, 243, 238, 0.5);
+        }
+
+        .cart-panel {
+            background: var(--charcoal);
+            border-left: 1px solid rgba(196, 163, 90, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(196, 163, 90, 0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .cart-item-info h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--cream);
+        }
+
+        .cart-item-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--gold);
+        }
+
+        .cart-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qty-btn {
+            background: rgba(245, 243, 238, 0.1);
+            border: none;
+            color: var(--cream);
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cart-total-section {
+            padding: 1.5rem;
+            background: var(--charcoal-dark);
+            border-top: 1px solid rgba(196, 163, 90, 0.2);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-btn {
+            background: transparent;
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            color: var(--cream);
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .payment-btn.active {
+            background: var(--gold);
+            color: var(--charcoal-dark);
+            border-color: var(--gold);
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .pos-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo" style="height: 60px; margin: 0 auto 10px; display: block;">
+                <p class="sidebar-subtitle">Administración</p>
+            </div>
+            <nav class="sidebar-nav">
+                <!-- Navigation same as other pages -->
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Regresar</span>
+                    <a href="index.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-arrow-left"></i></span>
+                        <span>Volver al Dashboard</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Punto de Venta</h1>
+                    <p class="text-muted">Venta rápida de productos mostrador</p>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-product" class="search-input" placeholder="Buscar producto..."
+                            onkeyup="filterProducts()">
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content" style="overflow: hidden;">
+                <div class="pos-grid">
+                    <!-- Product Grid -->
+                    <div class="product-grid" id="product-grid">
+                        <div class="text-center p-3 col-span-full">Cargando productos...</div>
+                    </div>
+
+                    <!-- Cart Panel -->
+                    <div class="cart-panel">
+                        <div class="p-3 border-b border-white/10">
+                            <h3 class="text-gold font-serif"><i class="fas fa-shopping-cart"></i> Carrito de Compra</h3>
+                        </div>
+
+                        <div class="cart-items" id="cart-items">
+                            <div class="text-center text-muted p-4">Carrito vacío</div>
+                        </div>
+
+                        <div class="cart-total-section">
+                            <div class="total-row">
+                                <span>Total</span>
+                                <span id="cart-total">$0.00</span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Cliente
+                                    (Opcional)</label>
+                                <select id="client-select" class="form-select" style="width: 100%;">
+                                    <option value="">Público General</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+
+                            <label
+                                style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; display: block;">Método
+                                de Pago</label>
+                            <div class="payment-methods">
+                                <button class="payment-btn active" onclick="setMethod('cash')"><i
+                                        class="fas fa-money-bill-wave"></i> Efectivo</button>
+                                <button class="payment-btn" onclick="setMethod('card')"><i
+                                        class="fas fa-credit-card"></i> Tarjeta</button>
+                                <button class="payment-btn" onclick="setMethod('transfer')"><i
+                                        class="fas fa-mobile-alt"></i> Transf.</button>
+                            </div>
+
+                            <button class="btn btn-primary w-100" onclick="processSale()" id="process-btn"
+                                style="width: 100%; padding: 1rem; font-size: 1rem;">
+                                COMPLETAR VENTA <i class="fas fa-check-circle ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script>
+        let allProducts = [];
+        let cart = [];
+        let paymentMethod = 'cash';
+        let clients = [];
+
+        async function init() {
+            checkAuth();
+            await loadProducts();
+            await loadClients();
+        }
+
+        async function loadProducts() {
+            try {
+                allProducts = await api.get('/admin/products');
+                renderProducts(allProducts);
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        async function loadClients() {
+            try {
+                const res = await api.get('/admin/clients');
+                clients = res.data;
+                const select = document.getElementById('client-select');
+                clients.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = `${c.first_name} ${c.last_name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) { }
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('product-grid');
+            if (!products.length) {
+                grid.innerHTML = '<div class="col-span-full text-center p-4">No hay productos.</div>';
+                return;
+            }
+
+            grid.innerHTML = products.filter(p => p.is_active && p.stock > 0).map(p => `
+                <div class="product-card" onclick="addToCart(${p.id})">
+                    <div class="font-serif text-lg text-cream mb-2">${p.name}</div>
+                    <div class="product-stock text-xs mb-2">${p.stock} disponibles</div>
+                    <div class="product-price">$${p.price}</div>
+                </div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('search-product').value.toLowerCase();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        window.addToCart = function (productId) {
+            const product = allProducts.find(p => p.id === productId);
+            const existing = cart.find(item => item.id === productId);
+
+            if (existing) {
+                if (existing.qty < product.stock) {
+                    existing.qty++;
+                } else {
+                    alert('No hay suficiente stock');
+                    return;
+                }
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            renderCart();
+        };
+
+        window.removeFromCart = function (productId) {
+            const idx = cart.findIndex(item => item.id === productId);
+            if (idx !== -1) {
+                if (cart[idx].qty > 1) {
+                    cart[idx].qty--;
+                } else {
+                    cart.splice(idx, 1);
+                }
+            }
+            renderCart();
+        };
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            if (!cart.length) {
+                container.innerHTML = '<div class="text-center text-muted p-4">Selecciona productos para vender</div>';
+                document.getElementById('cart-total').textContent = '$0.00';
+                document.getElementById('process-btn').disabled = true;
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price * item.qty;
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <p>$${item.price} x ${item.qty}</p>
+                        </div>
+                        <div class="cart-controls">
+                            <button class="qty-btn" onclick="removeFromCart(${item.id})">-</button>
+                            <span class="text-cream">${item.qty}</span>
+                            <button class="qty-btn" onclick="addToCart(${item.id})">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cart-total').textContent = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total);
+            document.getElementById('process-btn').disabled = false;
+        }
+
+        window.setMethod = function (method) {
+            paymentMethod = method;
+            document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        };
+
+        window.processSale = async function () {
+            if (!cart.length) return;
+
+            const btn = document.getElementById('process-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
+
+            try {
+                // Prepare checkout payload
+                const payload = {
+                    client_id: document.getElementById('client-select').value || null,
+                    items: cart.map(item => ({
+                        type: 'product',
+                        id: item.id,
+                        quantity: item.qty,
+                        price: item.price
+                    })),
+                    payment_method: paymentMethod,
+                    notes: 'Venta de mostrador'
+                };
+
+                // Use the checkout endpoint
+                await api.post('/checkout', payload);
+
+                // Success
+                alert('Venta realizada con éxito ✅');
+                cart = [];
+                renderCart();
+                loadProducts(); // Refresh stock
+            } catch (error) {
+                console.error(error);
+                alert('Error al procesar venta: ' + (error.message || 'Error desconocido'));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'COMPLETAR VENTA <i class="fas fa-check-circle ml-2"></i>';
+            }
+        };
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -19,8 +19,8 @@ export const checkoutController = {
             } = req.body;
 
             // Validaciones básicas
-            if (!appointment_id || !client_id || !payment_method) {
-                throw new AppError('Faltan datos requeridos para el checkout', 400);
+            if (!payment_method) {
+                throw new AppError('Faltan datos requeridos: método de pago', 400);
             }
 
             if (total < 0) {

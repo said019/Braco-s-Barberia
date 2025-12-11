@@ -22,28 +22,44 @@ export const Checkout = {
             // ... (rest of code)
 
 
-            // 1. Verificar estado de la cita y obtener info de depósito
-            const appointmentCheck = await client.query(
-                `SELECT status, service_id, checkout_code, deposit_required, deposit_amount, deposit_paid 
-                 FROM appointments WHERE id = $1`,
-                [appointment_id]
-            );
+            // 1. Verificar estado de la cita (Si existe)
+            let appointmentData = null;
+            let serviceId = null;
 
-            if (appointmentCheck.rows.length === 0) {
-                throw new AppError('Cita no encontrada', 404);
+            if (appointment_id) {
+                const appointmentCheck = await client.query(
+                    `SELECT status, service_id, checkout_code, deposit_required, deposit_amount, deposit_paid 
+                     FROM appointments WHERE id = $1`,
+                    [appointment_id]
+                );
+
+                if (appointmentCheck.rows.length === 0) {
+                    throw new AppError('Cita no encontrada', 404);
+                }
+
+                appointmentData = appointmentCheck.rows[0];
+
+                if (['completed', 'cancelled'].includes(appointmentData.status)) {
+                    throw new AppError('Esta cita ya ha sido procesada o cancelada', 400);
+                }
+                serviceId = appointmentData.service_id;
             }
 
-            // 1.5 Obtener datos del cliente (Fix for mandatory fields)
-            const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
-            const clientData = clientResult.rows[0];
-            const clientName = clientData?.name || 'Cliente';
-            const clientPhone = clientData?.phone || '0000000000';
+            // 1.5 Obtener datos del cliente
+            let clientData = null;
+            let clientName = 'Público General';
+            let clientPhone = '';
 
-            if (['completed', 'cancelled'].includes(appointmentCheck.rows[0].status)) {
-                throw new AppError('Esta cita ya ha sido procesada o cancelada', 400);
+            if (client_id) {
+                const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
+                if (clientResult.rows.length > 0) {
+                    clientData = clientResult.rows[0];
+                    clientName = clientData.name;
+                    clientPhone = clientData.phone;
+                }
             }
 
-            const serviceId = appointmentCheck.rows[0].service_id;
+            // Service ID extracted above
             let membershipId = null;
 
             // 3. Procesar membresía si se solicita
@@ -98,10 +114,9 @@ export const Checkout = {
             }
 
             // 4. Verificar si hay depósito pagado para aplicar como descuento
-            const appointmentData = appointmentCheck.rows[0];
             let depositApplied = 0;
 
-            if (appointmentData.deposit_paid && appointmentData.deposit_amount > 0) {
+            if (appointmentData && appointmentData.deposit_paid && appointmentData.deposit_amount > 0) {
                 depositApplied = Number(appointmentData.deposit_amount);
                 console.log(`Aplicando depósito de $${depositApplied} como descuento`);
             }
@@ -172,11 +187,13 @@ export const Checkout = {
                 }
             }
 
-            // 5. Actualizar estado de la cita
-            await client.query(
-                "UPDATE appointments SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
-                [appointment_id]
-            );
+            // 5. Actualizar estado de la cita (Si existe)
+            if (appointment_id) {
+                await client.query(
+                    "UPDATE appointments SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+                    [appointment_id]
+                );
+            }
 
             // 6. Crear transacción financiera
             // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
@@ -194,22 +211,26 @@ export const Checkout = {
           VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
         `, [
                     checkoutId,
-                    client_id,
-                    `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
+                    client_id, // Can be null
+                    appointmentData
+                        ? `Pago de servicio/productos (Cita #${appointmentData.checkout_code})`
+                        : `Venta de mostrador${clientName ? ' - ' + clientName : ''}`,
                     total,
                     payment_method
                 ]);
             }
 
-            // 7. Actualizar estadísticas del cliente
-            await client.query(`
-        UPDATE clients 
-        SET total_visits = total_visits + 1,
-            total_spent = total_spent + $1,
-            last_visit_date = CURRENT_DATE,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-      `, [total, client_id]);
+            // 7. Actualizar estadísticas del cliente (Si existe)
+            if (client_id) {
+                await client.query(`
+                    UPDATE clients 
+                    SET total_visits = total_visits + 1,
+                        total_spent = total_spent + $1,
+                        last_visit_date = CURRENT_DATE,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $2
+                `, [total, client_id]);
+            }
 
             return {
                 success: true,

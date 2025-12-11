@@ -62,4 +62,42 @@ router.post('/wipe-database-danger', async (req, res) => {
     }
 });
 
+// DB DIAGNOSTIC ROUTE
+router.get('/db-status', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const tables = ['clients', 'appointments', 'memberships', 'payments', 'services', 'products'];
+        const status = {};
+
+        for (const table of tables) {
+            // Check if table exists
+            const check = await client.query(
+                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = $1)",
+                [table]
+            );
+
+            if (check.rows[0].exists) {
+                const count = await client.query(`SELECT COUNT(*) FROM ${table}`);
+                status[table] = {
+                    exists: true,
+                    count: parseInt(count.rows[0].count),
+                    columns: (await client.query(`
+                        SELECT column_name, data_type 
+                        FROM information_schema.columns 
+                        WHERE table_name = '${table}'
+                    `)).rows.map(r => `${r.column_name} (${r.data_type})`)
+                };
+            } else {
+                status[table] = { exists: false };
+            }
+        }
+
+        res.json({ success: true, status });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        client.release();
+    }
+});
+
 export default router;
