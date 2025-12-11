@@ -66,7 +66,9 @@ export const checkoutController = {
                             let serviceDesc = products && products.length > 0 ? 'Compra de productos' : 'Servicio de Barbería';
                             if (appointment_id && products && products.length > 0) serviceDesc = 'Servicio + Productos';
 
-                            await emailService.sendCheckoutReceipt({
+                            console.log(`PREPARANDO ENVÍO RECIBO: Email=${data.email}, Cliente=${data.client_name}, Total=${data.total}`);
+
+                            const emailResult = await emailService.sendCheckoutReceipt({
                                 email: data.email,
                                 name: data.client_name,
                                 service: serviceDesc,
@@ -74,12 +76,19 @@ export const checkoutController = {
                                 paymentMethod: payDesc,
                                 date: new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
                             });
-                            console.log('Recibo de checkout enviado a ' + data.email);
+
+                            if (emailResult.success) {
+                                console.log(`✅ RECIBO ENVIADO CORRECTAMENTE: ID=${emailResult.id}`);
+                            } else {
+                                console.error(`❌ FALLO ENVÍO RECIBO: ${emailResult.error}`);
+                            }
+                        } else {
+                            console.log('⚠️ No se encontró email para el cliente en el checkout.');
                         }
                     }
                 }
             } catch (err) {
-                console.error('Error enviando recibo checkout:', err);
+                console.error('🔥 EXCEPCIÓN CRÍTICA ENVIANDO RECIBO:', err);
             }
 
             res.status(201).json({
