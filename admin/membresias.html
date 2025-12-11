@@ -413,7 +413,7 @@
                         <div class="actions">
                             <button class="btn-icon" onclick="viewMembershipDetail(${value})" title="Ver detalles"><i class="fas fa-eye"></i></button>
                             <button class="btn-icon" onclick="copyCardLink('${row.uuid}')" title="Copiar Link de Tarjeta"><i class="fas fa-copy"></i></button>
-                            <button class="btn-icon" onclick="viewCard(${value})" title="Ver Tarjeta Digital"><i class="fas fa-id-card"></i></button>
+                            <button class="btn-icon" onclick="sendCardByWhatsApp('${row.uuid}', '${row.client_phone}', '${row.client_name}')" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
                             ${row.status === 'active' ?
                             `<button class="btn-icon" onclick="cancelMembership(${value})" title="Cancelar"><i class="fas fa-ban"></i></button>`
                             : ''}
@@ -437,6 +437,24 @@
                 console.error('Error al copiar link: ', err);
                 alert('No se pudo copiar el link automáticamente. Por favor selecciónalo: ' + url);
             });
+        }
+
+        function sendCardByWhatsApp(uuid, phone, clientName) {
+            // Limpiar el número de teléfono (quitar espacios, guiones, etc)
+            const cleanPhone = phone.replace(/\D/g, '');
+
+            // Construir el link de la tarjeta
+            const cardUrl = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
+
+            // Mensaje personalizado
+            const message = `Hola *${clientName}*! 👑\n\nAquí está el link de tu *Tarjeta Digital de Membresía* de Braco's Barbería:\n\n${cardUrl}\n\nGuárdalo y preséntalo en tu próxima visita.\n\n¡Gracias por ser parte de nuestra familia VIP! ✨`;
+
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+
+            // Abrir WhatsApp con el mensaje pre-escrito
+            const whatsappUrl = `https://wa.me/521${cleanPhone}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
         }
 
         // ... existing openActivateMembershipModal ...
@@ -947,7 +965,7 @@
 
     <!-- Mobile Menu Script -->
     <!-- Mobile Menu Script Removed -->
-<script src="js/sidebar.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>
