@@ -318,7 +318,7 @@
             } else {
                 tbody.innerHTML = paginated.map(c => `
                     <tr>
-                        <td>
+                        <td data-label="Cliente">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <span class="client-type-dot" style="background: ${c.client_color || '#C4A35A'}"></span>
                                 <div>
@@ -327,17 +327,17 @@
                                 </div>
                             </div>
                         </td>
-                        <td>${formatPhone(c.phone)}</td>
-                        <td><span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></td>
-                        <td>${c.total_visits || 0}</td>
-                        <td class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
-                        <td>
+                        <td data-label="Teléfono">${formatPhone(c.phone)}</td>
+                        <td data-label="Tipo"><span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></td>
+                        <td data-label="Visitas">${c.total_visits || 0}</td>
+                        <td data-label="Total" class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
+                        <td data-label="Membresía">
                             ${c.has_active_membership
                         ? `<span class="badge badge-success">${c.membership_type || 'Activa'}</span>`
                         : '<span class="text-muted">-</span>'}
                         </td>
-                        <td>${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
-                        <td class="actions">
+                        <td data-label="Última Visita">${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
+                        <td data-label="" class="actions">
                             <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
                             <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
@@ -548,25 +548,10 @@
             document.getElementById('client-id').value = '';
         });
 
-        // Agregar data-labels para responsive
-        function addDataLabels() {
-            const headers = ['Cliente', 'Teléfono', 'Tipo', 'Visitas', 'Total', 'Membresía', 'Última Visita', ''];
-            document.querySelectorAll('#clients-tbody tr').forEach(row => {
-                row.querySelectorAll('td').forEach((td, index) => {
-                    if (headers[index]) {
-                        td.setAttribute('data-label', headers[index]);
-                    }
-                });
-            });
-        }
-
-        // Observar cambios en la tabla para agregar labels
-        const observer = new MutationObserver(addDataLabels);
-        observer.observe(document.getElementById('clients-tbody'), { childList: true });
-
         // Inicializar
         loadClients();
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>
