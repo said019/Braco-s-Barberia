@@ -3,6 +3,33 @@ import pool from '../config/database.js';
 
 const router = express.Router();
 
+// Helper to safely clear a table
+const safeClearTable = async (client, tableName) => {
+    try {
+        // Check if table exists
+        const check = await client.query(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = $1)",
+            [tableName]
+        );
+
+        if (check.rows[0].exists) {
+            console.log(`Clearing table: ${tableName}`);
+            await client.query(`DELETE FROM ${tableName}`);
+
+            // Try to restart sequence, ignore if it fails (e.g. no sequence)
+            try {
+                await client.query(`ALTER SEQUENCE ${tableName}_id_seq RESTART WITH 1`);
+            } catch (seqError) {
+                console.log(`No sequence to restart for ${tableName} or error:`, seqError.message);
+            }
+        } else {
+            console.log(`Table ${tableName} does not exist, skipping.`);
+        }
+    } catch (error) {
+        console.warn(`Skipping ${tableName}:`, error.message);
+    }
+};
+
 // WIPE DATABASE ROUTE (TEMPORARY)
 router.post('/wipe-database-danger', async (req, res) => {
     const client = await pool.connect();
@@ -10,23 +37,17 @@ router.post('/wipe-database-danger', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // Delete data
-        await client.query('DELETE FROM payments');
-        await client.query('DELETE FROM appointments');
-        await client.query('DELETE FROM memberships');
-        await client.query('DELETE FROM clients');
-
-        // Reset sequences
-        await client.query('ALTER SEQUENCE clients_id_seq RESTART WITH 1');
-        await client.query('ALTER SEQUENCE appointments_id_seq RESTART WITH 1');
-        await client.query('ALTER SEQUENCE memberships_id_seq RESTART WITH 1');
-        await client.query('ALTER SEQUENCE payments_id_seq RESTART WITH 1');
+        // Use safe clear for all tables
+        await safeClearTable(client, 'payments');
+        await safeClearTable(client, 'appointments');
+        await safeClearTable(client, 'memberships');
+        await safeClearTable(client, 'clients');
 
         await client.query('COMMIT');
 
         res.json({
             success: true,
-            message: 'DATABASE WIPED SUCCESSFULLY. All data has been deleted and IDs reset.'
+            message: 'Limpieza completada exitosamente.'
         });
 
     } catch (error) {
