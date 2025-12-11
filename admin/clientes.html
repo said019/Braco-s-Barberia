@@ -319,12 +319,9 @@
                 tbody.innerHTML = paginated.map(c => `
                     <tr>
                         <td data-label="Cliente">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span class="client-type-dot" style="background: ${c.client_color || '#C4A35A'}"></span>
-                                <div>
-                                    <strong>${c.name}</strong>
-                                    ${c.email ? `<br><small class="text-muted">${c.email}</small>` : ''}
-                                </div>
+                            <div>
+                                <strong style="display: block;">${c.name}</strong>
+                                ${c.email ? `<small class="text-muted" style="display: block; margin-top: 0.25rem;">${c.email}</small>` : ''}
                             </div>
                         </td>
                         <td data-label="Teléfono">${formatPhone(c.phone)}</td>
