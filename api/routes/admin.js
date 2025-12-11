@@ -715,7 +715,7 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
 
                 // URL corregida
                 const baseUrl = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
-                const cardUrl = `${baseUrl}/membership-view.html?uuid=${result.rows[0].uuid}`;
+                const cardUrl = `${baseUrl}/tarjeta.html?id=${result.rows[0].uuid}`;
 
                 await emailService.sendMembershipWelcome({
                     email: client.email,
