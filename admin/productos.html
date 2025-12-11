@@ -178,22 +178,22 @@
 
             tbody.innerHTML = products.map(product => `
                 <tr>
-                    <td>
+                    <td data-label="Producto">
                         <div class="font-medium">${product.name}</div>
                         <div class="text-sm text-muted">${product.description || '-'}</div>
                     </td>
-                    <td class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price)}</td>
-                    <td>
+                    <td data-label="Precio" class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price)}</td>
+                    <td data-label="Stock">
                         <span class="badge ${product.stock > 5 ? 'active' : (product.stock > 0 ? 'expiring' : 'inactive')}">
                             ${product.stock} un.
                         </span>
                     </td>
-                    <td>
+                    <td data-label="Estado">
                         <span class="badge ${product.is_active ? 'active' : 'inactive'}">
                             ${product.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </td>
-                    <td>
+                    <td data-label="">
                         <div class="actions">
                             <button class="btn-icon" onclick="openProductModal(${product.id})" title="Editar"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon" onclick="toggleProductStatus(${product.id}, ${product.is_active})" title="${product.is_active ? 'Desactivar' : 'Activar'}">

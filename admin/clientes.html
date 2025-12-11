@@ -548,6 +548,22 @@
             document.getElementById('client-id').value = '';
         });
 
+        // Agregar data-labels para responsive
+        function addDataLabels() {
+            const headers = ['Cliente', 'Teléfono', 'Tipo', 'Visitas', 'Total', 'Membresía', 'Última Visita', ''];
+            document.querySelectorAll('#clients-tbody tr').forEach(row => {
+                row.querySelectorAll('td').forEach((td, index) => {
+                    if (headers[index]) {
+                        td.setAttribute('data-label', headers[index]);
+                    }
+                });
+            });
+        }
+
+        // Observar cambios en la tabla para agregar labels
+        const observer = new MutationObserver(addDataLabels);
+        observer.observe(document.getElementById('clients-tbody'), { childList: true });
+
         // Inicializar
         loadClients();
     </script>

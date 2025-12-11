@@ -503,7 +503,9 @@ function createTable(data, columns) {
                 value = col.format(value, row);
             }
 
-            html += `<td>${value !== null && value !== undefined ? value : '-'}</td>`;
+            // Add data-label for responsive mobile view
+            const dataLabel = col.label !== 'Acciones' ? col.label : '';
+            html += `<td data-label="${dataLabel}">${value !== null && value !== undefined ? value : '-'}</td>`;
         });
         html += '</tr>';
     });
@@ -604,24 +606,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.querySelector('.mobile-menu-toggle');
     const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
     const overlay = document.querySelector('.mobile-overlay');
+    
     if (toggleBtn && sidebar && overlay) {
+        // Función para actualizar el icono del botón
+        function updateToggleIcon() {
+            const icon = toggleBtn.querySelector('i');
+            if (icon) {
+                if (sidebar.classList.contains('open')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+        }
+        
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
+            updateToggleIcon();
         });
+        
         overlay.addEventListener('click', () => {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
+            updateToggleIcon();
         });
+        
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     sidebar.classList.remove('open');
                     overlay.classList.remove('active');
+                    updateToggleIcon();
                 }
             });
         });
+        
+        // Asegurar que el icono esté correcto al cargar
+        updateToggleIcon();
     }
+    
     // Calendar Responsive Fix
     const calendarGrid = document.querySelector('.calendar-grid');
     if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {

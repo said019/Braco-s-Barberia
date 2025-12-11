@@ -406,19 +406,19 @@
 
             tbody.innerHTML = appointments.map(app => `
             <tr class="${app.status === 'pending' ? 'pending-row' : ''}">
-                <td class="font-mono text-sm text-gold">${app.checkout_code || '-'}</td>
-                <td class="text-muted">${formatDate(app.appointment_date)}</td>
-                <td class="font-medium text-gold">${formatTime(app.start_time)}</td>
-                <td>
+                <td data-label="Código" class="font-mono text-sm text-gold">${app.checkout_code || '-'}</td>
+                <td data-label="Fecha" class="text-muted">${formatDate(app.appointment_date)}</td>
+                <td data-label="Hora" class="font-medium text-gold">${formatTime(app.start_time)}</td>
+                <td data-label="Cliente">
                     <div class="font-medium">${app.client_name}</div>
                     <div class="text-sm text-muted">${app.client_phone}</div>
                 </td>
-                <td>
+                <td data-label="Servicio">
                     <div>${app.service_name}</div>
                     <div class="text-sm text-muted">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(app.service_price)}</div>
                 </td>
-                <td>${getStatusBadge(app.status, app.id)}</td>
-                <td>
+                <td data-label="Estado">${getStatusBadge(app.status, app.id)}</td>
+                <td data-label="">
                     <div class="actions">
                         ${getActionButtons(app)}
                     </div>
