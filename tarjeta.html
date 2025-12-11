@@ -35,18 +35,21 @@
             color: white;
         }
 
-        /* --- LOYALTY CARD STYLES (Ported from Admin) --- */
+        /* --- LOYALTY CARD STYLES --- */
         .card-wrapper {
             perspective: 1000px;
+            width: 100%;
+            max-width: 380px;
             margin: 0 auto;
         }
 
         .card-flipper {
             position: relative;
-            width: 380px;
-            height: 240px;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            aspect-ratio: 1.586;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
             transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
             cursor: pointer;
         }
 
@@ -58,19 +61,26 @@
         .card-front,
         .card-back {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(196, 163, 90, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 50px rgba(196, 163, 90, 0.05);
+            background-color: #1a1a1a;
+            /* Solid background backup */
+            transform: rotateX(0deg);
+            /* Hardware acceleration hint */
         }
 
         /* Front Generic */
         .card-inner {
             width: 100%;
             height: 100%;
-            padding: 1.5rem;
+            padding: 6%;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -145,8 +155,9 @@
         .card-type {
             font-family: 'Playfair Display', serif;
             font-weight: 600;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
+            font-size: clamp(1rem, 4vw, 1.4rem);
         }
 
         .card-type-sub {
@@ -169,8 +180,9 @@
         }
 
         .card-black .card-type {
-            font-size: 1.5rem;
+            font-size: clamp(1.1rem, 4.5vw, 1.5rem);
             background: linear-gradient(135deg, #C4A35A, #E8D5A3, #C4A35A);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: none;
@@ -203,9 +215,8 @@
         }
 
         .diamond {
-            width: 24px;
-            /* Slightly smaller for grid */
-            height: 24px;
+            width: clamp(16px, 5vw, 24px);
+            height: clamp(16px, 5vw, 24px);
             position: relative;
             margin: 0 auto;
         }
