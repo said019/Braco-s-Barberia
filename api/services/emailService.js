@@ -108,15 +108,17 @@ export async function sendDepositAccepted(data) {
  * Send membership welcome email
  */
 export async function sendMembershipWelcome(data) {
-    const { email, name, membershipName, totalServices, expirationDate, cardUrl } = data;
+    const { email, name, membershipName, totalServices, expirationDate, cardUrl, isBlackCard } = data;
 
     if (!email) return { success: false, error: 'No email provided' };
 
-    const html = loadTemplate('membership-welcome', {
+    const templateName = isBlackCard ? 'membership-welcome-black' : 'membership-welcome';
+
+    const html = loadTemplate(templateName, {
         clientName: name,
         membershipName,
         totalServices,
-        expirationDate,
+        expirationDate, // Ya viene con texto "Hasta..." o "Sin vencimiento"
         cardUrl,
         year: new Date().getFullYear()
     });

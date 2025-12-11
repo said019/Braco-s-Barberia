@@ -701,21 +701,30 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
             const client = clientResult.rows[0];
 
             if (client && client.email) {
-                const expirationDateStr = expirationDate.toLocaleDateString('es-MX', {
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-                });
+                // Configurar texto de expiración y estilo
+                const isBlackCard = membershipType.name.toLowerCase().includes('black');
+                let expirationText;
 
-                // Generar URL pública de la tarjeta (si existe vista pública)
-                // Por ahora usamos una URL genérica o la del API pública
-                const cardUrl = `${process.env.PUBLIC_URL || 'https://bracosbarberia.com'}/membership-view.html?uuid=${result.rows[0].uuid}`;
+                if (isBlackCard) {
+                    expirationText = 'Sin fecha de vencimiento';
+                } else {
+                    expirationText = `Válido hasta ${expirationDate.toLocaleDateString('es-MX', {
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                    })}`;
+                }
+
+                // URL corregida
+                const baseUrl = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
+                const cardUrl = `${baseUrl}/membership-view.html?uuid=${result.rows[0].uuid}`;
 
                 await emailService.sendMembershipWelcome({
                     email: client.email,
                     name: client.name,
                     membershipName: membershipType.name,
                     totalServices: membershipType.total_services,
-                    expirationDate: expirationDateStr,
-                    cardUrl: cardUrl
+                    expirationDate: expirationText, // Enviamos el texto formateado
+                    cardUrl: cardUrl,
+                    isBlackCard: isBlackCard // Flag para elegir template
                 });
                 console.log(`Correo de membresía enviado a ${client.email}`);
             }
