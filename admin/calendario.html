@@ -108,25 +108,30 @@
             </header>
 
             <!-- Calendar Controls Bar -->
-            <section class="content-section" style="padding: 1rem 1.5rem;">
+            <section class="content-section" style="padding: 1.5rem;">
+                <!-- Vista Selector (prominente arriba) -->
+                <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                    <select id="view-select" class="filter-select"
+                        style="width: auto; min-width: 200px; font-size: 1rem; padding: 0.75rem 1.5rem;">
+                        <option value="month">📅 Vista Mensual</option>
+                        <option value="week">📊 Vista Semanal</option>
+                        <option value="day">📌 Vista Diaria</option>
+                    </select>
+                </div>
+
                 <div
                     style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
                     <!-- Left: Navigation -->
                     <div class="calendar-nav" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button class="btn-icon" onclick="previousPeriod()">←</button>
+                        <button class="btn-icon" onclick="previousPeriod()" title="Anterior">←</button>
                         <h3 class="calendar-title" id="calendar-title"
                             style="margin: 0; min-width: 180px; text-align: center;">Diciembre 2024</h3>
-                        <button class="btn-icon" onclick="nextPeriod()">→</button>
-                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 0.5rem;">Hoy</button>
+                        <button class="btn-icon" onclick="nextPeriod()" title="Siguiente">→</button>
+                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 0.5rem;">HOY</button>
                     </div>
 
-                    <!-- Right: View + New Appointment -->
-                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                        <select id="view-select" class="search-input" style="width: auto; min-width: 140px;">
-                            <option value="month">Vista Mensual</option>
-                            <option value="week">Vista Semanal</option>
-                            <option value="day">Vista Diaria</option>
-                        </select>
+                    <!-- Right: New Appointment -->
+                    <div>
                         <button class="btn btn-primary" onclick="openNewAppointmentModal(new Date(), '09:00')">
                             <i class="fas fa-plus"></i> Nueva Cita
                         </button>
@@ -826,7 +831,7 @@
 
     <!-- Mobile Menu Script -->
     <!-- Mobile Menu Script Removed -->
-<script src="js/sidebar.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>
