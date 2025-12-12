@@ -276,7 +276,12 @@
 
             filteredAppointments = allAppointments.filter(apt => {
                 // Status filter
-                if (statusFilter && apt.status !== statusFilter) return false;
+                if (statusFilter) {
+                    if (apt.status !== statusFilter) return false;
+                } else {
+                    // Default view: Hide cancelled appointments to free up slots
+                    if (apt.status === 'cancelled') return false;
+                }
 
                 // Search filter
                 if (searchFilter) {

@@ -891,17 +891,44 @@ a {
 .modal input[type="date"],
 .modal input[type="time"],
 .modal input[type="datetime-local"],
-.modal select,
-.modal textarea {
+.form-input,
+.form-select,
+.form-textarea {
     width: 100%;
-    padding: 0.875rem 1rem;
-    background: var(--charcoal-dark);
-    border: 1px solid rgba(196, 163, 90, 0.25);
+    padding: 0.75rem 1rem;
+    background: rgba(22, 22, 22, 0.95);
+    border: 1px solid rgba(196, 163, 90, 0.3);
     border-radius: 4px;
-    color: var(--cream);
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.9rem;
+    color: var(--text-light);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
+}
+
+/* Fix for date input icon overlap */
+input[type="date"].form-input {
+    padding-left: 2.8rem !important;
+    /* Space for the calendar icon */
+    background-position: left 0.8rem center;
+    position: relative;
+    text-align: left;
+}
+
+/* Webkit (Chrome/Safari) specific fix to position icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    cursor: pointer;
+    filter: invert(1);
+    /* Ensure it's white to contrast with dark bg */
+    opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
 
 .modal input:focus,
