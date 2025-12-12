@@ -485,6 +485,16 @@ a {
 /* TABLAS */
 .table-container {
     overflow-x: auto;
+    padding-left: 3.5rem;
+    /* Separación del sidebar */
+    padding-right: 2rem;
+}
+
+/* responsive fix */
+@media (max-width: 768px) {
+    .table-container {
+        padding-left: 1.5rem;
+    }
 }
 
 .data-table {
@@ -723,6 +733,15 @@ a {
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
     align-items: center;
+    padding-left: 3.5rem;
+    /* Separación para alinear con contenido */
+    padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+    .filters-bar {
+        padding-left: 1.5rem;
+    }
 }
 
 /* APPOINTMENT STATUS BADGES */

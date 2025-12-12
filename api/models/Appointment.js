@@ -202,22 +202,33 @@ export const Appointment = {
 
   // Crear cita
   async create(appointmentData) {
-    const { 
-      client_id, 
-      service_id, 
-      appointment_date, 
-      start_time, 
-      end_time, 
-      notes, 
-      created_by, 
+    const {
+      client_id,
+      service_id,
+      appointment_date,
+      start_time,
+      end_time,
+      notes,
+      created_by,
       status,
       deposit_required,
-      deposit_amount 
+      deposit_amount
     } = appointmentData;
 
     // Generar código de checkout
-    const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
-    const checkout_code = codeResult.rows[0].code;
+    let checkout_code;
+    try {
+      const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
+      checkout_code = codeResult.rows[0].code;
+    } catch (e) {
+      console.error('Error generating checkout code from DB:', e);
+    }
+
+    // Fallback generation if DB function fails or returns null
+    if (!checkout_code) {
+      checkout_code = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 chars random
+      console.warn(`Generated fallback checkout code: ${checkout_code}`);
+    }
 
     // Use provided status or default to 'scheduled'
     const appointmentStatus = status || 'scheduled';
@@ -229,14 +240,14 @@ export const Appointment = {
       RETURNING *
     `;
     const result = await query(sql, [
-      client_id, 
-      service_id, 
-      appointment_date, 
-      start_time, 
-      end_time, 
-      checkout_code, 
-      notes, 
-      created_by || 'client', 
+      client_id,
+      service_id,
+      appointment_date,
+      start_time,
+      end_time,
+      checkout_code,
+      notes,
+      created_by || 'client',
       appointmentStatus,
       deposit_required || false,
       deposit_amount || 0
