@@ -161,8 +161,12 @@ export const appointmentController = {
         status: req.body.status // Pass status if provided (e.g., 'pending')
       });
 
+      console.log(`[CREATE APPT] Created: ID=${appointment.id}, Code=${appointment.checkout_code}, ClientID=${client_id}`);
+
       // Send confirmation email if email provided
       const clientEmail = email || client.email;
+      console.log(`[CREATE APPT] Attempting email to: ${clientEmail} (Provided: ${email}, Client: ${client.email})`);
+
       if (clientEmail) {
         try {
           const dateObj = new Date(appointment_date + 'T12:00:00');
@@ -170,18 +174,24 @@ export const appointmentController = {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
           });
 
-          await emailService.sendBookingConfirmation({
+          const emailRes = await emailService.sendBookingConfirmation({
             email: clientEmail,
             name: client.name,
             service: service.name,
             date: formattedDate,
             time: start_time,
-            code: appointment.checkout_code
+            code: appointment.checkout_code || '----'
           });
+
+          if (emailRes.success) console.log(`[CREATE APPT] Email SENT: ${emailRes.id}`);
+          else console.error(`[CREATE APPT] Email FAILED: ${emailRes.error}`);
+
         } catch (emailError) {
-          console.error('Error sending booking confirmation email:', emailError);
+          console.error('[CREATE APPT] Error sending booking confirmation email:', emailError);
           // Don't fail the request if email fails
         }
+      } else {
+        console.warn('[CREATE APPT] No email available for client, skipping notification.');
       }
 
       res.status(201).json({

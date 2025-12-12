@@ -703,8 +703,17 @@ a {
 .content-section {
     padding: 2rem;
     margin-bottom: 2rem;
-    /* Más espacio en desktop para separar del sidebar */
-    padding-left: 2.5rem;
+    /* Ajuste para separar del sidebar (Menu: 260px) */
+    padding-left: 3.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Fix responsive overlap if needed */
+@media (max-width: 768px) {
+    .content-section {
+        padding-left: 1.5rem;
+    }
 }
 
 /* FILTERS */
