@@ -43,6 +43,7 @@ export const checkoutController = {
             });
 
             // ENVIAR CORREO DE RECIBO
+            let emailResult = null;
             try {
                 if (client_id) {
                     const chkRes = await query(`
@@ -84,16 +85,24 @@ export const checkoutController = {
                             }
                         } else {
                             console.log('⚠️ No se encontró email para el cliente en el checkout.');
+                            emailResult = { success: false, message: 'No se encontró email para el cliente.' };
                         }
+                    } else {
+                        emailResult = { success: false, message: 'No se encontraron datos de checkout para enviar el recibo.' };
                     }
+                } else {
+                    emailResult = { success: false, message: 'No se proporcionó client_id para enviar el recibo.' };
                 }
             } catch (err) {
                 console.error('🔥 EXCEPCIÓN CRÍTICA ENVIANDO RECIBO:', err);
+                emailResult = { success: false, error: err.message };
             }
 
             res.status(201).json({
                 success: true,
-                data: result
+                message: 'Checkout procesado correctamente',
+                checkout_id: result.checkout_id,
+                email_status: emailResult
             });
         } catch (error) {
             next(error);
