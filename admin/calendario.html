@@ -750,36 +750,61 @@
             const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
             const timeStr = time || '09:00';
 
+            // Generar opciones de hora (09:00 a 20:00 cada 30 min)
+            let timeOptions = '';
+            const startHour = 9;
+            const endHour = 20;
+            for (let h = startHour; h <= endHour; h++) {
+                const hour = h.toString().padStart(2, '0');
+
+                // :00
+                const t1 = `${hour}:00`;
+                const display1 = t1 > '11:59' ? (t1 === '12:00' ? '12:00 PM' : `${h - 12 || 12}:00 PM`) : `${h}:00 AM`;
+                timeOptions += `<option value="${t1}" ${timeStr === t1 ? 'selected' : ''}>${display1}</option>`;
+
+                // :30 (skip if endHour is reached and strict, but usually last appt is at closing - duration. Allow 20:00?)
+                // Assuming last slot is 20:00
+                if (h < endHour) {
+                    const t2 = `${hour}:30`;
+                    const display2 = t2 > '11:59' ? (t2 === '12:30' ? '12:30 PM' : `${h - 12 || 12}:30 PM`) : `${h}:30 AM`;
+                    timeOptions += `<option value="${t2}" ${timeStr === t2 ? 'selected' : ''}>${display2}</option>`;
+                }
+            }
+            // Add last slot 20:00 specifically if loop logic missed it or if needed
+            // Loop goes <= endHour so 20:00 is added.
+
             const content = `
                 <div class="form-group">
-                    <label for="appointment-client">Cliente *</label>
-                    <select id="appointment-client" class="search-input" required>
-                        <option value="">Seleccionar cliente</option>
-                        ${allClients.map(c => `<option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>`).join('')}
-                    </select>
+                    <label for="appointment-client" class="form-label">Cliente *</label>
+                    <input list="client-list" id="appointment-client" class="form-input" placeholder="Buscar o escribir nombre..." required autocomplete="off">
+                    <datalist id="client-list">
+                        ${allClients.map(c => `<option value="${c.name} - ${formatPhone(c.phone)}">`).join('')}
+                    </datalist>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-service">Servicio *</label>
-                    <select id="appointment-service" class="search-input" required>
+                    <label for="appointment-service" class="form-label">Servicio *</label>
+                    <select id="appointment-service" class="form-select" required>
                         <option value="">Seleccionar servicio</option>
                         ${allServices.map(s => `<option value="${s.id}" data-duration="${s.duration_minutes}">${s.name} - ${formatCurrency(s.price)} (${s.duration_minutes} min)</option>`).join('')}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-date">Fecha *</label>
-                    <input type="date" id="appointment-date" class="search-input" value="${dateStr}" required>
+                    <label for="appointment-date" class="form-label">Fecha *</label>
+                    <input type="date" id="appointment-date" class="form-input" value="${dateStr}" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-time">Hora de inicio *</label>
-                    <input type="time" id="appointment-time" class="search-input" value="${timeStr}" required>
+                    <label for="appointment-time" class="form-label">Hora de inicio *</label>
+                    <select id="appointment-time" class="form-select" required>
+                        ${timeOptions}
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-notes">Notas</label>
-                    <textarea id="appointment-notes" class="search-input" rows="3" placeholder="Notas adicionales..."></textarea>
+                    <label for="appointment-notes" class="form-label">Notas</label>
+                    <textarea id="appointment-notes" class="form-textarea" rows="3" placeholder="Notas adicionales..."></textarea>
                 </div>
             `;
 
@@ -794,10 +819,18 @@
         // Create new appointment
         async function createNewAppointment() {
             try {
-                const clientId = document.getElementById('appointment-client').value;
+                const clientInputValue = document.getElementById('appointment-client').value;
                 const serviceId = document.getElementById('appointment-service').value;
                 const date = document.getElementById('appointment-date').value;
                 const time = document.getElementById('appointment-time').value;
+
+                // Resolver Cliente desde el Datalist
+                const client = allClients.find(c => `${c.name} - ${formatPhone(c.phone)}` === clientInputValue);
+                if (!client) {
+                    showToast('Por favor selecciona un cliente válido de la lista', 'warning');
+                    return;
+                }
+                const clientId = client.id;
                 const notes = document.getElementById('appointment-notes').value;
 
                 if (!clientId || !serviceId || !date || !time) {
