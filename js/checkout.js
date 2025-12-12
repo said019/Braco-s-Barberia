@@ -212,7 +212,7 @@ function displayActiveMembership(membership) {
     // Backend devuelve 'membership_name' y 'remaining_services'
     document.getElementById('membership-name').textContent = membership.membership_name;
     document.getElementById('membership-details').textContent =
-        `Servicios restantes: ${membership.remaining_services} | Válida hasta: ${formatDate(new Date(membership.expiration_date), { day: 'numeric', month: 'short', year: 'numeric' })}`;
+        `Servicios restantes: ${membership.remaining_services}`;
 
     useMembershipContainer.style.display = 'flex';
     getMembershipBtn.style.display = 'none';
