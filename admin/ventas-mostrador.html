@@ -12,29 +12,32 @@
         .pos-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-            height: calc(100vh - 140px);
+            gap: 1rem;
+            height: auto;
+            max-height: calc(100vh - 180px);
         }
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
             overflow-y: auto;
             padding-right: 0.5rem;
+            max-height: 400px;
         }
 
         .product-card {
             background: var(--charcoal);
             border: 1px solid rgba(196, 163, 90, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
+            border-radius: 6px;
+            padding: 0.75rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            min-height: 100px;
         }
 
         .product-card:hover {
@@ -46,12 +49,12 @@
         .product-price {
             color: var(--gold);
             font-weight: 600;
-            font-size: 1.1rem;
-            margin: 0.5rem 0;
+            font-size: 1rem;
+            margin: 0.25rem 0;
         }
 
         .product-stock {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: rgba(245, 243, 238, 0.5);
         }
 
@@ -390,16 +393,23 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
 
             try {
-                // Prepare checkout payload
+                // Calculate total
+                const productsTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+                // Prepare checkout payload in the format expected by checkoutController
                 const payload = {
                     client_id: document.getElementById('client-select').value || null,
-                    items: cart.map(item => ({
-                        type: 'product',
-                        id: item.id,
+                    products: cart.map(item => ({
+                        product_id: item.id,
                         quantity: item.qty,
                         price: item.price
                     })),
+                    products_cost: productsTotal,
+                    service_cost: 0,
+                    discount: 0,
+                    total: productsTotal,
                     payment_method: paymentMethod,
+                    use_membership: false,
                     notes: 'Venta de mostrador'
                 };
 
