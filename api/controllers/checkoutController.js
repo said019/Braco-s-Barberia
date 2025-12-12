@@ -47,7 +47,7 @@ export const checkoutController = {
             try {
                 if (client_id) {
                     const chkRes = await query(`
-                        SELECT c.payment_method, c.used_membership, mt.name as mem_name, c.total, c.created_at, cl.email, cl.name as client_name
+                        SELECT c.payment_method, c.used_membership, mt.name as mem_name, c.total, c.completed_at, cl.email, cl.name as client_name
                         FROM checkouts c
                         JOIN clients cl ON c.client_id = cl.id
                         LEFT JOIN client_memberships cm ON c.membership_id = cm.id
