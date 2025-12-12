@@ -431,30 +431,86 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
         }
 
         // Obtener información del servicio para calcular end_time
-        const serviceResult = await db.query('SELECT duration_minutes FROM services WHERE id = $1', [service_id]);
+        const serviceResult = await db.query('SELECT * FROM services WHERE id = $1', [service_id]);
         if (serviceResult.rows.length === 0) {
             return res.status(404).json({ error: 'Servicio no encontrado' });
         }
+        const service = serviceResult.rows[0];
+
+        // Obtener información del cliente para el email
+        const clientResult = await db.query('SELECT * FROM clients WHERE id = $1', [client_id]);
+        if (clientResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente no encontrado' });
+        }
+        const client = clientResult.rows[0];
 
         // Calcular end_time si no se proporciona
         if (!end_time) {
             const [hours, minutes] = start_time.split(':').map(Number);
             const startMinutes = hours * 60 + minutes;
-            const endMinutes = startMinutes + serviceResult.rows[0].duration_minutes;
+            const endMinutes = startMinutes + service.duration_minutes;
             const endHours = Math.floor(endMinutes / 60);
             const endMins = endMinutes % 60;
             end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
         }
 
-        // Crear la cita
+        // Generar código de checkout
+        let checkout_code;
+        try {
+            const codeResult = await db.query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
+            checkout_code = codeResult.rows[0].code;
+        } catch (e) {
+            console.error('Error generating checkout code from DB:', e);
+        }
+
+        // Fallback generation if DB function fails or returns null
+        if (!checkout_code) {
+            checkout_code = Math.random().toString(36).substring(2, 6).toUpperCase();
+            console.warn(`[ADMIN] Generated fallback checkout code: ${checkout_code}`);
+        }
+
+        // Crear la cita CON el checkout_code
         const result = await db.query(`
-            INSERT INTO appointments (client_id, service_id, appointment_date, start_time, end_time, notes, status)
-            VALUES ($1, $2, $3, $4, $5, $6, 'scheduled')
+            INSERT INTO appointments (client_id, service_id, appointment_date, start_time, end_time, notes, status, checkout_code, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6, 'scheduled', $7, 'admin')
             RETURNING *
-        `, [client_id, service_id, appointment_date, start_time, end_time, notes || null]);
+        `, [client_id, service_id, appointment_date, start_time, end_time, notes || null, checkout_code]);
+
+        const appointment = result.rows[0];
+
+        // Enviar email de confirmación si el cliente tiene email
+        if (client.email) {
+            try {
+                const dateObj = new Date(appointment_date + 'T12:00:00');
+                const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                // Import email service dynamically to avoid circular dependencies
+                const emailService = (await import('../services/emailService.js')).default;
+
+                const emailRes = await emailService.sendBookingConfirmation({
+                    email: client.email,
+                    name: client.name,
+                    service: service.name,
+                    date: formattedDate,
+                    time: start_time,
+                    code: checkout_code
+                });
+
+                if (emailRes.success) {
+                    console.log(`[ADMIN] Confirmation email sent to ${client.email}, ID: ${emailRes.id}`);
+                } else {
+                    console.error(`[ADMIN] Email failed: ${emailRes.error}`);
+                }
+            } catch (emailError) {
+                console.error('[ADMIN] Error sending confirmation email:', emailError);
+            }
+        } else {
+            console.warn(`[ADMIN] No email for client ${client.name}, skipping confirmation.`);
+        }
 
         // Obtener la cita completa con información relacionada
-        const appointmentId = result.rows[0].id;
         const fullAppointment = await db.query(`
             SELECT a.*, c.name as client_name, c.phone as client_phone,
                    ct.color as client_color, s.name as service_name, s.price as service_price,
@@ -464,7 +520,7 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             JOIN client_types ct ON c.client_type_id = ct.id
             JOIN services s ON a.service_id = s.id
             WHERE a.id = $1
-        `, [appointmentId]);
+        `, [appointment.id]);
 
         res.status(201).json({
             success: true,
