@@ -428,6 +428,86 @@ if (document.querySelector('.services-featured')) {
     loadServices();
 }
 
+// ============================================================================
+// CARGAR PRODUCTOS
+// ============================================================================
+async function loadProducts() {
+    try {
+        if (typeof API !== 'undefined') {
+            const apiProducts = await API.getProducts();
+            if (apiProducts && apiProducts.length > 0) {
+                console.log('Productos cargados desde API (Landing):', apiProducts);
+                renderProducts(apiProducts);
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Error cargando productos API en landing:', e);
+    }
+}
+
+function renderProducts(products) {
+    const productsContainer = document.querySelector('.products-grid');
+    if (!productsContainer) return;
+
+    productsContainer.innerHTML = '';
+
+    const formatPrice = (price) => new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 0
+    }).format(price);
+
+    products.forEach(product => {
+        if (!product.is_active) return;
+
+        const card = document.createElement('article');
+        card.className = 'product-card';
+
+        // Use uploaded image or fallback loop
+        let imageSrc = product.image_url;
+        if (!imageSrc) {
+            imageSrc = getProductImageFallback(product.name);
+        }
+
+        const stockStatus = product.stock > 0 ? '✓ Disponible' : 'Agotado';
+        const stockClass = product.stock > 0 ? 'product-stock' : 'product-stock out-of-stock'; // Add css for out-of-stock if needed
+
+        card.innerHTML = `
+            <div class="product-image">
+                <img src="${imageSrc}" alt="${product.name}" style="object-fit: cover; width: 100%; height: 100%;">
+            </div>
+            <div class="product-content">
+                <h3 class="product-name">${product.name} <img src="assets/logo.png" alt="Braco's" style="height: 1.2em; vertical-align: middle; display: inline-block;"></h3>
+                <p class="product-description">
+                    ${product.description || ''}
+                </p>
+                <div class="product-meta">
+                    <span class="${stockClass}">${stockStatus}</span>
+                </div>
+                <div class="product-footer">
+                    <span class="product-price">${formatPrice(product.price)}</span>
+                    <a href="checkout.html" class="btn-outline btn-small">Comprar</a>
+                </div>
+            </div>
+        `;
+
+        productsContainer.appendChild(card);
+    });
+}
+
+function getProductImageFallback(name) {
+    const n = name.toLowerCase();
+    if (n.includes('shampoo')) return 'assets/shampoo.jpeg';
+    if (n.includes('aceite')) return 'assets/aceite.jpeg';
+    return 'assets/logo.png';
+}
+
+// Cargar productos al cargar la página
+if (document.querySelector('.products-grid')) {
+    loadProducts();
+}
+
 /**
  * Formatea teléfono
  */

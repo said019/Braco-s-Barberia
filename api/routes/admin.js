@@ -935,13 +935,13 @@ router.get('/products', authenticateToken, async (req, res, next) => {
 // POST /api/admin/products
 router.post('/products', authenticateToken, async (req, res, next) => {
     try {
-        const { name, description, price, stock, is_active } = req.body;
+        const { name, description, price, stock, is_active, image_url } = req.body;
 
         const result = await db.query(
-            `INSERT INTO products (name, description, price, stock, is_active)
-             VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO products (name, description, price, stock, is_active, image_url)
+             VALUES ($1, $2, $3, $4, $5, $6)
              RETURNING *`,
-            [name, description, price, stock || 0, is_active ?? true]
+            [name, description, price, stock || 0, is_active ?? true, image_url || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -955,13 +955,13 @@ router.post('/products', authenticateToken, async (req, res, next) => {
 router.put('/products/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, price, stock, is_active } = req.body;
+        const { name, description, price, stock, is_active, image_url } = req.body;
 
         const result = await db.query(
             `UPDATE products 
-             SET name = $2, description = $3, price = $4, stock = $5, is_active = $6
+             SET name = $2, description = $3, price = $4, stock = $5, is_active = $6, image_url = $7
              WHERE id = $1 RETURNING *`,
-            [id, name, description, price, stock, is_active]
+            [id, name, description, price, stock, is_active, image_url || null]
         );
 
         res.json(result.rows[0]);

@@ -215,6 +215,18 @@
         }
 
         // Modal Logic
+        window.handleImageFile = function (input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('product-image-url').value = e.target.result;
+                    document.getElementById('image-preview').innerHTML = `<img src="${e.target.result}" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
         window.openProductModal = function (id = null) {
             const product = id ? allProducts.find(p => p.id === id) : null;
             const title = product ? 'Editar Producto' : 'Nuevo Producto';
@@ -223,28 +235,40 @@
                 <form id="product-form" class="admin-form">
                     <div class="form-group">
                         <label for="product-name">Nombre *</label>
-                        <input type="text" id="product-name" value="${product ? product.name : ''}" required>
+                        <input type="text" id="product-name" value="${product ? product.name : ''}" required class="form-input">
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
                             <label for="product-price">Precio ($) *</label>
-                            <input type="number" id="product-price" value="${product ? product.price : ''}" required min="0" step="0.5">
+                            <input type="number" id="product-price" value="${product ? product.price : ''}" required min="0" step="0.5" class="form-input">
                         </div>
                         <div class="form-group">
                             <label for="product-stock">Stock *</label>
-                            <input type="number" id="product-stock" value="${product ? product.stock : 0}" required min="0" step="1">
+                            <input type="number" id="product-stock" value="${product ? product.stock : 0}" required min="0" step="1" class="form-input">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="product-desc">Descripción</label>
-                        <textarea id="product-desc" rows="3">${product ? (product.description || '') : ''}</textarea>
+                        <textarea id="product-desc" rows="3" class="form-textarea" style="width: 100%; background: rgba(22, 22, 22, 0.95); border: 1px solid rgba(196, 163, 90, 0.3); color: var(--cream); padding: 0.75rem; border-radius: 4px;">${product ? (product.description || '') : ''}</textarea>
+                    </div>
+
+                    <!-- Image Upload Section -->
+                    <div class="form-group">
+                        <label for="product-image-file">Imagen del Producto</label>
+                        <input type="file" id="product-image-file" accept="image/*" class="form-input" onchange="handleImageFile(this)">
+                        <input type="hidden" id="product-image-url" value="${product && product.image_url ? product.image_url : ''}">
+                        
+                        <div id="image-preview" style="margin-top: 10px; height: 150px; border: 1px dashed rgba(196, 163, 90, 0.3); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.2);">
+                            ${product && product.image_url ? `<img src="${product.image_url}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="color: rgba(255,255,255,0.3);">Sin imagen seleccionada</span>'}
+                        </div>
+                        <p class="form-hint">Formatos: JPG, PNG, WEBP. Máx 500KB recomendado.</p>
                     </div>
 
                     <div class="form-group">
-                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
-                            <input type="checkbox" id="product-active" ${!product || product.is_active ? 'checked' : ''}>
+                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer; display: flex; align-items: center;">
+                            <input type="checkbox" id="product-active" ${!product || product.is_active ? 'checked' : ''} style="width: auto; margin-right: 10px;">
                             <span>Producto Activo (Disponible para venta)</span>
                         </label>
                     </div>
@@ -291,7 +315,8 @@
                 price: parseFloat(document.getElementById('product-price').value),
                 stock: parseInt(document.getElementById('product-stock').value),
                 description: document.getElementById('product-desc').value,
-                is_active: document.getElementById('product-active').checked
+                is_active: document.getElementById('product-active').checked,
+                image_url: document.getElementById('product-image-url').value
             };
 
             try {
@@ -333,7 +358,7 @@
 
         init();
     </script>
-<script src="js/sidebar.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>
