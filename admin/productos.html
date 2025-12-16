@@ -261,7 +261,7 @@
                         <input type="hidden" id="product-image-url" value="${product && product.image_url ? product.image_url : ''}">
                         
                         <div id="image-preview" style="margin-top: 10px; height: 150px; border: 1px dashed rgba(196, 163, 90, 0.3); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.2);">
-                            ${product && product.image_url ? `<img src="${product.image_url}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="color: rgba(255,255,255,0.3);">Sin imagen seleccionada</span>'}
+                            ${product && product.image_url ? `<img src="${product.image_url.startsWith('assets') ? '../' + product.image_url : product.image_url}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="color: rgba(255,255,255,0.3);">Sin imagen seleccionada</span>'}
                         </div>
                         <p class="form-hint">Formatos: JPG, PNG, WEBP. Máx 500KB recomendado.</p>
                     </div>
