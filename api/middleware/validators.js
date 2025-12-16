@@ -25,7 +25,7 @@ export const validateClient = [
   body('phone')
     .trim()
     .notEmpty().withMessage('El teléfono es requerido')
-    .matches(/^[0-9]{10}$/).withMessage('El teléfono debe tener 10 dígitos'),
+    .matches(/^\d{7,10}$/).withMessage('El teléfono debe tener entre 7 y 10 dígitos'),
   body('email')
     .optional()
     .isEmail().withMessage('Email inválido')
