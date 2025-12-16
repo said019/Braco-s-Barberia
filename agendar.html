@@ -140,6 +140,7 @@
                         <div class="time-slots" id="time-slots">
                             <p class="no-selection">Selecciona una fecha para ver horarios disponibles</p>
                         </div>
+                        <p class="form-hint" id="time-hint">Selecciona una fecha y hora para habilitar “Continuar”.</p>
                     </div>
                 </div>
 
@@ -186,7 +187,7 @@
                     <div class="form-group">
                         <label for="client-phone">Teléfono (WhatsApp) *</label>
                         <input type="tel" id="client-phone" name="phone" required placeholder="Ej: 55 1234 5678"
-                            pattern="[0-9]{10}" maxlength="10">
+                            pattern="[0-9]{7,10}" maxlength="10">
                         <span class="form-hint">Te enviaremos confirmación y recordatorio por WhatsApp</span>
                     </div>
                     <div class="form-group">

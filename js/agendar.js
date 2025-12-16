@@ -441,9 +441,16 @@ function renderTimeSlots() {
 function selectTime(slotElement) {
     document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
     slotElement.classList.add('selected');
-
     state.selectedTime = slotElement.dataset.time;
     elements.btnToStep3.disabled = false;
+    // Clear hint message
+    const hint = document.getElementById('time-hint');
+    if (hint) hint.textContent = '';
+}
+
+
+state.selectedTime = slotElement.dataset.time;
+elements.btnToStep3.disabled = false;
 }
 
 // ============================================================================
@@ -572,8 +579,7 @@ async function submitBooking() {
                 if (isBrandNew) {
                     const newClient = await API.createClient({
                         name: data.name,
-                        phone: data.phone,
-                        email: data.email || null
+                        phone: phone
                     });
                     if (newClient && newClient.id) {
                         client = newClient; // Asignar para usar abajo
