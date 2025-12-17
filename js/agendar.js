@@ -449,9 +449,6 @@ function selectTime(slotElement) {
 }
 
 
-state.selectedTime = slotElement.dataset.time;
-elements.btnToStep3.disabled = false;
-}
 
 // ============================================================================
 // ACTUALIZAR RESUMEN
