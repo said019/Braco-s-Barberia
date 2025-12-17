@@ -280,12 +280,12 @@
                         </div>
                     </div>
 
-                    ${service && service.description ? `
-                    <div class="form-group" style="margin-top: 1rem; padding: 1rem; background: rgba(196,163,90,0.05); border-radius: 4px; border-left: 3px solid var(--gold);">
-                        <label style="display: block; margin-bottom: 0.5rem; color: var(--gold); font-weight: 500;">Descripción actual:</label>
-                        <p style="margin: 0; color: rgba(255,255,255,0.7); white-space: pre-line; line-height: 1.6;">${service.description}</p>
+                    <!-- Description Field (Full Width) -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="service-desc">Descripción</label>
+                        <textarea id="service-desc" rows="4" class="form-textarea" style="width: 100%; background: rgba(22, 22, 22, 0.95); border: 1px solid rgba(196, 163, 90, 0.3); color: var(--cream); padding: 0.75rem; border-radius: 4px;">${service ? (service.description || '') : ''}</textarea>
+                        <p class="form-hint" style="margin-top: 0.5rem; font-size: 0.85rem; color: #888;">Describe el servicio, qué incluye, duración, etc.</p>
                     </div>
-                    ` : ''}
                 </form>
             `;
 
@@ -360,7 +360,7 @@
                 category_id: service ? service.category_id : 1,  // Default to first category
                 price: parseFloat(document.getElementById('service-price').value),
                 duration_minutes: parseInt(document.getElementById('service-duration').value),
-                description: service ? service.description : '',  // Preserve existing description
+                description: document.getElementById('service-desc').value || '',  // Get edited description
                 image_url: document.getElementById('service-image-url').value || null,
                 is_active: document.getElementById('service-active').checked
             };
