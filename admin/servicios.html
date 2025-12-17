@@ -238,40 +238,44 @@
 
             const content = `
                 <form id="service-form" class="admin-form">
-                    <div class="form-group">
-                        <label for="service-name">Nombre *</label>
-                        <input type="text" id="service-name" value="${service ? service.name : ''}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="service-category">Categoría *</label>
-                        <select id="service-category" required>
-                            <option value="">Selecciona una categoría</option>
-                            ${categoryOptions}
-                        </select>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="service-price">Precio ($) *</label>
-                            <input type="number" id="service-price" value="${service ? service.price : ''}" required min="0" step="0.5">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                        <!-- Left Column: Image Upload -->
+                        <div>
+                            <div class="form-group">
+                                <label for="service-image">Imagen del Servicio</label>
+                                <input type="file" id="service-image" accept="image/*" onchange="handleServiceImage(event)">
+                                <input type="hidden" id="service-image-url" value="${service?.image_url || ''}">
+                            </div>
+                            <div id="image-preview-container" style="margin-top: 1rem;">
+                                ${service?.image_url ? `<img src="${service.image_url}" alt="Preview" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--gold);">` : '<p class="text-muted" style="text-align: center; padding: 2rem; border: 2px dashed rgba(196,163,90,0.3); border-radius: 8px;">Vista previa de la imagen</p>'}
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="service-duration">Duración (min) *</label>
-                            <input type="number" id="service-duration" value="${service ? service.duration_minutes : 30}" required min="5" step="5">
+
+                        <!-- Right Column: Service Details -->
+                        <div>
+                            <div class="form-group">
+                                <label for="service-name">Nombre *</label>
+                                <input type="text" id="service-name" value="${service ? service.name : ''}" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="service-price">Precio ($) *</label>
+                                    <input type="number" id="service-price" value="${service ? service.price : ''}" required min="0" step="0.5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="service-duration">Duración (min) *</label>
+                                    <input type="number" id="service-duration" value="${service ? service.duration_minutes : 30}" required min="5" step="5">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
+                                    <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''}>
+                                    <span>Servicio Activo (Disponible para citas)</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="service-desc">Descripción</label>
-                        <textarea id="service-desc" rows="3">${service ? (service.description || '') : ''}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
-                            <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''}>
-                            <span>Servicio Activo (Disponible para citas)</span>
-                        </label>
                     </div>
                 </form>
             `;
@@ -316,6 +320,22 @@
             window[id] = { close: () => document.getElementById(id).remove() };
         }
 
+        function handleServiceImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                document.getElementById('service-image-url').value = base64;
+                
+                // Update preview
+                const preview = document.getElementById('image-preview-container');
+                preview.innerHTML = `<img src="${base64}" alt="Preview" style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--gold);">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
         async function saveService(id) {
             const form = document.getElementById('service-form');
             if (!form.checkValidity()) {
@@ -323,12 +343,16 @@
                 return;
             }
 
+            // Get category_id from existing service or default to 1
+            const service = id ? allServices.find(s => s.id === id) : null;
+            
             const data = {
                 name: document.getElementById('service-name').value,
-                category_id: document.getElementById('service-category').value,
+                category_id: service ? service.category_id : 1,  // Default to first category
                 price: parseFloat(document.getElementById('service-price').value),
                 duration_minutes: parseInt(document.getElementById('service-duration').value),
-                description: document.getElementById('service-desc').value,
+                description: service ? service.description : '',  // Preserve existing description
+                image_url: document.getElementById('service-image-url').value || null,
                 is_active: document.getElementById('service-active').checked
             };
 
@@ -375,7 +399,7 @@
 
         init();
     </script>
-<script src="js/sidebar.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

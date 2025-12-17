@@ -177,7 +177,7 @@ async function loadServices() {
                 duration_minutes: s.duration_minutes,
                 price: s.price,
                 category_id: s.category_id,
-                image_url: getServiceImage(s.id, s.name)
+                image_url: s.image_url || getServiceImage(s.id, s.name)  // Use DB image or fallback
             }));
             console.log('Servicios cargados desde API:', state.services);
         } else {
