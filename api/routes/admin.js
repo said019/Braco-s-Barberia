@@ -151,6 +151,28 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
     }
 });
 
+// GET /api/admin/birthdays?days=30
+router.get('/birthdays', authenticateToken, async (req, res, next) => {
+    try {
+        const days = parseInt(req.query.days) || 30;
+        const sql = `
+                SELECT 
+                    c.id,
+                    c.name,
+                    c.birthdate,
+                    (c.birthdate + (EXTRACT(YEAR FROM AGE(NOW()))::int * INTERVAL '1 year'))::date AS next_birthday
+                FROM clients c
+                WHERE c.birthdate IS NOT NULL
+                AND (c.birthdate + (EXTRACT(YEAR FROM AGE(NOW()))::int * INTERVAL '1 year'))::date
+                    BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 * INTERVAL '1 day'
+                ORDER BY next_birthday ASC`;
+        const result = await db.query(sql, [days]);
+        res.json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ============================
 // CLIENTES CRUD
 // ============================

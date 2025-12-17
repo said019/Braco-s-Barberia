@@ -2604,4 +2604,27 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         break-inside: avoid;
         border: 1px solid #ccc;
     }
+
+    /* Birthday list items */
+    .birthday-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.4rem 0;
+    }
+
+    .birthday-item .name {
+        font-weight: 500;
+    }
+
+    .birthday-item .date {
+        color: #aaa;
+    }
+
+    /* Booking hint */
+    .form-hint {
+        font-size: 0.85rem;
+        color: #777;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
 }

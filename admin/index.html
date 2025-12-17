@@ -149,7 +149,14 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Cumpleaños Próximos (30 días)</h3>
+                    </div>
+                    <div class="card-body" id="birthday-list">
+                        <p class="text-muted">Cargando…</p>
+                    </div>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <!-- Citas por Confirmar (Pendientes) -->
                     <div class="card">
@@ -268,7 +275,28 @@
                 document.getElementById('stat-membresias').textContent = data.stats.active_memberships;
                 document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
 
-                // Badge del nav
+                // Load birthdays
+                async function loadBirthdays() {
+                    try {
+                        const data = await api.get('/admin/birthdays?days=30');
+                        const container = document.getElementById('birthday-list');
+                        if (!data.length) {
+                            container.innerHTML = '<p class="text-muted">No hay cumpleaños próximos.</p>';
+                            return;
+                        }
+                        container.innerHTML = data.map(c => `
+            <div class="birthday-item">
+                <span class="name">${c.name}</span>
+                <span class="date">${new Date(c.next_birthday).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            </div>
+        `).join('');
+                    } catch (e) {
+                        console.error('Error loading birthdays', e);
+                    }
+                }
+
+                // Call loadBirthdays after stats are set
+                loadBirthdays();
                 document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
 
                 // Render Tables
