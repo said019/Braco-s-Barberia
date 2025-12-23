@@ -829,7 +829,8 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
                         phone: cData.phone,
                         name: cData.name,
                         membershipName: membershipType.name,
-                        expiryDate: cleanDate
+                        expiryDate: cleanDate,
+                        cardUrl: cardUrl // URL generada previamente para el email
                     });
                     console.log(`[MEMBERSHIP] WhatsApp enviado a ${cData.name}`);
                 }
