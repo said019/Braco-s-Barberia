@@ -111,20 +111,44 @@ const getColorByStatus = (status) => {
 const formatDate = (date) => {
     if (typeof date === 'string') return date.split('T')[0];
     if (date instanceof Date) {
-        // Use local year/month/day to avoid UTC shifting
-        // padding functions
         const pad = (n) => n < 10 ? '0' + n : n;
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }
-    return date; // fallback
+    return date;
+};
+
+// Helper: Get effective calendar ID
+const getEffectiveCalendarId = () => {
+    return process.env.GOOGLE_CALENDAR_ID || 'primary';
+};
+
+// Helper for DB mapping success
+const handleMappingSuccess = async (response, appointment) => {
+    await db.query(`
+      INSERT INTO google_calendar_mapping (appointment_id, google_event_id, last_synced_at, sync_status)
+      VALUES ($1, $2, CURRENT_TIMESTAMP, 'synced')
+      ON CONFLICT (appointment_id, google_event_id) DO UPDATE SET
+        last_synced_at = CURRENT_TIMESTAMP,
+        sync_status = 'synced'
+    `, [appointment.id, response.data.id]);
+    console.log(`[GCAL] Created event ${response.data.id} for appointment ${appointment.id}`);
+};
+
+// Helper for DB mapping failure
+const handleMappingFailure = async (error, appointment) => {
+    await db.query(`
+      INSERT INTO google_calendar_mapping (appointment_id, google_event_id, sync_status, error_message)
+      VALUES ($1, $2, 'failed', $3)
+      ON CONFLICT (appointment_id, google_event_id) DO UPDATE SET
+        sync_status = 'failed',
+        error_message = $3
+    `, [appointment.id, 'temp_' + appointment.id, error.message]);
 };
 
 export const createEvent = async (appointment) => {
     await loadCredentials();
 
     const dateStr = formatDate(appointment.appointment_date);
-
-    // Validate times
     const startTime = appointment.start_time.length === 5 ? appointment.start_time + ':00' : appointment.start_time;
     const endTime = appointment.end_time.length === 5 ? appointment.end_time + ':00' : appointment.end_time;
 
@@ -140,54 +164,40 @@ export const createEvent = async (appointment) => {
             ``,
             `🔖 Código: ${appointment.checkout_code || 'N/A'}`
         ].join('\n'),
-        start: {
-            dateTime: `${dateStr}T${startTime}`,
-            timeZone: 'America/Mexico_City',
-        },
-        end: {
-            dateTime: `${dateStr}T${endTime}`,
-            timeZone: 'America/Mexico_City',
-        },
+        start: { dateTime: `${dateStr}T${startTime}`, timeZone: 'America/Mexico_City' },
+        end: { dateTime: `${dateStr}T${endTime}`, timeZone: 'America/Mexico_City' },
         colorId: getColorByStatus(appointment.status),
-        reminders: {
-            useDefault: false,
-            overrides: [
-                { method: 'popup', minutes: 60 },      // 1 hour before
-                { method: 'popup', minutes: 1440 },    // 1 day before
-            ],
-        },
+        reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 60 }, { method: 'popup', minutes: 1440 }] },
     };
 
     try {
-        const response = await calendar.events.insert({
-            calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
-            resource: event,
-        });
+        let calendarId = getEffectiveCalendarId();
 
-        // Save mapping
-        await db.query(`
-      INSERT INTO google_calendar_mapping (appointment_id, google_event_id, last_synced_at, sync_status)
-      VALUES ($1, $2, CURRENT_TIMESTAMP, 'synced')
-      ON CONFLICT (appointment_id, google_event_id) DO UPDATE SET
-        last_synced_at = CURRENT_TIMESTAMP,
-        sync_status = 'synced'
-    `, [appointment.id, response.data.id]);
+        try {
+            const response = await calendar.events.insert({ calendarId, resource: event });
+            await handleMappingSuccess(response, appointment);
+            return response.data;
+        } catch (insertError) {
+            // IF 404 NOT FOUND, TRY TO FIND A VALID CALENDAR
+            if (insertError.code === 404) {
+                console.log('[GCAL] Calendar Not Found (404). Fetching available calendars...');
+                const list = await calendar.calendarList.list();
 
-        console.log(`[GCAL] Created event ${response.data.id} for appointment ${appointment.id}`);
+                // Try to find one that is primary or owner
+                const validCal = list.data.items.find(c => c.primary) || list.data.items.find(c => c.accessRole === 'owner');
 
-        return response.data;
+                if (validCal) {
+                    console.log(`[GCAL] Retry with valid calendar: ${validCal.id}`);
+                    const response = await calendar.events.insert({ calendarId: validCal.id, resource: event });
+                    await handleMappingSuccess(response, appointment);
+                    return response.data;
+                }
+            }
+            throw insertError;
+        }
     } catch (error) {
         console.error('[GCAL] Error creating event:', error.message);
-
-        // Save error in mapping
-        await db.query(`
-      INSERT INTO google_calendar_mapping (appointment_id, google_event_id, sync_status, error_message)
-      VALUES ($1, $2, 'failed', $3)
-      ON CONFLICT (appointment_id, google_event_id) DO UPDATE SET
-        sync_status = 'failed',
-        error_message = $3
-    `, [appointment.id, 'temp_' + appointment.id, error.message]);
-
+        await handleMappingFailure(error, appointment);
         throw error;
     }
 };
