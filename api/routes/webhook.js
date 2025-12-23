@@ -70,13 +70,15 @@ async function handleConfirmation(phone) {
             console.log(`[WEBHOOK] Google Calendar updated for appointment ${appt.id}`);
         } catch (gcalError) {
             console.error(`[WEBHOOK] Google Calendar update failed:`, gcalError.message);
-            // No falla la respuesta al usuario
         }
 
-        // 3. Mensaje de confirmación al cliente
-        await whatsappService.sendTextMessage(phone, "¡Gracias! Tu asistencia ha sido confirmada correctamente. ✅ Nos vemos pronto en Braco's Barbería.");
+        // 3. Enviar respuesta de confirmación usando TEMPLATE
+        await whatsappService.sendConfirmationResponse(phone);
+        console.log(`[WEBHOOK] Confirmation response sent to ${phone}`);
+
     } else {
         console.log(`[WEBHOOK] No scheduled appointment found for phone ${phone} to confirm.`);
+        // Fallback a texto libre ya que no hay template para este caso
         await whatsappService.sendTextMessage(phone, "No encontramos una cita pendiente próxima para confirmar. Si tienes dudas, contáctanos.");
     }
 }
@@ -108,6 +110,11 @@ async function handleCancellationRequest(phone) {
     if (result.rows.length > 0) {
         const appt = result.rows[0];
 
+        // Formatear fecha para el mensaje
+        const dateFormatted = new Date(appt.appointment_date).toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        });
+
         // 1. Cancelar la cita en BD
         await query(`UPDATE appointments SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
         console.log(`[WEBHOOK] Appointment ${appt.id} cancelled via WhatsApp`);
@@ -120,13 +127,15 @@ async function handleCancellationRequest(phone) {
             console.error(`[WEBHOOK] Google Calendar delete failed:`, gcalError.message);
         }
 
-        // 3. Mensaje 1: Confirmación de cancelación
-        await whatsappService.sendTextMessage(phone, `Hemos cancelado tu cita de ${appt.service_name} programada para el ${appt.appointment_date}. ❌`);
-
-        // 4. Mensaje 2: Link para reagendar
-        setTimeout(async () => {
-            await whatsappService.sendTextMessage(phone, `¿Deseas agendar una nueva cita? Hazlo aquí: ${url}/agendar.html 📅`);
-        }, 1500); // Pequeño delay para que lleguen en orden
+        // 3. Enviar respuesta de cancelación usando TEMPLATE
+        // Template: "Hemos cancelado tu cita de {{1}} programada para el {{2}}. ¿Deseas agendar una nueva cita? Hazlo aquí: {{3}}"
+        await whatsappService.sendCancellationResponse({
+            phone: phone,
+            service: appt.service_name,
+            date: dateFormatted,
+            bookingUrl: `${url}/agendar.html`
+        });
+        console.log(`[WEBHOOK] Cancellation response sent to ${phone}`);
 
     } else {
         // No hay cita pero igual enviar instrucciones

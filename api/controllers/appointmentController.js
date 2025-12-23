@@ -250,7 +250,8 @@ export const appointmentController = {
             await whatsappService.sendAdminFullPayment({
               clientName: client.name,
               serviceName: service.name,
-              amount: `$${service.price}`
+              amount: `$${service.price}`,
+              date: formattedDate
             });
             console.log(`[CREATE APPT] Admin Full Payment Notification SENT.`);
           }
