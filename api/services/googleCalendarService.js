@@ -107,8 +107,26 @@ const getColorByStatus = (status) => {
 /**
  * Create Google Calendar event from appointment
  */
+// Helper to format date YYYY-MM-DD
+const formatDate = (date) => {
+    if (typeof date === 'string') return date.split('T')[0];
+    if (date instanceof Date) {
+        // Use local year/month/day to avoid UTC shifting
+        // padding functions
+        const pad = (n) => n < 10 ? '0' + n : n;
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+    return date; // fallback
+};
+
 export const createEvent = async (appointment) => {
     await loadCredentials();
+
+    const dateStr = formatDate(appointment.appointment_date);
+
+    // Validate times
+    const startTime = appointment.start_time.length === 5 ? appointment.start_time + ':00' : appointment.start_time;
+    const endTime = appointment.end_time.length === 5 ? appointment.end_time + ':00' : appointment.end_time;
 
     const event = {
         summary: `${appointment.service_name} - ${appointment.client_name}`,
@@ -123,11 +141,11 @@ export const createEvent = async (appointment) => {
             `🔖 Código: ${appointment.checkout_code || 'N/A'}`
         ].join('\n'),
         start: {
-            dateTime: `${appointment.appointment_date}T${appointment.start_time}:00`,
+            dateTime: `${dateStr}T${startTime}`,
             timeZone: 'America/Mexico_City',
         },
         end: {
-            dateTime: `${appointment.appointment_date}T${appointment.end_time}:00`,
+            dateTime: `${dateStr}T${endTime}`,
             timeZone: 'America/Mexico_City',
         },
         colorId: getColorByStatus(appointment.status),
@@ -193,6 +211,11 @@ export const updateEvent = async (appointmentId, appointment) => {
 
     const eventId = mapping.rows[0].google_event_id;
 
+    const dateStr = formatDate(appointment.appointment_date);
+    // Validate times
+    const startTime = appointment.start_time.length === 5 ? appointment.start_time + ':00' : appointment.start_time;
+    const endTime = appointment.end_time.length === 5 ? appointment.end_time + ':00' : appointment.end_time;
+
     const event = {
         summary: `${appointment.service_name} - ${appointment.client_name}`,
         description: [
@@ -207,11 +230,11 @@ export const updateEvent = async (appointmentId, appointment) => {
             `🔖 Código: ${appointment.checkout_code || 'N/A'}`
         ].join('\n'),
         start: {
-            dateTime: `${appointment.appointment_date}T${appointment.start_time}:00`,
+            dateTime: `${dateStr}T${startTime}`,
             timeZone: 'America/Mexico_City',
         },
         end: {
-            dateTime: `${appointment.appointment_date}T${appointment.end_time}:00`,
+            dateTime: `${dateStr}T${endTime}`,
             timeZone: 'America/Mexico_City',
         },
         colorId: getColorByStatus(appointment.status),
