@@ -117,7 +117,7 @@ export const appointmentController = {
   // POST /api/appointments - Crear cita
   async create(req, res, next) {
     try {
-      const { client_id, service_id, appointment_date, start_time, notes, email } = req.body;
+      const { client_id, service_id, appointment_date, start_time, notes, email, is_full_payment } = req.body;
       let { end_time } = req.body;
 
       // Verificar que el servicio existe
@@ -244,6 +244,16 @@ export const appointmentController = {
             time: start_time
           });
           console.log(`[CREATE APPT] Admin Notification SENT.`);
+
+          // Notificación Adicional: Pago Completo (Si aplica)
+          if (is_full_payment) {
+            await whatsappService.sendAdminFullPayment({
+              clientName: client.name,
+              serviceName: service.name,
+              amount: `$${service.price}`
+            });
+            console.log(`[CREATE APPT] Admin Full Payment Notification SENT.`);
+          }
         }
       } catch (adminError) {
         console.error('[CREATE APPT] Admin Notification Error:', adminError);

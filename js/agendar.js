@@ -860,7 +860,8 @@ async function confirmPrepayOption() {
     const notes = state.recurringFormData?.notes || '';
 
     const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
-    await createRecurringAppointment(client, appointmentNotes);
+    // Enviar flag de pago completo
+    await createRecurringAppointment(client, appointmentNotes, { is_full_payment: true });
     closePaymentOptionsModal();
 
     // Open WhatsApp for sending proof
@@ -869,7 +870,7 @@ async function confirmPrepayOption() {
     window.open(whatsappUrl, '_blank');
 }
 
-async function createRecurringAppointment(client, notes) {
+async function createRecurringAppointment(client, notes, extraData = {}) {
     try {
         // Get email from form if available
         const emailInput = document.getElementById('client-email');
@@ -882,7 +883,8 @@ async function createRecurringAppointment(client, notes) {
             start_time: state.selectedTime,
             notes: notes || null,
             status: 'scheduled', // Recurring clients get scheduled directly
-            email: email || null
+            email: email || null,
+            ...extraData // Include optional flags (like is_full_payment)
         };
 
         const result = await API.createAppointment(bookingData);
