@@ -918,6 +918,7 @@
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="js/google-calendar.js"></script>
     <script>
         const daysMap = {
             0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
@@ -1078,12 +1079,19 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tab).classList.add('active');
+            // Find the button that was clicked and add active class
+            // This is safer than relying on global event.target
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tab}'`));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const tabContent = document.getElementById('tab-' + tab);
+            if (tabContent) tabContent.classList.add('active');
 
             // Load data when switching to specific tabs
             if (tab === 'notifications') {
                 loadNotificationSettings();
+            } else if (tab === 'gcalendar') {
+                loadGoogleCalendarStatus();
             }
         }
 

@@ -64,6 +64,10 @@ const api = {
     }
 };
 
+// Expose globally
+window.api = api;
+window.API = api; // Alias for backward compatibility
+
 // ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
 document.addEventListener('DOMContentLoaded', () => {
     // Mobile Menu Injection
