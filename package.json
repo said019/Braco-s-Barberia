@@ -26,9 +26,11 @@
         "helmet": "^7.1.0",
         "jsonwebtoken": "^9.0.2",
         "morgan": "^1.10.0",
+        "node-cron": "^4.2.1",
         "node-fetch": "^3.3.2",
         "pg": "^8.16.3",
-        "resend": "^4.1.2"
+        "resend": "^4.1.2",
+        "twilio": "^5.11.1"
     },
     "devDependencies": {
         "nodemon": "^3.0.2"

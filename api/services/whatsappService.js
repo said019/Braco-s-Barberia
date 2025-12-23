@@ -104,10 +104,26 @@ export const sendMembershipWelcome = async ({ phone, name, membershipName, expir
     return await sendTemplate(phone, sid, variables);
 };
 
+// 5. Recordatorio 24h (Con Botones)
+export const sendReminder24h = async ({ phone, name, service, time, code }) => {
+    // Variables: 1=Name, 2=Service, 3=Time, 4=Code
+    const variables = {
+        "1": name,
+        "2": service,
+        "3": time,
+        "4": code || '----'
+    };
+    const sid = process.env.TWILIO_TEMPLATE_REMINDER_SID;
+    if (!sid) return { success: false, error: 'Reminder Template SID missing' };
+
+    return await sendTemplate(phone, sid, variables);
+};
+
 // Default export for backward compatibility if needed, but named exports are preferred
 export default {
     sendBookingConfirmation,
     sendDepositAccepted,
     sendCheckoutReceipt,
-    sendMembershipWelcome
+    sendMembershipWelcome,
+    sendReminder24h
 };

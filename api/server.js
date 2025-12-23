@@ -169,6 +169,10 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// Iniciar Cron Job de Recordatorios
+import initReminderJob from './cron/reminderJob.js';
+initReminderJob();
+
 // Iniciar servidor
 startServer();
 
