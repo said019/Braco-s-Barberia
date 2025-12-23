@@ -623,6 +623,9 @@
                     <button class="tab-btn" onclick="switchTab('notifications')">
                         <i class="fas fa-bell"></i> Notificaciones
                     </button>
+                    <button class="tab-btn" onclick="switchTab('gcalendar')">
+                        <i class="fab fa-google"></i> Google Calendar
+                    </button>
                 </div>
 
                 <!-- Tab: General Settings -->
@@ -840,6 +843,71 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Google Calendar -->
+            <div id="tab-gcalendar" class="tab-content">
+                <div class="info-badge">
+                    <i class="fab fa-google"></i>
+                    <span>Sincroniza automáticamente las citas con Google Calendar.</span>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Integración con Google Calendar</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Connection Status -->
+                        <div id="gcal-status-container" style="margin-bottom: 2rem;">
+                            <div
+                                style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(196, 163, 90, 0.05); border-radius: 8px;">
+                                <div id="gcal-status-icon"
+                                    style="width: 50px; height: 50px; border-radius: 50%; background: rgba(196, 163, 90, 0.15); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fab fa-google" style="font-size: 1.5rem; color: var(--gold);"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div id="gcal-status-text"
+                                        style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem;">
+                                        Verificando conexión...
+                                    </div>
+                                    <div id="gcal-last-sync" style="font-size: 0.85rem; opacity: 0.7;">
+                                        -
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button id="btn-connect-gcal" class="btn btn-primary" onclick="connectGoogleCalendar()"
+                                style="display: none;">
+                                <i class="fab fa-google"></i> Conectar con Google
+                            </button>
+
+                            <button id="btn-sync-gcal" class="btn btn-secondary" onclick="syncGoogleCalendar()"
+                                style="display: none;">
+                                <i class="fas fa-sync"></i> Sincronizar Ahora
+                            </button>
+
+                            <button id="btn-disconnect-gcal" class="btn btn-danger" onclick="disconnectGoogleCalendar()"
+                                style="display:none;">
+                                <i class="fas fa-unlink"></i> Desconectar
+                            </button>
+                        </div>
+
+                        <!-- Help Text -->
+                        <div
+                            style="margin-top: 2rem; padding: 1rem; background: rgba(33, 150, 243, 0.05); border-left: 3px solid #2196F3; border-radius: 4px;">
+                            <p style="margin: 0; font-size: 0.9rem;"><i class="fas fa-info-circle"></i> <strong>Cómo
+                                    funciona:</strong></p>
+                            <ul style="margin: 0.5rem 0 0 1.5rem; font-size: 0.85rem; opacity: 0.8;">
+                                <li>Al conectar, podrás sincronizar todas tus citas con Google Calendar</li>
+                                <li>Las nuevas citas se crearán automáticamente en tu calendario</li>
+                                <li>Los cambios se sincronizarán en tiempo real</li>
+                            </ul>
                         </div>
                     </div>
                 </div>

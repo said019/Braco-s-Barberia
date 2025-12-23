@@ -4,6 +4,7 @@ import Client from '../models/Client.js';
 import { AppError } from '../middleware/errorHandler.js';
 import emailService from '../services/emailService.js';
 import whatsappService from '../services/whatsappService.js';
+import * as googleCalendar from '../services/googleCalendarService.js';
 
 export const appointmentController = {
   // GET /api/appointments - Obtener citas con filtros
@@ -223,6 +224,21 @@ export const appointmentController = {
         }
       } else {
         console.warn('[CREATE APPT] No phone available for client, skipping WhatsApp.');
+      }
+
+      // Sync to Google Calendar (don't fail if Google Calendar fails)
+      try {
+        const appointmentData = {
+          ...appointment,
+          client_name: client.name,
+          client_phone: client.phone,
+          service_name: service.name
+        };
+        await googleCalendar.createEvent(appointmentData);
+        console.log(`[CREATE APPT] Synced to Google Calendar: appointment ${appointment.id}`);
+      } catch (gcalError) {
+        console.error('[CREATE APPT] Google Calendar sync error:', gcalError.message);
+        // Continue even if sync fails
       }
 
       res.status(201).json({

@@ -1809,5 +1809,96 @@ router.put('/clients/:id/notifications', authenticateToken, async (req, res, nex
     }
 });
 
+// ============================================
+// GOOGLE CALENDAR INTEGRATION
+// ============================================
+
+import * as googleCalendar from '../services/googleCalendarService.js';
+
+// Get Google Calendar authorization URL
+router.get('/calendar/auth-url', authenticateToken, async (req, res) => {
+    try {
+        const authUrl = googleCalendar.getAuthUrl();
+        res.json({ success: true, authUrl });
+    } catch (error) {
+        console.error('[GCAL] Error getting auth URL:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Handle OAuth callback
+router.get('/calendar/callback', async (req, res) => {
+    try {
+        const { code } = req.query;
+
+        if (!code) {
+            return res.redirect('/admin/configuracion.html?tab=calendar&status=error&message=No+code+provided');
+        }
+
+        await googleCalendar.handleCallback(code);
+        res.redirect('/admin/configuracion.html?tab=calendar&status=connected');
+    } catch (error) {
+        console.error('[GCAL] OAuth callback error:', error);
+        res.redirect(`/admin/configuracion.html?tab=calendar&status=error&message=${encodeURIComponent(error.message)}`);
+    }
+});
+
+// Sync all appointments to Google Calendar
+router.post('/calendar/sync', authenticateToken, async (req, res) => {
+    try {
+        const { start_date, end_date } = req.body;
+
+        // Default to 7 days ago to 30 days forward
+        const startDate = start_date || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const endDate = end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const result = await googleCalendar.syncAllAppointments(startDate, endDate);
+
+        res.json({
+            success: true,
+            message: `Sincronizadas ${result.synced} de ${result.total} citas`,
+            ...result
+        });
+    } catch (error) {
+        console.error('[GCAL] Sync error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Check connection status
+router.get('/calendar/status', authenticateToken, async (req, res) => {
+    try {
+        const connected = await googleCalendar.isConnected();
+
+        // Get last sync time if connected
+        let lastSync = null;
+        if (connected) {
+            const result = await db.query(
+                'SELECT last_sync_at FROM google_calendar_config WHERE id = 1'
+            );
+            if (result.rows.length > 0) {
+                lastSync = result.rows[0].last_sync_at;
+            }
+        }
+
+        res.json({ success: true, connected, lastSync });
+    } catch (error) {
+        console.error('[GCAL] Status check error:', error);
+        res.json({ success: true, connected: false, lastSync: null });
+    }
+});
+
+// Disconnect Google Calendar
+router.delete('/calendar/disconnect', authenticateToken, async (req, res) => {
+    try {
+        await googleCalendar.disconnect();
+        res.json({ success: true, message: 'Google Calendar desconectado' });
+    } catch (error) {
+        console.error('[GCAL] Disconnect error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 
 export default router;
+
