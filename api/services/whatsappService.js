@@ -140,6 +140,41 @@ export const sendReminder24h = async ({ phone, name, service, time, code }) => {
     return await sendTemplate(phone, sid, variables);
 };
 
+// 6. Admin: Nueva Cita (Para validar)
+export const sendAdminNewAppointment = async ({ clientName, serviceName, date, time }) => {
+    // Variables: 1=Client, 2=Service, 3=Date, 4=Time
+    const variables = {
+        "1": clientName,
+        "2": serviceName,
+        "3": date,
+        "4": time
+    };
+    const sid = process.env.TWILIO_TEMPLATE_ADMIN_APPT_SID;
+    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
+
+    if (!sid) return { success: false, error: 'Admin Appt Template SID missing' };
+    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
+
+    return await sendTemplate(adminPhone, sid, variables);
+};
+
+// 7. Admin: Pago Completo (Anticipado)
+export const sendAdminFullPayment = async ({ clientName, serviceName, amount }) => {
+    // Variables: 1=Client, 2=Service, 3=Amount
+    const variables = {
+        "1": clientName,
+        "2": serviceName,
+        "3": amount
+    };
+    const sid = process.env.TWILIO_TEMPLATE_ADMIN_PAY_SID;
+    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
+
+    if (!sid) return { success: false, error: 'Admin Pay Template SID missing' };
+    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
+
+    return await sendTemplate(adminPhone, sid, variables);
+};
+
 // Enviar mensaje de texto libre (Solo funciona dentro de la ventana de 24h de sesión iniciada por el usuario)
 export const sendTextMessage = async (phone, message) => {
     try {
@@ -175,5 +210,7 @@ export default {
     sendCheckoutReceipt,
     sendMembershipWelcome,
     sendReminder24h,
+    sendAdminNewAppointment,
+    sendAdminFullPayment,
     sendTextMessage
 };

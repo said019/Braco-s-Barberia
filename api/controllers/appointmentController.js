@@ -226,6 +226,29 @@ export const appointmentController = {
         console.warn('[CREATE APPT] No phone available for client, skipping WhatsApp.');
       }
 
+      // ==========================================
+      // NOTIFICACIÓN AL ADMIN (Validación)
+      // ==========================================
+      try {
+        // Solo si hay teléfono de admin configurado
+        if (process.env.TWILIO_ADMIN_PHONE) {
+          const dateObj = new Date(appointment_date + 'T12:00:00');
+          const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          await whatsappService.sendAdminNewAppointment({
+            clientName: client.name,
+            serviceName: service.name,
+            date: formattedDate,
+            time: start_time
+          });
+          console.log(`[CREATE APPT] Admin Notification SENT.`);
+        }
+      } catch (adminError) {
+        console.error('[CREATE APPT] Admin Notification Error:', adminError);
+      }
+
       // Sync to Google Calendar (don't fail if Google Calendar fails)
       try {
         const appointmentData = {
