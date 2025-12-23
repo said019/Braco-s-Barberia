@@ -268,6 +268,15 @@ export const updateEvent = async (appointmentId, appointment) => {
 
         return response.data;
     } catch (error) {
+        // IF EVENT NOT FOUND (404) or CALENDAR NOT FOUND -> Try to recreate it
+        if (error.code === 404) {
+            console.log(`[GCAL] Event ${eventId} not found (404). Re-creating event...`);
+            // Delete old mapping first to clean up
+            await db.query('DELETE FROM google_calendar_mapping WHERE appointment_id = $1', [appointmentId]);
+            // Create new
+            return await createEvent(appointment);
+        }
+
         console.error('[GCAL] Error updating event:', error.message);
 
         // Update error
