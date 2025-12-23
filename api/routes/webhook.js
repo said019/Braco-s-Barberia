@@ -1,6 +1,7 @@
 import express from 'express';
 import { query } from '../config/database.js';
 import whatsappService from '../services/whatsappService.js';
+import googleCalendar from '../services/googleCalendarService.js';
 
 const router = express.Router();
 
@@ -11,10 +12,7 @@ router.post('/whatsapp', async (req, res) => {
         console.log(`[WEBHOOK] Received WhatsApp from ${From}: ${Body}`);
 
         // Limpiar teléfono (Twilio envía 'whatsapp:+521...')
-        // Asumiendo DB tiene formato limpio. 
-        // Si viene +521... lo dejamos como 521... (sin +)
         const phone = From ? From.replace('whatsapp:', '').replace('+', '') : '';
-
         const message = Body ? Body.trim() : '';
 
         if (message === 'Confirmar Asistencia') {
@@ -34,17 +32,21 @@ router.post('/whatsapp', async (req, res) => {
     }
 });
 
+// ============================================================================
+// HANDLER: CONFIRMACIÓN DE ASISTENCIA
+// ============================================================================
 async function handleConfirmation(phone) {
-    // Buscar la cita más próxima futura que esté 'scheduled'
-    // Usamos LIKE con los últimos 10 dígitos para ser robustos ante prefijos de país variables
     const cleanPhone = phone.slice(-10);
-
     console.log(`[WEBHOOK] Attempting confirmation for phone ending in ${cleanPhone}`);
 
+    // Buscar cita programada más próxima
     const result = await query(`
-        SELECT a.id, c.name 
+        SELECT a.id, a.appointment_date, a.start_time, a.end_time, a.notes, a.checkout_code, a.status,
+               c.name as client_name, c.phone as client_phone,
+               s.name as service_name
         FROM appointments a
         JOIN clients c ON a.client_id = c.id
+        JOIN services s ON a.service_id = s.id
         WHERE c.phone LIKE '%' || $1
           AND a.status = 'scheduled'
           AND a.appointment_date >= CURRENT_DATE
@@ -54,21 +56,84 @@ async function handleConfirmation(phone) {
 
     if (result.rows.length > 0) {
         const appt = result.rows[0];
-        await query(`UPDATE appointments SET status = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
-        console.log(`[WEBHOOK] Appointment ${appt.id} confirmed via WhatsApp for ${appt.name}`);
 
-        // Confirmación interactiva
-        await whatsappService.sendTextMessage(phone, "¡Gracias! Tu asistencia ha sido confirmada correctamente. ✅ Nos vemos pronto.");
+        // 1. Actualizar status en BD
+        await query(`UPDATE appointments SET status = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
+        console.log(`[WEBHOOK] Appointment ${appt.id} confirmed via WhatsApp for ${appt.client_name}`);
+
+        // 2. Sincronizar con Google Calendar (cambia color a verde)
+        try {
+            await googleCalendar.updateEvent(appt.id, {
+                ...appt,
+                status: 'confirmed'
+            });
+            console.log(`[WEBHOOK] Google Calendar updated for appointment ${appt.id}`);
+        } catch (gcalError) {
+            console.error(`[WEBHOOK] Google Calendar update failed:`, gcalError.message);
+            // No falla la respuesta al usuario
+        }
+
+        // 3. Mensaje de confirmación al cliente
+        await whatsappService.sendTextMessage(phone, "¡Gracias! Tu asistencia ha sido confirmada correctamente. ✅ Nos vemos pronto en Braco's Barbería.");
     } else {
-        console.log(`[WEBHOOK] No schedule appointment found for phone ${phone} to confirm.`);
-        await whatsappService.sendTextMessage(phone, "No encontramos una cita pendiente próxima para confirmar.");
+        console.log(`[WEBHOOK] No scheduled appointment found for phone ${phone} to confirm.`);
+        await whatsappService.sendTextMessage(phone, "No encontramos una cita pendiente próxima para confirmar. Si tienes dudas, contáctanos.");
     }
 }
 
+// ============================================================================
+// HANDLER: CANCELACIÓN / MODIFICACIÓN
+// ============================================================================
 async function handleCancellationRequest(phone) {
-    const url = process.env.PUBLIC_URL || 'https://bracos-barberia.up.railway.app';
-    await whatsappService.sendTextMessage(phone, `Entendido. Para modificar o cancelar, por favor llámanos o gestiona tu cita aquí: ${url}/agendar.html`);
-    console.log(`[WEBHOOK] Cancellation instructions sent to ${phone}`);
+    const cleanPhone = phone.slice(-10);
+    const url = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+
+    console.log(`[WEBHOOK] Cancellation/Modification request from phone ending in ${cleanPhone}`);
+
+    // Buscar la cita más próxima
+    const result = await query(`
+        SELECT a.id, a.appointment_date, a.start_time,
+               c.name as client_name,
+               s.name as service_name
+        FROM appointments a
+        JOIN clients c ON a.client_id = c.id
+        JOIN services s ON a.service_id = s.id
+        WHERE c.phone LIKE '%' || $1
+          AND a.status IN ('scheduled', 'confirmed', 'pending')
+          AND a.appointment_date >= CURRENT_DATE
+        ORDER BY a.appointment_date ASC, a.start_time ASC
+        LIMIT 1
+    `, [cleanPhone]);
+
+    if (result.rows.length > 0) {
+        const appt = result.rows[0];
+
+        // 1. Cancelar la cita en BD
+        await query(`UPDATE appointments SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
+        console.log(`[WEBHOOK] Appointment ${appt.id} cancelled via WhatsApp`);
+
+        // 2. Eliminar del Google Calendar
+        try {
+            await googleCalendar.deleteEvent(appt.id);
+            console.log(`[WEBHOOK] Google Calendar event deleted for appointment ${appt.id}`);
+        } catch (gcalError) {
+            console.error(`[WEBHOOK] Google Calendar delete failed:`, gcalError.message);
+        }
+
+        // 3. Mensaje 1: Confirmación de cancelación
+        await whatsappService.sendTextMessage(phone, `Hemos cancelado tu cita de ${appt.service_name} programada para el ${appt.appointment_date}. ❌`);
+
+        // 4. Mensaje 2: Link para reagendar
+        setTimeout(async () => {
+            await whatsappService.sendTextMessage(phone, `¿Deseas agendar una nueva cita? Hazlo aquí: ${url}/agendar.html 📅`);
+        }, 1500); // Pequeño delay para que lleguen en orden
+
+    } else {
+        // No hay cita pero igual enviar instrucciones
+        await whatsappService.sendTextMessage(phone, `No encontramos una cita activa para cancelar. Si deseas agendar una nueva, visita: ${url}/agendar.html`);
+    }
+
+    console.log(`[WEBHOOK] Cancellation flow completed for ${phone}`);
 }
 
 export default router;
