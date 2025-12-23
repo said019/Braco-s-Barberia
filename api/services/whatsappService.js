@@ -76,16 +76,35 @@ export const sendDepositAccepted = async ({ phone, name, service, date, time, co
 };
 
 // 3. Recibo de Pago (Checkout)
-export const sendCheckoutReceipt = async ({ phone, name, service, total, date }) => {
-    // Variables: 1=Name, 2=Service, 3=Total, 4=Date
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": total,
-        "4": date
-    };
-    const sid = process.env.TWILIO_TEMPLATE_RECEIPT_SID;
-    if (!sid) return { success: false, error: 'Receipt Template SID missing' };
+// 3. Recibo de Pago (Checkout) - Dual (Estándar o Membresía)
+export const sendCheckoutReceipt = async ({ type, phone, name, service, total, date, membershipName, remaining, cardUrl }) => {
+    let sid, variables;
+
+    if (type === 'membership') {
+        // Opción B: Membresía
+        // Template: "Gracias {{1}}... Servicio {{2}}... Membresía {{3}}... Restantes {{4}}... Link {{5}}"
+        variables = {
+            "1": name,
+            "2": service,
+            "3": membershipName || 'Membresía',
+            "4": String(remaining),
+            "5": cardUrl || ''
+        };
+        sid = process.env.TWILIO_TEMPLATE_RECEIPT_MEM_SID;
+    } else {
+        // Opción A: Estándar
+        // Template: "Gracias {{1}}... Servicio {{2}}... Total {{3}}... Fecha {{4}}"
+        variables = {
+            "1": name,
+            "2": service,
+            "3": total,
+            "4": date
+        };
+        // Fallback a la variable antigua si no se define la nueva específica
+        sid = process.env.TWILIO_TEMPLATE_RECEIPT_STD_SID || process.env.TWILIO_TEMPLATE_RECEIPT_SID;
+    }
+
+    if (!sid) return { success: false, error: `Receipt Template SID missing for type ${type}` };
 
     return await sendTemplate(phone, sid, variables);
 };
