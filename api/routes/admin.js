@@ -1809,6 +1809,16 @@ router.put('/clients/:id/notifications', authenticateToken, async (req, res, nex
     }
 });
 
+// DEBUG: Check env vars (safe version)
+router.get('/debug-env', (req, res) => {
+    res.json({
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set (Length: ' + process.env.GOOGLE_CLIENT_ID.length + ')' : 'MISSING',
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set (Length: ' + process.env.GOOGLE_CLIENT_SECRET.length + ')' : 'MISSING',
+        GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'MISSING (This is the error cause)',
+        GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID || 'MISSING'
+    });
+});
+
 // ============================================
 // GOOGLE CALENDAR INTEGRATION
 // ============================================
