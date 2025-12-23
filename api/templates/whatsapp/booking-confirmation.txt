@@ -1,0 +1,15 @@
+¡Hola {nombre}! 👋
+
+✅ Tu cita ha sido agendada exitosamente en Braco's Barbería.
+
+📋 *Detalles de tu cita:*
+• Servicio: {servicio}
+• Fecha: {fecha}
+• Hora: {hora}
+• Código: {codigo}
+
+📍 *Ubicación:* {direccion}
+
+ℹ️ Si necesitas cancelar o reprogramar, contáctanos con anticipación.
+
+¡Te esperamos! ✂️💈

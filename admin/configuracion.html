@@ -620,6 +620,9 @@
                     <button class="tab-btn" onclick="switchTab('blocked')">
                         <i class="fas fa-ban"></i> Días Bloqueados
                     </button>
+                    <button class="tab-btn" onclick="switchTab('notifications')">
+                        <i class="fas fa-bell"></i> Notificaciones
+                    </button>
                 </div>
 
                 <!-- Tab: General Settings -->
@@ -779,6 +782,62 @@
                                 </thead>
                                 <tbody id="blocked-dates-body">
                                     <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Notifications -->
+                <div id="tab-notifications" class="tab-content">
+                    <div class="info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Gestiona las preferencias de notificaciones de WhatsApp y Email por cliente.</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" style="justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3
+                                    style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--gold); margin-bottom: 0.25rem;">
+                                    <i class="fab fa-whatsapp"></i> Preferencias de Notificaciones
+                                </h3>
+                                <p style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.5); margin: 0;">Control de
+                                    notificaciones por cliente</p>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.7);">Filtrar:</label>
+                                    <select id="notification-filter" class="form-select"
+                                        style="min-width: 180px; padding: 0.5rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 6px; color: var(--cream); font-size: 0.85rem;">
+                                        <option value="all">Todos los clientes</option>
+                                        <option value="whatsapp_off">WhatsApp desactivado</option>
+                                        <option value="email_off">Email desactivado</option>
+                                        <option value="both_off">Ambos desactivados</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user"></i> Cliente</th>
+                                        <th><i class="fas fa-phone"></i> Teléfono</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th style="text-align: center;"><i class="fab fa-whatsapp"></i> WhatsApp</th>
+                                        <th style="text-align: center;"><i class="fas fa-envelope"></i> Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="notifications-body">
+                                    <!-- Loading state -->
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 3rem;">
+                                            <i class="fas fa-spinner fa-spin"
+                                                style="font-size: 2rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                                            <div style="color: rgba(245, 243, 238, 0.6);">Cargando preferencias...</div>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -953,6 +1012,11 @@
 
             event.target.classList.add('active');
             document.getElementById('tab-' + tab).classList.add('active');
+
+            // Load data when switching to specific tabs
+            if (tab === 'notifications') {
+                loadNotificationSettings();
+            }
         }
 
         // --- Business Hours Logic ---
@@ -1429,6 +1493,200 @@
         };
 
         init();
+
+        // ============================
+        // NOTIFICATION PREFERENCES
+        // ============================
+        let allClients = [];
+
+        async function loadNotificationSettings() {
+            try {
+                const response = await API.get('/admin/notification-settings');
+
+                if (response.success) {
+                    allClients = response.clients;
+                    renderNotificationSettings(allClients);
+                }
+            } catch (error) {
+                console.error('Error loading notification settings:', error);
+                document.getElementById('notifications-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--error);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <div>Error cargando preferencias</div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderNotificationSettings(clients) {
+            const tbody = document.getElementById('notifications-body');
+
+            if (!clients || clients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: rgba(245, 243, 238, 0.5);">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <div>No hay clientes registrados</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = clients.map(client => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 500;">${escapeHtml(client.name)}</div>
+                    </td>
+                    <td>${escapeHtml(client.phone || '-')}</td>
+                    <td>${escapeHtml(client.email || '-')}</td>
+                    <td style="text-align: center;">
+                        <label class="switch" title="${client.whatsapp_enabled ? 'Desactivar WhatsApp' : 'Activar WhatsApp'}">
+                            <input type="checkbox" 
+                                   ${client.whatsapp_enabled ? 'checked' : ''} 
+                                   onchange="toggleNotification(${client.id}, 'whatsapp', this.checked)"
+                                   ${!client.phone ? 'disabled' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                        ${!client.phone ? '<div style="font-size: 0.7rem; color: rgba(245, 243, 238, 0.4); margin-top: 0.25rem;">Sin tel\u00e9fono</div>' : ''}
+                    </td>
+                    <td style="text-align: center;">
+                        <label class="switch" title="${client.email_enabled ? 'Desactivar Email' : 'Activar Email'}">
+                            <input type="checkbox" 
+                                   ${client.email_enabled ? 'checked' : ''} 
+                                   onchange="toggleNotification(${client.id}, 'email', this.checked)"
+                                   ${!client.email ? 'disabled' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                        ${!client.email ? '<div style="font-size: 0.7rem; color: rgba(245, 243, 238, 0.4); margin-top: 0.25rem;">Sin email</div>' : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggleNotification(clientId, type, enabled) {
+            try {
+                const payload = type === 'whatsapp'
+                    ? { whatsapp_enabled: enabled }
+                    : { email_enabled: enabled };
+
+                const response = await API.put(`/admin/clients/${clientId}/notifications`, payload);
+
+                if (response.success) {
+                    // Update local data
+                    const client = allClients.find(c => c.id === clientId);
+                    if (client) {
+                        if (type === 'whatsapp') {
+                            client.whatsapp_enabled = enabled;
+                        } else {
+                            client.email_enabled = enabled;
+                        }
+                    }
+
+                    // Show success feedback
+                    showToast(`${type === 'whatsapp' ? 'WhatsApp' : 'Email'} ${enabled ? 'activado' : 'desactivado'} para ${response.data.name}`, 'success');
+                } else {
+                    throw new Error(response.error || 'Error actualizando preferencia');
+                }
+            } catch (error) {
+                console.error('Error toggling notification:', error);
+                showToast('Error actualizando preferencia', 'error');
+
+                // Reload to reset state
+                await loadNotificationSettings();
+            }
+        }
+
+        function filterNotificationSettings() {
+            const filter = document.getElementById('notification-filter').value;
+
+            let filteredClients = [...allClients];
+
+            switch (filter) {
+                case 'whatsapp_off':
+                    filteredClients = allClients.filter(c => !c.whatsapp_enabled);
+                    break;
+                case 'email_off':
+                    filteredClients = allClients.filter(c => !c.email_enabled);
+                    break;
+                case 'both_off':
+                    filteredClients = allClients.filter(c => !c.whatsapp_enabled && !c.email_enabled);
+                    break;
+                // 'all' - no filtering
+            }
+
+            renderNotificationSettings(filteredClients);
+        }
+
+        // Attach filter listener
+        document.getElementById('notification-filter')?.addEventListener('change', filterNotificationSettings);
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+        }
+
+        function showToast(message, type = 'success') {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--gold)' : 'var(--error)'};
+                color: ${type === 'success' ? 'var(--charcoal-dark)' : 'var(--cream)'};
+                padding: 1rem 1.5rem;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-size: 0.9rem;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+
 
         // Initialize time picker listeners after a short delay to ensure DOM is ready
         setTimeout(initTimePickerListeners, 100);

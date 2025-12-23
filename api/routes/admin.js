@@ -1718,4 +1718,96 @@ router.post('/debug/migrate-schema', authenticateToken, async (req, res, next) =
     }
 });
 
+// ============================
+// NOTIFICATION PREFERENCES
+// ============================
+
+// GET /api/admin/notification-settings - Get all clients with notification preferences
+router.get('/notification-settings', authenticateToken, async (req, res, next) => {
+    try {
+        const result = await db.query(`
+            SELECT 
+                id,
+                name,
+                phone,
+                email,
+                whatsapp_enabled,
+                email_enabled,
+                client_type_id
+            FROM clients
+            ORDER BY name ASC
+        `);
+
+        res.json({
+            success: true,
+            clients: result.rows
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// PUT /api/admin/clients/:id/notifications - Update client notification preferences
+router.put('/clients/:id/notifications', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { whatsapp_enabled, email_enabled } = req.body;
+
+        // Validate that at least one field is provided
+        if (whatsapp_enabled === undefined && email_enabled === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Debe proporcionar al menos una preferencia (whatsapp_enabled o email_enabled)'
+            });
+        }
+
+        // Build update query dynamically
+        const updates = [];
+        const values = [];
+        let paramIndex = 1;
+
+        if (whatsapp_enabled !== undefined) {
+            updates.push(`whatsapp_enabled = $${paramIndex}`);
+            values.push(whatsapp_enabled);
+            paramIndex++;
+        }
+
+        if (email_enabled !== undefined) {
+            updates.push(`email_enabled = $${paramIndex}`);
+            values.push(email_enabled);
+            paramIndex++;
+        }
+
+        // Add id as last parameter
+        values.push(id);
+
+        const query = `
+            UPDATE clients 
+            SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $${paramIndex}
+            RETURNING id, name, whatsapp_enabled, email_enabled
+        `;
+
+        const result = await db.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Cliente no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Preferencias de notificaciones actualizadas',
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 export default router;

@@ -3,6 +3,7 @@ import Service from '../models/Service.js';
 import Client from '../models/Client.js';
 import { AppError } from '../middleware/errorHandler.js';
 import emailService from '../services/emailService.js';
+import whatsappService from '../services/whatsappService.js';
 
 export const appointmentController = {
   // GET /api/appointments - Obtener citas con filtros
@@ -163,11 +164,11 @@ export const appointmentController = {
 
       console.log(`[CREATE APPT] Created: ID=${appointment.id}, Code=${appointment.checkout_code}, ClientID=${client_id}`);
 
-      // Send confirmation email if email provided
+      // Send confirmation email if email provided AND enabled
       const clientEmail = email || client.email;
       console.log(`[CREATE APPT] Attempting email to: ${clientEmail} (Provided: ${email}, Client: ${client.email})`);
 
-      if (clientEmail) {
+      if (clientEmail && client.email_enabled !== false) {
         try {
           const dateObj = new Date(appointment_date + 'T12:00:00');
           const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -192,6 +193,36 @@ export const appointmentController = {
         }
       } else {
         console.warn('[CREATE APPT] No email available for client, skipping notification.');
+      }
+
+      // Send WhatsApp confirmation if phone provided AND enabled
+      if (client.phone && client.whatsapp_enabled !== false) {
+        try {
+          const dateObj = new Date(appointment_date + 'T12:00:00');
+          const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          const whatsappRes = await whatsappService.sendWhatsAppBookingConfirmation({
+            phone: client.phone,
+            name: client.name,
+            service: service.name,
+            date: formattedDate,
+            time: start_time,
+            code: appointment.checkout_code || '----'
+          });
+
+          if (whatsappRes.success) {
+            console.log(`[CREATE APPT] WhatsApp SENT: ${whatsappRes.id}`);
+          } else {
+            console.error(`[CREATE APPT] WhatsApp FAILED: ${whatsappRes.error}`);
+          }
+        } catch (whatsappError) {
+          console.error('[CREATE APPT] Error sending WhatsApp:', whatsappError);
+          // Don't fail the request if WhatsApp fails
+        }
+      } else {
+        console.warn('[CREATE APPT] No phone available for client, skipping WhatsApp.');
       }
 
       res.status(201).json({
@@ -272,8 +303,11 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
-      // Send deposit accepted email if client has email
-      if (appointment.client_email) {
+      // Send deposit accepted email if client has email AND enabled
+      // Note: We need to get full client data to check preferences
+      const clientData = await Client.getById(appointment.client_id);
+
+      if (appointment.client_email && clientData.email_enabled !== false) {
         try {
           const dateObj = new Date(appointment.appointment_date);
           const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -290,6 +324,28 @@ export const appointmentController = {
           });
         } catch (emailError) {
           console.error('Error sending deposit accepted email:', emailError);
+        }
+      }
+
+      // Send WhatsApp deposit confirmation if enabled
+      if (appointment.client_phone && clientData.whatsapp_enabled !== false) {
+        try {
+          const dateObj = new Date(appointment.appointment_date);
+          const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          await whatsappService.sendWhatsAppDepositAccepted({
+            phone: appointment.client_phone,
+            name: appointment.client_name,
+            service: appointment.service_name,
+            date: formattedDate,
+            time: appointment.start_time,
+            code: appointment.checkout_code
+          });
+          console.log('[CONFIRM APPT] WhatsApp deposit notification sent');
+        } catch (whatsappError) {
+          console.error('[CONFIRM APPT] Error sending WhatsApp deposit:', whatsappError);
         }
       }
 
