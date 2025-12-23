@@ -281,6 +281,15 @@ export const appointmentController = {
 
       const appointment = await Appointment.update(req.params.id, req.body);
 
+      // Sync Google Calendar
+      try {
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        console.log(`[UPDATE APPT] Synced update to Google Calendar: ${req.params.id}`);
+      } catch (gcalError) {
+        console.error('[UPDATE APPT] Google Calendar sync error:', gcalError.message);
+      }
+
       res.json({
         success: true,
         message: 'Cita actualizada exitosamente',
@@ -301,6 +310,20 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
+      // Sync Google Calendar
+      try {
+        if (status === 'cancelled' || status === 'no_show') {
+          await googleCalendar.deleteEvent(req.params.id);
+          console.log(`[STATUS APPT] Removed from Google Calendar (cancelled/no_show): ${req.params.id}`);
+        } else {
+          const fullAppointment = await Appointment.getById(req.params.id);
+          await googleCalendar.updateEvent(req.params.id, fullAppointment);
+          console.log(`[STATUS APPT] Updated Google Calendar status: ${req.params.id}`);
+        }
+      } catch (gcalError) {
+        console.error('[STATUS APPT] Google Calendar sync error:', gcalError.message);
+      }
+
       res.json({
         success: true,
         message: `Cita ${status === 'cancelled' ? 'cancelada' : 'actualizada'} exitosamente`,
@@ -319,8 +342,15 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
+      // Sync Google Calendar (Update status/color)
+      try {
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+      } catch (gcalError) {
+        console.error('[CONFIRM APPT] Google Calendar sync error:', gcalError.message);
+      }
+
       // Send deposit accepted email if client has email AND enabled
-      // Note: We need to get full client data to check preferences
       const clientData = await Client.getById(appointment.client_id);
 
       if (appointment.client_email && clientData.email_enabled !== false) {
@@ -383,6 +413,15 @@ export const appointmentController = {
       if (!appointment) {
         throw new AppError('Cita no encontrada', 404);
       }
+
+      // Sync Google Calendar (Delete)
+      try {
+        await googleCalendar.deleteEvent(req.params.id);
+        console.log(`[CANCEL APPT] Removed from Google Calendar: ${req.params.id}`);
+      } catch (gcalError) {
+        console.error('[CANCEL APPT] Google Calendar sync error:', gcalError.message);
+      }
+
       res.json({
         success: true,
         message: 'Cita cancelada exitosamente',
@@ -400,6 +439,13 @@ export const appointmentController = {
       if (!appointment) {
         throw new AppError('Cita no encontrada', 404);
       }
+
+      // Sync Google Calendar (Update color)
+      try {
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+      } catch (e) { }
+
       res.json({
         success: true,
         message: 'Cita completada exitosamente',
@@ -417,6 +463,14 @@ export const appointmentController = {
       if (!appointment) {
         throw new AppError('Cita no encontrada', 404);
       }
+
+      // Sync Google Calendar (Delete or Update?)
+      // Usually remove no-shows from calendar to clean up
+      try {
+        await googleCalendar.deleteEvent(req.params.id);
+        console.log(`[NOSHOW APPT] Removed from Google Calendar: ${req.params.id}`);
+      } catch (e) { }
+
       res.json({
         success: true,
         message: 'Cita marcada como no show',
