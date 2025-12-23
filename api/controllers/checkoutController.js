@@ -49,7 +49,8 @@ export const checkoutController = {
                 if (client_id) {
                     const chkRes = await query(`
                         SELECT c.payment_method, c.used_membership, mt.name as mem_name, c.total, c.completed_at, 
-                               cl.email, cl.phone, cl.whatsapp_enabled, cl.name as client_name
+                               cl.email, cl.phone, cl.whatsapp_enabled, cl.name as client_name,
+                               cm.total_services, cm.used_services, cm.uuid as mem_uuid
                         FROM checkouts c
                         JOIN clients cl ON c.client_id = cl.id
                         LEFT JOIN client_memberships cm ON c.membership_id = cm.id
@@ -86,20 +87,34 @@ export const checkoutController = {
                             emailResultPromise.then(res => console.log('Email receipt outcome:', res)).catch(err => console.error('Email receipt error:', err));
                         }
 
-                        // 2. WHATSAPP
-                        // import whatsappService outside or use dynamic import if ES module issues, assuming imported at top
-                        // We need to import whatsappService at the top of file first!
+                        // 2. WHATSAPP (Smart Receipt)
                         if (data.phone && data.whatsapp_enabled !== false) {
                             console.log(`PREPARANDO ENVÍO RECIBO WHATSAPP: ${data.phone}`);
-                            // Dynamically import to ensure no circular dependency issues or just use if imported
-                            // Assuming we add import at top. 
-                            const whatsappRes = await whatsappService.sendCheckoutReceipt({
+
+                            let payload = {
                                 phone: data.phone,
                                 name: data.client_name,
                                 service: serviceDesc,
-                                total: `$${data.total}`, // Add currency symbol
-                                date: formattedDate
-                            });
+                                date: formattedDate,
+                            };
+
+                            const isMembership = data.used_membership === true;
+
+                            if (isMembership) {
+                                // Calcular restantes
+                                const remaining = (data.total_services || 0) - (data.used_services || 0);
+                                const baseUrl = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+
+                                payload.type = 'membership';
+                                payload.membershipName = data.mem_name;
+                                payload.remaining = remaining;
+                                payload.cardUrl = `${baseUrl}/tarjeta.html?id=${data.mem_uuid}`;
+                            } else {
+                                payload.type = 'standard';
+                                payload.total = `$${data.total}`;
+                            }
+
+                            const whatsappRes = await whatsappService.sendCheckoutReceipt(payload);
                             console.log('WhatsApp receipt outcome:', whatsappRes);
                         }
 
