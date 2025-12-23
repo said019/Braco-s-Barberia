@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import db, { transaction } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import emailService from '../services/emailService.js';
+import whatsappService from '../services/whatsappService.js';
 
 const router = express.Router();
 
@@ -809,6 +810,32 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
         } catch (emailError) {
             console.error('Error enviando correo de membresía:', emailError);
             // No fallamos la request si el correo falla, pero lo logueamos
+        }
+
+        // ==========================================
+        // ENVIAR WHATSAPP DE BIENVENIDA
+        // ==========================================
+        try {
+            // Validar si tenemos teléfono
+            const clientPhone = await db.query('SELECT phone, whatsapp_enabled, name FROM clients WHERE id = $1', [client_id]);
+            if (clientPhone.rows.length > 0) {
+                const cData = clientPhone.rows[0];
+
+                if (cData.phone && cData.whatsapp_enabled !== false) {
+                    const cleanDate = new Date(mem.expiration_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                    // Asegurar que importamos whatsappService arriba
+                    await whatsappService.sendMembershipWelcome({
+                        phone: cData.phone,
+                        name: cData.name,
+                        membershipName: membershipType.name,
+                        expiryDate: cleanDate
+                    });
+                    console.log(`[MEMBERSHIP] WhatsApp enviado a ${cData.name}`);
+                }
+            }
+        } catch (waError) {
+            console.error('[MEMBERSHIP] Error enviando WhatsApp:', waError);
         }
 
         res.status(201).json(result.rows[0]);
