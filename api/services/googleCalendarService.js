@@ -306,6 +306,7 @@ export const syncAllAppointments = async (startDate, endDate) => {
 
     let synced = 0;
     let failed = 0;
+    const errors = [];
 
     for (const appointment of result.rows) {
         try {
@@ -325,6 +326,7 @@ export const syncAllAppointments = async (startDate, endDate) => {
         } catch (error) {
             console.error(`[GCAL] Failed to sync appointment ${appointment.id}:`, error.message);
             failed++;
+            errors.push(`Cita ${appointment.id}: ${error.message}`);
         }
     }
 
@@ -336,7 +338,8 @@ export const syncAllAppointments = async (startDate, endDate) => {
     return {
         total: result.rows.length,
         synced,
-        failed
+        failed,
+        errors
     };
 };
 

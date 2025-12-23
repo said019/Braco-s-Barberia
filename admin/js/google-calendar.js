@@ -58,7 +58,14 @@ async function syncGoogleCalendar() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
 
         const response = await API.post('/admin/calendar/sync');
-        showToast(response.message, 'success');
+
+        if (response.failed > 0 && response.errors && response.errors.length > 0) {
+            // Show errors in alert for detail
+            alert(`${response.message}\n\nErrores:\n${response.errors.join('\n')}`);
+        } else {
+            showToast(response.message, 'success');
+        }
+
         await loadGoogleCalendarStatus();
     } catch (error) {
         showToast('Error al sincronizar: ' + error.message, 'error');
