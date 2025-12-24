@@ -349,38 +349,49 @@ router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
         const { id } = req.params;
         console.log(`[DELETE CLIENT] Starting deletion for client ${id}`);
 
-        // Helper para ejecutar query sin fallar si tabla no existe
-        const safeDelete = async (query, params, tableName) => {
-            try {
-                await db.query(query, params);
-                console.log(`[DELETE CLIENT] Deleted from ${tableName}`);
-            } catch (e) {
-                console.log(`[DELETE CLIENT] Skip ${tableName}: ${e.message}`);
-            }
-        };
-
-        // Manejar borrado en cascada - orden importante por foreign keys
-        // 1. Tablas que dependen de otras tablas
-        await safeDelete('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id], 'membership_usage');
-        await safeDelete('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id], 'checkouts (via appointments)');
-        await safeDelete('DELETE FROM calendar_mappings WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id], 'calendar_mappings');
-
-        // 2. Tablas que dependen directamente de clients
-        await safeDelete('DELETE FROM client_memberships WHERE client_id = $1', [id], 'client_memberships');
-        await safeDelete('DELETE FROM appointments WHERE client_id = $1', [id], 'appointments');
-        await safeDelete('DELETE FROM transactions WHERE client_id = $1', [id], 'transactions');
-        await safeDelete('DELETE FROM checkouts WHERE client_id = $1', [id], 'checkouts (direct)');
-        await safeDelete('DELETE FROM whatsapp_messages WHERE client_id = $1', [id], 'whatsapp_messages');
-        await safeDelete('DELETE FROM notifications WHERE client_id = $1', [id], 'notifications');
-
-        // 3. Finalmente borrar el cliente
-        const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING id', [id]);
-
-        if (result.rows.length === 0) {
+        // Verificar que el cliente existe
+        const clientCheck = await db.query('SELECT id FROM clients WHERE id = $1', [id]);
+        if (clientCheck.rows.length === 0) {
             return res.status(404).json({ error: 'Cliente no encontrado' });
         }
 
+        // Borrar en orden correcto para evitar FK violations
+        // Primero las tablas que tienen FK a otras tablas intermedias
+        try {
+            await db.query('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id]);
+        } catch (e) { console.log('[DELETE] membership_usage:', e.message); }
+
+        try {
+            await db.query('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
+        } catch (e) { console.log('[DELETE] checkouts via appts:', e.message); }
+
+        try {
+            await db.query('DELETE FROM calendar_mappings WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
+        } catch (e) { console.log('[DELETE] calendar_mappings:', e.message); }
+
+        // Ahora las tablas con FK directo a clients
+        try {
+            await db.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
+            console.log('[DELETE] client_memberships: OK');
+        } catch (e) { console.log('[DELETE] client_memberships:', e.message); }
+
+        try {
+            await db.query('DELETE FROM appointments WHERE client_id = $1', [id]);
+            console.log('[DELETE] appointments: OK');
+        } catch (e) { console.log('[DELETE] appointments:', e.message); }
+
+        try {
+            await db.query('DELETE FROM transactions WHERE client_id = $1', [id]);
+        } catch (e) { console.log('[DELETE] transactions:', e.message); }
+
+        try {
+            await db.query('DELETE FROM checkouts WHERE client_id = $1', [id]);
+        } catch (e) { console.log('[DELETE] checkouts direct:', e.message); }
+
+        // Finalmente borrar el cliente
+        await db.query('DELETE FROM clients WHERE id = $1', [id]);
         console.log(`[DELETE CLIENT] Successfully deleted client ${id}`);
+
         res.json({ success: true, message: 'Cliente eliminado correctamente' });
 
     } catch (error) {
