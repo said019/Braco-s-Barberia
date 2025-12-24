@@ -285,15 +285,28 @@
                             return;
                         }
                         container.innerHTML = data.map(c => `
-            <div class="birthday-item">
-                <span class="name">${c.name}</span>
-                <span class="date">${new Date(c.next_birthday).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
+                <div>
+                    <span class="name" style="font-weight: 500;">${c.name}</span>
+                    <span class="date" style="color: #888; margin-left: 0.5rem;">${new Date(c.next_birthday).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                </div>
+                <button class="btn-icon" onclick="sendBirthdayMessage('${c.name}', '${c.phone}')" title="Enviar felicitación" style="font-size: 1.2rem;">
+                    🎂
+                </button>
             </div>
         `).join('');
                     } catch (e) {
                         console.error('Error loading birthdays', e);
                     }
                 }
+
+                // Función para enviar mensaje de cumpleaños
+                window.sendBirthdayMessage = function(name, phone) {
+                    const firstName = name.split(' ')[0];
+                    const message = `¡Feliz cumpleaños, ${firstName}! 🎉🎂%0A%0AEn Braco's Barbería te deseamos un día increíble lleno de alegría.%0A%0A¡Te esperamos pronto para consentirte!`;
+                    const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                };
 
                 // Call loadBirthdays after stats are set
                 loadBirthdays();
