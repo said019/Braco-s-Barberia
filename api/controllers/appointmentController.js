@@ -163,13 +163,23 @@ export const appointmentController = {
         status: req.body.status // Pass status if provided (e.g., 'pending')
       });
 
-      console.log(`[CREATE APPT] Created: ID=${appointment.id}, Code=${appointment.checkout_code}, ClientID=${client_id}`);
+      console.log(`[CREATE APPT] Created: ID=${appointment.id}, Code=${appointment.checkout_code}, ClientID=${client_id}, Status=${appointment.status}`);
 
-      // Send confirmation email if email provided AND enabled
+      // ==========================================
+      // SOLO ENVIAR CONFIRMACIONES SI NO ES PENDING
+      // Citas 'pending' son de clientes nuevos que requieren validar depósito
+      // ==========================================
+      const shouldSendConfirmation = appointment.status !== 'pending';
+
+      if (!shouldSendConfirmation) {
+        console.log(`[CREATE APPT] Skipping email/WhatsApp - cita en estado PENDING (requiere validación de depósito)`);
+      }
+
+      // Send confirmation email if email provided AND enabled AND not pending
       const clientEmail = email || client.email;
       console.log(`[CREATE APPT] Attempting email to: ${clientEmail} (Provided: ${email}, Client: ${client.email})`);
 
-      if (clientEmail && client.email_enabled !== false) {
+      if (shouldSendConfirmation && clientEmail && client.email_enabled !== false) {
         try {
           const dateObj = new Date(appointment_date + 'T12:00:00');
           const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -196,8 +206,8 @@ export const appointmentController = {
         console.warn('[CREATE APPT] No email available for client, skipping notification.');
       }
 
-      // Send WhatsApp confirmation if phone provided AND enabled
-      if (client.phone && client.whatsapp_enabled !== false) {
+      // Send WhatsApp confirmation if phone provided AND enabled AND not pending
+      if (shouldSendConfirmation && client.phone && client.whatsapp_enabled !== false) {
         try {
           const dateObj = new Date(appointment_date + 'T12:00:00');
           const formattedDate = dateObj.toLocaleDateString('es-MX', {
