@@ -648,6 +648,9 @@
                     <button class="btn btn-secondary" onclick="closeSidePanel()">
                         <i class="fas fa-times"></i> Cerrar
                     </button>
+                    <button class="btn btn-success" onclick="resendWhatsApp(${appointment.id})" title="Reenviar WhatsApp de confirmación" style="background: #25D366; border-color: #25D366;">
+                        <i class="fab fa-whatsapp"></i> Reenviar WhatsApp
+                    </button>
                     <button class="btn btn-primary" onclick="changeStatus(${appointment.id})">
                         <i class="fas fa-edit"></i> Cambiar Estado
                     </button>
@@ -718,6 +721,35 @@
             } catch (error) {
                 console.error('Error updating status:', error);
                 showToast('Error al actualizar el estado', 'error');
+            }
+        }
+
+        // Reenviar WhatsApp de confirmación
+        async function resendWhatsApp(id) {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const baseUrl = window.API_BASE_URL || '';
+
+                showToast('Enviando WhatsApp...', 'info');
+
+                const response = await fetch(`${baseUrl}/api/admin/appointments/${id}/resend-whatsapp`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message || 'WhatsApp enviado correctamente', 'success');
+                } else {
+                    showToast(data.error || 'Error al enviar WhatsApp', 'error');
+                }
+            } catch (error) {
+                console.error('Error resending WhatsApp:', error);
+                showToast('Error al enviar WhatsApp', 'error');
             }
         }
 

@@ -533,6 +533,51 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             console.warn(`[ADMIN] No email for client ${client.name}, skipping confirmation.`);
         }
 
+        // Enviar WhatsApp de confirmación si el cliente tiene teléfono y WhatsApp habilitado
+        if (client.phone && client.whatsapp_enabled !== false) {
+            try {
+                const dateObj = new Date(appointment_date + 'T12:00:00');
+                const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const whatsappRes = await whatsappService.sendWhatsAppBookingConfirmation({
+                    phone: client.phone,
+                    name: client.name,
+                    service: service.name,
+                    date: formattedDate,
+                    time: start_time,
+                    code: checkout_code
+                });
+
+                if (whatsappRes.success) {
+                    console.log(`[ADMIN] WhatsApp sent to ${client.name}: ${whatsappRes.id}`);
+                } else {
+                    console.error(`[ADMIN] WhatsApp failed: ${whatsappRes.error}`);
+                }
+            } catch (whatsappError) {
+                console.error('[ADMIN] Error sending WhatsApp:', whatsappError);
+            }
+        } else {
+            console.warn(`[ADMIN] No phone or WhatsApp disabled for ${client.name}, skipping WhatsApp.`);
+        }
+
+        // Sincronizar con Google Calendar
+        try {
+            const googleCalendar = (await import('../services/googleCalendarService.js'));
+            const appointmentData = {
+                ...appointment,
+                client_name: client.name,
+                client_phone: client.phone,
+                service_name: service.name
+            };
+            await googleCalendar.createEvent(appointmentData);
+            console.log(`[ADMIN] Synced to Google Calendar: appointment ${appointment.id}`);
+        } catch (gcalError) {
+            console.error('[ADMIN] Google Calendar sync error:', gcalError.message);
+            // Continue even if sync fails
+        }
+
         // Obtener la cita completa con información relacionada
         const fullAppointment = await db.query(`
             SELECT a.*, c.name as client_name, c.phone as client_phone,
@@ -576,6 +621,73 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
         res.json(result.rows[0]);
 
     } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/admin/appointments/:id/resend-whatsapp - Reenviar WhatsApp de confirmación
+router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Obtener cita con datos del cliente y servicio
+        const result = await db.query(`
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+                   s.name as service_name
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Cita no encontrada' });
+        }
+
+        const appointment = result.rows[0];
+
+        // Verificar que el cliente tenga teléfono y WhatsApp habilitado
+        if (!appointment.client_phone) {
+            return res.status(400).json({ success: false, error: 'El cliente no tiene número de teléfono registrado' });
+        }
+
+        if (appointment.whatsapp_enabled === false) {
+            return res.status(400).json({ success: false, error: 'El cliente tiene WhatsApp deshabilitado' });
+        }
+
+        // Formatear fecha
+        const dateObj = new Date(appointment.appointment_date + 'T12:00:00');
+        const formattedDate = dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        // Enviar WhatsApp
+        const whatsappRes = await whatsappService.sendWhatsAppBookingConfirmation({
+            phone: appointment.client_phone,
+            name: appointment.client_name,
+            service: appointment.service_name,
+            date: formattedDate,
+            time: appointment.start_time.slice(0, 5),
+            code: appointment.checkout_code || '----'
+        });
+
+        if (whatsappRes.success) {
+            console.log(`[ADMIN] WhatsApp reenviado a ${appointment.client_name}: ${whatsappRes.id}`);
+            res.json({
+                success: true,
+                message: `WhatsApp enviado a ${appointment.client_name}`,
+                sid: whatsappRes.id
+            });
+        } else {
+            console.error(`[ADMIN] Error reenviando WhatsApp:`, whatsappRes.error);
+            res.status(500).json({
+                success: false,
+                error: whatsappRes.error || 'Error al enviar WhatsApp'
+            });
+        }
+
+    } catch (error) {
+        console.error('[ADMIN] Error en resend-whatsapp:', error);
         next(error);
     }
 });
