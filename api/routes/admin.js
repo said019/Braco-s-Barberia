@@ -477,6 +477,25 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
         }
 
+        // ============================================
+        // VALIDACIÓN: Prevenir citas duplicadas
+        // ============================================
+        const duplicateCheck = await db.query(`
+            SELECT id FROM appointments 
+            WHERE client_id = $1 
+              AND appointment_date = $2 
+              AND start_time = $3
+              AND status NOT IN ('cancelled', 'no_show')
+        `, [client_id, appointment_date, start_time]);
+
+        if (duplicateCheck.rows.length > 0) {
+            console.warn(`[ADMIN] Duplicate appointment blocked for client ${client_id} on ${appointment_date} at ${start_time}`);
+            return res.status(409).json({
+                error: 'Ya existe una cita para este cliente en la misma fecha y hora',
+                existing_id: duplicateCheck.rows[0].id
+            });
+        }
+
         // Generar código de checkout
         let checkout_code;
         try {
