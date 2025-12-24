@@ -292,7 +292,7 @@ router.get('/clients/:id/history', authenticateToken, async (req, res, next) => 
 // POST /api/admin/clients
 router.post('/clients', authenticateToken, async (req, res, next) => {
     try {
-        const { name, phone, email, birthdate, preferences } = req.body;
+        const { name, phone, email, birthdate, notes } = req.body;
 
         if (!name || !phone) {
             return res.status(400).json({ error: 'Nombre y teléfono requeridos' });
@@ -308,7 +308,7 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
             `INSERT INTO clients (name, phone, email, birthdate, client_type_id, notes)
              VALUES ($1, $2, $3, $4, 1, $5)
              RETURNING *`,
-            [name, phone, email || null, birthdate || null, preferences || null]
+            [name, phone, email || null, birthdate || null, notes || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -322,14 +322,14 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
 router.put('/clients/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, phone, email, birthdate, preferences } = req.body;
+        const { name, phone, email, birthdate, notes } = req.body;
 
         const result = await db.query(
             `UPDATE clients 
              SET name = $2, phone = $3, email = $4, birthdate = $5, notes = $6, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1
              RETURNING *`,
-            [id, name, phone, email, birthdate || null, preferences]
+            [id, name, phone, email, birthdate || null, notes || null]
         );
 
         if (result.rows.length === 0) {
