@@ -348,16 +348,28 @@ router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        // Manejar borrado en cascada manualmente
+        // Manejar borrado en cascada manualmente - orden importante por foreign keys
+        // 1. Primero borrar tablas que dependen de otras tablas
+        await db.query('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id]);
+        await db.query('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
+
+        // 2. Luego borrar tablas que dependen directamente de clients
         await db.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
         await db.query('DELETE FROM appointments WHERE client_id = $1', [id]);
         await db.query('DELETE FROM transactions WHERE client_id = $1', [id]);
-        // TODO: Borrar otros registros vinculados si existen (ej: client_services_history si existe tabla separada)
+        await db.query('DELETE FROM checkouts WHERE client_id = $1', [id]);
 
-        await db.query('DELETE FROM clients WHERE id = $1', [id]);
-        res.json({ success: true });
+        // 3. Finalmente borrar el cliente
+        const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING id', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente no encontrado' });
+        }
+
+        res.json({ success: true, message: 'Cliente eliminado correctamente' });
 
     } catch (error) {
+        console.error('[DELETE CLIENT] Error:', error.message);
         next(error);
     }
 });
