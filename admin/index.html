@@ -244,6 +244,29 @@
         </main>
     </div>
 
+    <!-- Modal: Mensaje de Cumpleaños -->
+    <div class="modal-overlay" id="modal-birthday" style="display: none;">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🎂 Felicitar a <span id="birthday-client-name"></span></h3>
+                <button class="modal-close" onclick="closeBirthdayModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Mensaje de Cumpleaños</label>
+                    <textarea class="form-textarea" id="birthday-message" rows="5"
+                        placeholder="Escribe tu mensaje de felicitación..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBirthdayModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmSendBirthday()">
+                    <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script>
@@ -300,12 +323,42 @@
                     }
                 }
 
-                // Función para enviar mensaje de cumpleaños
-                window.sendBirthdayMessage = function(name, phone) {
+                // Variables globales para cumpleaños
+                let currentBirthdayClient = { name: '', phone: '' };
+
+                // Función para abrir modal de mensaje de cumpleaños
+                window.sendBirthdayMessage = function (name, phone) {
+                    currentBirthdayClient = { name, phone };
                     const firstName = name.split(' ')[0];
-                    const message = `¡Feliz cumpleaños, ${firstName}! 🎉🎂%0A%0AEn Braco's Barbería te deseamos un día increíble lleno de alegría.%0A%0A¡Te esperamos pronto para consentirte!`;
-                    const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
+
+                    // Mensaje predeterminado
+                    const defaultMessage = `¡Feliz cumpleaños, ${firstName}! 🎉🎂
+
+En Braco's Barbería te deseamos un día increíble lleno de alegría.
+
+¡Te esperamos pronto para consentirte!`;
+
+                    document.getElementById('birthday-client-name').textContent = firstName;
+                    document.getElementById('birthday-message').value = defaultMessage;
+                    document.getElementById('modal-birthday').style.display = 'flex';
+                };
+
+                // Función para cerrar modal
+                window.closeBirthdayModal = function () {
+                    document.getElementById('modal-birthday').style.display = 'none';
+                };
+
+                // Función para confirmar y enviar por WhatsApp
+                window.confirmSendBirthday = function () {
+                    const message = document.getElementById('birthday-message').value;
+                    const phone = currentBirthdayClient.phone;
+
+                    // Codificar mensaje para URL
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/52${phone}?text=${encodedMessage}`;
+
                     window.open(whatsappUrl, '_blank');
+                    closeBirthdayModal();
                 };
 
                 // Call loadBirthdays after stats are set
