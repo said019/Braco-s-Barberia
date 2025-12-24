@@ -305,10 +305,10 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
         }
 
         const result = await db.query(
-            `INSERT INTO clients (name, phone, email, client_type_id, notes)
-             VALUES ($1, $2, $3, 1, $4)
+            `INSERT INTO clients (name, phone, email, birthdate, client_type_id, notes)
+             VALUES ($1, $2, $3, $4, 1, $5)
              RETURNING *`,
-            [name, phone, email || null, preferences || null]
+            [name, phone, email || null, birthdate || null, preferences || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -326,10 +326,10 @@ router.put('/clients/:id', authenticateToken, async (req, res, next) => {
 
         const result = await db.query(
             `UPDATE clients 
-             SET name = $2, phone = $3, email = $4, notes = $5, updated_at = CURRENT_TIMESTAMP
+             SET name = $2, phone = $3, email = $4, birthdate = $5, notes = $6, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1
              RETURNING *`,
-            [id, name, phone, email, preferences]
+            [id, name, phone, email, birthdate || null, preferences]
         );
 
         if (result.rows.length === 0) {

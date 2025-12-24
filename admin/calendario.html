@@ -278,10 +278,8 @@
                 // Status filter
                 if (statusFilter) {
                     if (apt.status !== statusFilter) return false;
-                } else {
-                    // Default view: Hide cancelled appointments to free up slots
-                    if (apt.status === 'cancelled') return false;
                 }
+                // Ya no ocultamos canceladas - se muestran con su estado visual
 
                 // Search filter
                 if (searchFilter) {
@@ -728,12 +726,12 @@
         async function resendWhatsApp(id) {
             try {
                 showToast('Enviando WhatsApp...', 'info');
-                
+
                 // Usar fetchWithAuth que ya maneja la autenticación correctamente
                 const data = await fetchWithAuth(`/admin/appointments/${id}/resend-whatsapp`, {
                     method: 'POST'
                 });
-                
+
                 if (data && data.success) {
                     showToast(data.message || 'WhatsApp enviado correctamente', 'success');
                 } else {
