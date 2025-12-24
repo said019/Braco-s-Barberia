@@ -727,29 +727,21 @@
         // Reenviar WhatsApp de confirmación
         async function resendWhatsApp(id) {
             try {
-                const token = localStorage.getItem('adminToken');
-                const baseUrl = window.API_BASE_URL || '';
-
                 showToast('Enviando WhatsApp...', 'info');
-
-                const response = await fetch(`${baseUrl}/api/admin/appointments/${id}/resend-whatsapp`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                
+                // Usar fetchWithAuth que ya maneja la autenticación correctamente
+                const data = await fetchWithAuth(`/admin/appointments/${id}/resend-whatsapp`, {
+                    method: 'POST'
                 });
-
-                const data = await response.json();
-
-                if (data.success) {
+                
+                if (data && data.success) {
                     showToast(data.message || 'WhatsApp enviado correctamente', 'success');
                 } else {
-                    showToast(data.error || 'Error al enviar WhatsApp', 'error');
+                    showToast(data?.error || 'Error al enviar WhatsApp', 'error');
                 }
             } catch (error) {
                 console.error('Error resending WhatsApp:', error);
-                showToast('Error al enviar WhatsApp', 'error');
+                showToast(error.message || 'Error al enviar WhatsApp', 'error');
             }
         }
 
