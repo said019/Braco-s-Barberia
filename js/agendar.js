@@ -14,6 +14,14 @@ const state = {
     client: null
 };
 
+// Helper para formatear fecha en formato YYYY-MM-DD sin timezone issues
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // ============================================================================
 // SERVICIOS ESTÁTICOS (12 servicios completos)
 // ============================================================================
@@ -550,11 +558,18 @@ async function submitBooking() {
             btnConfirm.textContent = originalText;
 
             // Datos temporales para el modal
+            const emailInput = document.getElementById('client-email');
+            const email = emailInput ? emailInput.value : null;
+
+            // Usar fecha local sin timezone issues
+            const localDate = formatLocalDate(state.selectedDate);
+
             const data = {
                 name: isBrandNew ? formData.get('name') : client.name, // Usar nombre de form o de DB
                 phone: phone,
+                email: email,
                 notes: formData.get('notes'),
-                appointment_date: state.selectedDate.toISOString().split('T')[0]
+                appointment_date: localDate
             };
 
             state.tempClient = {
@@ -576,7 +591,8 @@ async function submitBooking() {
                 if (isBrandNew) {
                     const newClient = await API.createClient({
                         name: data.name,
-                        phone: phone
+                        phone: phone,
+                        email: data.email || null
                     });
                     if (newClient && newClient.id) {
                         client = newClient; // Asignar para usar abajo
@@ -585,11 +601,10 @@ async function submitBooking() {
                     }
                 }
 
-                // Crear Cita con estado PENDING (Depósito requerido)
                 const appointmentData = {
                     client_id: client.id,
                     service_id: state.selectedService.id,
-                    appointment_date: state.selectedDate.toISOString().split('T')[0],
+                    appointment_date: localDate,
                     start_time: state.selectedTime,
                     notes: (data.notes || '') + ' - Pendiente de Depósito $100',
                     status: 'pending',
@@ -879,7 +894,7 @@ async function createRecurringAppointment(client, notes, extraData = {}) {
         const bookingData = {
             client_id: client.id,
             service_id: state.selectedService.id,
-            appointment_date: state.selectedDate.toISOString().split('T')[0],
+            appointment_date: formatLocalDate(state.selectedDate),
             start_time: state.selectedTime,
             notes: notes || null,
             status: 'scheduled', // Recurring clients get scheduled directly
