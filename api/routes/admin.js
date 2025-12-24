@@ -347,17 +347,31 @@ router.put('/clients/:id', authenticateToken, async (req, res, next) => {
 router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
+        console.log(`[DELETE CLIENT] Starting deletion for client ${id}`);
 
-        // Manejar borrado en cascada manualmente - orden importante por foreign keys
-        // 1. Primero borrar tablas que dependen de otras tablas
-        await db.query('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id]);
-        await db.query('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
+        // Helper para ejecutar query sin fallar si tabla no existe
+        const safeDelete = async (query, params, tableName) => {
+            try {
+                await db.query(query, params);
+                console.log(`[DELETE CLIENT] Deleted from ${tableName}`);
+            } catch (e) {
+                console.log(`[DELETE CLIENT] Skip ${tableName}: ${e.message}`);
+            }
+        };
 
-        // 2. Luego borrar tablas que dependen directamente de clients
-        await db.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
-        await db.query('DELETE FROM appointments WHERE client_id = $1', [id]);
-        await db.query('DELETE FROM transactions WHERE client_id = $1', [id]);
-        await db.query('DELETE FROM checkouts WHERE client_id = $1', [id]);
+        // Manejar borrado en cascada - orden importante por foreign keys
+        // 1. Tablas que dependen de otras tablas
+        await safeDelete('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id], 'membership_usage');
+        await safeDelete('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id], 'checkouts (via appointments)');
+        await safeDelete('DELETE FROM calendar_mappings WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id], 'calendar_mappings');
+
+        // 2. Tablas que dependen directamente de clients
+        await safeDelete('DELETE FROM client_memberships WHERE client_id = $1', [id], 'client_memberships');
+        await safeDelete('DELETE FROM appointments WHERE client_id = $1', [id], 'appointments');
+        await safeDelete('DELETE FROM transactions WHERE client_id = $1', [id], 'transactions');
+        await safeDelete('DELETE FROM checkouts WHERE client_id = $1', [id], 'checkouts (direct)');
+        await safeDelete('DELETE FROM whatsapp_messages WHERE client_id = $1', [id], 'whatsapp_messages');
+        await safeDelete('DELETE FROM notifications WHERE client_id = $1', [id], 'notifications');
 
         // 3. Finalmente borrar el cliente
         const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING id', [id]);
@@ -366,11 +380,12 @@ router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
             return res.status(404).json({ error: 'Cliente no encontrado' });
         }
 
+        console.log(`[DELETE CLIENT] Successfully deleted client ${id}`);
         res.json({ success: true, message: 'Cliente eliminado correctamente' });
 
     } catch (error) {
-        console.error('[DELETE CLIENT] Error:', error.message);
-        next(error);
+        console.error('[DELETE CLIENT] Final error:', error.message);
+        res.status(400).json({ error: 'No se pudo eliminar el cliente: ' + error.message });
     }
 });
 
