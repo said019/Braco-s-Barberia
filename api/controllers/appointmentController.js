@@ -237,13 +237,22 @@ export const appointmentController = {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
           });
 
+          // Detectar si es cliente nuevo (sin visitas anteriores)
+          const isNewClient = !client.total_visits || client.total_visits === 0;
+          const clientIndicator = isNewClient ? '🆕 NUEVO - VALIDAR DEPÓSITO' : '';
+
+          // Nombre del cliente con indicador si es nuevo
+          const clientDisplayName = isNewClient
+            ? `${client.name} (NUEVO - VALIDAR DEPÓSITO)`
+            : client.name;
+
           await whatsappService.sendAdminNewAppointment({
-            clientName: client.name,
+            clientName: clientDisplayName,
             serviceName: service.name,
             date: formattedDate,
             time: start_time
           });
-          console.log(`[CREATE APPT] Admin Notification SENT.`);
+          console.log(`[CREATE APPT] Admin Notification SENT. IsNewClient: ${isNewClient}`);
 
           // Notificación Adicional: Pago Completo (Si aplica)
           if (is_full_payment) {
