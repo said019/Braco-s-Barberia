@@ -427,6 +427,12 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
         }
 
         function formatDateShort(dateStr) {
+            // Evitar conversión de timezone al agregar T12:00:00
+            // Si dateStr es solo fecha (YYYY-MM-DD), parsearlo sin timezone
+            if (dateStr && dateStr.length === 10) {
+                const date = new Date(dateStr + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
             const date = new Date(dateStr);
             return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         }
