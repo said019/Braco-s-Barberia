@@ -669,11 +669,74 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
             return res.status(400).json({ error: 'Estado inválido' });
         }
 
+        // Obtener el status anterior y datos de la cita para posible envío de confirmación
+        const prevResult = await db.query(`
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.email as client_email,
+                   c.whatsapp_enabled, c.email_enabled, s.name as service_name
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.id = $1
+        `, [id]);
+
+        if (prevResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        const prevAppointment = prevResult.rows[0];
+        const wasFromPending = prevAppointment.status === 'pending';
+        const isNowApproved = ['scheduled', 'confirmed'].includes(status);
+
+        // Actualizar el status
         const result = await db.query(
             `UPDATE appointments SET status = $2, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1 RETURNING *`,
             [id, status]
         );
+
+        // Si la cita pasó de 'pending' a 'scheduled'/'confirmed', enviar confirmación al cliente
+        if (wasFromPending && isNowApproved) {
+            console.log(`[APPROVE APPT] Cita ${id} aprobada. Enviando confirmación al cliente...`);
+
+            const dateObj = new Date(prevAppointment.appointment_date + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+
+            // Enviar WhatsApp si tiene teléfono y está habilitado
+            if (prevAppointment.client_phone && prevAppointment.whatsapp_enabled !== false) {
+                try {
+                    const whatsappRes = await whatsappService.sendWhatsAppBookingConfirmation({
+                        phone: prevAppointment.client_phone,
+                        name: prevAppointment.client_name,
+                        service: prevAppointment.service_name,
+                        date: formattedDate,
+                        time: prevAppointment.start_time.slice(0, 5),
+                        code: prevAppointment.checkout_code || '----'
+                    });
+                    console.log(`[APPROVE APPT] WhatsApp confirmación enviado: ${whatsappRes.success}`);
+                } catch (whatsappError) {
+                    console.error('[APPROVE APPT] Error WhatsApp:', whatsappError);
+                }
+            }
+
+            // Enviar Email si tiene email y está habilitado
+            if (prevAppointment.client_email && prevAppointment.email_enabled !== false) {
+                try {
+                    const emailRes = await emailService.sendBookingConfirmation({
+                        email: prevAppointment.client_email,
+                        name: prevAppointment.client_name,
+                        service: prevAppointment.service_name,
+                        date: formattedDate,
+                        time: prevAppointment.start_time.slice(0, 5),
+                        code: prevAppointment.checkout_code || '----'
+                    });
+                    console.log(`[APPROVE APPT] Email confirmación enviado: ${emailRes.success}`);
+                } catch (emailError) {
+                    console.error('[APPROVE APPT] Error Email:', emailError);
+                }
+            }
+        }
 
         res.json(result.rows[0]);
 
