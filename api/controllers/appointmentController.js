@@ -344,16 +344,11 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
-      // Sync Google Calendar
+      // Sync Google Calendar (siempre update, nunca delete para mantener historial)
       try {
-        if (status === 'cancelled' || status === 'no_show') {
-          await googleCalendar.deleteEvent(req.params.id);
-          console.log(`[STATUS APPT] Removed from Google Calendar (cancelled/no_show): ${req.params.id}`);
-        } else {
-          const fullAppointment = await Appointment.getById(req.params.id);
-          await googleCalendar.updateEvent(req.params.id, fullAppointment);
-          console.log(`[STATUS APPT] Updated Google Calendar status: ${req.params.id}`);
-        }
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        console.log(`[STATUS APPT] Updated Google Calendar status to ${status}: ${req.params.id}`);
       } catch (gcalError) {
         console.error('[STATUS APPT] Google Calendar sync error:', gcalError.message);
       }
@@ -448,10 +443,11 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
-      // Sync Google Calendar (Delete)
+      // Sync Google Calendar (Update con estado cancelado, no delete)
       try {
-        await googleCalendar.deleteEvent(req.params.id);
-        console.log(`[CANCEL APPT] Removed from Google Calendar: ${req.params.id}`);
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        console.log(`[CANCEL APPT] Updated Google Calendar (cancelled): ${req.params.id}`);
       } catch (gcalError) {
         console.error('[CANCEL APPT] Google Calendar sync error:', gcalError.message);
       }
@@ -498,12 +494,14 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
-      // Sync Google Calendar (Delete or Update?)
-      // Usually remove no-shows from calendar to clean up
+      // Sync Google Calendar (Update con estado no_show, no delete)
       try {
-        await googleCalendar.deleteEvent(req.params.id);
-        console.log(`[NOSHOW APPT] Removed from Google Calendar: ${req.params.id}`);
-      } catch (e) { }
+        const fullAppointment = await Appointment.getById(req.params.id);
+        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        console.log(`[NOSHOW APPT] Updated Google Calendar (no_show): ${req.params.id}`);
+      } catch (gcalError) {
+        console.error('[NOSHOW APPT] Google Calendar sync error:', gcalError.message);
+      }
 
       res.json({
         success: true,

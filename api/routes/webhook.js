@@ -119,12 +119,15 @@ async function handleCancellationRequest(phone) {
         await query(`UPDATE appointments SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
         console.log(`[WEBHOOK] Appointment ${appt.id} cancelled via WhatsApp`);
 
-        // 2. Eliminar del Google Calendar
+        // 2. Actualizar en Google Calendar (no eliminar para mantener historial)
         try {
-            await googleCalendar.deleteEvent(appt.id);
-            console.log(`[WEBHOOK] Google Calendar event deleted for appointment ${appt.id}`);
+            await googleCalendar.updateEvent(appt.id, {
+                ...appt,
+                status: 'cancelled'
+            });
+            console.log(`[WEBHOOK] Google Calendar event updated to cancelled for appointment ${appt.id}`);
         } catch (gcalError) {
-            console.error(`[WEBHOOK] Google Calendar delete failed:`, gcalError.message);
+            console.error(`[WEBHOOK] Google Calendar update failed:`, gcalError.message);
         }
 
         // 3. Enviar respuesta de cancelación usando TEMPLATE
