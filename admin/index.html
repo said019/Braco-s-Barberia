@@ -355,6 +355,9 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
         }
 
         function confirmSendBirthday() {
+            // Nota: si el texto contiene emojis y se ve como "��" en WhatsApp,
+            // normalmente es un problema de encoding/doble-encoding.
+            // Construimos el URL con encodeURIComponent (UTF-8) y evitamos encodificar 2 veces.
             const message = document.getElementById('birthday-message').value;
             let phone = currentBirthdayClient.phone || '';
 
@@ -369,12 +372,29 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                 return;
             }
 
-            // Codificar mensaje para URL
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappUrl = `https://wa.me/52${phone}?text=${encodedMessage}`;
-
-            window.open(whatsappUrl, '_blank');
+            const whatsappUrl = buildWhatsAppUrl({ countryCode: '52', phone, text: message });
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
             closeBirthdayModal();
+        }
+
+        function buildWhatsAppUrl({ countryCode = '52', phone, text }) {
+            // Normalizar unicode ayuda con algunos caracteres combinados (y evita bugs raros)
+            const normalized = (text ?? '').normalize('NFC');
+
+            // Si por alguna razón llega un texto ya codificado, intentamos decodificarlo
+            // para evitar doble encode ("%F0%9F..." -> "%25F0%259F...", que puede verse como caracteres raros).
+            let decoded = normalized;
+            if (/%[0-9A-Fa-f]{2}/.test(decoded)) {
+                try {
+                    decoded = decodeURIComponent(decoded);
+                } catch (_) {
+                    // Si no era realmente un URI-encoded válido, lo dejamos tal cual
+                }
+            }
+
+            const encodedMessage = encodeURIComponent(decoded);
+            const cleanPhone = String(phone || '').replace(/\D/g, '');
+            return `https://wa.me/${countryCode}${cleanPhone}?text=${encodedMessage}`;
         }
 
         function insertEmoji(emoji) {
