@@ -5,6 +5,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import emailService from '../services/emailService.js';
 import whatsappService from '../services/whatsappService.js';
 import * as googleCalendar from '../services/googleCalendarService.js';
+import db from '../config/database.js';
 
 export const appointmentController = {
   // GET /api/appointments - Obtener citas con filtros
@@ -247,14 +248,26 @@ export const appointmentController = {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
           });
 
-          // Detectar si es cliente nuevo (sin visitas anteriores)
-          const isNewClient = !client.total_visits || client.total_visits === 0;
+          // Detectar si es cliente nuevo (sin visitas anteriores Y sin membresía activa)
+          const hasNoVisits = !client.total_visits || client.total_visits === 0;
+
+          // Verificar si tiene membresía activa
+          const membershipCheck = await db.query(
+            `SELECT 1 FROM client_memberships WHERE client_id = $1 AND status = 'active' LIMIT 1`,
+            [client.id]
+          );
+          const hasActiveMembership = membershipCheck.rows.length > 0;
+
+          // Solo marcar como NUEVO si no tiene visitas Y no tiene membresía
+          const isNewClient = hasNoVisits && !hasActiveMembership;
           const clientIndicator = isNewClient ? '🆕 NUEVO - VALIDAR DEPÓSITO' : '';
 
           // Nombre del cliente con indicador si es nuevo
           const clientDisplayName = isNewClient
             ? `${client.name} (NUEVO - VALIDAR DEPÓSITO)`
             : client.name;
+
+          console.log(`[CREATE APPT] Client ${client.name}: visits=${client.total_visits}, hasMembership=${hasActiveMembership}, isNew=${isNewClient}`);
 
           await whatsappService.sendAdminNewAppointment({
             clientName: clientDisplayName,

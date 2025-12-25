@@ -736,22 +736,56 @@ function showSuccessWithDepositInfo() {
         `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
     document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
 
-    // Agregar aviso de depósito pendiente
+    // Cambiar título de éxito
+    const successTitle = document.querySelector('.success-title');
+    if (successTitle) {
+        successTitle.textContent = '¡Cita Pre-Agendada!';
+        successTitle.style.color = '#FFC107';
+    }
+
+    const successMessage = document.querySelector('.success-message');
+    if (successMessage) {
+        successMessage.innerHTML = 'Tu cita requiere un <strong>depósito de $100 MXN</strong> para confirmarse';
+    }
+
+    // Agregar aviso de depósito pendiente con botón de WhatsApp
     const successNotice = document.querySelector('.success-notice');
     if (successNotice) {
+        const clientName = state.tempClient?.name || 'Cliente';
+        const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        const time = state.selectedTime;
+        const serviceName = state.selectedService.name;
+        const message = `Hola, soy *${clientName}*.%0AQuiero agendar una cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A%0ASoy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+
         successNotice.innerHTML = `
-            <p style="color: #FFC107; margin-bottom: 1rem;">
-                <strong>⚠️ DEPÓSITO PENDIENTE</strong><br>
-                Tu cita está pre-agendada pero requiere un depósito de <strong>$100 MXN</strong> para confirmarse.
-            </p>
-            <p><strong>Datos para transferencia:</strong></p>
-            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-size: 0.9rem;">
-                <p style="margin: 0.5rem 0;"><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></p>
-                <p style="margin: 0.5rem 0;"><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></p>
-                <p style="margin: 0.5rem 0;"><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></p>
-                <p style="margin: 0.5rem 0; font-size: 0.8rem; opacity: 0.7;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+            <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.05)); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <p style="color: #FFC107; margin-bottom: 1rem; font-size: 1.1rem;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>DEPÓSITO REQUERIDO</strong>
+                </p>
+                <p style="margin-bottom: 1rem;">Como eres cliente nuevo, necesitamos un depósito de <strong>$100 MXN</strong> para confirmar tu cita. Este monto se descuenta del total.</p>
+
+                <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000176357788')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
+                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
+                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                </div>
+
+                <a href="${whatsappUrl}" target="_blank" style="display: block; background: #25D366; color: white; text-align: center; padding: 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+                    <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
+                </a>
             </div>
-            <p>Envía tu comprobante por WhatsApp al <a href="https://wa.me/525573432027" style="color: var(--gold);">55 7343 2027</a></p>
         `;
     }
 
