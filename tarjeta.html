@@ -622,7 +622,7 @@
                                 <div class="card-footer">
                                     <div class="card-number">No. ${data.folio || '---'}</div>
                                     <div class="contact-info">
-                                        <div class="client-name" style="font-family: 'Playfair Display', serif; color: #C4A35A; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; text-align: right;">
+                                        <div class="client-name" style="font-family: 'Playfair Display', serif; color: ${cardClass === 'card-golden' ? '#2A1F0A' : '#C4A35A'}; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; text-align: right; ${cardClass === 'card-golden' ? 'text-shadow: 0 1px 2px rgba(255,255,255,0.3);' : ''}">
                                             ${data.clientName || ''}
                                         </div>
                                     </div>
