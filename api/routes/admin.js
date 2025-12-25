@@ -156,17 +156,27 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 router.get('/birthdays', authenticateToken, async (req, res, next) => {
     try {
         const days = parseInt(req.query.days) || 30;
+        // Calcular próximo cumpleaños correctamente:
+        // - Si el cumpleaños de este año aún no pasó, usar este año
+        // - Si ya pasó, usar el próximo año
         const sql = `
-                SELECT 
+            WITH birthdays AS (
+                SELECT
                     c.id,
                     c.name,
+                    c.phone,
                     c.birthdate,
-                    (c.birthdate + (EXTRACT(YEAR FROM AGE(NOW()))::int * INTERVAL '1 year'))::date AS next_birthday
+                    CASE
+                        WHEN TO_CHAR(c.birthdate, 'MM-DD') >= TO_CHAR(CURRENT_DATE, 'MM-DD')
+                        THEN TO_DATE(EXTRACT(YEAR FROM CURRENT_DATE)::text || TO_CHAR(c.birthdate, '-MM-DD'), 'YYYY-MM-DD')
+                        ELSE TO_DATE((EXTRACT(YEAR FROM CURRENT_DATE) + 1)::text || TO_CHAR(c.birthdate, '-MM-DD'), 'YYYY-MM-DD')
+                    END AS next_birthday
                 FROM clients c
                 WHERE c.birthdate IS NOT NULL
-                AND (c.birthdate + (EXTRACT(YEAR FROM AGE(NOW()))::int * INTERVAL '1 year'))::date
-                    BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 * INTERVAL '1 day'
-                ORDER BY next_birthday ASC`;
+            )
+            SELECT * FROM birthdays
+            WHERE next_birthday BETWEEN CURRENT_DATE AND CURRENT_DATE + $1 * INTERVAL '1 day'
+            ORDER BY next_birthday ASC`;
         const result = await db.query(sql, [days]);
         res.json(result.rows);
     } catch (error) {
