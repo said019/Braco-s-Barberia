@@ -337,12 +337,15 @@
             const firstName = name.split(' ')[0];
             console.log('[BIRTHDAY] Opening modal for:', firstName);
 
-            // Mensaje predeterminado
-            const defaultMessage = `¡Feliz cumpleaños, ${firstName}! 🎉🎂
+            // Mensaje predeterminado - usando String.fromCodePoint para emojis
+            const emoji_party = String.fromCodePoint(0x1F389); // 🎉
+            const emoji_cake = String.fromCodePoint(0x1F382);  // 🎂
+            const emoji_barber = String.fromCodePoint(0x1F488); // 💈
+            const defaultMessage = `¡Feliz cumpleaños, ${firstName}! ${emoji_party}${emoji_cake}
 
 En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
-¡Te esperamos pronto para consentirte! 💈`;
+¡Te esperamos pronto para consentirte! ${emoji_barber}`;
 
             document.getElementById('birthday-client-name').textContent = firstName;
             document.getElementById('birthday-message').value = defaultMessage;
