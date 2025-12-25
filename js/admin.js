@@ -175,7 +175,15 @@ function formatCurrency(amount) {
 }
 
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('es-MX', {
+    // Evitar conversión de timezone - si es solo fecha (YYYY-MM-DD), agregarle T12:00:00
+    let dateStr = date;
+    if (typeof date === 'string' && date.length === 10) {
+        dateStr = date + 'T12:00:00';
+    } else if (typeof date === 'string' && date.includes('T')) {
+        // Si ya tiene T, extraer solo la fecha y agregar T12:00:00
+        dateStr = date.split('T')[0] + 'T12:00:00';
+    }
+    return new Date(dateStr).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
@@ -183,7 +191,12 @@ function formatDate(date) {
 }
 
 function formatDateTime(datetime) {
-    return new Date(datetime).toLocaleDateString('es-MX', {
+    // Evitar conversión de timezone
+    let dateStr = datetime;
+    if (typeof datetime === 'string' && datetime.length === 10) {
+        dateStr = datetime + 'T12:00:00';
+    }
+    return new Date(dateStr).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

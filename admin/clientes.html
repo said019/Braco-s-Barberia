@@ -525,7 +525,14 @@
 
         function formatDate(date) {
             if (!date) return '-';
-            return new Date(date).toLocaleDateString('es-MX', {
+            // Evitar conversión de timezone
+            let dateStr = date;
+            if (typeof date === 'string' && date.length === 10) {
+                dateStr = date + 'T12:00:00';
+            } else if (typeof date === 'string' && date.includes('T')) {
+                dateStr = date.split('T')[0] + 'T12:00:00';
+            }
+            return new Date(dateStr).toLocaleDateString('es-MX', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'

@@ -685,7 +685,8 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
 
         const prevAppointment = prevResult.rows[0];
         const wasFromPending = prevAppointment.status === 'pending';
-        const isNowApproved = ['scheduled', 'confirmed'].includes(status);
+        // Al aprobar cita pendiente, siempre usar 'scheduled' (no 'confirmed')
+        const isNowApproved = status === 'scheduled';
 
         // Actualizar el status
         const result = await db.query(
@@ -694,7 +695,19 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
             [id, status]
         );
 
-        // Si la cita pasó de 'pending' a 'scheduled'/'confirmed', enviar confirmación al cliente
+        // Si se cancela la cita, eliminar el evento de Google Calendar
+        if (status === 'cancelled' || status === 'no_show') {
+            try {
+                const googleCalendar = await import('../services/googleCalendarService.js');
+                await googleCalendar.deleteEvent(parseInt(id));
+                console.log(`[CANCEL APPT] Evento de Google Calendar eliminado para cita ${id}`);
+            } catch (gcalError) {
+                console.error('[CANCEL APPT] Error eliminando evento de Google Calendar:', gcalError.message);
+                // Continuar aunque falle la eliminación del calendario
+            }
+        }
+
+        // Si la cita pasó de 'pending' a 'scheduled', enviar confirmación al cliente
         if (wasFromPending && isNowApproved) {
             console.log(`[APPROVE APPT] Cita ${id} aprobada. Enviando confirmación al cliente...`);
 
