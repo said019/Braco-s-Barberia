@@ -454,7 +454,19 @@
             document.getElementById('client-name').value = client.name;
             document.getElementById('client-phone').value = client.phone;
             document.getElementById('client-email').value = client.email || '';
-            document.getElementById('client-birthdate').value = client.birthdate || '';
+
+            // Format birthdate to YYYY-MM-DD for date input
+            let birthdate = '';
+            if (client.birthdate) {
+                // If it's an ISO string with T, extract just the date part
+                if (typeof client.birthdate === 'string' && client.birthdate.includes('T')) {
+                    birthdate = client.birthdate.split('T')[0];
+                } else {
+                    birthdate = client.birthdate;
+                }
+            }
+            document.getElementById('client-birthdate').value = birthdate;
+
             document.getElementById('client-type').value = client.client_type_id;
             document.getElementById('client-notes').value = client.notes || '';
 

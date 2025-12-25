@@ -910,13 +910,117 @@ async function confirmPrepayOption() {
 
     const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
     // Enviar flag de pago completo
-    await createRecurringAppointment(client, appointmentNotes, { is_full_payment: true });
+    const result = await createRecurringAppointmentWithResult(client, appointmentNotes, { is_full_payment: true });
     closePaymentOptionsModal();
 
-    // Open WhatsApp for sending proof
-    const message = `Hola, soy *${client.name}*.%0AHe agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.%0A%0AAnexo mi comprobante de pago anticipado.`;
-    const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+    if (result) {
+        // Mostrar pantalla de éxito con datos de pago
+        showSuccessWithPaymentInfo(result, client);
+
+        // Open WhatsApp for sending proof
+        const message = `Hola, soy *${client.name}*.%0AHe agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.%0A%0AAnexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+    }
+}
+
+// Versión que retorna el resultado para uso en confirmPrepayOption
+async function createRecurringAppointmentWithResult(client, notes, extraData = {}) {
+    try {
+        const emailInput = document.getElementById('client-email');
+        const email = emailInput ? emailInput.value : null;
+
+        const bookingData = {
+            client_id: client.id,
+            service_id: state.selectedService.id,
+            appointment_date: formatLocalDate(state.selectedDate),
+            start_time: state.selectedTime,
+            notes: notes || null,
+            status: 'scheduled',
+            email: email || null,
+            ...extraData
+        };
+
+        const result = await API.createAppointment(bookingData);
+        return result;
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        showToast(error.message || 'Error al crear la cita', 'error');
+        return null;
+    }
+}
+
+// Pantalla de éxito con datos de pago (para clientes recurrentes que eligen "Pagar Ahora")
+function showSuccessWithPaymentInfo(appointmentData, client) {
+    // Ocultar todos los pasos
+    elements.steps.forEach(s => s.classList.add('hidden'));
+
+    // Mostrar pantalla de éxito
+    const successStep = document.getElementById('step-success');
+    successStep.classList.remove('hidden');
+
+    // Llenar datos
+    document.getElementById('success-code').textContent = appointmentData.checkout_code || '----';
+    document.getElementById('success-service').textContent = state.selectedService.name;
+    document.getElementById('success-datetime').textContent =
+        `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
+    document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
+
+    // Cambiar título
+    const successTitle = document.querySelector('.success-title');
+    if (successTitle) {
+        successTitle.textContent = '¡Cita Confirmada!';
+        successTitle.style.color = '#4CAF50';
+    }
+
+    const successMessage = document.querySelector('.success-message');
+    if (successMessage) {
+        successMessage.innerHTML = 'Tu cita está confirmada. <strong>Envía tu comprobante de pago por WhatsApp.</strong>';
+    }
+
+    // Agregar datos bancarios en la pantalla de éxito
+    const successNotice = document.querySelector('.success-notice');
+    if (successNotice) {
+        const clientName = client?.name || 'Cliente';
+        const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        const time = state.selectedTime;
+        const serviceName = state.selectedService.name;
+        const price = state.selectedService.price;
+        const message = `Hola, soy *${clientName}*.%0AHe agendado mi cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A💰 *$${price}*%0A%0AAnexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+
+        successNotice.innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05)); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <p style="color: #4CAF50; margin-bottom: 1rem; font-size: 1.1rem;">
+                    <i class="fas fa-check-circle"></i> <strong>PAGO ANTICIPADO</strong>
+                </p>
+                <p style="margin-bottom: 1rem;">Has elegido pagar por adelantado. Transfiere el monto de <strong>$${price} MXN</strong> y envía tu comprobante.</p>
+
+                <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000176357788')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
+                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
+                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                </div>
+
+                <a href="${whatsappUrl}" target="_blank" style="display: block; background: #25D366; color: white; text-align: center; padding: 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+                    <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
+                </a>
+            </div>
+        `;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function createRecurringAppointment(client, notes, extraData = {}) {
@@ -944,8 +1048,25 @@ async function createRecurringAppointment(client, notes, extraData = {}) {
     }
 }
 
+// Cerrar modal y ver datos en pantalla (sin abrir WhatsApp automáticamente)
+async function confirmPrepayLater() {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
+    // Enviar flag de pago completo
+    const result = await createRecurringAppointmentWithResult(client, appointmentNotes, { is_full_payment: true });
+    closePaymentOptionsModal();
+
+    if (result) {
+        // Mostrar pantalla de éxito con datos de pago (sin abrir WhatsApp)
+        showSuccessWithPaymentInfo(result, client);
+    }
+}
+
 // Export payment options functions
 window.showPaymentOptionsModal = showPaymentOptionsModal;
 window.closePaymentOptionsModal = closePaymentOptionsModal;
 window.selectPaymentOption = selectPaymentOption;
 window.confirmPrepayOption = confirmPrepayOption;
+window.confirmPrepayLater = confirmPrepayLater;

@@ -426,11 +426,17 @@
                 return;
             }
 
-            grid.innerHTML = products.filter(p => p.is_active && p.stock > 0).map(p => `
+            grid.innerHTML = products.filter(p => p.is_active && p.stock > 0).map(p => {
+                // Fix image URL path - add ../ for relative paths from admin folder
+                let imgUrl = p.image_url;
+                if (imgUrl && imgUrl.startsWith('assets/')) {
+                    imgUrl = '../' + imgUrl;
+                }
+                return `
                 <div class="product-card" onclick="addToCart(${p.id})">
                     <div class="add-indicator"><i class="fas fa-plus"></i></div>
-                    ${p.image_url
-                        ? `<div class="product-image"><img src="${p.image_url}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-box\\'></i>'"></div>`
+                    ${imgUrl
+                        ? `<div class="product-image"><img src="${imgUrl}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-box\\'></i>'"></div>`
                         : `<div class="product-image-placeholder"><i class="fas fa-box"></i></div>`
                     }
                     <div class="product-info">
@@ -441,7 +447,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;}).join('');
         }
 
         function filterProducts() {

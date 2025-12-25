@@ -269,23 +269,27 @@ export const appointmentController = {
 
           console.log(`[CREATE APPT] Client ${client.name}: visits=${client.total_visits}, hasMembership=${hasActiveMembership}, isNew=${isNewClient}`);
 
-          await whatsappService.sendAdminNewAppointment({
-            clientName: clientDisplayName,
-            serviceName: service.name,
-            date: formattedDate,
-            time: start_time
-          });
-          console.log(`[CREATE APPT] Admin Notification SENT. IsNewClient: ${isNewClient}`);
-
-          // Notificación Adicional: Pago Completo (Si aplica)
+          // Lógica de notificación al admin:
+          // - Si es pago completo → SOLO enviar notificación de pago completo (cita confirmada automáticamente)
+          // - Si NO es pago completo → SOLO enviar notificación de nueva cita (requiere validación)
           if (is_full_payment) {
+            // Pago completo - Cita confirmada automáticamente
             await whatsappService.sendAdminFullPayment({
               clientName: client.name,
               serviceName: service.name,
               amount: `$${service.price}`,
               date: formattedDate
             });
-            console.log(`[CREATE APPT] Admin Full Payment Notification SENT.`);
+            console.log(`[CREATE APPT] Admin Full Payment Notification SENT (auto-confirmed).`);
+          } else {
+            // No es pago completo - Requiere validación del admin
+            await whatsappService.sendAdminNewAppointment({
+              clientName: clientDisplayName,
+              serviceName: service.name,
+              date: formattedDate,
+              time: start_time
+            });
+            console.log(`[CREATE APPT] Admin New Appointment Notification SENT. IsNewClient: ${isNewClient}`);
           }
         }
       } catch (adminError) {

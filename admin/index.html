@@ -326,6 +326,94 @@
             year: 'numeric'
         });
 
+        // =====================================================
+        // FUNCIONES GLOBALES PARA CUMPLEAÑOS (fuera de loadDashboard)
+        // =====================================================
+        let currentBirthdayClient = { name: '', phone: '' };
+
+        function sendBirthdayMessage(name, phone) {
+            currentBirthdayClient = { name, phone };
+            const firstName = name.split(' ')[0];
+
+            // Mensaje predeterminado
+            const defaultMessage = `¡Feliz cumpleaños, ${firstName}! 🎉🎂
+
+En Braco's Barbería te deseamos un día increíble lleno de alegría.
+
+¡Te esperamos pronto para consentirte! 💈`;
+
+            document.getElementById('birthday-client-name').textContent = firstName;
+            document.getElementById('birthday-message').value = defaultMessage;
+            document.getElementById('modal-birthday').style.display = 'flex';
+        }
+
+        function closeBirthdayModal() {
+            document.getElementById('modal-birthday').style.display = 'none';
+        }
+
+        function confirmSendBirthday() {
+            const message = document.getElementById('birthday-message').value;
+            let phone = currentBirthdayClient.phone || '';
+
+            // Limpiar teléfono
+            phone = phone.replace(/\D/g, '');
+            if (phone.startsWith('52') && phone.length > 10) {
+                phone = phone.substring(2);
+            }
+
+            if (!phone || phone.length < 10) {
+                alert('Teléfono no válido');
+                return;
+            }
+
+            // Codificar mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/52${phone}?text=${encodedMessage}`;
+
+            window.open(whatsappUrl, '_blank');
+            closeBirthdayModal();
+        }
+
+        function insertEmoji(emoji) {
+            const textarea = document.getElementById('birthday-message');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + emoji + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+            textarea.focus();
+        }
+
+        // Load birthdays function
+        async function loadBirthdays() {
+            try {
+                const data = await api.get('/admin/birthdays?days=30');
+                const container = document.getElementById('birthday-list');
+                if (!data || !data.length) {
+                    container.innerHTML = '<p class="text-muted">No hay cumpleaños próximos.</p>';
+                    return;
+                }
+                container.innerHTML = data.map(c => {
+                    // Escapar comillas en nombre para evitar problemas con onclick
+                    const safeName = (c.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    const safePhone = (c.phone || '').replace(/\D/g, '');
+                    return `
+            <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
+                <div>
+                    <span class="name" style="font-weight: 500;">${c.name}</span>
+                    <span class="date" style="color: #888; margin-left: 0.5rem;">${new Date(c.next_birthday).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                </div>
+                <button class="btn-icon" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="font-size: 1.2rem;">
+                    🎂
+                </button>
+            </div>
+        `;}).join('');
+            } catch (e) {
+                console.error('Error loading birthdays', e);
+                document.getElementById('birthday-list').innerHTML = '<p class="text-muted">Error al cargar cumpleaños.</p>';
+            }
+        }
+
         // Cargar dashboard
         async function loadDashboard() {
             try {
@@ -336,80 +424,6 @@
                 document.getElementById('stat-ventas-hoy').textContent = `$${data.stats.sales_today.toLocaleString()}`;
                 document.getElementById('stat-membresias').textContent = data.stats.active_memberships;
                 document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
-
-                // Load birthdays
-                async function loadBirthdays() {
-                    try {
-                        const data = await api.get('/admin/birthdays?days=30');
-                        const container = document.getElementById('birthday-list');
-                        if (!data.length) {
-                            container.innerHTML = '<p class="text-muted">No hay cumpleaños próximos.</p>';
-                            return;
-                        }
-                        container.innerHTML = data.map(c => `
-            <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
-                <div>
-                    <span class="name" style="font-weight: 500;">${c.name}</span>
-                    <span class="date" style="color: #888; margin-left: 0.5rem;">${new Date(c.next_birthday).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                </div>
-                <button class="btn-icon" onclick="sendBirthdayMessage('${c.name}', '${c.phone}')" title="Enviar felicitación" style="font-size: 1.2rem;">
-                    🎂
-                </button>
-            </div>
-        `).join('');
-                    } catch (e) {
-                        console.error('Error loading birthdays', e);
-                    }
-                }
-
-                // Variables globales para cumpleaños
-                let currentBirthdayClient = { name: '', phone: '' };
-
-                // Función para abrir modal de mensaje de cumpleaños
-                window.sendBirthdayMessage = function (name, phone) {
-                    currentBirthdayClient = { name, phone };
-                    const firstName = name.split(' ')[0];
-
-                    // Mensaje predeterminado
-                    const defaultMessage = `¡Feliz cumpleaños, ${firstName}! 🎉🎂
-
-En Braco's Barbería te deseamos un día increíble lleno de alegría.
-
-¡Te esperamos pronto para consentirte!`;
-
-                    document.getElementById('birthday-client-name').textContent = firstName;
-                    document.getElementById('birthday-message').value = defaultMessage;
-                    document.getElementById('modal-birthday').style.display = 'flex';
-                };
-
-                // Función para cerrar modal
-                window.closeBirthdayModal = function () {
-                    document.getElementById('modal-birthday').style.display = 'none';
-                };
-
-                // Función para confirmar y enviar por WhatsApp
-                window.confirmSendBirthday = function () {
-                    const message = document.getElementById('birthday-message').value;
-                    const phone = currentBirthdayClient.phone;
-
-                    // Codificar mensaje para URL
-                    const encodedMessage = encodeURIComponent(message);
-                    const whatsappUrl = `https://wa.me/52${phone}?text=${encodedMessage}`;
-
-                    window.open(whatsappUrl, '_blank');
-                    closeBirthdayModal();
-                };
-
-                // Función para insertar emoji en el textarea
-                window.insertEmoji = function(emoji) {
-                    const textarea = document.getElementById('birthday-message');
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const text = textarea.value;
-                    textarea.value = text.substring(0, start) + emoji + text.substring(end);
-                    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-                    textarea.focus();
-                };
 
                 // Call loadBirthdays after stats are set
                 loadBirthdays();
