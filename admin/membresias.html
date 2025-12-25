@@ -788,8 +788,11 @@
             // Get client info from selected option
             const clientSelect = document.getElementById('membership-client');
             const selectedOption = clientSelect.options[clientSelect.selectedIndex];
-            const clientPhone = selectedOption.dataset.phone;
-            const clientName = selectedOption.dataset.name;
+            const clientPhone = selectedOption.dataset.phone || '';
+            const clientName = selectedOption.dataset.name || 'Cliente';
+
+            console.log('[MEMBERSHIP] Client phone from dataset:', clientPhone);
+            console.log('[MEMBERSHIP] Client name from dataset:', clientName);
 
             const membershipData = {
                 client_id: parseInt(clientSelect.value),
@@ -812,12 +815,22 @@
                 const uuid = response.uuid;
                 const shareLink = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
 
-                // Clean phone number
-                const cleanPhone = clientPhone.replace(/\D/g, '');
+                // Clean phone number - remove all non-digits
+                let cleanPhone = clientPhone.replace(/\D/g, '');
+                // Remove country code if present (52 for Mexico)
+                if (cleanPhone.startsWith('52') && cleanPhone.length > 10) {
+                    cleanPhone = cleanPhone.substring(2);
+                }
+                // Remove leading 1 if present (some numbers have 521)
+                if (cleanPhone.startsWith('1') && cleanPhone.length === 11) {
+                    cleanPhone = cleanPhone.substring(1);
+                }
+                console.log('[MEMBERSHIP] Cleaned phone:', cleanPhone);
 
                 // Build WhatsApp message with client name and plan
                 const whatsappMsg = `¡Hola *${clientName}*! 🎉\n\n¡Felicidades! Tu membresía *${planName}* de Braco's Barbería ha sido activada con éxito. 👑\n\nAquí está tu *Tarjeta Digital*:\n${shareLink}\n\n✨ Guárdala y preséntala en tu próxima visita.\n\n¡Gracias por confiar en Braco's! 💈`;
                 const whatsappUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
+                console.log('[MEMBERSHIP] WhatsApp URL:', whatsappUrl);
 
                 const successContent = `
                     <div style="text-align: center; padding: 1rem;">
@@ -853,7 +866,18 @@
                 window.successModal = showModal('successModal', '✅ Membresía Activada', successContent, '<button class="btn btn-primary" onclick="window.successModal.close()">Cerrar</button>');
 
                 // Auto-open WhatsApp to send the membership card
-                window.open(whatsappUrl, '_blank');
+                // Use setTimeout to avoid popup blocker after async operation
+                setTimeout(() => {
+                    if (cleanPhone && cleanPhone.length >= 10) {
+                        const popup = window.open(whatsappUrl, '_blank');
+                        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                            // Popup was blocked
+                            showToast('Haz clic en el botón de WhatsApp para enviar', 'info');
+                        }
+                    } else {
+                        showToast('Número de teléfono no válido para WhatsApp', 'warning');
+                    }
+                }, 500);
 
                 loadMemberships();
             } catch (error) {
