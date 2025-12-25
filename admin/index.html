@@ -245,7 +245,7 @@
     </div>
 
     <!-- Modal: Mensaje de Cumpleaños -->
-    <div class="modal-overlay" id="modal-birthday" style="display: none;">
+    <div class="modal-overlay" id="modal-birthday">
         <div class="modal" style="max-width: 550px;">
             <div class="modal-header">
                 <h3 class="modal-title">🎂 Felicitar a <span id="birthday-client-name"></span></h3>
@@ -332,8 +332,10 @@
         let currentBirthdayClient = { name: '', phone: '' };
 
         function sendBirthdayMessage(name, phone) {
+            console.log('[BIRTHDAY] sendBirthdayMessage called:', name, phone);
             currentBirthdayClient = { name, phone };
             const firstName = name.split(' ')[0];
+            console.log('[BIRTHDAY] Opening modal for:', firstName);
 
             // Mensaje predeterminado
             const defaultMessage = `¡Feliz cumpleaños, ${firstName}! 🎉🎂
@@ -344,11 +346,12 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
             document.getElementById('birthday-client-name').textContent = firstName;
             document.getElementById('birthday-message').value = defaultMessage;
-            document.getElementById('modal-birthday').style.display = 'flex';
+            // Usar classList.add('active') en lugar de style.display porque el CSS usa visibility/opacity
+            document.getElementById('modal-birthday').classList.add('active');
         }
 
         function closeBirthdayModal() {
-            document.getElementById('modal-birthday').style.display = 'none';
+            document.getElementById('modal-birthday').classList.remove('active');
         }
 
         function confirmSendBirthday() {
