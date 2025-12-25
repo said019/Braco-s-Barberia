@@ -384,6 +384,12 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             textarea.focus();
         }
 
+        // Exponer funciones de cumpleaños globalmente
+        window.sendBirthdayMessage = sendBirthdayMessage;
+        window.closeBirthdayModal = closeBirthdayModal;
+        window.confirmSendBirthday = confirmSendBirthday;
+        window.insertEmoji = insertEmoji;
+
         // Load birthdays function
         async function loadBirthdays() {
             try {
