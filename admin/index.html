@@ -262,21 +262,22 @@
                 <div class="form-group">
                     <label class="form-label" style="font-size: 0.85rem; color: #888;">Insertar Emoji</label>
                     <div class="emoji-picker" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: rgba(196, 163, 90, 0.05); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2);">
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎂')" title="Pastel">🎂</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')" title="Fiesta">🎉</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎈')" title="Globo">🎈</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎁')" title="Regalo">🎁</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🥳')" title="Celebración">🥳</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎊')" title="Confeti">🎊</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('✨')" title="Brillos">✨</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('💈')" title="Barbería">💈</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('💪')" title="Fuerza">💪</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🙌')" title="Manos arriba">🙌</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('👑')" title="Corona">👑</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')" title="Corazón">❤️</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')" title="Fuego">🔥</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('⭐')" title="Estrella">⭐</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('💯')" title="100">💯</button>
+                        <!-- Usamos codepoints numéricos para evitar problemas de encoding al guardar/servir HTML -->
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F382)" title="Pastel">🎂</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F389)" title="Fiesta">🎉</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F388)" title="Globo">🎈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F381)" title="Regalo">🎁</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F973)" title="Celebración">🥳</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F38A)" title="Confeti">🎊</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2728)" title="Brillos">✨</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F488)" title="Barbería">💈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AA)" title="Fuerza">💪</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F64C)" title="Manos arriba">🙌</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F451)" title="Corona">👑</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2764, 0xFE0F)" title="Corazón">❤️</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F525)" title="Fuego">🔥</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2B50)" title="Estrella">⭐</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AF)" title="100">💯</button>
                     </div>
                 </div>
             </div>
@@ -397,6 +398,15 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             return `https://wa.me/${countryCode}${cleanPhone}?text=${encodedMessage}`;
         }
 
+        function emojiFromCodepoints(...codepoints) {
+            return String.fromCodePoint(...codepoints);
+        }
+
+        function insertEmojiCp(...codepoints) {
+            const emoji = emojiFromCodepoints(...codepoints);
+            insertEmoji(emoji);
+        }
+
         function insertEmoji(emoji) {
             const textarea = document.getElementById('birthday-message');
             const start = textarea.selectionStart;
@@ -412,6 +422,7 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
         window.closeBirthdayModal = closeBirthdayModal;
         window.confirmSendBirthday = confirmSendBirthday;
         window.insertEmoji = insertEmoji;
+    window.insertEmojiCp = insertEmojiCp;
 
         // Load birthdays function
         async function loadBirthdays() {
