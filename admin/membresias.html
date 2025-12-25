@@ -645,22 +645,24 @@
 
                 const clients = clientsData.clients || [];
                 membershipTypes = typesData.types || [];
+                // Store clients globally for later use
+                window.membershipClients = clients;
 
                 const content = `
-                    <form id="membership-form" class="admin-form">
+                    <form id="membership-form">
                         <div class="form-group">
-                            <label for="membership-client">Cliente *</label>
-                            <select id="membership-client" required>
+                            <label class="form-label">Cliente *</label>
+                            <select id="membership-client" class="form-select" required>
                                 <option value="">Selecciona un cliente</option>
                                 ${clients.map(c => `
-                                    <option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>
+                                    <option value="${c.id}" data-phone="${c.phone}" data-name="${c.name}">${c.name} - ${formatPhone(c.phone)}</option>
                                 `).join('')}
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label for="membership-type">Plan *</label>
-                            <select id="membership-type" required onchange="updateMembershipPreview()">
+                            <label class="form-label">Plan *</label>
+                            <select id="membership-type" class="form-select" required onchange="updateMembershipPreview()">
                                 <option value="">Selecciona un plan</option>
                                 ${membershipTypes.map(t => `
                                     <option value="${t.id}" data-price="${t.price}" data-services="${t.total_services || 0}" data-transferable="${t.is_transferable}">
@@ -671,38 +673,41 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="membership-folio">Folio *</label>
+                            <label class="form-label">Folio *</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <span id="folio-prefix" style="background: rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 4px; color: var(--gold); font-weight: bold; min-width: 50px; text-align: center;">-</span>
-                                <input type="number" id="membership-folio" required placeholder="Número (ej: 1)" class="form-control" style="flex: 1;">
+                                <span id="folio-prefix" style="background: linear-gradient(135deg, rgba(196, 163, 90, 0.2), rgba(196, 163, 90, 0.1)); padding: 0.75rem 1rem; border-radius: 6px; color: var(--gold); font-weight: 700; min-width: 55px; text-align: center; border: 1px solid rgba(196, 163, 90, 0.3); font-size: 1.1rem;">-</span>
+                                <input type="number" id="membership-folio" class="form-input" required placeholder="Número (ej: 1)" style="flex: 1;">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="payment-method">Método de Pago *</label>
-                            <select id="payment-method" required>
-                                <option value="efectivo">Efectivo</option>
-                                <option value="tarjeta">Tarjeta</option>
-                                <option value="transferencia">Transferencia</option>
+                            <label class="form-label">Método de Pago *</label>
+                            <select id="payment-method" class="form-select" required>
+                                <option value="efectivo">💵 Efectivo</option>
+                                <option value="tarjeta">💳 Tarjeta</option>
+                                <option value="transferencia">📱 Transferencia</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label>Fecha de Inicio</label>
-                            <input type="text" value="Hoy (${formatDate(new Date())})" disabled class="form-control" style="opacity: 0.7;">
-                            <small class="text-muted">La membresía se activa inmediatamente.</small>
+                            <label class="form-label">Fecha de Inicio</label>
+                            <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 6px; padding: 0.75rem 1rem; color: #81c784;">
+                                <i class="fas fa-calendar-check" style="margin-right: 8px;"></i>
+                                Hoy (${formatDate(new Date())})
+                            </div>
+                            <small style="color: #888; font-size: 0.8rem; margin-top: 0.5rem; display: block;">La membresía se activa inmediatamente.</small>
                         </div>
-                        
-                        <div id="membership-preview" style="margin-top: 1rem; padding: 1rem; background: rgba(196, 163, 90, 0.1); display: none;">
-                            <p><strong>Resumen:</strong></p>
-                            <p id="preview-details"></p>
+
+                        <div id="membership-preview" style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(196, 163, 90, 0.1), rgba(196, 163, 90, 0.05)); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2); display: none;">
+                            <p style="color: var(--gold); font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-receipt" style="margin-right: 8px;"></i>Resumen:</p>
+                            <p id="preview-details" style="line-height: 1.8; color: #ccc;"></p>
                         </div>
                     </form>
                 `;
 
                 const footer = `
                     <button class="btn btn-secondary" onclick="activateMembershipModal.close()">Cancelar</button>
-                    <button class="btn btn-primary" onclick="activateMembership()">Activar Membresía</button>
+                    <button class="btn btn-primary" onclick="activateMembership()"><i class="fas fa-crown" style="margin-right: 8px;"></i>Activar Membresía</button>
                 `;
 
                 window.activateMembershipModal = showModal('activateMembershipModal', 'Activar Membresía', content, footer);
@@ -780,12 +785,22 @@
                 return;
             }
 
+            // Get client info from selected option
+            const clientSelect = document.getElementById('membership-client');
+            const selectedOption = clientSelect.options[clientSelect.selectedIndex];
+            const clientPhone = selectedOption.dataset.phone;
+            const clientName = selectedOption.dataset.name;
+
             const membershipData = {
-                client_id: parseInt(document.getElementById('membership-client').value),
+                client_id: parseInt(clientSelect.value),
                 membership_type_id: parseInt(document.getElementById('membership-type').value),
                 payment_method: document.getElementById('payment-method').value,
                 folio_number: document.getElementById('folio-prefix').textContent + document.getElementById('membership-folio').value
             };
+
+            // Get plan name for message
+            const typeSelect = document.getElementById('membership-type');
+            const planName = typeSelect.options[typeSelect.selectedIndex].textContent.split(' - ')[0];
 
             try {
                 // AdminAPI.createMembership uses POST /api/admin/memberships
@@ -795,37 +810,50 @@
                 window.activateMembershipModal.close();
 
                 const uuid = response.uuid;
-                const shareLink = `${window.location.origin}/tarjeta.html?id=${uuid}`;
-                const whatsappMsg = `¡Hola! Aquí tienes tu Membresía Digital de Braco's Barbería: ${shareLink}`;
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMsg)}`;
+                const shareLink = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
+
+                // Clean phone number
+                const cleanPhone = clientPhone.replace(/\D/g, '');
+
+                // Build WhatsApp message with client name and plan
+                const whatsappMsg = `¡Hola *${clientName}*! 🎉\n\n¡Felicidades! Tu membresía *${planName}* de Braco's Barbería ha sido activada con éxito. 👑\n\nAquí está tu *Tarjeta Digital*:\n${shareLink}\n\n✨ Guárdala y preséntala en tu próxima visita.\n\n¡Gracias por confiar en Braco's! 💈`;
+                const whatsappUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
 
                 const successContent = `
                     <div style="text-align: center; padding: 1rem;">
-                        <div style="background: rgba(76, 175, 80, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                            <i class="fas fa-check" style="font-size: 2rem; color: #4CAF50;"></i>
+                        <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1)); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 2px solid rgba(76, 175, 80, 0.3);">
+                            <i class="fas fa-crown" style="font-size: 2.5rem; color: #4CAF50;"></i>
                         </div>
-                        <h3 style="color: var(--gold); margin-bottom: 0.5rem;">¡Membresía Activada!</h3>
-                        <p style="color: #ccc; margin-bottom: 1.5rem;">La membresía se ha registrado correctamente.</p>
-                        
-                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                            <p style="font-size: 0.8rem; color: #888; margin-bottom: 0.5rem;">ENLACE DIGITAL</p>
-                            <input type="text" value="${shareLink}" readonly 
-                                style="width: 100%; background: transparent; border: 1px solid #444; color: #fff; padding: 0.5rem; text-align: center; font-size: 0.9rem; border-radius: 4px;"
+                        <h3 style="color: var(--gold); margin-bottom: 0.5rem; font-size: 1.5rem;">¡Membresía Activada!</h3>
+                        <p style="color: #ccc; margin-bottom: 0.5rem;">Cliente: <strong>${clientName}</strong></p>
+                        <p style="color: var(--gold); margin-bottom: 1.5rem;">Plan: <strong>${planName}</strong></p>
+
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(196, 163, 90, 0.2);">
+                            <p style="font-size: 0.8rem; color: #888; margin-bottom: 0.5rem;">ENLACE DE TARJETA DIGITAL</p>
+                            <input type="text" value="${shareLink}" readonly
+                                style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(196, 163, 90, 0.3); color: #fff; padding: 0.75rem; text-align: center; font-size: 0.85rem; border-radius: 6px;"
                                 onclick="this.select()">
                         </div>
 
-                        <div style="display: flex; gap: 1rem; justify-content: center;">
-                            <a href="${whatsappUrl}" target="_blank" class="btn btn-success" style="background: #25D366; border-color: #25D366; color: white;">
-                                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="${whatsappUrl}" target="_blank" class="btn" style="background: #25D366; border: none; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar por WhatsApp
                             </a>
-                            <button onclick="copyToClipboard('${shareLink}')" class="btn btn-secondary">
-                                <i class="fas fa-copy"></i> Copiar
+                            <button onclick="copyToClipboard('${shareLink}')" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+                                <i class="fas fa-copy"></i> Copiar Link
                             </button>
                         </div>
+
+                        <p style="font-size: 0.8rem; color: #666; margin-top: 1.5rem;">
+                            <i class="fas fa-info-circle"></i> El cliente recibirá su tarjeta digital por WhatsApp
+                        </p>
                     </div>
                 `;
 
-                window.successModal = showModal('successModal', 'Operación Exitosa', successContent, '<button class="btn btn-primary" onclick="window.successModal.close()">Cerrar</button>');
+                window.successModal = showModal('successModal', '✅ Membresía Activada', successContent, '<button class="btn btn-primary" onclick="window.successModal.close()">Cerrar</button>');
+
+                // Auto-open WhatsApp to send the membership card
+                window.open(whatsappUrl, '_blank');
 
                 loadMemberships();
             } catch (error) {
