@@ -969,6 +969,69 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
     }
 });
 
+// POST /api/admin/appointments/:id/send-reminder - Enviar recordatorio 24h manualmente
+router.post('/appointments/:id/send-reminder', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Obtener cita con datos del cliente y servicio
+        const result = await db.query(`
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+                   s.name as service_name
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Cita no encontrada' });
+        }
+
+        const appointment = result.rows[0];
+
+        // Verificar que el cliente tenga teléfono y WhatsApp habilitado
+        if (!appointment.client_phone) {
+            return res.status(400).json({ success: false, error: 'El cliente no tiene número de teléfono registrado' });
+        }
+
+        if (appointment.whatsapp_enabled === false) {
+            return res.status(400).json({ success: false, error: 'El cliente tiene WhatsApp deshabilitado' });
+        }
+
+        // Enviar recordatorio 24h
+        const whatsappRes = await whatsappService.sendReminder24h({
+            phone: appointment.client_phone,
+            name: appointment.client_name,
+            service: appointment.service_name,
+            time: appointment.start_time.slice(0, 5),
+            code: appointment.checkout_code || '----'
+        });
+
+        if (whatsappRes.success) {
+            // Marcar como enviado
+            await db.query('UPDATE appointments SET reminder_sent = TRUE WHERE id = $1', [id]);
+            
+            console.log(`[ADMIN] Recordatorio 24h enviado a ${appointment.client_name}: ${whatsappRes.id}`);
+            res.json({
+                success: true,
+                message: `Recordatorio 24h enviado a ${appointment.client_name}`,
+                sid: whatsappRes.id
+            });
+        } else {
+            console.error(`[ADMIN] Error enviando recordatorio 24h:`, whatsappRes.error);
+            res.status(500).json({
+                success: false,
+                error: whatsappRes.error || 'Error al enviar recordatorio'
+            });
+        }
+
+    } catch (error) {
+        console.error('[ADMIN] Error en send-reminder:', error);
+        next(error);
+    }
+});
+
 // ============================
 // MEMBRESÍAS
 // ============================

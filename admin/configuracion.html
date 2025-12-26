@@ -1375,19 +1375,20 @@
 
         async function resendReminder24h(appointmentId) {
             try {
-                const data = await api.post(`/admin/appointments/${appointmentId}/resend-whatsapp`, {});
+                // Usar el endpoint específico de recordatorio 24h
+                const data = await api.post(`/admin/appointments/${appointmentId}/send-reminder`, {});
                 if (typeof showToast === 'function') {
-                    showToast(data.message || 'WhatsApp enviado', 'success');
+                    showToast(data.message || 'Recordatorio 24h enviado', 'success');
                 } else {
-                    alert(data.message || 'WhatsApp enviado');
+                    alert(data.message || 'Recordatorio 24h enviado');
                 }
                 loadReminders24h();
             } catch (e) {
-                console.error('Error reenviando WhatsApp:', e);
+                console.error('Error enviando recordatorio 24h:', e);
                 if (typeof showToast === 'function') {
-                    showToast('Error reenviando WhatsApp', 'error');
+                    showToast(e.message || 'Error enviando recordatorio', 'error');
                 } else {
-                    alert('Error reenviando WhatsApp');
+                    alert(e.message || 'Error enviando recordatorio');
                 }
             }
         }
