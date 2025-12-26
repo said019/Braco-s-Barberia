@@ -59,7 +59,13 @@ async function handleConfirmation(phone) {
         const appt = result.rows[0];
 
         // 1. Actualizar status en BD
-        await query(`UPDATE appointments SET status = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
+        // Nota: al confirmar, también marcamos reminder_sent=true para evitar reenvíos/duplicados.
+        await query(
+            `UPDATE appointments
+             SET status = 'confirmed', reminder_sent = TRUE, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1`,
+            [appt.id]
+        );
         console.log(`[WEBHOOK] Appointment ${appt.id} confirmed via WhatsApp for ${appt.client_name}`);
 
         // 2. Sincronizar con Google Calendar (cambia color a verde)
