@@ -185,6 +185,33 @@
                         </div>
                     </div>
 
+                    <!-- Recordatorios 24h (Para confirmar / reprogramar) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title" style="color: #25D366;">Recordatorios 24h</h3>
+                                <p class="card-subtitle">Citas entre 23h y 25h (revisar / reprogramar)</p>
+                            </div>
+                            <a href="calendario.html" class="btn btn-secondary btn-sm">Abrir Calendario</a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-24h">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha/Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Próximas Citas (Agendadas/Confirmadas) -->
                     <div class="card">
                         <div class="card-header">
@@ -472,6 +499,7 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                 // Render Tables
                 renderPendingAppointments(data.pending_appointments || []);
                 renderUpcomingAppointments(data.upcoming_appointments || []);
+                renderReminders24h(data.reminders_due_24h || []);
                 renderRecentTransactions(data.recent_transactions || []);
 
             } catch (error) {
@@ -511,6 +539,51 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     <td><span class="badge badge-${getStatusBadge(apt.status)}">${getStatusText(apt.status)}</span></td>
                 </tr>
             `).join('');
+        }
+
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
+
+            if (!appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay recordatorios en las próximas 24h</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                const resendBtn = waDisabled
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.7rem; opacity: 0.6;">WhatsApp</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.7rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
+
+                return `
+                    <tr>
+                        <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
+                        <td>${apt.client_name}<br><small class="text-muted">${phone}</small></td>
+                        <td>${apt.service_name}</td>
+                        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <a href="calendario.html" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</a>
+                            ${resendBtn}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function resendReminder24h(appointmentId) {
+            try {
+                // Reutilizamos el endpoint existente de reenviar WhatsApp de confirmación.
+                // Esto ayuda cuando el recordatorio 24h no salió por el cron.
+                const data = await api.post(`/admin/appointments/${appointmentId}/resend-whatsapp`, {});
+                alert(data.message || 'WhatsApp enviado');
+                loadDashboard();
+            } catch (e) {
+                console.error('Error reenviando WhatsApp:', e);
+                alert('Error reenviando WhatsApp');
+            }
         }
 
         function renderRecentTransactions(transactions) {
