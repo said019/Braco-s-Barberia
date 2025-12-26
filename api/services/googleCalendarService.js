@@ -208,6 +208,13 @@ export const createEvent = async (appointment) => {
 export const updateEvent = async (appointmentId, appointment) => {
     await loadCredentials();
 
+    // Si está cancelada/no show, mejor eliminar el evento para que no siga apareciendo
+    // (Esto evita confusión y replica el comportamiento esperado por el negocio)
+    if (appointment?.status === 'cancelled' || appointment?.status === 'no_show') {
+        await deleteEvent(appointmentId);
+        return { deleted: true };
+    }
+
     // Get existing mapping
     const mapping = await db.query(
         'SELECT google_event_id FROM google_calendar_mapping WHERE appointment_id = $1',
