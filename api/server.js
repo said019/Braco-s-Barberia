@@ -71,7 +71,11 @@ const limiter = rateLimit({
     message: 'Demasiadas solicitudes, por favor intenta de nuevo más tarde.'
   }
 });
-app.use('/api/', limiter);
+// IMPORTANT: No aplicar rate-limit a webhooks (Twilio puede reintentar y usa proxy)
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/webhooks')) return next();
+  return limiter(req, res, next);
+});
 
 // ============================================
 // RUTAS

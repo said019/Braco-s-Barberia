@@ -23,12 +23,13 @@ router.post('/whatsapp', async (req, res) => {
             console.log(`[WEBHOOK] Unhandled message: ${message}`);
         }
 
-        // Twilio espera XML o nada
-        res.status(200).send('<Response></Response>');
+        // Twilio espera TwiML
+        res.type('text/xml').status(200).send('<Response></Response>');
 
     } catch (error) {
         console.error('[WEBHOOK] Error handling message:', error);
-        res.status(500).send('Error');
+        // Aun en error, responde TwiML para que Twilio no marque el webhook como inválido
+        res.type('text/xml').status(200).send('<Response></Response>');
     }
 });
 
