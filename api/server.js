@@ -49,6 +49,9 @@ if (config.env === 'development') {
   app.use(morgan('combined'));
 }
 
+// Trust proxy (necesario para Railway y otros proxies reversos)
+app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
