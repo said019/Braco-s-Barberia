@@ -1345,10 +1345,10 @@ router.get('/memberships/export/data', authenticateToken, async (req, res, next)
         const result = await db.query(`
             SELECT
                 cm.id,
-                cm.folio,
+                cm.folio_number AS folio,
                 cm.status,
-                cm.start_date,
-                cm.end_date,
+                cm.activation_date AS start_date,
+                cm.expiration_date AS end_date,
                 cm.total_services,
                 cm.used_services,
                 (cm.total_services - cm.used_services) AS remaining_services,
