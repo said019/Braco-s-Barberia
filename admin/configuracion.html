@@ -1263,132 +1263,132 @@
                 console.log(`Day ${day} saved successfully`);
                 // Optional: show mini success indicator?
             } catch (error) {
-
-            // ==========================
-            // Recordatorios 24h (Config)
-            // ==========================
-
-            function formatDateShort(dateStr) {
-                if (!dateStr) return '-';
-                if (typeof dateStr === 'string' && dateStr.length === 10) {
-                    const date = new Date(dateStr + 'T12:00:00');
-                    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-                }
-                if (typeof dateStr === 'string' && dateStr.includes('T')) {
-                    const date = new Date(dateStr.split('T')[0] + 'T12:00:00');
-                    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-                }
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-            }
-
-            function renderReminders24h(appointments) {
-                const tbody = document.querySelector('#reminders-24h tbody');
-                if (!tbody) return;
-
-                if (!appointments || !appointments.length) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.6);">No hay recordatorios en las próximas 24h</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = appointments.map(apt => {
-                    const phone = (apt.client_phone || '').replace(/\D/g, '');
-                    const time = (apt.start_time || '').slice(0, 5);
-                    const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
-                    const waDisabled = apt.whatsapp_enabled === false;
-                    const resendBtn = waDisabled
-                        ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.75rem; opacity: 0.6;">WhatsApp</button>`
-                        : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.75rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
-
-                    const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
-
-                    return `
-                        <tr>
-                            <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
-                            <td>${apt.client_name}<br><small style="opacity:0.7;">${phone || '-'}</small></td>
-                            <td>${apt.service_name || '-'}</td>
-                            <td style="text-align:center;">
-                                <div style="display:flex; gap: 6px; justify-content:center; flex-wrap: wrap;">
-                                    <button class="btn btn-secondary btn-sm" onclick="openReschedulePrompt(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.75rem;">Cambiar hora</button>
-                                    ${resendBtn}
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            async function loadReminders24h() {
-                const tbody = document.querySelector('#reminders-24h tbody');
-                if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 2rem; color: rgba(245,243,238,0.6);"><i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Cargando...</td></tr>`;
-                }
-
-                try {
-                    const data = await api.get('/admin/dashboard');
-                    renderReminders24h(data.reminders_due_24h || []);
-                } catch (e) {
-                    console.error('Error cargando recordatorios 24h:', e);
-                    if (tbody) {
-                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.8);">Error cargando recordatorios</td></tr>`;
-                    }
-                    if (typeof showToast === 'function') {
-                        showToast('Error cargando recordatorios 24h', 'error');
-                    }
-                }
-            }
-
-            function openReschedulePrompt(appointmentId, currentDate, currentTime) {
-                const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
-                if (!date) return;
-                const time = prompt('Nueva hora (HH:MM):', currentTime);
-                if (!time) return;
-                rescheduleAppointment(appointmentId, date, time);
-            }
-
-            async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
-                try {
-                    const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
-                        appointment_date,
-                        start_time
-                    });
-                    if (typeof showToast === 'function') {
-                        showToast(data.message || 'Cita reprogramada', 'success');
-                    } else {
-                        alert(data.message || 'Cita reprogramada');
-                    }
-                    loadReminders24h();
-                } catch (e) {
-                    console.error('Error reprogramando cita:', e);
-                    if (typeof showToast === 'function') {
-                        showToast(e.message || 'Error reprogramando cita', 'error');
-                    } else {
-                        alert(e.message || 'Error reprogramando cita');
-                    }
-                }
-            }
-
-            async function resendReminder24h(appointmentId) {
-                try {
-                    const data = await api.post(`/admin/appointments/${appointmentId}/resend-whatsapp`, {});
-                    if (typeof showToast === 'function') {
-                        showToast(data.message || 'WhatsApp enviado', 'success');
-                    } else {
-                        alert(data.message || 'WhatsApp enviado');
-                    }
-                    loadReminders24h();
-                } catch (e) {
-                    console.error('Error reenviando WhatsApp:', e);
-                    if (typeof showToast === 'function') {
-                        showToast('Error reenviando WhatsApp', 'error');
-                    } else {
-                        alert('Error reenviando WhatsApp');
-                    }
-                }
-            }
                 console.error(`Error saving day ${day}:`, error);
                 showToast('Error al guardar horario: ' + error.message, 'error');
                 loadHours(); // Revert on error
+            }
+        }
+
+        // ==========================
+        // Recordatorios 24h (Config)
+        // ==========================
+
+        function formatDateShort(dateStr) {
+            if (!dateStr) return '-';
+            if (typeof dateStr === 'string' && dateStr.length === 10) {
+                const date = new Date(dateStr + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                const date = new Date(dateStr.split('T')[0] + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
+
+            if (!appointments || !appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.6);">No hay recordatorios en las próximas 24h</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                const resendBtn = waDisabled
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.75rem; opacity: 0.6;">WhatsApp</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.75rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
+
+                const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
+
+                return `
+                    <tr>
+                        <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
+                        <td>${apt.client_name}<br><small style="opacity:0.7;">${phone || '-'}</small></td>
+                        <td>${apt.service_name || '-'}</td>
+                        <td style="text-align:center;">
+                            <div style="display:flex; gap: 6px; justify-content:center; flex-wrap: wrap;">
+                                <button class="btn btn-secondary btn-sm" onclick="openReschedulePrompt(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.75rem;">Cambiar hora</button>
+                                ${resendBtn}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadReminders24h() {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 2rem; color: rgba(245,243,238,0.6);"><i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Cargando...</td></tr>`;
+            }
+
+            try {
+                const data = await api.get('/admin/dashboard');
+                renderReminders24h(data.reminders_due_24h || []);
+            } catch (e) {
+                console.error('Error cargando recordatorios 24h:', e);
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.8);">Error cargando recordatorios</td></tr>`;
+                }
+                if (typeof showToast === 'function') {
+                    showToast('Error cargando recordatorios 24h', 'error');
+                }
+            }
+        }
+
+        function openReschedulePrompt(appointmentId, currentDate, currentTime) {
+            const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
+            if (!date) return;
+            const time = prompt('Nueva hora (HH:MM):', currentTime);
+            if (!time) return;
+            rescheduleAppointment(appointmentId, date, time);
+        }
+
+        async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
+            try {
+                const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
+                    appointment_date,
+                    start_time
+                });
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'Cita reprogramada', 'success');
+                } else {
+                    alert(data.message || 'Cita reprogramada');
+                }
+                loadReminders24h();
+            } catch (e) {
+                console.error('Error reprogramando cita:', e);
+                if (typeof showToast === 'function') {
+                    showToast(e.message || 'Error reprogramando cita', 'error');
+                } else {
+                    alert(e.message || 'Error reprogramando cita');
+                }
+            }
+        }
+
+        async function resendReminder24h(appointmentId) {
+            try {
+                const data = await api.post(`/admin/appointments/${appointmentId}/resend-whatsapp`, {});
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'WhatsApp enviado', 'success');
+                } else {
+                    alert(data.message || 'WhatsApp enviado');
+                }
+                loadReminders24h();
+            } catch (e) {
+                console.error('Error reenviando WhatsApp:', e);
+                if (typeof showToast === 'function') {
+                    showToast('Error reenviando WhatsApp', 'error');
+                } else {
+                    alert('Error reenviando WhatsApp');
+                }
             }
         }
 
