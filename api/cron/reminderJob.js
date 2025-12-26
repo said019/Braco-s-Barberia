@@ -3,7 +3,7 @@ import { query } from '../config/database.js';
 import whatsappService from '../services/whatsappService.js';
 
 // Cron Job: Ejecutar cada hora a los minutos 0
-// Verificar citas que ocurren en el rango de 23 a 25 horas en el futuro
+// Verificar citas que ocurren en las próximas 20-28 horas (ventana amplia para no perder ninguna)
 // y que no se les haya enviado recordatorio.
 const initReminderJob = () => {
     // Programar para correr al minuto 0 de cada hora: '0 * * * *'
@@ -11,34 +11,8 @@ const initReminderJob = () => {
         console.log('[CRON] Checking for appointment reminders...');
 
         try {
-            // Buscar citas para mañana (entre 23h y 25h desde ahora) que no tengan recordatorio enviado
-            // y que sean status 'scheduled' o 'confirmed'
-            const result = await query(`
-                SELECT a.id, a.start_time, a.appointment_date, a.checkout_code, 
-                       c.name, c.phone, c.whatsapp_enabled, s.name as service_name
-                FROM appointments a
-                JOIN clients c ON a.client_id = c.id
-                JOIN services s ON a.service_id = s.id
-                WHERE a.status IN ('scheduled', 'confirmed')
-                  AND a.reminder_sent = FALSE
-                  AND a.appointment_date = CURRENT_DATE + INTERVAL '1 day'
-                  AND c.phone IS NOT NULL
-            `);
-            // Nota: La condición de fecha CURRENT_DATE + INTERVAL '1 day' es simple y efectiva si corremos esto diario.
-            // Pero si corremos cada hora, queremos cierta precisión.
-            // Mejor lógica:
-            // "Donde (fecha + hora) sea > ahora + 23h Y (fecha + hora) < ahora + 25h"
-
-            // Re-refinando query para precisión horaria:
-            /*
-            SELECT ...
-            FROM appointments a ...
-            WHERE a.status IN ('scheduled', 'confirmed')
-            AND a.reminder_sent = FALSE
-            AND (a.appointment_date || ' ' || a.start_time)::timestamp 
-                BETWEEN NOW() + INTERVAL '23 hours' AND NOW() + INTERVAL '25 hours'
-            */
-
+            // Buscar citas entre 20h y 28h en el futuro (ventana amplia de 8 horas)
+            // Esto asegura que no perdemos ninguna cita por desfases de minutos/segundos
             const hourlyResult = await query(`
                 SELECT a.id, a.start_time, a.appointment_date, a.checkout_code, 
                        c.name, c.phone, c.whatsapp_enabled, s.name as service_name
@@ -47,8 +21,10 @@ const initReminderJob = () => {
                 JOIN services s ON a.service_id = s.id
                 WHERE a.status IN ('scheduled', 'confirmed')
                   AND a.reminder_sent = FALSE
+                  AND c.whatsapp_enabled = TRUE
+                  AND c.phone IS NOT NULL
                   AND (a.appointment_date || ' ' || a.start_time)::timestamp 
-                      BETWEEN NOW() + INTERVAL '23 hours' AND NOW() + INTERVAL '25 hours'
+                      BETWEEN NOW() + INTERVAL '20 hours' AND NOW() + INTERVAL '28 hours'
             `);
 
             const appointments = hourlyResult.rows;
@@ -57,8 +33,6 @@ const initReminderJob = () => {
                 console.log(`[CRON] Found ${appointments.length} appointments reminders to send.`);
 
                 for (const appt of appointments) {
-                    if (appt.whatsapp_enabled === false) continue;
-
                     try {
                         const timeStr = appt.start_time.substring(0, 5); // 10:00:00 -> 10:00
                         const res = await whatsappService.sendReminder24h({
@@ -70,7 +44,8 @@ const initReminderJob = () => {
                         });
 
                         if (res.success) {
-                            await query('UPDATE appointments SET reminder_sent = TRUE, whatsapp_message_id = $1 WHERE id = $2', [res.id, appt.id]);
+                            // Solo actualizar reminder_sent, sin whatsapp_message_id que no existe
+                            await query('UPDATE appointments SET reminder_sent = TRUE WHERE id = $1', [appt.id]);
                             console.log(`[CRON] Reminder sent for appt ${appt.id}`);
                         } else {
                             console.error(`[CRON] Failed to send reminder for appt ${appt.id}: ${res.error}`);
