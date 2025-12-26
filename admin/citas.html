@@ -299,6 +299,7 @@
                 document.getElementById('results-count').textContent = 'Cargando...';
 
                 allAppointments = await api.get(`/admin/appointments?start_date=${startDate}&end_date=${endDate}`);
+                lastAppointmentsSignature = computeAppointmentsSignature(allAppointments);
                 applyFilters();
                 updateBadge(allAppointments.filter(a => a.status === 'pending').length);
             } catch (error) {
@@ -306,6 +307,65 @@
                 document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="7" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
                 document.getElementById('results-count').textContent = 'Error al cargar';
             }
+        }
+
+        // Iniciar auto-refresh cuando la página esté lista
+        document.addEventListener('DOMContentLoaded', () => {
+            startAutoRefresh();
+        });
+
+        // ==========================
+        // Auto-refresh silencioso
+        // - No recarga la página
+        // - Preserva scroll
+        // - Evita re-render si no hubo cambios
+        // ==========================
+        let autoRefreshTimer = null;
+        let lastAppointmentsSignature = '';
+
+        function computeAppointmentsSignature(list) {
+            // Firma compacta para detectar cambios sin parpadeo
+            return (list || [])
+                .map(a => `${a.id}:${a.status}:${a.updated_at || ''}:${a.start_time || ''}`)
+                .join('|');
+        }
+
+        async function refreshDataSilently() {
+            try {
+                const startDate = document.getElementById('filter-start-date').value;
+                const endDate = document.getElementById('filter-end-date').value;
+                if (!startDate || !endDate) return;
+
+                const prevScrollY = window.scrollY;
+                const nextAppointments = await api.get(`/admin/appointments?start_date=${startDate}&end_date=${endDate}`);
+
+                const nextSig = computeAppointmentsSignature(nextAppointments);
+                if (nextSig === lastAppointmentsSignature) return; // nada cambió
+
+                allAppointments = nextAppointments;
+                lastAppointmentsSignature = nextSig;
+
+                // Reaplicar filtros + render
+                applyFilters();
+                updateBadge(allAppointments.filter(a => a.status === 'pending').length);
+
+                // Restaurar scroll (evita sensación de parpadeo/salto)
+                window.scrollTo({ top: prevScrollY, left: 0, behavior: 'instant' });
+            } catch (e) {
+                // Silencioso: no interrumpir al usuario si hay un fallo temporal
+                console.warn('[AUTOREFRESH] Falló refresh silencioso:', e?.message || e);
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            // 30s es suficiente para reflejar confirmaciones por WhatsApp sin saturar
+            autoRefreshTimer = setInterval(refreshDataSilently, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
         }
 
         function applyFilters() {
