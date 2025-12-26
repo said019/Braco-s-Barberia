@@ -73,8 +73,12 @@ async function handleConfirmation(phone) {
         }
 
         // 3. Enviar respuesta de confirmación usando TEMPLATE
-        await whatsappService.sendConfirmationResponse(phone);
-        console.log(`[WEBHOOK] Confirmation response sent to ${phone}`);
+        const confirmResult = await whatsappService.sendConfirmationResponse(phone);
+        if (confirmResult.success) {
+            console.log(`[WEBHOOK] Confirmation response sent to ${phone}, SID: ${confirmResult.messageSid}`);
+        } else {
+            console.error(`[WEBHOOK] Failed to send confirmation response: ${confirmResult.error}`);
+        };
 
     } else {
         console.log(`[WEBHOOK] No scheduled appointment found for phone ${phone} to confirm.`);
