@@ -559,18 +559,42 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.7rem; opacity: 0.6;">WhatsApp</button>`
                     : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.7rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
 
+                const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
+
                 return `
                     <tr>
                         <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
                         <td>${apt.client_name}<br><small class="text-muted">${phone}</small></td>
                         <td>${apt.service_name}</td>
                         <td style="display:flex; gap:6px; flex-wrap:wrap;">
-                            <a href="calendario.html" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</a>
+                            <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</button>
                             ${resendBtn}
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function openRescheduleModal(appointmentId, currentDate, currentTime) {
+            const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
+            if (!date) return;
+            const time = prompt('Nueva hora (HH:MM):', currentTime);
+            if (!time) return;
+            rescheduleAppointment(appointmentId, date, time);
+        }
+
+        async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
+            try {
+                const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
+                    appointment_date,
+                    start_time
+                });
+                alert(data.message || 'Cita reprogramada');
+                loadDashboard();
+            } catch (e) {
+                console.error('Error reprogramando cita:', e);
+                alert(e.message || 'Error reprogramando cita');
+            }
         }
 
         async function resendReminder24h(appointmentId) {

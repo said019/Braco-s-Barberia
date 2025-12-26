@@ -786,6 +786,122 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
     }
 });
 
+// PUT /api/admin/appointments/:id/reschedule - Reprogramar cita (cambiar fecha/hora) y reenviar WhatsApp
+router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { appointment_date, start_time } = req.body;
+
+        if (!appointment_date || !start_time) {
+            return res.status(400).json({ error: 'appointment_date y start_time requeridos' });
+        }
+
+        // Obtener cita + datos de cliente/servicio
+        const prevResult = await db.query(`
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+                   s.name as service_name, s.duration_minutes
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.id = $1
+        `, [id]);
+
+        if (prevResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        const prevAppointment = prevResult.rows[0];
+
+        // Calcular end_time basado en duración del servicio
+        const [hours, minutes] = String(start_time).split(':').map(Number);
+        if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+            return res.status(400).json({ error: 'start_time inválido (usa formato HH:MM)' });
+        }
+        const startMinutes = hours * 60 + minutes;
+        const endMinutes = startMinutes + (prevAppointment.duration_minutes || 0);
+        const endHours = Math.floor(endMinutes / 60);
+        const endMins = endMinutes % 60;
+        const end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+
+        // Prevenir duplicados (mismo cliente, misma fecha/hora)
+        const duplicateCheck = await db.query(`
+            SELECT id FROM appointments
+            WHERE client_id = $1
+              AND appointment_date = $2
+              AND start_time = $3
+              AND id <> $4
+              AND status NOT IN ('cancelled', 'no_show')
+        `, [prevAppointment.client_id, appointment_date, start_time, id]);
+
+        if (duplicateCheck.rows.length > 0) {
+            return res.status(409).json({
+                error: 'Ya existe otra cita para este cliente en la misma fecha y hora',
+                existing_id: duplicateCheck.rows[0].id
+            });
+        }
+
+        // Actualizar cita y resetear flags de recordatorio
+        const updateResult = await db.query(
+            `UPDATE appointments
+             SET appointment_date = $2,
+                 start_time = $3,
+                 end_time = $4,
+                 reminder_sent = FALSE,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1
+             RETURNING *`,
+            [id, appointment_date, start_time, end_time]
+        );
+
+        const updated = updateResult.rows[0];
+
+        // Sync Google Calendar (best-effort)
+        try {
+            const googleCalendar = await import('../services/googleCalendarService.js');
+            await googleCalendar.updateEvent(parseInt(id), {
+                ...updated,
+                client_name: prevAppointment.client_name,
+                client_phone: prevAppointment.client_phone,
+                service_name: prevAppointment.service_name
+            });
+        } catch (gcalError) {
+            console.error('[RESCHEDULE] Google Calendar update error:', gcalError.message);
+        }
+
+        // Reenviar WhatsApp automáticamente (si está habilitado)
+        let whatsappSent = false;
+        if (prevAppointment.client_phone && prevAppointment.whatsapp_enabled !== false) {
+            try {
+                const dateObj = new Date(String(appointment_date) + 'T12:00:00');
+                const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const whatsappRes = await whatsappService.sendWhatsAppBookingConfirmation({
+                    phone: prevAppointment.client_phone,
+                    name: prevAppointment.client_name,
+                    service: prevAppointment.service_name,
+                    date: formattedDate,
+                    time: String(start_time).slice(0, 5),
+                    code: prevAppointment.checkout_code || '----'
+                });
+                whatsappSent = !!whatsappRes.success;
+            } catch (whatsappError) {
+                console.error('[RESCHEDULE] Error sending WhatsApp:', whatsappError);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Cita reprogramada' + (whatsappSent ? ' y WhatsApp reenviado' : ''),
+            data: updated,
+            whatsapp_sent: whatsappSent
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /api/admin/appointments/:id/resend-whatsapp - Reenviar WhatsApp de confirmación
 router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, res, next) => {
     try {
