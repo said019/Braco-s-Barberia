@@ -352,13 +352,14 @@
         function formatDate(dateStr) {
             if (!dateStr) return '-';
             try {
-                // Handle both ISO string and YYYY-MM-DD formats
-                let date;
+                // Extraer solo YYYY-MM-DD para evitar problemas de zona horaria
+                let datePart = dateStr;
                 if (typeof dateStr === 'string' && dateStr.includes('T')) {
-                    date = new Date(dateStr);
-                } else {
-                    date = new Date(dateStr + 'T12:00:00');
+                    datePart = dateStr.split('T')[0]; // Solo la parte de fecha
                 }
+                // Crear fecha con hora fija al mediodía para evitar cambio de día
+                const [year, month, day] = datePart.split('-').map(Number);
+                const date = new Date(year, month - 1, day, 12, 0, 0);
                 if (isNaN(date.getTime())) return '-';
                 return date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
             } catch (e) {
