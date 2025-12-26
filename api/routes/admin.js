@@ -139,7 +139,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         // NOTE: We reuse the same 23-25h window logic as the cron job to avoid discrepancies.
         const remindersDue = await db.query(
             `SELECT a.id, a.uuid, a.appointment_date, a.start_time, a.end_time, a.status,
-                    a.reminder_sent, a.whatsapp_message_id, a.checkout_code,
+                    a.reminder_sent, a.checkout_code,
                     c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
                     s.name as service_name
              FROM appointments a
