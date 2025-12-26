@@ -127,29 +127,47 @@ async function handleCancellationRequest(phone) {
         });
 
         // 1. Cancelar la cita en BD
-        await query(`UPDATE appointments SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [appt.id]);
+        // Nota: también marcamos reminder_sent=true para evitar reenvíos/duplicados.
+        await query(
+            `UPDATE appointments
+             SET status = 'cancelled', reminder_sent = TRUE, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1`,
+            [appt.id]
+        );
         console.log(`[WEBHOOK] Appointment ${appt.id} cancelled via WhatsApp`);
 
-        // 2. Actualizar en Google Calendar (no eliminar para mantener historial)
+        // 2. Actualizar/eliminar en Google Calendar (mismo comportamiento que admin)
         try {
+            // Intentar actualizar primero (mantener historial)
             await googleCalendar.updateEvent(appt.id, {
                 ...appt,
                 status: 'cancelled'
             });
             console.log(`[WEBHOOK] Google Calendar event updated to cancelled for appointment ${appt.id}`);
         } catch (gcalError) {
-            console.error(`[WEBHOOK] Google Calendar update failed:`, gcalError.message);
+            console.error(`[WEBHOOK] Google Calendar update failed (will try delete):`, gcalError.message);
+            // Fallback: borrar el evento como en el admin
+            try {
+                await googleCalendar.deleteEvent(appt.id);
+                console.log(`[WEBHOOK] Google Calendar event deleted for appointment ${appt.id}`);
+            } catch (gcalDeleteError) {
+                console.error(`[WEBHOOK] Google Calendar delete failed:`, gcalDeleteError.message);
+            }
         }
 
         // 3. Enviar respuesta de cancelación usando TEMPLATE
         // Template: "Hemos cancelado tu cita de {{1}} programada para el {{2}}. ¿Deseas agendar una nueva cita? Hazlo aquí: {{3}}"
-        await whatsappService.sendCancellationResponse({
+        const cancelRes = await whatsappService.sendCancellationResponse({
             phone: phone,
             service: appt.service_name,
             date: dateFormatted,
             bookingUrl: `${url}/agendar.html`
         });
-        console.log(`[WEBHOOK] Cancellation response sent to ${phone}`);
+        if (cancelRes?.success) {
+            console.log(`[WEBHOOK] Cancellation response sent to ${phone}, SID: ${cancelRes.messageSid}`);
+        } else {
+            console.error(`[WEBHOOK] Failed to send cancellation response: ${cancelRes?.error || 'unknown error'}`);
+        }
 
     } else {
         // No hay cita pero igual enviar instrucciones
