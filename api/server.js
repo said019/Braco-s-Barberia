@@ -22,6 +22,16 @@ dotenv.config();
 // Crear aplicación Express
 const app = express();
 
+// Health check ultra-simple (antes de cualquier middleware pesado)
+// Railway/Proxies pueden validar este endpoint para determinar si la app está viva.
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: "Braco's Barbería API está funcionando",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ============================================
 // MIDDLEWARE GLOBAL
 // ============================================
