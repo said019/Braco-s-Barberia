@@ -135,8 +135,8 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              ORDER BY t.created_at DESC LIMIT 10`
         );
 
-        // Appointments needing 24h reminder / confirmation window
-        // NOTE: We reuse the same 23-25h window logic as the cron job to avoid discrepancies.
+        // Appointments needing reminder attention: show all scheduled/confirmed within the next 48h
+        // This gives admins visibility to review, reschedule or send WhatsApp manually.
         const remindersDue = await db.query(
             `SELECT a.id, a.uuid, a.appointment_date, a.start_time, a.end_time, a.status,
                     a.reminder_sent, a.checkout_code,
@@ -147,9 +147,9 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN services s ON a.service_id = s.id
              WHERE a.status IN ('scheduled', 'confirmed')
                AND (a.appointment_date || ' ' || a.start_time)::timestamp
-                   BETWEEN NOW() + INTERVAL '23 hours' AND NOW() + INTERVAL '25 hours'
+                   BETWEEN NOW() AND NOW() + INTERVAL '48 hours'
              ORDER BY a.appointment_date ASC, a.start_time ASC
-             LIMIT 20`
+             LIMIT 30`
         );
 
         res.json({
