@@ -251,6 +251,8 @@
     </div>
 
     <script src="../js/admin.js"></script>
+    <!-- SheetJS para exportar a Excel (XLSX) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         checkAuth();
 
@@ -1009,6 +1011,35 @@
                 console.error('Export error:', error);
                 showToast('Error al exportar: ' + error.message, 'error');
             }
+        }
+
+        function exportToExcel(rows, filenameBase) {
+            if (!rows || !rows.length) return;
+            if (typeof XLSX === 'undefined') {
+                throw new Error('Librería XLSX no disponible');
+            }
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
+
+            // Auto-ancho de columnas (simple y entendible)
+            const keys = Object.keys(rows[0] || {});
+            ws['!cols'] = keys.map(k => {
+                let max = k.length;
+                for (const r of rows) {
+                    const v = r[k] == null ? '' : String(r[k]);
+                    if (v.length > max) max = v.length;
+                }
+                return { wch: Math.min(Math.max(max + 2, 12), 45) };
+            });
+
+            // Congelar encabezado
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Membresías');
+
+            const filename = `${filenameBase}.xlsx`;
+            XLSX.writeFile(wb, filename);
         }
 
         // Initial load

@@ -1337,6 +1337,54 @@ router.get('/memberships/export', authenticateToken, async (req, res, next) => {
     }
 });
 
+// GET /api/admin/memberships/export/data
+// Reporte detallado para Excel (frontend espera esta ruta)
+router.get('/memberships/export/data', authenticateToken, async (req, res, next) => {
+    try {
+        // Último uso por membresía (si existe)
+        const result = await db.query(`
+            SELECT
+                cm.id,
+                cm.folio,
+                cm.status,
+                cm.start_date,
+                cm.end_date,
+                cm.total_services,
+                cm.used_services,
+                (cm.total_services - cm.used_services) AS remaining_services,
+                cm.created_at,
+                c.name AS client_name,
+                c.phone AS client_phone,
+                mt.name AS plan_name,
+                mt.price AS price,
+                u.service_name AS used_service,
+                u.usage_date,
+                u.usage_value,
+                u.stamps_used
+            FROM client_memberships cm
+            JOIN clients c ON cm.client_id = c.id
+            JOIN membership_types mt ON cm.membership_type_id = mt.id
+            LEFT JOIN LATERAL (
+                SELECT
+                    mu.created_at AS usage_date,
+                    mu.value AS usage_value,
+                    mu.stamps_used,
+                    s.name AS service_name
+                FROM membership_usage mu
+                LEFT JOIN services s ON mu.service_id = s.id
+                WHERE mu.client_membership_id = cm.id
+                ORDER BY mu.created_at DESC
+                LIMIT 1
+            ) u ON TRUE
+            ORDER BY cm.created_at DESC
+        `);
+
+        res.json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ============================
 // SERVICIOS
 // ============================
