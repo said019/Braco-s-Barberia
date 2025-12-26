@@ -657,6 +657,7 @@
 
             document.getElementById('side-panel-content').innerHTML = content;
             document.getElementById('appointment-side-panel').classList.add('open');
+            document.body.classList.add('side-panel-open');
 
             // Add overlay for mobile
             let overlay = document.getElementById('side-panel-overlay');
@@ -672,6 +673,7 @@
 
         function closeSidePanel() {
             document.getElementById('appointment-side-panel').classList.remove('open');
+            document.body.classList.remove('side-panel-open');
             const overlay = document.getElementById('side-panel-overlay');
             if (overlay) {
                 overlay.classList.remove('active');

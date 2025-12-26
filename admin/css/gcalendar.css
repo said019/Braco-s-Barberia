@@ -187,6 +187,11 @@
     overflow-y: auto;
 }
 
+/* Evita que el fondo se desplace cuando el panel está abierto */
+body.side-panel-open {
+    overflow: hidden;
+}
+
 /* Side Panel - Google Calendar Style */
 .gcal-side-panel {
     position: fixed;
@@ -194,12 +199,16 @@
     top: 0;
     width: 400px;
     height: 100vh;
+    height: 100dvh; /* mejor en móviles (evita salto por barra del navegador) */
     background: var(--charcoal);
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
     z-index: 200;
     transform: translateX(100%);
     transition: transform 0.3s ease;
     border-left: 1px solid rgba(196, 163, 90, 0.2);
+    display: flex;
+    flex-direction: column;
+    overscroll-behavior: contain;
 }
 
 .gcal-side-panel.open {
@@ -217,7 +226,10 @@
 .gcal-side-panel-content {
     padding: 2rem;
     overflow-y: auto;
-    height: calc(100vh - 80px);
+    flex: 1;
+    min-height: 0; /* necesario para flex + overflow */
+    height: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .gcal-detail-section {
