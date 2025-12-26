@@ -147,6 +147,13 @@ const AdminAPI = {
         method: 'PUT'
     }),
 
+    exportMembershipsData: async (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        const result = await fetchWithAuth(`/admin/memberships/export/data${query ? '?' + query : ''}`);
+        // The endpoint may return either { data: [...] } or the array directly.
+        return result?.data || result;
+    },
+
     // Reports
     getSalesReport: (params) => {
         const query = new URLSearchParams(params).toString();

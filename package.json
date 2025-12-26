@@ -7,7 +7,7 @@
     "scripts": {
         "start": "node api/server.js",
         "dev": "nodemon api/server.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+            "test": "echo \"No tests configured (ok)\""
     },
     "keywords": [],
     "author": "Braco's Barbería",

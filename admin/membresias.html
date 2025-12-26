@@ -983,7 +983,7 @@
             try {
                 showToast('Generando reporte detallado...', 'info');
 
-                const response = await api.get('/admin/memberships/export/data');
+                const response = await AdminAPI.exportMembershipsData();
 
                 if (!response || response.length === 0) {
                     showToast('No hay datos para exportar', 'warning');
