@@ -1359,21 +1359,19 @@ router.get('/memberships/export/data', authenticateToken, async (req, res, next)
                 mt.price AS price,
                 u.service_name AS used_service,
                 u.usage_date,
-                u.usage_value,
-                u.stamps_used
+                u.appointment_id
             FROM client_memberships cm
             JOIN clients c ON cm.client_id = c.id
             JOIN membership_types mt ON cm.membership_type_id = mt.id
             LEFT JOIN LATERAL (
                 SELECT
-                    mu.created_at AS usage_date,
-                    mu.value AS usage_value,
-                    mu.stamps_used,
-                    s.name AS service_name
+                    mu.used_at AS usage_date,
+                    mu.appointment_id,
+                    COALESCE(mu.service_name, s.name) AS service_name
                 FROM membership_usage mu
                 LEFT JOIN services s ON mu.service_id = s.id
-                WHERE mu.client_membership_id = cm.id
-                ORDER BY mu.created_at DESC
+                WHERE mu.membership_id = cm.id
+                ORDER BY mu.used_at DESC
                 LIMIT 1
             ) u ON TRUE
             ORDER BY cm.created_at DESC
