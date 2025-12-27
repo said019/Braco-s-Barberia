@@ -6,44 +6,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes | Braco's Admin</title>
     <link rel="icon" href="../assets/logo.png" type="image/png">
-                const token = localStorage.getItem('admin_token');
-                if (!token) {
-                    alert('Sesión expirada. Por favor inicia sesión de nuevo.');
-                    logout();
-                    return;
-                }
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-                const url = `${API_BASE}/admin/reports/sales/excel?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menu">
+        <i class="fas fa-bars"></i>
+    </button>
 
-                if (!response.ok) {
-                    const text = await response.text().catch(() => '');
-                    throw new Error(text || 'No se pudo generar el Excel');
-                }
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
 
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `Reporte_Ventas_${start}_${end}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(downloadUrl);
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
+                <p class="sidebar-subtitle">Administracion</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas</span>
+                    </a>
                 </div>
-                alert('Reporte exportado correctamente');
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestion</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresias</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuracion</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
                     <div class="admin-avatar" id="admin-avatar">A</div>
                     <div class="admin-info">
                         <div class="admin-name" id="admin-name">Admin</div>
                         <div class="admin-role" id="admin-role">Administrador</div>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesion</button>
             </div>
         </aside>
 
@@ -51,7 +101,7 @@
             <header class="top-header">
                 <div>
                     <h1 class="page-title">Reporte de Ventas</h1>
-                    <p class="text-muted">Análisis de ingresos y rendimiento</p>
+                    <p class="text-muted">Analisis de ingresos y rendimiento</p>
                 </div>
                 <!-- Date Filter -->
                 <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
@@ -107,7 +157,7 @@
                         </div>
                         <div class="stat-info">
                             <h3 class="stat-value" id="membership-sales">$0.00</h3>
-                            <p class="stat-label">Venta de Membresías</p>
+                            <p class="stat-label">Venta de Membresias</p>
                         </div>
                     </div>
                 </div>
@@ -129,7 +179,7 @@
                                 style="text-align: center; padding: 1rem; background: rgba(156,39,176,0.1); border-radius: 4px;">
                                 <div style="font-size: 1.5rem; font-weight: bold; color: #9C27B0;"
                                     id="memberships-revenue">$0.00</div>
-                                <div class="text-muted">Membresías Vendidas</div>
+                                <div class="text-muted">Membresias Vendidas</div>
                             </div>
                             <div
                                 style="text-align: center; padding: 1rem; background: rgba(255,152,0,0.1); border-radius: 4px;">
@@ -145,7 +195,7 @@
                     <!-- Sales Chart -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Evolución de Ventas</h3>
+                            <h3>Evolucion de Ventas</h3>
                         </div>
                         <div class="card-body">
                             <canvas id="salesChart" height="300"></canvas>
@@ -178,7 +228,7 @@
                     <div class="card-header"
                         style="display: flex; justify-content: space-between; align-items: center;">
                         <h3><i class="fas fa-id-card" style="margin-right: 0.5rem; color: #9C27B0;"></i>Uso de
-                            Membresías</h3>
+                            Membresias</h3>
                         <span class="badge"
                             style="background: rgba(156,39,176,0.2); color: #9C27B0; padding: 0.5rem 1rem;">
                             No suma a ventas
@@ -186,8 +236,8 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted" style="margin-bottom: 1rem;">
-                            Servicios prestados usando beneficios de membresía. Estos no generan ingreso adicional ya
-                            que fueron pagados al comprar la membresía.
+                            Servicios prestados usando beneficios de membresia. Estos no generan ingreso adicional ya
+                            que fueron pagados al comprar la membresia.
                         </p>
                         <div
                             style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
@@ -195,7 +245,7 @@
                                 style="text-align: center; padding: 1rem; background: var(--charcoal-dark); border-radius: 4px; border: 1px solid rgba(196,163,90,0.15);">
                                 <div style="font-size: 2rem; font-weight: bold; color: #9C27B0;"
                                     id="membership-usage-count">0</div>
-                                <div class="text-muted">Servicios con Membresía</div>
+                                <div class="text-muted">Servicios con Membresia</div>
                             </div>
                             <div
                                 style="text-align: center; padding: 1rem; background: var(--charcoal-dark); border-radius: 4px; border: 1px solid rgba(196,163,90,0.15);">
@@ -340,7 +390,7 @@
                     <td class="text-center">${s.membership_services_count}</td>
                     <td class="text-right" style="color: var(--text-secondary);">${formatCurrency(s.membership_services_value)}</td>
                 </tr>
-            `).join('') || '<tr><td colspan="3" class="text-center text-muted">Sin usos de membresía en este período</td></tr>';
+            `).join('') || '<tr><td colspan="3" class="text-center text-muted">Sin usos de membresia en este periodo</td></tr>';
         }
 
         function updateChart(dailyData) {
@@ -402,90 +452,36 @@
             const end = document.getElementById('end-date').value;
 
             try {
-                // Fetch all data
-                const [salesData, revenueData, servicesData] = await Promise.all([
-                    api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`),
-                    api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`),
-                    api.get(`/admin/reports/services-provided?start_date=${start}&end_date=${end}`)
-                ]);
-
-                // Build CSV content
-                let csv = '';
-
-                // Header
-                csv += `REPORTE DE VENTAS - BRACO'S BARBERÍA\n`;
-                csv += `Período: ${formatDate(start)} a ${formatDate(end)}\n`;
-                csv += `Generado: ${new Date().toLocaleString('es-MX')}\n`;
-                csv += `\n`;
-
-                // Summary Section
-                csv += `=== RESUMEN GENERAL ===\n`;
-                csv += `Ingresos Totales,${salesData.totals?.total_revenue || 0}\n`;
-                csv += `Transacciones,${salesData.totals?.total_transactions || 0}\n`;
-                csv += `Ticket Promedio,${salesData.totals?.avg_ticket || 0}\n`;
-                csv += `\n`;
-
-                // Revenue Breakdown
-                csv += `=== DESGLOSE DE INGRESOS ===\n`;
-                csv += `Servicios Pagados,${revenueData.totals?.total_services || 0}\n`;
-                csv += `Membresías Vendidas,${revenueData.totals?.total_memberships || 0}\n`;
-                csv += `Productos,${revenueData.totals?.total_products || 0}\n`;
-                csv += `\n`;
-
-                // Daily Sales
-                csv += `=== VENTAS DIARIAS ===\n`;
-                csv += `Fecha,Ingresos\n`;
-                (salesData.daily_sales || []).forEach(day => {
-                    csv += `${formatDate(day.date)},${day.total}\n`;
-                });
-                csv += `\n`;
-
-                // Top Services (Paid)
-                csv += `=== SERVICIOS TOP (PAGADOS) ===\n`;
-                csv += `Servicio,Ventas,Total\n`;
-                const paidServices = (salesData.services_sales || []).filter(s => parseFloat(s.total) > 0);
-                paidServices.forEach(s => {
-                    csv += `${s.name},${s.count},${s.total}\n`;
-                });
-                csv += `\n`;
-
-                // Membership Usage
-                csv += `=== USO DE MEMBRESÍAS (NO SUMA A VENTAS) ===\n`;
-                csv += `Total de Servicios con Membresía,${servicesData.summary?.total_membership_services || 0}\n`;
-                csv += `Valor Total Prestado,${servicesData.summary?.total_membership_value || 0}\n`;
-                csv += `\n`;
-                csv += `Servicio,Usos,Sellos,Valor\n`;
-                const membershipServices = (servicesData.services_breakdown || []).filter(s => parseInt(s.membership_services_count) > 0);
-                membershipServices.forEach(s => {
-                    csv += `${s.name},${s.membership_services_count},${s.total_stamps_used || s.membership_services_count},${s.membership_services_value}\n`;
-                });
-                csv += `\n`;
-
-                // Payment Methods Breakdown (if available)
-                if (revenueData.breakdown) {
-                    csv += `=== MÉTODOS DE PAGO ===\n`;
-                    csv += `Efectivo,${revenueData.breakdown.cash || 0}\n`;
-                    csv += `Tarjeta,${revenueData.breakdown.card || 0}\n`;
-                    csv += `Transferencia,${revenueData.breakdown.transfer || 0}\n`;
-                    csv += `\n`;
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('Sesion expirada. Por favor inicia sesion de nuevo.');
+                    logout();
+                    return;
                 }
 
-                // Create and download file
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
+                const url = `${API_BASE}/admin/reports/sales/excel?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-                const filename = `Reporte_Ventas_${start}_a_${end}.csv`;
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '');
+                    throw new Error(text || 'No se pudo generar el Excel');
+                }
 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Show success message
-                showToast('Reporte exportado exitosamente', 'success');
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Reporte_Ventas_${start}_${end}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+                alert('Reporte exportado correctamente');
             } catch (error) {
                 console.error('Error exporting report:', error);
                 alert('Error al exportar reporte: ' + error.message);
