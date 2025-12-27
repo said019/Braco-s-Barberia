@@ -5,6 +5,7 @@ import db, { transaction } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import emailService from '../services/emailService.js';
 import whatsappService from '../services/whatsappService.js';
+import ExcelJS from 'exceljs';
 
 const router = express.Router();
 
@@ -1594,6 +1595,358 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
         next(error);
     }
 });
+
+// GET /api/admin/reports/sales/excel
+// Genera un Excel con diseño "completo" (similar al ejemplo proporcionado), usando Postgres (NO Firebase).
+router.get('/reports/sales/excel', authenticateToken, async (req, res, next) => {
+    try {
+        const { start_date, end_date } = req.query;
+        const startDate = start_date || '2024-01-01';
+        const endDate = end_date || new Date().toISOString().split('T')[0];
+
+        // Totales por tipo (ingresos reales)
+        const totalsResult = await db.query(`
+            SELECT
+                COALESCE(SUM(amount), 0) as total_revenue,
+                COALESCE(COUNT(*), 0) as total_transactions,
+                COALESCE(AVG(amount), 0) as avg_transaction,
+                COALESCE(SUM(CASE WHEN type = 'membership' THEN amount ELSE 0 END), 0) as total_memberships,
+                COALESCE(SUM(CASE WHEN type = 'service' THEN amount ELSE 0 END), 0) as total_services,
+                COALESCE(SUM(CASE WHEN type = 'product' THEN amount ELSE 0 END), 0) as total_products
+            FROM transactions
+            WHERE transaction_date BETWEEN $1 AND $2
+        `, [startDate, endDate]);
+
+        const totals = totalsResult.rows[0] || {};
+
+        const ingresosTotales = parseFloat(totals.total_revenue || 0);
+        const totalTransacciones = parseInt(totals.total_transactions || 0, 10);
+        const ticketPromedio = parseFloat(totals.avg_transaction || 0);
+        const ventaMembresias = parseFloat(totals.total_memberships || 0);
+        const serviciosPagados = parseFloat(totals.total_services || 0);
+        const productos = parseFloat(totals.total_products || 0);
+
+        // Top por tipo (servicios/membresías) usando transactions (lo más consistente para ingresos)
+        // Servicios
+        const servicesAgg = await db.query(`
+            SELECT
+                COALESCE(t.description, 'Servicio') as name,
+                COUNT(*) as count,
+                SUM(t.amount) as total
+            FROM transactions t
+            WHERE t.type = 'service'
+              AND t.transaction_date BETWEEN $1 AND $2
+            GROUP BY COALESCE(t.description, 'Servicio')
+            ORDER BY total DESC
+        `, [startDate, endDate]);
+
+        // Membresías
+        const membershipsAgg = await db.query(`
+            SELECT
+                COALESCE(t.description, 'Membresía') as name,
+                COUNT(*) as count,
+                SUM(t.amount) as total
+            FROM transactions t
+            WHERE t.type = 'membership'
+              AND t.transaction_date BETWEEN $1 AND $2
+            GROUP BY COALESCE(t.description, 'Membresía')
+            ORDER BY total DESC
+        `, [startDate, endDate]);
+
+        // Uso de membresías (servicios prestados usando benefits). NO es ingreso nuevo.
+        // Lo calculamos por checkouts con used_membership=true en el rango.
+        const usageAgg = await db.query(`
+            SELECT
+                COUNT(*) as services_with_membership,
+                COALESCE(SUM(service_cost), 0) as value_provided
+            FROM checkouts
+            WHERE used_membership = true
+              AND DATE(completed_at) BETWEEN $1 AND $2
+        `, [startDate, endDate]);
+
+        const usage = usageAgg.rows[0] || {};
+
+        const datos = {
+            ingresosTotales,
+            totalTransacciones,
+            ticketPromedio,
+            ventaMembresias,
+            serviciosPagados,
+            productos,
+            servicios: servicesAgg.rows.map(r => ({
+                nombre: r.name,
+                cantidad: parseInt(r.count || 0, 10),
+                precio: parseFloat(r.total || 0)
+            })),
+            membresias: membershipsAgg.rows.map(r => ({
+                nombre: r.name,
+                cantidad: parseInt(r.count || 0, 10),
+                precio: parseFloat(r.total || 0)
+            })),
+            fechaInicio: formatDateEsMx(startDate),
+            fechaFin: formatDateEsMx(endDate),
+            usoMembresias: {
+                servicios: parseInt(usage.services_with_membership || 0, 10),
+                valorPrestado: parseFloat(usage.value_provided || 0),
+                // En Postgres hoy no hay "sellos" por checkout. Lo dejamos como 0 para no inventar.
+                sellosUtilizados: 0
+            }
+        };
+
+        const buffer = await buildSalesReportWorkbook(datos);
+
+        const filename = `Reporte_Ventas_${startDate}_${endDate}.xlsx`;
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(Buffer.from(buffer));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+function formatDateEsMx(fechaISO) {
+    // fechaISO: YYYY-MM-DD
+    const d = new Date(`${fechaISO}T12:00:00`);
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = d.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+}
+
+async function buildSalesReportWorkbook(datos) {
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet('Reporte de Ventas');
+
+    const estilos = {
+        titulo: {
+            font: { name: 'Calibri', size: 16, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } },
+            alignment: { horizontal: 'center', vertical: 'middle' }
+        },
+        subtitulo: {
+            font: { name: 'Calibri', size: 11, bold: true },
+            alignment: { horizontal: 'center' }
+        },
+        fechaPeriodo: {
+            font: { name: 'Calibri', size: 9, italic: true },
+            alignment: { horizontal: 'center' }
+        },
+        seccionHeader: {
+            font: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } }
+        },
+        seccionHeaderVerde: {
+            font: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF70AD47' } }
+        },
+        seccionHeaderMorado: {
+            font: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF9966CC' } }
+        },
+        seccionHeaderNaranja: {
+            font: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } }
+        },
+        seccionHeaderAzul: {
+            font: { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } }
+        },
+        fondoVerde: {
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } }
+        },
+        fondoMorado: {
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE4DFEC' } }
+        },
+        fondoNaranja: {
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } }
+        },
+        fondoAzulClaro: {
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } }
+        },
+        bordeThin: {
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        }
+    };
+
+    // ENCABEZADO
+    ws.mergeCells('A1:G1');
+    const titulo = ws.getCell('A1');
+    titulo.value = "BRACO'S BARBERÍA & PELUQUERÍA";
+    Object.assign(titulo, estilos.titulo);
+    ws.getRow(1).height = 25;
+
+    ws.mergeCells('A2:G2');
+    const subtitulo = ws.getCell('A2');
+    subtitulo.value = 'Reporte de Ventas - Análisis de Ingresos y Rendimiento';
+    Object.assign(subtitulo, estilos.subtitulo);
+
+    ws.mergeCells('A3:G3');
+    const fecha = ws.getCell('A3');
+    fecha.value = `Período: ${datos.fechaInicio} - ${datos.fechaFin} | Generado: ${new Date().toLocaleString('es-MX')}`;
+    Object.assign(fecha, estilos.fechaPeriodo);
+
+    // MÉTRICAS PRINCIPALES
+    let row = 5;
+    ws.mergeCells(`A${row}:B${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeader);
+    ws.getCell(`A${row}`).value = 'MÉTRICAS PRINCIPALES';
+
+    ws.mergeCells(`D${row}:E${row}`);
+    Object.assign(ws.getCell(`D${row}`), estilos.seccionHeaderVerde);
+    ws.getCell(`D${row}`).value = 'COMPOSICIÓN';
+
+    row++;
+    const porcentaje = (val) => {
+        if (!datos.ingresosTotales) return '0.0%';
+        return `${((val / datos.ingresosTotales) * 100).toFixed(1)}%`;
+    };
+
+    const metricas = [
+        ['Ingresos Totales', datos.ingresosTotales, 'Membresías', datos.ventaMembresias, porcentaje(datos.ventaMembresias)],
+        ['Transacciones', datos.totalTransacciones, 'Servicios Pagados', datos.serviciosPagados, porcentaje(datos.serviciosPagados)],
+        ['Ticket Promedio', datos.ticketPromedio, 'Productos', datos.productos, porcentaje(datos.productos)]
+    ];
+
+    metricas.forEach(m => {
+        ws.getCell(`A${row}`).value = m[0];
+        ws.getCell(`B${row}`).value = m[1];
+        ws.getCell(`D${row}`).value = m[2];
+        ws.getCell(`E${row}`).value = m[3];
+        ws.getCell(`F${row}`).value = m[4];
+
+        if (typeof m[1] === 'number' && m[0] !== 'Transacciones') ws.getCell(`B${row}`).numFmt = '$#,##0.00';
+        if (typeof m[3] === 'number') ws.getCell(`E${row}`).numFmt = '$#,##0.00';
+        row++;
+    });
+
+    // DESGLOSE DE INGRESOS
+    row++;
+    ws.mergeCells(`A${row}:G${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderAzul);
+    ws.getCell(`A${row}`).value = 'DESGLOSE DE INGRESOS';
+
+    // Servicios
+    row++;
+    ws.mergeCells(`A${row}:F${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderVerde);
+    ws.getCell(`A${row}`).value = 'Servicios Pagados';
+
+    const totalServ = ws.getCell(`G${row}`);
+    totalServ.value = datos.serviciosPagados;
+    totalServ.numFmt = '$#,##0.00';
+    Object.assign(totalServ, { font: { bold: true }, ...estilos.fondoVerde });
+
+    row++;
+    (datos.servicios || []).forEach(servicio => {
+        ws.getCell(`B${row}`).value = servicio.nombre;
+        ws.getCell(`F${row}`).value = `${servicio.cantidad} ventas`;
+        ws.getCell(`G${row}`).value = servicio.precio;
+        ws.getCell(`G${row}`).numFmt = '$#,##0.00';
+        row++;
+    });
+
+    // Membresías
+    ws.mergeCells(`A${row}:F${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderMorado);
+    ws.getCell(`A${row}`).value = 'Membresías Vendidas';
+
+    const totalMemb = ws.getCell(`G${row}`);
+    totalMemb.value = datos.ventaMembresias;
+    totalMemb.numFmt = '$#,##0.00';
+    Object.assign(totalMemb, { font: { bold: true }, ...estilos.fondoMorado });
+
+    row++;
+    (datos.membresias || []).forEach(m => {
+        ws.getCell(`B${row}`).value = m.nombre;
+        ws.getCell(`F${row}`).value = `${m.cantidad} ventas`;
+        ws.getCell(`G${row}`).value = m.precio;
+        ws.getCell(`G${row}`).numFmt = '$#,##0.00';
+        row++;
+    });
+
+    // Productos
+    ws.mergeCells(`A${row}:F${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderNaranja);
+    ws.getCell(`A${row}`).value = 'Productos';
+
+    const totalProd = ws.getCell(`G${row}`);
+    totalProd.value = datos.productos;
+    totalProd.numFmt = '$#,##0.00';
+    Object.assign(totalProd, { font: { bold: true }, ...estilos.fondoNaranja });
+
+    // SERVICIOS TOP
+    row += 2;
+    ws.mergeCells(`A${row}:G${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderAzul);
+    ws.getCell(`A${row}`).value = 'SERVICIOS TOP (INGRESOS)';
+
+    row++;
+    ['Servicio', 'Ventas', 'Total'].forEach((header, i) => {
+        const col = String.fromCharCode(65 + i);
+        const celda = ws.getCell(`${col}${row}`);
+        celda.value = header;
+        Object.assign(celda, { font: { bold: true }, ...estilos.fondoAzulClaro, ...estilos.bordeThin });
+    });
+
+    row++;
+    const todosServicios = [
+        ...(datos.membresias || []).map(m => ({ nombre: m.nombre, cantidad: m.cantidad, total: m.precio })),
+        ...(datos.servicios || []).map(s => ({ nombre: s.nombre, cantidad: s.cantidad, total: s.precio }))
+    ].sort((a, b) => (b.total || 0) - (a.total || 0));
+
+    todosServicios.forEach(item => {
+        ws.getCell(`A${row}`).value = item.nombre;
+        ws.getCell(`B${row}`).value = `${item.cantidad} ventas`;
+        ws.getCell(`C${row}`).value = item.total;
+        ws.getCell(`C${row}`).numFmt = '$#,##0.00';
+        ['A', 'B', 'C'].forEach(col => Object.assign(ws.getCell(`${col}${row}`), estilos.bordeThin));
+        row++;
+    });
+
+    // USO DE MEMBRESÍAS
+    row++;
+    ws.mergeCells(`A${row}:G${row}`);
+    Object.assign(ws.getCell(`A${row}`), estilos.seccionHeaderMorado);
+    ws.getCell(`A${row}`).value = 'USO DE MEMBRESÍAS';
+
+    row++;
+    ws.mergeCells(`A${row}:G${row}`);
+    ws.getCell(`A${row}`).value = 'No suma a ventas - Servicios prestados usando beneficios de membresía.';
+    ws.getCell(`A${row}`).font = { italic: true, size: 9 };
+
+    row++;
+    ws.getCell(`A${row}`).value = 'Servicios con Membresía:';
+    ws.getCell(`B${row}`).value = datos.usoMembresias?.servicios || 0;
+    ws.getCell(`B${row}`).font = { bold: true };
+
+    row++;
+    ws.getCell(`A${row}`).value = 'Valor Prestado:';
+    ws.getCell(`B${row}`).value = datos.usoMembresias?.valorPrestado || 0;
+    ws.getCell(`B${row}`).numFmt = '$#,##0.00';
+    ws.getCell(`B${row}`).font = { bold: true };
+
+    row++;
+    ws.getCell(`A${row}`).value = 'Sellos Utilizados:';
+    ws.getCell(`B${row}`).value = datos.usoMembresias?.sellosUtilizados || 0;
+    ws.getCell(`B${row}`).font = { bold: true };
+
+    // Anchos de columna
+    ws.getColumn('A').width = 35;
+    ws.getColumn('B').width = 15;
+    ws.getColumn('C').width = 15;
+    ws.getColumn('D').width = 20;
+    ws.getColumn('E').width = 15;
+    ws.getColumn('F').width = 12;
+    ws.getColumn('G').width = 15;
+
+    return workbook.xlsx.writeBuffer();
+}
 
 // GET /api/admin/reports/revenue - Reporte de ingresos reales (cash flow)
 router.get('/reports/revenue', authenticateToken, async (req, res, next) => {

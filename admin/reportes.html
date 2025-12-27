@@ -6,86 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes | Braco's Admin</title>
     <link rel="icon" href="../assets/logo.png" type="image/png">
-    <link rel="stylesheet" href="css/admin.css?v=3">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('Sesión expirada. Por favor inicia sesión de nuevo.');
+                    logout();
+                    return;
+                }
 
-<body>
-    <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
-        <i class="fas fa-bars"></i>
-    </button>
+                const url = `${API_BASE}/admin/reports/sales/excel?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobile-overlay"></div>
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '');
+                    throw new Error(text || 'No se pudo generar el Excel');
+                }
 
-    <div class="admin-layout">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <img src="../assets/logo.png" alt="Logo"
-                    style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
-                <p class="sidebar-subtitle">Administración</p>
-            </div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">Principal</span>
-                    <a href="index.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="calendario.html" class="nav-item">
-                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
-                        <span>Calendario</span>
-                    </a>
-                    <a href="citas.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas</span>
-                        <span class="badge" id="nav-badge-citas">0</span>
-                    </a>
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Reporte_Ventas_${start}_${end}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
                 </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Gestión</span>
-                    <a href="clientes.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-users"></i></span>
-                        <span>Clientes</span>
-                    </a>
-                    <a href="membresias.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                        <span>Membresías</span>
-                    </a>
-                    <a href="servicios.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
-                        <span>Servicios</span>
-                    </a>
-                    <a href="productos.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
-                        <span>Productos</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Reportes</span>
-                    <a href="reportes.html" class="nav-item active">
-                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                        <span>Ventas</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">Sistema</span>
-                    <a href="configuracion.html" class="nav-item">
-                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                        <span>Configuración</span>
-                    </a>
-                </div>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
+                alert('Reporte exportado correctamente');
                     <div class="admin-avatar" id="admin-avatar">A</div>
                     <div class="admin-info">
                         <div class="admin-name" id="admin-name">Admin</div>
