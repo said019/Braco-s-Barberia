@@ -983,29 +983,14 @@
             try {
                 showToast('Generando reporte detallado...', 'info');
 
-                const response = await AdminAPI.exportMembershipsData();
+                const response = await AdminAPI.exportMembershipsDetailed();
 
                 if (!response || response.length === 0) {
                     showToast('No hay datos para exportar', 'warning');
                     return;
                 }
 
-                const exportData = response.map(m => ({
-                    'Folio': m.folio || 'S/N',
-                    'Cliente': m.client_name,
-                    'Plan': m.plan_name,
-                    'Precio': formatCurrency(m.price),
-                    'Estado': m.status === 'active' ? 'Activa' : 'Cancelada',
-                    'Inicio': formatDate(m.start_date),
-                    'Vencimiento': m.end_date ? formatDate(m.end_date) : 'N/A',
-                    'Servicios Restantes': m.remaining_services,
-                    'Servicio Usado': m.used_service || 'Sin uso',
-                    'Fecha Uso': m.usage_date ? formatDateTime(m.usage_date) : '-',
-                    'Valor Uso': m.usage_value ? formatCurrency(m.usage_value) : '-',
-                    'Sellos': m.stamps_used || '-'
-                }));
-
-                exportToExcel(exportData, `Membresias_Detalle_${new Date().toISOString().split('T')[0]}`);
+                exportToExcelDetailed(response, `Membresias_Detalle_${new Date().toISOString().split('T')[0]}`);
 
             } catch (error) {
                 console.error('Export error:', error);
@@ -1013,33 +998,150 @@
             }
         }
 
-        function exportToExcel(rows, filenameBase) {
-            if (!rows || !rows.length) return;
+        function exportToExcelDetailed(memberships, filenameBase) {
+            if (!memberships || !memberships.length) return;
             if (typeof XLSX === 'undefined') {
-                throw new Error('Librería XLSX no disponible');
+                throw new Error('Libreria XLSX no disponible');
             }
 
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
 
-            // Auto-ancho de columnas (simple y entendible)
-            const keys = Object.keys(rows[0] || {});
+            // Sheet 1: Resumen de Membresias
+            const summaryData = memberships.map(m => ({
+                'Folio': m.folio || 'S/N',
+                'Cliente': m.client_name,
+                'Telefono': m.client_phone || '',
+                'Plan': m.plan_name,
+                'Precio': parseFloat(m.price) || 0,
+                'Estado': m.status === 'active' ? 'Activa' : 'Cancelada',
+                'Inicio': m.start_date ? formatDateExcel(m.start_date) : '',
+                'Vencimiento': m.end_date ? formatDateExcel(m.end_date) : 'N/A',
+                'Servicios Totales': m.total_services || 0,
+                'Servicios Usados': m.used_services || 0,
+                'Servicios Restantes': m.remaining_services || 0,
+                'Pagos Registrados': m.payments?.length || 0,
+                'Usos Registrados': m.usage_history?.length || 0
+            }));
+
+            const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+            autoFitColumns(wsSummary, summaryData);
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+
+            // Sheet 2: Historial de Pagos
+            const paymentsData = [];
+            memberships.forEach(m => {
+                if (m.payments && m.payments.length > 0) {
+                    m.payments.forEach(p => {
+                        paymentsData.push({
+                            'Folio Membresia': m.folio || 'S/N',
+                            'Cliente': m.client_name,
+                            'Plan': m.plan_name,
+                            'Fecha Pago': p.transaction_date ? formatDateExcel(p.transaction_date) : formatDateExcel(p.created_at),
+                            'Monto': parseFloat(p.amount) || 0,
+                            'Metodo': getPaymentMethodText(p.payment_method)
+                        });
+                    });
+                } else {
+                    // Include memberships without payments too
+                    paymentsData.push({
+                        'Folio Membresia': m.folio || 'S/N',
+                        'Cliente': m.client_name,
+                        'Plan': m.plan_name,
+                        'Fecha Pago': 'Sin registro',
+                        'Monto': parseFloat(m.price) || 0,
+                        'Metodo': 'No registrado'
+                    });
+                }
+            });
+
+            const wsPayments = XLSX.utils.json_to_sheet(paymentsData);
+            autoFitColumns(wsPayments, paymentsData);
+            XLSX.utils.book_append_sheet(wb, wsPayments, 'Historial Pagos');
+
+            // Sheet 3: Historial de Uso (Sellos)
+            const usageData = [];
+            memberships.forEach(m => {
+                // Add completed services
+                if (m.usage_history && m.usage_history.length > 0) {
+                    m.usage_history.forEach(u => {
+                        usageData.push({
+                            'Folio Membresia': m.folio || 'S/N',
+                            'Cliente': m.client_name,
+                            'Plan': m.plan_name,
+                            'Estado': 'Completado',
+                            'Servicio': u.service_name,
+                            'Fecha Uso': u.used_at ? formatDateTimeExcel(u.used_at) : '',
+                            'Valor Servicio': parseFloat(u.service_value) || 0
+                        });
+                    });
+                }
+                // Add remaining services info
+                const remaining = m.remaining_services || 0;
+                if (remaining > 0) {
+                    usageData.push({
+                        'Folio Membresia': m.folio || 'S/N',
+                        'Cliente': m.client_name,
+                        'Plan': m.plan_name,
+                        'Estado': 'Disponible',
+                        'Servicio': `${remaining} servicios restantes`,
+                        'Fecha Uso': '',
+                        'Valor Servicio': ''
+                    });
+                }
+            });
+
+            if (usageData.length === 0) {
+                usageData.push({
+                    'Folio Membresia': '',
+                    'Cliente': '',
+                    'Plan': '',
+                    'Estado': '',
+                    'Servicio': 'Sin registros de uso',
+                    'Fecha Uso': '',
+                    'Valor Servicio': ''
+                });
+            }
+
+            const wsUsage = XLSX.utils.json_to_sheet(usageData);
+            autoFitColumns(wsUsage, usageData);
+            XLSX.utils.book_append_sheet(wb, wsUsage, 'Historial Uso Sellos');
+
+            const filename = `${filenameBase}.xlsx`;
+            XLSX.writeFile(wb, filename);
+            showToast('Reporte exportado con 3 hojas: Resumen, Pagos y Uso', 'success');
+        }
+
+        function autoFitColumns(ws, data) {
+            if (!data || !data.length) return;
+            const keys = Object.keys(data[0] || {});
             ws['!cols'] = keys.map(k => {
                 let max = k.length;
-                for (const r of rows) {
+                for (const r of data) {
                     const v = r[k] == null ? '' : String(r[k]);
                     if (v.length > max) max = v.length;
                 }
                 return { wch: Math.min(Math.max(max + 2, 12), 45) };
             });
+        }
 
-            // Congelar encabezado
-            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+        function formatDateExcel(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
 
-            XLSX.utils.book_append_sheet(wb, ws, 'Membresías');
+        function formatDateTimeExcel(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) +
+                   ' ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        }
 
-            const filename = `${filenameBase}.xlsx`;
-            XLSX.writeFile(wb, filename);
+        function getPaymentMethodText(method) {
+            const methods = { 'cash': 'Efectivo', 'card': 'Tarjeta', 'transfer': 'Transferencia' };
+            return methods[method] || method || 'No especificado';
         }
 
         // Initial load

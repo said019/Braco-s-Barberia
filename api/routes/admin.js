@@ -1384,6 +1384,87 @@ router.get('/memberships/export/data', authenticateToken, async (req, res, next)
     }
 });
 
+// GET /api/admin/memberships/export/detailed
+// Reporte completo con historial de pagos y usos
+router.get('/memberships/export/detailed', authenticateToken, async (req, res, next) => {
+    try {
+        // Get all memberships with basic info
+        const memberships = await db.query(`
+            SELECT
+                cm.id,
+                cm.folio_number AS folio,
+                cm.status,
+                cm.activation_date AS start_date,
+                cm.expiration_date AS end_date,
+                cm.total_services,
+                cm.used_services,
+                (cm.total_services - cm.used_services) AS remaining_services,
+                cm.created_at,
+                c.name AS client_name,
+                c.phone AS client_phone,
+                mt.name AS plan_name,
+                mt.price AS price
+            FROM client_memberships cm
+            JOIN clients c ON cm.client_id = c.id
+            JOIN membership_types mt ON cm.membership_type_id = mt.id
+            ORDER BY cm.created_at DESC
+        `);
+
+        // Get all payment history for memberships
+        const payments = await db.query(`
+            SELECT
+                t.membership_purchase_id AS membership_id,
+                t.amount,
+                t.payment_method,
+                t.transaction_date,
+                t.created_at
+            FROM transactions t
+            WHERE t.membership_purchase_id IS NOT NULL
+            ORDER BY t.created_at DESC
+        `);
+
+        // Get all usage history for memberships
+        const usage = await db.query(`
+            SELECT
+                mu.membership_id,
+                mu.service_name,
+                mu.used_at,
+                s.price AS service_value
+            FROM membership_usage mu
+            LEFT JOIN services s ON mu.service_id = s.id
+            ORDER BY mu.used_at DESC
+        `);
+
+        // Group payments and usage by membership_id
+        const paymentsMap = {};
+        payments.rows.forEach(p => {
+            if (!paymentsMap[p.membership_id]) {
+                paymentsMap[p.membership_id] = [];
+            }
+            paymentsMap[p.membership_id].push(p);
+        });
+
+        const usageMap = {};
+        usage.rows.forEach(u => {
+            if (!usageMap[u.membership_id]) {
+                usageMap[u.membership_id] = [];
+            }
+            usageMap[u.membership_id].push(u);
+        });
+
+        // Combine everything
+        const detailedData = memberships.rows.map(m => ({
+            ...m,
+            payments: paymentsMap[m.id] || [],
+            usage_history: usageMap[m.id] || []
+        }));
+
+        res.json(detailedData);
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ============================
 // SERVICIOS
 // ============================

@@ -154,6 +154,11 @@ const AdminAPI = {
         return result?.data || result;
     },
 
+    exportMembershipsDetailed: async () => {
+        const result = await fetchWithAuth('/admin/memberships/export/detailed');
+        return result?.data || result;
+    },
+
     // Reports
     getSalesReport: (params) => {
         const query = new URLSearchParams(params).toString();
