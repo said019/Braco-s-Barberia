@@ -342,10 +342,12 @@
                         : '<span class="text-muted">-</span>'}
                         </td>
                         <td data-label="Última Visita">${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
-                        <td data-label="" class="actions">
-                            <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
-                            <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <td data-label="">
+                            <div class="actions">
+                                <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                                <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');

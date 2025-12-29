@@ -612,54 +612,11 @@ function setActiveNavItem() {
 // Set active nav on page load
 document.addEventListener('DOMContentLoaded', setActiveNavItem);
 
-// ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
+// ==================== LAYOUT & RESPONSIVENESS ====================
+// Mobile menu logic is handled by sidebar.js to avoid duplicate event listeners
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Mobile Menu Logic
-    const toggleBtn = document.getElementById('mobile-menu-toggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobile-overlay');
-
-    // Function to update icon state (DISABLED as per user request to NOT change to X)
-    const updateIcon = (isOpen) => {
-        // User requested: "que no cambie el icno a una X"
-        // Keeping function structure but doing nothing or reinforcing bars
-        const icon = toggleBtn?.querySelector('i');
-        if (icon) {
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
-        }
-    };
-
-    if (toggleBtn && sidebar && overlay) {
-        // Toggle click
-        toggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            sidebar.classList.toggle('open');
-            const isOpen = sidebar.classList.contains('open');
-            overlay.classList.toggle('active', isOpen);
-            // updateIcon(isOpen); // Don't change icon
-        });
-
-        // Overlay click
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        });
-
-        // Links click (auto-close on mobile)
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('active');
-                    updateIcon(false);
-                }
-            });
-        });
-    }
-
-    // 2. Calendar Responsive Fix
+    // Calendar Responsive Fix
     // Wrap calendar grid in a responsive container if not already
     const calendarGrid = document.querySelector('.calendar-grid');
     if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {
