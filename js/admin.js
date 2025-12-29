@@ -619,17 +619,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('mobile-overlay');
 
-    // Function to update icon state
+    // Function to update icon state (DISABLED as per user request to NOT change to X)
     const updateIcon = (isOpen) => {
+        // User requested: "que no cambie el icno a una X"
+        // Keeping function structure but doing nothing or reinforcing bars
         const icon = toggleBtn?.querySelector('i');
         if (icon) {
-            if (isOpen) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
         }
     };
 
@@ -641,14 +638,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebar.classList.toggle('open');
             const isOpen = sidebar.classList.contains('open');
             overlay.classList.toggle('active', isOpen);
-            updateIcon(isOpen);
+            // updateIcon(isOpen); // Don't change icon
         });
 
         // Overlay click
         overlay.addEventListener('click', () => {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
-            updateIcon(false);
         });
 
         // Links click (auto-close on mobile)

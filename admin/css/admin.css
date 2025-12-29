@@ -1493,6 +1493,19 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         padding: 1rem;
         padding-top: 4rem;
         width: 100%;
+        overflow-x: hidden;
+        /* Force no horizontal scroll */
+    }
+
+    /* Force all tables to fit */
+    table,
+    tr,
+    td,
+    th {
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-word;
     }
 
     .mobile-menu-toggle {
