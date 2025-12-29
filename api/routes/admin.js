@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import db, { transaction } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import emailService from '../services/emailService.js';
@@ -74,9 +75,122 @@ router.post('/login', async (req, res, next) => {
     }
 });
 
+// POST /api/admin/forgot-password
+router.post('/forgot-password', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email requerido' });
+        }
+
+        // Buscar admin por email
+        const result = await db.query(
+            'SELECT * FROM admin_users WHERE email = $1 AND is_active = true',
+            [email]
+        );
+
+        // Por seguridad, siempre respondemos igual (no revelar si el email existe)
+        if (result.rows.length === 0) {
+            console.log(`[FORGOT PW] Intento con email no registrado: ${email}`);
+            return res.json({
+                success: true,
+                message: 'Si el email está registrado, recibirás instrucciones para restablecer tu contraseña.'
+            });
+        }
+
+        const admin = result.rows[0];
+
+        // Generar token único
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 3600000); // 1 hora
+
+        // Guardar token en BD
+        await db.query(
+            'UPDATE admin_users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+            [resetToken, expiresAt, admin.id]
+        );
+
+        // Construir URL de reset
+        const publicUrl = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+        const resetUrl = `${publicUrl}/admin/reset-password.html?token=${resetToken}`;
+
+        // Enviar email
+        const emailResult = await emailService.sendPasswordReset({
+            email: admin.email,
+            name: admin.name,
+            resetUrl
+        });
+
+        if (emailResult.success) {
+            console.log(`[FORGOT PW] Email enviado a ${admin.email}`);
+        } else {
+            console.error(`[FORGOT PW] Error enviando email: ${emailResult.error}`);
+        }
+
+        res.json({
+            success: true,
+            message: 'Si el email está registrado, recibirás instrucciones para restablecer tu contraseña.'
+        });
+
+    } catch (error) {
+        console.error('[FORGOT PW] Error:', error);
+        next(error);
+    }
+});
+
+// POST /api/admin/reset-password
+router.post('/reset-password', async (req, res, next) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({ error: 'Token y contraseña requeridos' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+        }
+
+        // Buscar admin con token válido
+        const result = await db.query(
+            'SELECT * FROM admin_users WHERE reset_token = $1 AND reset_token_expires > NOW()',
+            [token]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: 'El enlace ha expirado o es inválido. Solicita uno nuevo.' });
+        }
+
+        const admin = result.rows[0];
+
+        // Hashear nueva contraseña
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        // Actualizar contraseña y limpiar token
+        await db.query(
+            'UPDATE admin_users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+            [passwordHash, admin.id]
+        );
+
+        console.log(`[RESET PW] Contraseña actualizada para admin: ${admin.username}`);
+
+        res.json({
+            success: true,
+            message: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.'
+        });
+
+    } catch (error) {
+        console.error('[RESET PW] Error:', error);
+        next(error);
+    }
+});
+
 // ============================
 // DASHBOARD
 // ============================
+
 
 // GET /api/admin/dashboard
 router.get('/dashboard', authenticateToken, async (req, res, next) => {
@@ -1012,7 +1126,7 @@ router.post('/appointments/:id/send-reminder', authenticateToken, async (req, re
         if (whatsappRes.success) {
             // Marcar como enviado
             await db.query('UPDATE appointments SET reminder_sent = TRUE WHERE id = $1', [id]);
-            
+
             console.log(`[ADMIN] Recordatorio 24h enviado a ${appointment.client_name}: ${whatsappRes.id}`);
             res.json({
                 success: true,

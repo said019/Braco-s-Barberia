@@ -175,10 +175,42 @@ export async function sendCheckoutReceipt(data) {
         return { success: false, error: error.message };
     }
 }
+/**
+ * Send password reset email to admin
+ */
+export async function sendPasswordReset(data) {
+    const { email, name, resetUrl } = data;
+
+    if (!email) return { success: false, error: 'No email provided' };
+
+    const html = loadTemplate('password-reset', {
+        adminName: name || 'Administrador',
+        resetUrl,
+        year: new Date().getFullYear()
+    });
+
+    if (!html) return { success: false, error: 'Template not found' };
+
+    try {
+        const result = await resend.emails.send({
+            from: FROM_EMAIL,
+            to: email,
+            subject: `🔐 Restablecer Contraseña - Braco's Admin`,
+            html
+        });
+
+        console.log('Password reset email sent:', result);
+        return { success: true, id: result.id };
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return { success: false, error: error.message };
+    }
+}
 
 export default {
     sendBookingConfirmation,
     sendDepositAccepted,
     sendMembershipWelcome,
-    sendCheckoutReceipt
+    sendCheckoutReceipt,
+    sendPasswordReset
 };

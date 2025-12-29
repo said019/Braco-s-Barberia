@@ -523,6 +523,35 @@
                 </button>
             </form>
 
+            <!-- Formulario de Recuperación de Contraseña (oculto por defecto) -->
+            <div id="forgot-password-form" style="display: none;">
+                <h2 class="login-title" style="margin-bottom: 1rem;">Recuperar Contraseña</h2>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(245,245,240,0.7); margin-bottom: 1.5rem;">
+                    Ingresa el email asociado a tu cuenta de administrador.
+                </p>
+
+                <div class="login-error" id="forgot-error"></div>
+                <div class="login-success" id="forgot-success"></div>
+
+                <form id="forgot-form">
+                    <div class="form-group">
+                        <label class="form-label" for="forgot-email">Email</label>
+                        <input type="email" id="forgot-email" name="email" class="form-input" required
+                            placeholder="tu@email.com" autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-forgot" style="width: 100%;">
+                        Enviar Instrucciones
+                    </button>
+                </form>
+
+                <p style="text-align: center; margin-top: 1.5rem;">
+                    <a href="#" id="back-to-login"
+                        style="color: var(--gold); text-decoration: none; font-size: 0.9rem;">
+                        ← Volver al inicio de sesión
+                    </a>
+                </p>
+            </div>
+
             <div class="security-info">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
@@ -591,20 +620,83 @@
         usernameInput.addEventListener('blur', () => validateField(usernameInput));
         passwordInput.addEventListener('blur', () => validateField(passwordInput));
 
-        // Manejar recuperación de contraseña
+        // Manejar click en "¿Olvidaste tu contraseña?"
         document.getElementById('forgot-password').addEventListener('click', (e) => {
             e.preventDefault();
-            const errorEl = document.getElementById('login-error');
-            const successEl = document.getElementById('login-success');
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('forgot-password-form').style.display = 'block';
+            document.getElementById('login-error').classList.remove('active');
+            document.getElementById('login-success').classList.remove('active');
+        });
+
+        // Volver al login desde el formulario de recuperación
+        document.getElementById('back-to-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('forgot-password-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('forgot-error').classList.remove('active');
+            document.getElementById('forgot-success').classList.remove('active');
+        });
+
+        // Manejar envío del formulario de recuperación
+        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('btn-forgot');
+            const errorEl = document.getElementById('forgot-error');
+            const successEl = document.getElementById('forgot-success');
+            const emailInput = document.getElementById('forgot-email');
 
             errorEl.classList.remove('active');
-            successEl.textContent = 'Para recuperar tu contraseña, contacta al administrador del sistema.';
-            successEl.classList.add('active');
+            successEl.classList.remove('active');
 
-            setTimeout(() => {
-                successEl.classList.remove('active');
-            }, 5000);
+            const email = emailInput.value.trim();
+            if (!email) {
+                errorEl.textContent = 'Por favor ingresa tu email.';
+                errorEl.classList.add('active');
+                return;
+            }
+
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.innerHTML = 'Enviando<span class="btn-spinner"></span>';
+
+            try {
+                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3000/api/admin/forgot-password'
+                    : '/api/admin/forgot-password';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                // Siempre mostramos éxito (por seguridad, no revelamos si el email existe)
+                successEl.textContent = data.message || 'Si el email está registrado, recibirás instrucciones.';
+                successEl.classList.add('active');
+                emailInput.value = '';
+
+            } catch (error) {
+                errorEl.textContent = 'Error de conexión. Intenta nuevamente.';
+                errorEl.classList.add('active');
+            }
+
+            btn.disabled = false;
+            btn.textContent = originalText;
         });
+
+        // Verificar si viene de un reset exitoso
+        const resetSuccess = new URLSearchParams(window.location.search).get('reset');
+        if (resetSuccess === 'success') {
+            const successEl = document.getElementById('login-success');
+            successEl.textContent = '¡Contraseña actualizada! Ya puedes iniciar sesión.';
+            successEl.classList.add('active');
+            // Limpiar el parámetro de la URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
 
         // Verificar bloqueo por intentos fallidos
         function checkLoginLockout() {
