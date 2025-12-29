@@ -3584,3 +3584,455 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         padding: 0.75rem;
     }
 }
+
+/* ========================================
+   21. MOBILE RESPONSIVE OVERHAUL v2.0
+   Premium Mobile Experience for Admin Panel
+   Fixes: Service cards, Client tables, Stats, Headers
+   ======================================== */
+
+/* =========================
+   21.1 TOP HEADER - Stacked Layout
+   ========================= */
+@media (max-width: 640px) {
+    .top-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        padding: 1rem !important;
+        gap: 1rem;
+        height: auto !important;
+    }
+
+    .top-header>div:first-child {
+        text-align: center;
+    }
+
+    .top-header .page-title {
+        font-size: 1.35rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .top-header .text-muted {
+        font-size: 0.8rem;
+    }
+
+    .top-header .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .top-header .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.875rem 1rem;
+    }
+}
+
+/* =========================
+   21.2 FILTERS BAR - Vertical Stack
+   ========================= */
+@media (max-width: 640px) {
+    .filters-bar {
+        flex-direction: column !important;
+        padding: 0 !important;
+        gap: 0.75rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .filters-bar .search-box {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .filters-bar .search-input {
+        width: 100%;
+    }
+
+    .filters-bar .filter-select,
+    .filters-bar select {
+        width: 100% !important;
+        min-height: 48px;
+    }
+}
+
+/* =========================
+   21.3 STATS GRID - 2 Columns
+   ========================= */
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .stat-card {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+        gap: 0.5rem !important;
+    }
+
+    .stat-card .stat-icon {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.1rem !important;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.5rem !important;
+        line-height: 1.2;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.65rem !important;
+        letter-spacing: 0.05em;
+    }
+}
+
+/* =========================
+   21.4 SERVICE CARDS - Premium Mobile Design
+   ========================= */
+@media (max-width: 640px) {
+
+    /* Services table container */
+    .table-container {
+        padding: 0 !important;
+        overflow-x: visible !important;
+    }
+
+    /* Convert services table to cards */
+    #services-table-body tr {
+        display: block !important;
+        background: var(--charcoal) !important;
+        border: 1px solid rgba(196, 163, 90, 0.2) !important;
+        border-radius: 12px !important;
+        margin-bottom: 1rem !important;
+        padding: 1.25rem 1rem !important;
+        position: relative;
+    }
+
+    #services-table-body td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.5rem 0 !important;
+        border: none !important;
+    }
+
+    #services-table-body td:not(:last-child) {
+        border-bottom: 1px solid rgba(196, 163, 90, 0.08) !important;
+    }
+
+    /* Service name - Prominent */
+    #services-table-body td:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.25rem;
+    }
+
+    #services-table-body td:first-child .font-medium {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        color: var(--cream) !important;
+        margin-bottom: 0.35rem;
+    }
+
+    #services-table-body td:first-child .text-sm {
+        font-size: 0.8rem !important;
+        color: rgba(245, 243, 238, 0.6) !important;
+        line-height: 1.4;
+    }
+
+    /* Labels for mobile */
+    #services-table-body td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: var(--gold);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Actions row */
+    #services-table-body td:last-child {
+        padding-top: 0.75rem !important;
+        margin-top: 0.25rem;
+        border-top: 1px solid rgba(196, 163, 90, 0.15) !important;
+        border-bottom: none !important;
+    }
+
+    #services-table-body td:last-child .actions {
+        width: 100%;
+        justify-content: flex-end !important;
+        gap: 0.5rem;
+    }
+
+    #services-table-body td:last-child .btn-icon {
+        flex: 0 0 auto;
+    }
+}
+
+/* =========================
+   21.5 CLIENT CARDS - Clean Vertical Layout
+   ========================= */
+@media (max-width: 640px) {
+
+    /* Clients table to cards */
+    #clients-table thead {
+        display: none !important;
+    }
+
+    #clients-table tbody {
+        display: block !important;
+    }
+
+    #clients-tbody tr {
+        display: block !important;
+        background: var(--charcoal) !important;
+        border: 1px solid rgba(196, 163, 90, 0.2) !important;
+        border-radius: 12px !important;
+        margin-bottom: 1rem !important;
+        padding: 1.25rem 1rem !important;
+    }
+
+    #clients-tbody td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.5rem 0 !important;
+        border: none !important;
+    }
+
+    #clients-tbody td:not(:last-child) {
+        border-bottom: 1px solid rgba(196, 163, 90, 0.08) !important;
+    }
+
+    /* Client name - Prominent */
+    #clients-tbody td:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding-bottom: 0.75rem !important;
+    }
+
+    #clients-tbody td:first-child strong {
+        font-size: 1.1rem !important;
+        color: var(--cream) !important;
+    }
+
+    #clients-tbody td:first-child small {
+        color: rgba(245, 243, 238, 0.5) !important;
+    }
+
+    /* Labels for mobile - data-label */
+    #clients-tbody td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: var(--gold);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Hide less important columns on mobile */
+    #clients-tbody td[data-label="Total"],
+    #clients-tbody td[data-label="Última Visita"] {
+        display: none !important;
+    }
+
+    /* Actions row full width */
+    #clients-tbody td.actions,
+    #clients-tbody td:last-child {
+        padding-top: 0.75rem !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.15) !important;
+        border-bottom: none !important;
+    }
+
+    #clients-tbody td.actions .btn-icon,
+    #clients-tbody td:last-child .btn-icon {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+/* =========================
+   21.6 CARDS - Cleaner Mobile Style
+   ========================= */
+@media (max-width: 640px) {
+    .card {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        border-radius: 12px !important;
+    }
+
+    .card-header {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }
+
+    .card-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card-title {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* =========================
+   21.7 PAGE CONTENT - Better Spacing
+   ========================= */
+@media (max-width: 640px) {
+    .page-content {
+        padding: 0.875rem !important;
+    }
+
+    .main-header {
+        padding: 1rem 0.875rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .content-section {
+        padding: 1rem !important;
+    }
+}
+
+/* =========================
+   21.8 MODALS - Full Screen Mobile
+   ========================= */
+@media (max-width: 640px) {
+    .modal-overlay .modal {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    .modal-body {
+        padding: 1rem !important;
+    }
+
+    .modal-footer {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .modal-footer .btn {
+        width: 100% !important;
+        justify-content: center;
+    }
+}
+
+/* =========================
+   21.9 BADGES - Readable Size
+   ========================= */
+@media (max-width: 640px) {
+    .badge {
+        font-size: 0.7rem !important;
+        padding: 0.3rem 0.6rem !important;
+        white-space: nowrap;
+    }
+
+    .appointment-status {
+        font-size: 0.7rem !important;
+        padding: 0.35rem 0.6rem !important;
+    }
+}
+
+/* =========================
+   21.10 PAGINATION - Touch Friendly
+   ========================= */
+@media (max-width: 640px) {
+    .pagination {
+        justify-content: center !important;
+        gap: 0.35rem !important;
+        flex-wrap: wrap !important;
+        margin-top: 1rem;
+    }
+
+    .pagination-btn,
+    .pagination .page-btn {
+        min-width: 40px !important;
+        min-height: 40px !important;
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* =========================
+   21.11 GENERAL TABLE CARDS FIX
+   ========================= */
+@media (max-width: 640px) {
+    .data-table {
+        display: block !important;
+    }
+
+    .data-table thead {
+        display: none !important;
+    }
+
+    .data-table tbody {
+        display: block !important;
+    }
+
+    .data-table tr {
+        display: block !important;
+        background: var(--charcoal) !important;
+        border: 1px solid rgba(196, 163, 90, 0.2) !important;
+        border-radius: 12px !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
+    }
+
+    .data-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.5rem 0 !important;
+        border: none !important;
+        text-align: right;
+    }
+
+    .data-table td:not(:last-child) {
+        border-bottom: 1px solid rgba(196, 163, 90, 0.08) !important;
+    }
+
+    /* Labels from data-label attribute */
+    .data-table td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: var(--gold);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: left;
+        flex-shrink: 0;
+        margin-right: 1rem;
+    }
+
+    /* First cell prominent */
+    .data-table td:first-child {
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 0.75rem !important;
+        text-align: left;
+    }
+
+    /* Actions always at end */
+    .data-table td:last-child {
+        padding-top: 0.75rem !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.12) !important;
+        border-bottom: none !important;
+    }
+
+    .data-table .actions {
+        width: 100%;
+        justify-content: flex-end !important;
+    }
+}
