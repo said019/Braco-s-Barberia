@@ -399,3 +399,181 @@ body.side-panel-open {
         font-size: 0.7rem;
     }
 }
+
+
+/* ============================================
+   CALENDARIO RESPONSIVE - VISTA COMPACTA MÓVIL
+   ============================================ */
+
+/* Vista mensual compacta para móvil */
+@media (max-width: 640px) {
+    /* Contenedor del calendario con scroll */
+    .calendar-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+    }
+    
+    /* Grid del calendario más compacto */
+    .calendar-grid {
+        min-width: 100% !important;
+        font-size: 0.7rem;
+    }
+    
+    .calendar-day-header {
+        padding: 0.5rem 0.15rem;
+        font-size: 0.6rem;
+        letter-spacing: 0;
+    }
+    
+    .calendar-day {
+        min-height: 50px;
+        padding: 0.2rem;
+        aspect-ratio: auto;
+    }
+    
+    .calendar-day-number {
+        font-size: 0.75rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    /* Citas en calendario - solo mostrar indicador */
+    .calendar-appointment {
+        font-size: 0;
+        padding: 0;
+        height: 6px;
+        border-radius: 3px;
+        margin: 1px 0;
+        overflow: hidden;
+    }
+    
+    .calendar-appointments {
+        gap: 1px;
+    }
+    
+    /* Vista semanal compacta */
+    .gcal-week-view {
+        overflow-x: auto;
+    }
+    
+    .gcal-week-header {
+        grid-template-columns: 40px repeat(7, minmax(45px, 1fr));
+        min-width: 360px;
+    }
+    
+    .gcal-week-header-cell {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .gcal-week-header-day {
+        font-size: 0.55rem;
+        letter-spacing: 0;
+    }
+    
+    .gcal-week-header-date {
+        font-size: 1rem;
+    }
+    
+    .gcal-week-header-cell.today .gcal-week-header-date {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+    
+    .gcal-week-grid {
+        grid-template-columns: 40px repeat(7, minmax(45px, 1fr));
+        min-width: 360px;
+        max-height: 400px;
+    }
+    
+    .gcal-time-slot {
+        min-height: 45px;
+    }
+    
+    .gcal-time-label {
+        font-size: 0.6rem;
+        padding: 0.25rem;
+        padding-right: 0.5rem;
+    }
+    
+    .gcal-appointment {
+        font-size: 0.6rem;
+        padding: 0.15rem;
+        border-left-width: 2px;
+    }
+    
+    .gcal-appointment-time {
+        font-size: 0.55rem;
+        margin-bottom: 0;
+    }
+    
+    .gcal-appointment-client {
+        font-size: 0.55rem;
+    }
+    
+    .gcal-appointment-service {
+        display: none;
+    }
+    
+    /* Vista diaria */
+    .gcal-day-grid {
+        grid-template-columns: 40px 1fr;
+        max-height: 450px;
+    }
+    
+    /* Side panel full screen en móvil */
+    .gcal-side-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .gcal-side-panel-content {
+        padding: 1rem;
+    }
+    
+    .gcal-detail-title {
+        font-size: 1.4rem;
+    }
+    
+    .gcal-detail-actions {
+        flex-direction: column;
+    }
+    
+    .gcal-detail-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 380px) {
+    .calendar-day {
+        min-height: 40px;
+    }
+    
+    .calendar-day-number {
+        font-size: 0.65rem;
+    }
+    
+    .calendar-appointment {
+        height: 4px;
+    }
+    
+    .gcal-week-header {
+        grid-template-columns: 35px repeat(7, minmax(38px, 1fr));
+        min-width: 300px;
+    }
+    
+    .gcal-week-grid {
+        grid-template-columns: 35px repeat(7, minmax(38px, 1fr));
+        min-width: 300px;
+    }
+    
+    .gcal-week-header-day {
+        font-size: 0.5rem;
+    }
+    
+    .gcal-week-header-date {
+        font-size: 0.85rem;
+    }
+}
