@@ -4280,12 +4280,34 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         border-bottom: 1px solid rgba(196, 163, 90, 0.2) !important;
     }
     
-    /* Acciones */
-    .data-table .actions {
+    /* Acciones - SIEMPRE VISIBLES */
+    .data-table td:last-child,
+    .data-table td[data-label="Acciones"] {
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    .data-table .actions,
+    .data-table td .actions {
         display: flex !important;
-        justify-content: flex-end !important;
-        gap: 0.5rem !important;
+        justify-content: flex-start !important;
+        gap: 0.75rem !important;
         flex-wrap: wrap !important;
+        width: 100% !important;
+        padding-top: 0.5rem !important;
+    }
+    
+    .data-table .btn-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0.5rem !important;
+        font-size: 1rem !important;
+        background: rgba(196, 163, 90, 0.1) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
+        border-radius: 8px !important;
     }
     
     /* Botón menú siempre visible */
