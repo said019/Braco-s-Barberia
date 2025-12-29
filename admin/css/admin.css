@@ -4036,3 +4036,106 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         justify-content: flex-end !important;
     }
 }
+
+/* =========================
+   21.12 CALENDAR MOBILE IMPROVEMENTS
+   ========================= */
+@media (max-width: 768px) {
+
+    /* Better Month View Layout */
+    .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px !important;
+        background: var(--charcoal-dark);
+        border: 1px solid rgba(196, 163, 90, 0.1);
+    }
+
+    .calendar-day {
+        min-height: 80px !important;
+        padding: 4px !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+    }
+
+    .calendar-day-header {
+        font-size: 0.65rem !important;
+        padding: 0.5rem 0.25rem !important;
+        text-align: center;
+    }
+
+    .calendar-day-number {
+        font-size: 0.8rem !important;
+        margin-bottom: 4px !important;
+        text-align: center;
+    }
+
+    /* Event Indicators (Dots/Bars) */
+    .calendar-appointments {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow-y: hidden;
+    }
+
+    .calendar-appointment {
+        font-size: 0 !important;
+        /* Hide text but keep clickable area */
+        height: 6px !important;
+        width: 100% !important;
+        border-radius: 3px !important;
+        margin: 0 !important;
+        position: relative;
+    }
+
+    .calendar-appointment.pending {
+        background-color: rgba(253, 216, 53, 0.8) !important;
+    }
+
+    .calendar-appointment.scheduled {
+        background-color: var(--gold) !important;
+    }
+
+    .calendar-appointment.confirmed {
+        background-color: var(--success) !important;
+    }
+
+    .calendar-appointment.completed {
+        background-color: #81C784 !important;
+    }
+
+    .calendar-appointment.cancelled {
+        background-color: var(--error) !important;
+    }
+
+    /* Show count bubble if too many? */
+    /* Not easy with CSS only, but the bars will stack */
+}
+
+/* =========================
+   21.13 SIDEBAR MOBILE SAFETY
+   ========================= */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: flex !important;
+        z-index: 10001 !important;
+        /* Force on top of everything */
+        top: 1rem !important;
+        left: 1rem !important;
+        background: var(--charcoal) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .sidebar {
+        z-index: 10000 !important;
+    }
+
+    .sidebar.open {
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .mobile-overlay {
+        z-index: 9999 !important;
+    }
+}

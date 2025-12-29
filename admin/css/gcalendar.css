@@ -9,16 +9,21 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    overflow-x: auto;
+    /* Enable horizontal scrolling */
+    -webkit-overflow-scrolling: touch;
 }
 
 .gcal-week-header {
     display: grid;
-    grid-template-columns: 60px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(7, minmax(100px, 1fr));
     background: var(--charcoal-dark);
     border-bottom: 1px solid rgba(196, 163, 90, 0.15);
     position: sticky;
     top: 0;
     z-index: 10;
+    min-width: 760px;
+    /* Match grid min-width */
 }
 
 .gcal-week-header-cell {
@@ -56,11 +61,19 @@
     justify-content: center;
 }
 
+.gcal-week-view-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .gcal-week-grid {
     display: grid;
-    grid-template-columns: 60px repeat(7, 1fr);
+    grid-template-columns: 60px repeat(7, minmax(100px, 1fr));
+    /* Force min width to trigger scroll */
     max-height: 600px;
     overflow-y: auto;
+    min-width: 760px;
+    /* Ensure total width is enough */
 }
 
 .gcal-time-slot {
@@ -199,7 +212,8 @@ body.side-panel-open {
     top: 0;
     width: 400px;
     height: 100vh;
-    height: 100dvh; /* mejor en móviles (evita salto por barra del navegador) */
+    height: 100dvh;
+    /* mejor en móviles (evita salto por barra del navegador) */
     background: var(--charcoal);
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
     z-index: 200;
@@ -227,7 +241,8 @@ body.side-panel-open {
     padding: 2rem;
     overflow-y: auto;
     flex: 1;
-    min-height: 0; /* necesario para flex + overflow */
+    min-height: 0;
+    /* necesario para flex + overflow */
     height: auto;
     -webkit-overflow-scrolling: touch;
 }

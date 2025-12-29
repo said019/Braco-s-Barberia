@@ -614,68 +614,62 @@ document.addEventListener('DOMContentLoaded', setActiveNavItem);
 
 // ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile Menu Injection
-    if (!document.querySelector('.mobile-menu-toggle')) {
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'mobile-menu-toggle';
-        toggleBtn.id = 'mobile-menu-toggle';
-        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(toggleBtn);
-    }
-    if (!document.querySelector('.mobile-overlay')) {
-        const overlay = document.createElement('div');
-        overlay.className = 'mobile-overlay';
-        overlay.id = 'mobile-overlay';
-        document.body.appendChild(overlay);
-    }
-    const toggleBtn = document.querySelector('.mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
-    const overlay = document.querySelector('.mobile-overlay');
-    
-    if (toggleBtn && sidebar && overlay) {
-        // Función para actualizar el icono del botón
-        function updateToggleIcon() {
-            const icon = toggleBtn.querySelector('i');
-            if (icon) {
-                if (sidebar.classList.contains('open')) {
-                    icon.className = 'fas fa-times';
-                } else {
-                    icon.className = 'fas fa-bars';
-                }
+    // 1. Mobile Menu Logic
+    const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    // Function to update icon state
+    const updateIcon = (isOpen) => {
+        const icon = toggleBtn?.querySelector('i');
+        if (icon) {
+            if (isOpen) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
             }
         }
-        
-        toggleBtn.addEventListener('click', () => {
+    };
+
+    if (toggleBtn && sidebar && overlay) {
+        // Toggle click
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-            updateToggleIcon();
+            const isOpen = sidebar.classList.contains('open');
+            overlay.classList.toggle('active', isOpen);
+            updateIcon(isOpen);
         });
-        
+
+        // Overlay click
         overlay.addEventListener('click', () => {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
-            updateToggleIcon();
+            updateIcon(false);
         });
-        
+
+        // Links click (auto-close on mobile)
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     sidebar.classList.remove('open');
                     overlay.classList.remove('active');
-                    updateToggleIcon();
+                    updateIcon(false);
                 }
             });
         });
-        
-        // Asegurar que el icono esté correcto al cargar
-        updateToggleIcon();
     }
-    
-    // Calendar Responsive Fix
+
+    // 2. Calendar Responsive Fix
+    // Wrap calendar grid in a responsive container if not already
     const calendarGrid = document.querySelector('.calendar-grid');
     if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {
         const wrapper = document.createElement('div');
         wrapper.className = 'calendar-container';
+        wrapper.style.overflowX = 'auto'; // Force scroll
         calendarGrid.parentNode.insertBefore(wrapper, calendarGrid);
         wrapper.appendChild(calendarGrid);
     }
