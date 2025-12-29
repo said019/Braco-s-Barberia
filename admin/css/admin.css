@@ -4463,4 +4463,217 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     .stat-value {
         font-size: 1.25rem !important;
     }
+
+    /* ============================================
+       CONTENT SECTIONS - FULL WIDTH
+       ============================================ */
+    .content-section {
+        padding: 1rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .page-content {
+        padding: 0 0.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Section headers */
+    .section-header {
+        padding: 0 0 0.75rem 0 !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .section-header h3 {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* ============================================
+   FIX FINAL - TARJETAS DE TABLA COMPLETAS
+   ============================================ */
+@media (max-width: 768px) {
+    /* Contenedor de membresías */
+    #memberships-container,
+    #clients-container,
+    #citas-container,
+    #services-container,
+    [id$="-container"] {
+        width: 100% !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* Tabla completa */
+    .data-table {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .data-table tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    /* TARJETA (TR) - Completa y bien formada */
+    .data-table tr {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        background: linear-gradient(145deg, #1a1a1a, #222) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    /* Celdas dentro de tarjeta */
+    .data-table td {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        padding: 0.5rem 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(196, 163, 90, 0.1) !important;
+        font-size: 0.9rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .data-table td:last-child {
+        border-bottom: none !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
+        padding-top: 0.75rem !important;
+        margin-top: 0.5rem !important;
+    }
+
+    /* Labels de las celdas */
+    .data-table td[data-label]::before {
+        content: attr(data-label) !important;
+        display: block !important;
+        font-weight: 700 !important;
+        color: var(--gold) !important;
+        font-size: 0.7rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .data-table td[data-label=""]::before {
+        display: none !important;
+    }
+
+    /* Primera celda - título */
+    .data-table td:first-child {
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        color: var(--cream) !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        border-bottom: 1px solid rgba(196, 163, 90, 0.25) !important;
+    }
+
+    .data-table td:first-child::before {
+        display: none !important;
+    }
+
+    /* Acciones - fila horizontal */
+    .data-table .actions {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+    }
+
+    /* Botones de acción */
+    .data-table .btn-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        font-size: 1rem !important;
+        background: rgba(196, 163, 90, 0.15) !important;
+        border: 1px solid rgba(196, 163, 90, 0.4) !important;
+        border-radius: 10px !important;
+        color: var(--gold) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .data-table .btn-icon i {
+        font-size: 1rem !important;
+    }
+}
+
+/* ============================================
+   FIX - SELECT Y DROPDOWN MÁS GRANDES
+   ============================================ */
+@media (max-width: 768px) {
+    /* Select inputs */
+    select,
+    .form-select,
+    .search-input[type="select"],
+    .filters-bar select {
+        font-size: 16px !important;
+        min-height: 48px !important;
+        padding: 0.75rem 2.5rem 0.75rem 1rem !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background-color: var(--charcoal-dark) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
+        border-radius: 8px !important;
+        color: var(--cream) !important;
+    }
+
+    /* Opciones del select - más grandes */
+    select option,
+    .form-select option {
+        font-size: 16px !important;
+        padding: 12px 16px !important;
+        min-height: 44px !important;
+        background: #1a1a1a !important;
+        color: var(--cream) !important;
+    }
+
+    /* Filtros en barra */
+    .filters-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+        padding: 0.5rem !important;
+    }
+
+    .filters-bar > * {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Search input */
+    .search-input,
+    .filters-bar input {
+        font-size: 16px !important;
+        min-height: 48px !important;
+        padding: 0.75rem 1rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
