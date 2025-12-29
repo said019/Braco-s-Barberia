@@ -4495,7 +4495,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    FIX FINAL - TARJETAS DE TABLA COMPLETAS
    ============================================ */
 @media (max-width: 768px) {
-    /* Contenedor de membresías */
+    /* Contenedor de tablas */
     #memberships-container,
     #clients-container,
     #citas-container,
@@ -4506,43 +4506,40 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         overflow: visible !important;
     }
 
-    /* Tabla completa */
+    /* Tabla - usar display block */
     .data-table {
         display: block !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        border-collapse: collapse !important;
+    }
+
+    .data-table thead {
+        display: none !important;
     }
 
     .data-table tbody {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 1rem !important;
+        display: block !important;
         width: 100% !important;
-        padding: 0 !important;
     }
 
-    /* TARJETA (TR) - Completa y bien formada */
+    /* TARJETA (TR) - Block para ocupar todo el ancho */
     .data-table tr {
-        display: flex !important;
-        flex-direction: column !important;
+        display: block !important;
         width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
         background: linear-gradient(145deg, #1a1a1a, #222) !important;
         border: 1px solid rgba(196, 163, 90, 0.3) !important;
         border-radius: 12px !important;
         padding: 1rem !important;
-        margin: 0 !important;
+        margin-bottom: 1rem !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
         box-sizing: border-box !important;
-        overflow: visible !important;
     }
 
-    /* Celdas dentro de tarjeta */
+    /* Celdas - BLOCK para que ocupen todo el ancho */
     .data-table td {
-        display: flex !important;
-        flex-direction: column !important;
+        display: block !important;
         width: 100% !important;
         padding: 0.5rem 0 !important;
         margin: 0 !important;
@@ -4550,6 +4547,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         border-bottom: 1px solid rgba(196, 163, 90, 0.1) !important;
         font-size: 0.9rem !important;
         box-sizing: border-box !important;
+        text-align: left !important;
     }
 
     .data-table td:last-child {
@@ -4559,55 +4557,62 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         margin-top: 0.5rem !important;
     }
 
-    /* Labels de las celdas */
+    /* Labels de las celdas - block encima del valor */
     .data-table td[data-label]::before {
         content: attr(data-label) !important;
         display: block !important;
+        width: 100% !important;
         font-weight: 700 !important;
         color: var(--gold) !important;
         font-size: 0.7rem !important;
         text-transform: uppercase !important;
         letter-spacing: 0.08em !important;
         margin-bottom: 0.25rem !important;
+        text-align: left !important;
     }
 
     .data-table td[data-label=""]::before {
         display: none !important;
     }
 
-    /* Primera celda - título */
+    /* Primera celda - título principal */
     .data-table td:first-child {
-        font-size: 1.05rem !important;
+        font-size: 1.1rem !important;
         font-weight: 600 !important;
         color: var(--cream) !important;
         padding-bottom: 0.75rem !important;
         margin-bottom: 0.5rem !important;
         border-bottom: 1px solid rgba(196, 163, 90, 0.25) !important;
+        text-align: left !important;
     }
 
     .data-table td:first-child::before {
         display: none !important;
     }
 
-    /* Acciones - fila horizontal */
+    /* Contenido dentro de celdas - todo a la izquierda */
+    .data-table td > *,
+    .data-table td > div,
+    .data-table td > span {
+        text-align: left !important;
+    }
+
+    /* Acciones - fila horizontal con botones expandidos */
     .data-table .actions {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
         gap: 0.5rem !important;
         width: 100% !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
     }
 
-    /* Botones de acción */
+    /* Botones de acción - se expanden para llenar el espacio */
     .data-table .btn-icon {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 44px !important;
+        flex: 1 1 0 !important;
         height: 44px !important;
-        min-width: 44px !important;
         min-height: 44px !important;
         padding: 0 !important;
         font-size: 1rem !important;
@@ -4615,7 +4620,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         border: 1px solid rgba(196, 163, 90, 0.4) !important;
         border-radius: 10px !important;
         color: var(--gold) !important;
-        flex-shrink: 0 !important;
     }
 
     .data-table .btn-icon i {
