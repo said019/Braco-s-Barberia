@@ -4688,24 +4688,30 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    ============================================ */
 @media screen and (max-width: 768px) {
     /* Reset completo de tablas */
-    table.data-table {
+    table.data-table,
+    .data-table {
         display: block !important;
         width: 100% !important;
         border: none !important;
         background: transparent !important;
+        overflow: visible !important;
     }
 
-    table.data-table thead {
+    table.data-table thead,
+    .data-table thead {
         display: none !important;
     }
 
-    table.data-table tbody {
+    table.data-table tbody,
+    .data-table tbody {
         display: block !important;
         width: 100% !important;
     }
 
     /* TARJETA - Cada fila es una tarjeta completa */
-    table.data-table tbody tr {
+    table.data-table tbody tr,
+    .data-table tbody tr,
+    .data-table tr {
         display: block !important;
         width: 100% !important;
         background: #1e1e1e !important;
@@ -4715,11 +4721,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         margin: 0 0 1rem 0 !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
         box-sizing: border-box !important;
-        position: relative !important;
+        overflow: visible !important;
     }
 
     /* CELDA - Cada celda ocupa todo el ancho */
-    table.data-table tbody tr td {
+    table.data-table tbody tr td,
+    .data-table tbody tr td,
+    .data-table td {
         display: block !important;
         width: 100% !important;
         padding: 0.4rem 0 !important;
@@ -4731,11 +4739,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         font-size: 0.9rem !important;
         color: #f5f3ee !important;
         box-sizing: border-box !important;
-        position: relative !important;
+        overflow: visible !important;
     }
 
     /* Última celda sin borde inferior */
-    table.data-table tbody tr td:last-child {
+    table.data-table tbody tr td:last-child,
+    .data-table tbody tr td:last-child,
+    .data-table td:last-child {
         border-bottom: none !important;
         border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
         padding-top: 0.75rem !important;
@@ -4743,7 +4753,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* LABEL - Arriba del valor */
-    table.data-table tbody tr td[data-label]::before {
+    table.data-table tbody tr td[data-label]::before,
+    .data-table td[data-label]::before {
         content: attr(data-label) !important;
         display: block !important;
         width: 100% !important;
@@ -4757,13 +4768,15 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Sin label si está vacío */
-    table.data-table tbody tr td[data-label=""]::before {
+    table.data-table tbody tr td[data-label=""]::before,
+    .data-table td[data-label=""]::before {
         display: none !important;
         content: none !important;
     }
 
     /* Primera celda - Título principal */
-    table.data-table tbody tr td:first-child {
+    table.data-table tbody tr td:first-child,
+    .data-table td:first-child {
         font-size: 1.1rem !important;
         font-weight: 600 !important;
         color: #f5f3ee !important;
@@ -4772,42 +4785,60 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         border-bottom: 1px solid rgba(196, 163, 90, 0.3) !important;
     }
 
-    table.data-table tbody tr td:first-child::before {
+    table.data-table tbody tr td:first-child::before,
+    .data-table td:first-child::before {
         display: none !important;
         content: none !important;
     }
 
-    /* Contenido de celdas */
-    table.data-table tbody tr td > div,
+    /* Contenido de celdas - EXCEPTO .actions */
     table.data-table tbody tr td > span,
     table.data-table tbody tr td > strong,
     table.data-table tbody tr td > small,
-    table.data-table tbody tr td > a {
+    table.data-table tbody tr td > a,
+    .data-table td > span,
+    .data-table td > strong,
+    .data-table td > small {
         display: block !important;
         width: 100% !important;
         text-align: left !important;
     }
 
-    /* ACCIONES - Botones en fila */
+    /* DIV normal dentro de celdas (no .actions) */
+    table.data-table tbody tr td > div:not(.actions),
+    .data-table td > div:not(.actions) {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    /* ACCIONES - Contenedor flex */
     table.data-table tbody tr td .actions,
-    table.data-table tbody tr td.actions {
+    table.data-table tbody tr td.actions,
+    .data-table td .actions,
+    .data-table .actions,
+    div.actions {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         gap: 0.5rem !important;
         width: 100% !important;
-        justify-content: stretch !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
     }
 
-    /* Botones que se expanden */
-    table.data-table tbody tr td .actions .btn-icon,
-    table.data-table tbody tr td.actions .btn-icon,
-    table.data-table .btn-icon {
+    /* TODOS los botones de acción */
+    table.data-table .btn-icon,
+    .data-table .btn-icon,
+    .actions .btn-icon,
+    .btn-icon.delete,
+    td .btn-icon {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        flex: 1 !important;
+        flex: 1 1 0% !important;
         min-width: 0 !important;
+        max-width: none !important;
         height: 44px !important;
         padding: 0 0.5rem !important;
         font-size: 1rem !important;
@@ -4818,16 +4849,41 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         cursor: pointer !important;
     }
 
-    table.data-table .btn-icon i {
+    /* Iconos dentro de botones */
+    table.data-table .btn-icon i,
+    .data-table .btn-icon i,
+    .actions .btn-icon i,
+    .btn-icon i {
         font-size: 1rem !important;
         color: #c4a35a !important;
     }
 
     /* Badges */
-    table.data-table .badge {
+    table.data-table .badge,
+    .data-table .badge {
         display: inline-block !important;
         padding: 0.25rem 0.6rem !important;
         font-size: 0.75rem !important;
         border-radius: 4px !important;
+    }
+
+    /* Contenedores de página */
+    .table-wrapper,
+    .table-container,
+    [class*="-container"] {
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    /* Content sections */
+    .content-section {
+        padding: 0.75rem !important;
+        overflow: visible !important;
+    }
+
+    .page-content {
+        padding: 0.5rem !important;
+        overflow: visible !important;
     }
 }
