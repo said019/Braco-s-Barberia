@@ -2,6 +2,47 @@
    GOOGLE CALENDAR STYLE VIEWS
    ============================================ */
 
+/* Calendar Controls - Desktop */
+.calendar-controls-section {
+    padding: 1rem 1.5rem;
+}
+
+.calendar-controls-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-title {
+    margin: 0;
+    min-width: 160px;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+}
+
+.calendar-view-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-view-controls .form-select {
+    width: auto;
+    padding: 0.4rem 2rem 0.4rem 1rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
 /* Week View */
 .gcal-week-view {
     background: var(--charcoal);
@@ -407,6 +448,54 @@ body.side-panel-open {
 
 /* Vista mensual compacta para móvil */
 @media (max-width: 640px) {
+    /* Calendar Controls - Mobile Layout */
+    .calendar-controls-section {
+        padding: 0.75rem !important;
+    }
+    
+    .calendar-controls-wrapper {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }
+    
+    .calendar-nav {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .calendar-title {
+        font-size: 1.1rem !important;
+        min-width: auto !important;
+        flex: 1 !important;
+    }
+    
+    .calendar-view-controls {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .calendar-view-controls .form-select {
+        flex: 1 !important;
+        max-width: 150px !important;
+    }
+    
+    .calendar-view-controls .btn-sm {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .calendar-new-btn {
+        width: 100% !important;
+    }
+    
+    .calendar-new-btn .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
     /* Contenedor del calendario con scroll */
     .calendar-container {
         overflow-x: auto;
@@ -438,18 +527,18 @@ body.side-panel-open {
         margin-bottom: 0.15rem;
     }
     
-    /* Citas en calendario - solo mostrar indicador */
+    /* Citas en calendario - indicadores pequeños */
     .calendar-appointment {
-        font-size: 0;
-        padding: 0;
-        height: 6px;
-        border-radius: 3px;
-        margin: 1px 0;
-        overflow: hidden;
+        font-size: 0 !important;
+        padding: 0 !important;
+        height: 4px !important;
+        border-radius: 2px !important;
+        margin: 1px 0 !important;
+        overflow: hidden !important;
     }
     
     .calendar-appointments {
-        gap: 1px;
+        gap: 1px !important;
     }
     
     /* Vista semanal compacta */
@@ -476,40 +565,40 @@ body.side-panel-open {
     }
     
     .gcal-week-header-cell.today .gcal-week-header-date {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
     }
     
     .gcal-week-grid {
         grid-template-columns: 40px repeat(7, minmax(45px, 1fr));
         min-width: 360px;
-        max-height: 400px;
+        max-height: 350px;
     }
     
     .gcal-time-slot {
-        min-height: 45px;
+        min-height: 40px;
     }
     
     .gcal-time-label {
-        font-size: 0.6rem;
-        padding: 0.25rem;
-        padding-right: 0.5rem;
+        font-size: 0.55rem;
+        padding: 0.2rem;
+        padding-right: 0.4rem;
     }
     
     .gcal-appointment {
-        font-size: 0.6rem;
-        padding: 0.15rem;
+        font-size: 0.55rem;
+        padding: 0.1rem;
         border-left-width: 2px;
     }
     
     .gcal-appointment-time {
-        font-size: 0.55rem;
+        font-size: 0.5rem;
         margin-bottom: 0;
     }
     
     .gcal-appointment-client {
-        font-size: 0.55rem;
+        font-size: 0.5rem;
     }
     
     .gcal-appointment-service {
@@ -519,7 +608,7 @@ body.side-panel-open {
     /* Vista diaria */
     .gcal-day-grid {
         grid-template-columns: 40px 1fr;
-        max-height: 450px;
+        max-height: 400px;
     }
     
     /* Side panel full screen en móvil */
@@ -547,6 +636,10 @@ body.side-panel-open {
 
 /* Pantallas muy pequeñas */
 @media (max-width: 380px) {
+    .calendar-title {
+        font-size: 0.95rem !important;
+    }
+    
     .calendar-day {
         min-height: 40px;
     }
@@ -556,24 +649,39 @@ body.side-panel-open {
     }
     
     .calendar-appointment {
-        height: 4px;
+        height: 3px !important;
     }
     
     .gcal-week-header {
-        grid-template-columns: 35px repeat(7, minmax(38px, 1fr));
-        min-width: 300px;
+        grid-template-columns: 32px repeat(7, minmax(36px, 1fr));
+        min-width: 280px;
     }
     
     .gcal-week-grid {
-        grid-template-columns: 35px repeat(7, minmax(38px, 1fr));
-        min-width: 300px;
+        grid-template-columns: 32px repeat(7, minmax(36px, 1fr));
+        min-width: 280px;
+        max-height: 300px;
     }
     
     .gcal-week-header-day {
-        font-size: 0.5rem;
+        font-size: 0.45rem;
     }
     
     .gcal-week-header-date {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
+    }
+    
+    .gcal-week-header-cell.today .gcal-week-header-date {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .gcal-time-slot {
+        min-height: 35px;
+    }
+    
+    .calendar-new-btn .btn-text {
+        display: none;
     }
 }

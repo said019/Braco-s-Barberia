@@ -4,23 +4,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileOverlay = document.getElementById('mobile-overlay');
     const sidebar = document.getElementById('sidebar');
 
-    console.log('Sidebar.js loaded', { mobileMenuToggle, mobileOverlay, sidebar });
-
     if (mobileMenuToggle && sidebar) {
         mobileMenuToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Menu toggle clicked');
             sidebar.classList.toggle('open');
             if (mobileOverlay) {
                 mobileOverlay.classList.toggle('active');
             }
+            // NO cambiar el icono - siempre mantener hamburguesa
         });
     }
 
     if (mobileOverlay) {
         mobileOverlay.addEventListener('click', function() {
-            console.log('Overlay clicked');
             if (sidebar) {
                 sidebar.classList.remove('open');
             }

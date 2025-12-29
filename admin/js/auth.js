@@ -53,15 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
         mobileToggle.addEventListener('click', () => {
             sidebar.classList.toggle('open');
             mobileOverlay.classList.toggle('active');
-            mobileToggle.innerHTML = sidebar.classList.contains('open')
-                ? '<i class="fas fa-times"></i>'
-                : '<i class="fas fa-bars"></i>';
+            // NO cambiar el icono - siempre mantener hamburguesa
         });
 
         mobileOverlay.addEventListener('click', () => {
             sidebar.classList.remove('open');
             mobileOverlay.classList.remove('active');
-            mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
         });
 
         // Close menu when clicking nav items on mobile
@@ -70,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (window.innerWidth <= 768) {
                     sidebar.classList.remove('open');
                     mobileOverlay.classList.remove('active');
-                    mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
                 }
             });
         });
