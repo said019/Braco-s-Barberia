@@ -292,16 +292,140 @@
             }
         }
 
-        @media (max-width: 600px) {
+        /* MÓVIL - Punto de Venta */
+        @media (max-width: 768px) {
+            .pos-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 1rem !important;
+                max-height: none !important;
+                height: auto !important;
+            }
+
             .product-grid {
-                grid-template-columns: repeat(2, 1fr);
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.75rem !important;
+                max-height: 50vh !important;
+                overflow-y: auto !important;
+                padding: 0.5rem !important;
             }
-            .product-image, .product-image-placeholder {
-                height: 100px;
+
+            .product-card {
+                border-radius: 10px !important;
             }
+
+            .product-image,
+            .product-image-placeholder {
+                height: 80px !important;
+            }
+
+            .product-info {
+                padding: 0.6rem !important;
+            }
+
             .product-name {
-                font-size: 0.9rem;
-                min-height: auto;
+                font-size: 0.8rem !important;
+                min-height: auto !important;
+                line-height: 1.2 !important;
+            }
+
+            .product-price {
+                font-size: 0.95rem !important;
+            }
+
+            .product-stock {
+                font-size: 0.65rem !important;
+                padding: 2px 6px !important;
+            }
+
+            .price-badge {
+                font-size: 0.85rem !important;
+                padding: 4px 8px !important;
+            }
+
+            .add-indicator {
+                width: 24px !important;
+                height: 24px !important;
+                font-size: 0.8rem !important;
+                opacity: 1 !important;
+                transform: scale(1) !important;
+            }
+
+            /* Carrito */
+            .cart-panel {
+                border-left: none !important;
+                border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
+                border-radius: 12px !important;
+                margin-top: 0.5rem !important;
+            }
+
+            .cart-items {
+                max-height: 200px !important;
+                padding: 0.75rem !important;
+            }
+
+            .cart-item {
+                padding: 0.5rem !important;
+                flex-wrap: wrap !important;
+                gap: 0.5rem !important;
+            }
+
+            .cart-item-info h4 {
+                font-size: 0.85rem !important;
+            }
+
+            .cart-item-info p {
+                font-size: 0.75rem !important;
+            }
+
+            .cart-controls {
+                gap: 0.4rem !important;
+            }
+
+            .qty-btn {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 1rem !important;
+            }
+
+            .cart-total-section {
+                padding: 1rem !important;
+            }
+
+            .total-row {
+                font-size: 1.1rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .payment-methods {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.4rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .payment-btn {
+                padding: 0.6rem 0.4rem !important;
+                font-size: 0.75rem !important;
+                border-radius: 8px !important;
+            }
+
+            .payment-btn i {
+                display: block !important;
+                margin-bottom: 0.25rem !important;
+                font-size: 1rem !important;
+            }
+
+            #process-btn {
+                padding: 0.875rem !important;
+                font-size: 0.95rem !important;
+                border-radius: 10px !important;
+            }
+
+            /* Select de cliente */
+            #client-select {
+                font-size: 16px !important;
+                min-height: 44px !important;
             }
         }
 
