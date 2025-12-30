@@ -1687,10 +1687,27 @@ router.put('/services/:id', authenticateToken, async (req, res, next) => {
 });
 
 // DELETE /api/admin/services/:id
+// Borrado en dos pasos: primero desactiva, segundo elimina permanentemente
 router.delete('/services/:id', authenticateToken, async (req, res, next) => {
     try {
-        await db.query('UPDATE services SET is_active = false WHERE id = $1', [req.params.id]);
-        res.json({ success: true });
+        const { id } = req.params;
+
+        // Verificar estado actual
+        const current = await db.query('SELECT is_active FROM services WHERE id = $1', [id]);
+
+        if (current.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Servicio no encontrado' });
+        }
+
+        if (current.rows[0].is_active) {
+            // Primer borrado: Solo desactivar
+            await db.query('UPDATE services SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [id]);
+            res.json({ success: true, message: 'Servicio desactivado', action: 'deactivated' });
+        } else {
+            // Segundo borrado: Eliminar permanentemente
+            await db.query('DELETE FROM services WHERE id = $1', [id]);
+            res.json({ success: true, message: 'Servicio eliminado permanentemente', action: 'deleted' });
+        }
 
     } catch (error) {
         next(error);
@@ -1752,11 +1769,27 @@ router.put('/products/:id', authenticateToken, async (req, res, next) => {
 });
 
 // DELETE /api/admin/products/:id
+// Borrado en dos pasos: primero desactiva, segundo elimina permanentemente
 router.delete('/products/:id', authenticateToken, async (req, res, next) => {
     try {
-        // Soft delete - desactivar producto en lugar de eliminar
-        await db.query('UPDATE products SET is_active = false WHERE id = $1', [req.params.id]);
-        res.json({ success: true, message: 'Producto desactivado' });
+        const { id } = req.params;
+
+        // Verificar estado actual
+        const current = await db.query('SELECT is_active FROM products WHERE id = $1', [id]);
+
+        if (current.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Producto no encontrado' });
+        }
+
+        if (current.rows[0].is_active) {
+            // Primer borrado: Solo desactivar
+            await db.query('UPDATE products SET is_active = false WHERE id = $1', [id]);
+            res.json({ success: true, message: 'Producto desactivado', action: 'deactivated' });
+        } else {
+            // Segundo borrado: Eliminar permanentemente
+            await db.query('DELETE FROM products WHERE id = $1', [id]);
+            res.json({ success: true, message: 'Producto eliminado permanentemente', action: 'deleted' });
+        }
 
     } catch (error) {
         next(error);
