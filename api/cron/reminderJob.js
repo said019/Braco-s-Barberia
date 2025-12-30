@@ -6,8 +6,8 @@ import whatsappService from '../services/whatsappService.js';
 // Verificar citas que ocurren en las próximas 20-28 horas (ventana amplia para no perder ninguna)
 // y que no se les haya enviado recordatorio.
 const initReminderJob = () => {
-    // Programar para correr al minuto 0 de cada hora: '0 * * * *'
-    cron.schedule('0 * * * *', async () => {
+    // TESTING: Cada 10 minutos. En producción cambiar a '0 * * * *' (cada hora)
+    cron.schedule('*/10 * * * *', async () => {
         console.log('[CRON] Checking for appointment reminders...');
 
         try {
@@ -65,7 +65,7 @@ const initReminderJob = () => {
         }
     });
 
-    console.log('[CRON] Reminder job initialized (running hourly).');
+    console.log('[CRON] Reminder job initialized (TESTING: running every 10 minutes).');
 };
 
 export default initReminderJob;
