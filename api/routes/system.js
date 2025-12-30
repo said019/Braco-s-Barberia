@@ -62,6 +62,76 @@ router.post('/wipe-database-danger', async (req, res) => {
     }
 });
 
+// REMINDER DIAGNOSTIC ROUTE
+router.get('/reminder-debug', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        // 1. Current time info
+        const timeInfo = await client.query(`
+            SELECT
+                NOW() as utc_now,
+                NOW() AT TIME ZONE 'America/Mexico_City' as mexico_now,
+                (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '20 hours' as window_start,
+                (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '28 hours' as window_end
+        `);
+
+        // 2. Upcoming appointments that need reminders
+        const pendingReminders = await client.query(`
+            SELECT
+                a.id,
+                a.appointment_date,
+                a.start_time,
+                (a.appointment_date || ' ' || a.start_time)::timestamp as appointment_datetime,
+                a.status,
+                a.reminder_sent,
+                c.name as client_name,
+                c.phone,
+                c.whatsapp_enabled
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            WHERE a.status IN ('scheduled', 'confirmed')
+              AND a.reminder_sent = FALSE
+            ORDER BY a.appointment_date, a.start_time
+            LIMIT 10
+        `);
+
+        // 3. Check which ones fall in the window
+        const inWindow = await client.query(`
+            SELECT
+                a.id,
+                a.appointment_date,
+                a.start_time,
+                c.name as client_name,
+                c.phone,
+                c.whatsapp_enabled,
+                CASE
+                    WHEN c.whatsapp_enabled = FALSE THEN 'WhatsApp disabled'
+                    WHEN c.phone IS NULL THEN 'No phone'
+                    WHEN (a.appointment_date || ' ' || a.start_time)::timestamp < (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '20 hours' THEN 'Too early (< 20h)'
+                    WHEN (a.appointment_date || ' ' || a.start_time)::timestamp > (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '28 hours' THEN 'Too late (> 28h)'
+                    ELSE 'IN WINDOW - Should send!'
+                END as status_reason
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            WHERE a.status IN ('scheduled', 'confirmed')
+              AND a.reminder_sent = FALSE
+            ORDER BY a.appointment_date, a.start_time
+            LIMIT 10
+        `);
+
+        res.json({
+            success: true,
+            server_time: timeInfo.rows[0],
+            pending_reminders: pendingReminders.rows,
+            window_analysis: inWindow.rows
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        client.release();
+    }
+});
+
 // DB DIAGNOSTIC ROUTE
 router.get('/db-status', async (req, res) => {
     const client = await pool.connect();
