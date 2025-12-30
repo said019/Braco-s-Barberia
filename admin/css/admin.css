@@ -5342,4 +5342,105 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         display: none !important;
         height: 0 !important;
     }
+
+    /* =====================================================
+       FIX ESPECÍFICO PARA CLIENTES Y SERVICIOS
+       Anular reglas de flex con space-between
+       ===================================================== */
+
+    /* TODAS LAS TABLAS - TD como BLOCK, no FLEX */
+    #clients-tbody td,
+    #services-table-body td,
+    #products-table-body td,
+    #top-services-body td,
+    #membership-usage-body td,
+    #blocked-dates-body td,
+    #notifications-body td,
+    #appointments-table-body td {
+        display: block !important;
+        width: 100% !important;
+        padding: 0.5rem 0 !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        text-align: left !important;
+        justify-content: initial !important;
+        align-items: initial !important;
+    }
+
+    /* Labels arriba del valor */
+    #clients-tbody td[data-label]::before,
+    #services-table-body td[data-label]::before,
+    #products-table-body td[data-label]::before,
+    #top-services-body td[data-label]::before,
+    #membership-usage-body td[data-label]::before,
+    #blocked-dates-body td[data-label]::before,
+    #notifications-body td[data-label]::before,
+    #appointments-table-body td[data-label]::before {
+        content: attr(data-label) !important;
+        display: block !important;
+        width: 100% !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        color: #c4a35a !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 0.25rem !important;
+        text-align: left !important;
+        flex: none !important;
+    }
+
+    /* Primera celda - Nombre/título */
+    #clients-tbody td:first-child,
+    #services-table-body td:first-child,
+    #products-table-body td:first-child,
+    #top-services-body td:first-child,
+    #membership-usage-body td:first-child,
+    #blocked-dates-body td:first-child,
+    #notifications-body td:first-child,
+    #appointments-table-body td:first-child {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        color: #f5f3ee !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        border-bottom: 1px solid rgba(196,163,90,0.25) !important;
+    }
+
+    #clients-tbody td:first-child::before,
+    #services-table-body td:first-child::before,
+    #products-table-body td:first-child::before,
+    #top-services-body td:first-child::before,
+    #membership-usage-body td:first-child::before,
+    #blocked-dates-body td:first-child::before,
+    #notifications-body td:first-child::before,
+    #appointments-table-body td:first-child::before {
+        display: none !important;
+    }
+
+    /* Última celda - acciones */
+    #clients-tbody td:last-child,
+    #services-table-body td:last-child,
+    #products-table-body td:last-child,
+    #top-services-body td:last-child,
+    #membership-usage-body td:last-child,
+    #blocked-dates-body td:last-child,
+    #notifications-body td:last-child,
+    #appointments-table-body td:last-child {
+        border-bottom: none !important;
+        border-top: 1px solid rgba(196,163,90,0.2) !important;
+        padding-top: 0.75rem !important;
+        margin-top: 0.5rem !important;
+    }
+
+    /* Contenido de celdas alineado a la izquierda */
+    #clients-tbody td > *,
+    #services-table-body td > *,
+    #products-table-body td > *,
+    #top-services-body td > *,
+    #membership-usage-body td > *,
+    #blocked-dates-body td > *,
+    #notifications-body td > *,
+    #appointments-table-body td > * {
+        text-align: left !important;
+    }
 }
