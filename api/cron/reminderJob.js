@@ -13,8 +13,9 @@ const initReminderJob = () => {
         try {
             // Buscar citas entre 20h y 28h en el futuro (ventana amplia de 8 horas)
             // Esto asegura que no perdemos ninguna cita por desfases de minutos/segundos
+            // IMPORTANTE: Usar timezone de México porque las citas se guardan en hora local
             const hourlyResult = await query(`
-                SELECT a.id, a.start_time, a.appointment_date, a.checkout_code, 
+                SELECT a.id, a.start_time, a.appointment_date, a.checkout_code,
                        c.name, c.phone, c.whatsapp_enabled, s.name as service_name
                 FROM appointments a
                 JOIN clients c ON a.client_id = c.id
@@ -23,8 +24,9 @@ const initReminderJob = () => {
                   AND a.reminder_sent = FALSE
                   AND c.whatsapp_enabled = TRUE
                   AND c.phone IS NOT NULL
-                  AND (a.appointment_date || ' ' || a.start_time)::timestamp 
-                      BETWEEN NOW() + INTERVAL '20 hours' AND NOW() + INTERVAL '28 hours'
+                  AND (a.appointment_date || ' ' || a.start_time)::timestamp
+                      BETWEEN (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '20 hours'
+                          AND (NOW() AT TIME ZONE 'America/Mexico_City') + INTERVAL '28 hours'
             `);
 
             const appointments = hourlyResult.rows;
