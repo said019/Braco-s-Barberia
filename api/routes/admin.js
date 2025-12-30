@@ -1649,13 +1649,13 @@ router.get('/services', authenticateToken, async (req, res, next) => {
 // POST /api/admin/services
 router.post('/services', authenticateToken, async (req, res, next) => {
     try {
-        const { name, description, duration_minutes, price, category_id, is_active } = req.body;
+        const { name, description, duration_minutes, price, category_id, is_active, image_url } = req.body;
 
         const result = await db.query(
-            `INSERT INTO services (name, description, duration_minutes, price, category_id, is_active)
-             VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO services (name, description, duration_minutes, price, category_id, is_active, image_url)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [name, description, duration_minutes, price, category_id, is_active ?? true]
+            [name, description, duration_minutes, price, category_id, is_active ?? true, image_url || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -1669,14 +1669,14 @@ router.post('/services', authenticateToken, async (req, res, next) => {
 router.put('/services/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, duration_minutes, price, category_id, is_active } = req.body;
+        const { name, description, duration_minutes, price, category_id, is_active, image_url } = req.body;
 
         const result = await db.query(
             `UPDATE services 
              SET name = $2, description = $3, duration_minutes = $4, price = $5, 
-                 category_id = $6, is_active = $7
+                 category_id = $6, is_active = $7, image_url = $8, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1 RETURNING *`,
-            [id, name, description, duration_minutes, price, category_id, is_active]
+            [id, name, description, duration_minutes, price, category_id, is_active, image_url || null]
         );
 
         res.json(result.rows[0]);
