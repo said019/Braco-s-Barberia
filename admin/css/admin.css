@@ -5443,4 +5443,76 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     #appointments-table-body td > * {
         text-align: left !important;
     }
+
+    /* =====================================================
+       FIX TARJETAS CORTADAS - ANCHO COMPLETO
+       ===================================================== */
+
+    /* Contenedor principal sin padding excesivo */
+    .main-content {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    /* Page content ocupa todo */
+    .page-content,
+    .content-card,
+    .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.75rem !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Table container sin márgenes */
+    .table-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* TABLA - ocupa 100% */
+    .data-table,
+    table.data-table {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+    }
+
+    /* FILAS (tarjetas) - ancho completo con box-sizing */
+    .data-table tr,
+    .data-table tbody tr,
+    #clients-tbody tr,
+    #services-table-body tr,
+    #products-table-body tr,
+    #appointments-table-body tr {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        background: #1e1e1e !important;
+        border: 1px solid rgba(196,163,90,0.3) !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* CELDAS - ancho completo */
+    .data-table td,
+    #clients-tbody td,
+    #services-table-body td,
+    #products-table-body td,
+    #appointments-table-body td {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+    }
 }
