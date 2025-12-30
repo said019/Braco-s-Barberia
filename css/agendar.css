@@ -47,6 +47,129 @@
     opacity: 0.8;
 }
 
+/* Quick Login Section */
+.quick-login-section {
+    margin-bottom: 2rem;
+}
+
+.quick-login-card {
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.1), rgba(196, 163, 90, 0.05));
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.quick-login-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+}
+
+.quick-login-card h3 i {
+    color: var(--gold);
+    margin-right: 0.5rem;
+}
+
+.quick-login-card p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+}
+
+.quick-login-form {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.quick-login-form input {
+    width: 120px;
+    padding: 0.75rem 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-align: center;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--gold);
+}
+
+.quick-login-form input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.1);
+}
+
+.quick-login-form input::placeholder {
+    opacity: 0.3;
+}
+
+.quick-login-form button {
+    padding: 0.75rem 1rem;
+    min-width: 50px;
+}
+
+.quick-login-hint {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    color: var(--error);
+    min-height: 20px;
+}
+
+.quick-login-hint.success {
+    color: var(--success, #4CAF50);
+}
+
+.quick-login-welcome {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.quick-login-welcome.hidden {
+    display: none;
+}
+
+.quick-login-welcome .welcome-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-login-welcome .welcome-message i {
+    font-size: 2rem;
+    color: #4CAF50;
+}
+
+.quick-login-welcome .welcome-message h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--cream);
+    margin: 0;
+}
+
+.quick-login-welcome .welcome-message p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.quick-login-welcome .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
 /* Steps Progress */
 .booking-steps {
     display: flex;

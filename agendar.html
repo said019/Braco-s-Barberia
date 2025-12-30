@@ -68,6 +68,32 @@
                 <p class="page-description">En 3 simples pasos tendrás tu cita confirmada</p>
             </div>
 
+            <!-- Quick Login with 4-digit code -->
+            <div class="quick-login-section" id="quick-login-section">
+                <div class="quick-login-card">
+                    <h3><i class="fas fa-user-check"></i> ¿Ya tienes código de cliente?</h3>
+                    <p>Ingresa tu código de 4 dígitos para agendar más rápido</p>
+                    <div class="quick-login-form">
+                        <input type="text" id="client-code-input" maxlength="4" pattern="[0-9]{4}"
+                               placeholder="0000" inputmode="numeric" autocomplete="off">
+                        <button type="button" class="btn-primary" id="btn-quick-login">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <p class="quick-login-hint" id="quick-login-hint"></p>
+                </div>
+                <div class="quick-login-welcome hidden" id="quick-login-welcome">
+                    <div class="welcome-message">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>¡Hola, <span id="welcome-client-name">Cliente</span>!</h3>
+                        <p>Bienvenido de nuevo a Braco's</p>
+                    </div>
+                    <button type="button" class="btn-outline btn-sm" id="btn-logout-code">
+                        <i class="fas fa-times"></i> Cambiar cliente
+                    </button>
+                </div>
+            </div>
+
             <!-- Progress Steps -->
             <div class="booking-steps">
                 <div class="step active" data-step="1">

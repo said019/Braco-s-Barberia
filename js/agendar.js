@@ -155,6 +155,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', async () => {
     await loadServices();
     setupEventListeners();
+    setupQuickLogin();
     renderCalendar();
 
     // Check if service is pre-selected from URL
@@ -168,6 +169,151 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 500);
     }
 });
+
+// ============================================================================
+// QUICK LOGIN CON CÓDIGO DE 4 DÍGITOS
+// ============================================================================
+function setupQuickLogin() {
+    const codeInput = document.getElementById('client-code-input');
+    const btnLogin = document.getElementById('btn-quick-login');
+    const btnLogout = document.getElementById('btn-logout-code');
+    const hint = document.getElementById('quick-login-hint');
+
+    if (!codeInput || !btnLogin) return;
+
+    // Auto-format input (only numbers)
+    codeInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+
+        // Auto-submit when 4 digits entered
+        if (e.target.value.length === 4) {
+            loginWithCode(e.target.value);
+        }
+    });
+
+    // Submit on button click
+    btnLogin.addEventListener('click', () => {
+        if (codeInput.value.length === 4) {
+            loginWithCode(codeInput.value);
+        } else {
+            hint.textContent = 'Ingresa un código de 4 dígitos';
+            hint.classList.remove('success');
+        }
+    });
+
+    // Submit on Enter
+    codeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && codeInput.value.length === 4) {
+            loginWithCode(codeInput.value);
+        }
+    });
+
+    // Logout button
+    if (btnLogout) {
+        btnLogout.addEventListener('click', logoutQuickLogin);
+    }
+}
+
+async function loginWithCode(code) {
+    const hint = document.getElementById('quick-login-hint');
+    const loginCard = document.querySelector('.quick-login-card');
+    const welcomeCard = document.getElementById('quick-login-welcome');
+
+    hint.textContent = 'Buscando...';
+    hint.classList.remove('success');
+
+    try {
+        const response = await fetch(`${API.BASE_URL}/public/client/login/${code}`);
+        const data = await response.json();
+
+        if (data.success && data.client) {
+            // Store logged in client
+            state.loggedInClient = data.client;
+            state.clientMemberships = data.memberships || [];
+
+            // Show welcome message
+            document.getElementById('welcome-client-name').textContent = data.client.name.split(' ')[0];
+            loginCard.style.display = 'none';
+            welcomeCard.classList.remove('hidden');
+
+            // Pre-fill form if visible
+            prefillClientForm(data.client);
+
+            console.log('Client logged in:', data.client);
+        } else {
+            hint.textContent = data.error || 'Código no encontrado';
+            hint.classList.remove('success');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        hint.textContent = 'Error al buscar código';
+        hint.classList.remove('success');
+    }
+}
+
+function logoutQuickLogin() {
+    const loginCard = document.querySelector('.quick-login-card');
+    const welcomeCard = document.getElementById('quick-login-welcome');
+    const codeInput = document.getElementById('client-code-input');
+    const hint = document.getElementById('quick-login-hint');
+
+    // Clear state
+    state.loggedInClient = null;
+    state.clientMemberships = [];
+
+    // Reset UI
+    loginCard.style.display = 'block';
+    welcomeCard.classList.add('hidden');
+    codeInput.value = '';
+    hint.textContent = '';
+
+    // Clear form
+    clearClientForm();
+}
+
+function prefillClientForm(client) {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const emailInput = document.getElementById('client-email');
+
+    if (nameInput && client.name) {
+        nameInput.value = client.name;
+        nameInput.readOnly = true;
+        nameInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
+    }
+
+    if (phoneInput && client.phone) {
+        phoneInput.value = client.phone;
+        phoneInput.readOnly = true;
+        phoneInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
+    }
+
+    if (emailInput && client.email) {
+        emailInput.value = client.email;
+    }
+}
+
+function clearClientForm() {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const emailInput = document.getElementById('client-email');
+
+    if (nameInput) {
+        nameInput.value = '';
+        nameInput.readOnly = false;
+        nameInput.style.backgroundColor = '';
+    }
+
+    if (phoneInput) {
+        phoneInput.value = '';
+        phoneInput.readOnly = false;
+        phoneInput.style.backgroundColor = '';
+    }
+
+    if (emailInput) {
+        emailInput.value = '';
+    }
+}
 
 // ============================================================================
 // CARGAR SERVICIOS
@@ -541,8 +687,8 @@ async function submitBooking() {
     const phone = formData.get('phone').replace(/\D/g, '');
 
     try {
-        // Verificar si el cliente existe y su tipo
-        let client = await API.getClientByPhone(phone);
+        // Si hay cliente logueado con código, usarlo directamente
+        let client = state.loggedInClient || await API.getClientByPhone(phone);
 
         // Determinar si requiere depósito:
         // 1. Si NO existe (es brand new)
