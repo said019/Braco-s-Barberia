@@ -659,12 +659,12 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
         }
 
         // ============================================
-        // VALIDACIÓN: Prevenir citas duplicadas
+        // VALIDACIÓN: Prevenir citas duplicadas (mismo cliente)
         // ============================================
         const duplicateCheck = await db.query(`
-            SELECT id FROM appointments 
-            WHERE client_id = $1 
-              AND appointment_date = $2 
+            SELECT id FROM appointments
+            WHERE client_id = $1
+              AND appointment_date = $2
               AND start_time = $3
               AND status NOT IN ('cancelled', 'no_show')
         `, [client_id, appointment_date, start_time]);
@@ -674,6 +674,42 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             return res.status(409).json({
                 error: 'Ya existe una cita para este cliente en la misma fecha y hora',
                 existing_id: duplicateCheck.rows[0].id
+            });
+        }
+
+        // ============================================
+        // VALIDACIÓN: Colisión de horarios (cualquier cliente)
+        // Verifica que no haya otra cita que se solape en el mismo horario
+        // ============================================
+        const collisionCheck = await db.query(`
+            SELECT a.id, c.name as client_name, a.start_time, a.end_time
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            WHERE a.appointment_date = $1
+              AND a.status NOT IN ('cancelled', 'no_show')
+              AND (
+                  -- Nueva cita empieza durante una existente
+                  ($2::time >= a.start_time AND $2::time < a.end_time)
+                  OR
+                  -- Nueva cita termina durante una existente
+                  ($3::time > a.start_time AND $3::time <= a.end_time)
+                  OR
+                  -- Nueva cita envuelve completamente una existente
+                  ($2::time <= a.start_time AND $3::time >= a.end_time)
+              )
+        `, [appointment_date, start_time, end_time]);
+
+        if (collisionCheck.rows.length > 0) {
+            const conflicting = collisionCheck.rows[0];
+            console.warn(`[ADMIN] Time slot collision blocked: ${start_time}-${end_time} conflicts with ${conflicting.client_name}'s appointment ${conflicting.start_time}-${conflicting.end_time}`);
+            return res.status(409).json({
+                error: `Horario no disponible. Ya hay una cita de ${conflicting.client_name} de ${conflicting.start_time.slice(0,5)} a ${conflicting.end_time.slice(0,5)}`,
+                conflicting_appointment: {
+                    id: conflicting.id,
+                    client_name: conflicting.client_name,
+                    start_time: conflicting.start_time,
+                    end_time: conflicting.end_time
+                }
             });
         }
 

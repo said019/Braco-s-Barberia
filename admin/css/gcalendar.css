@@ -252,6 +252,7 @@ body.side-panel-open {
     right: 0;
     top: 0;
     width: 400px;
+    max-width: calc(100vw - var(--sidebar-width, 260px) - 20px); /* No sobrepasar el área visible */
     height: 100vh;
     height: 100dvh;
     /* mejor en móviles (evita salto por barra del navegador) */
@@ -268,6 +269,14 @@ body.side-panel-open {
 
 .gcal-side-panel.open {
     transform: translateX(0);
+}
+
+/* Desktop: Ajustar el main-content cuando el panel está abierto */
+@media (min-width: 769px) {
+    body.side-panel-open .main-content {
+        margin-right: 400px;
+        transition: margin-right 0.3s ease;
+    }
 }
 
 .gcal-side-panel-header {
@@ -402,7 +411,11 @@ body.side-panel-open {
 @media (max-width: 768px) {
     .gcal-side-panel {
         width: 100%;
-        max-width: 400px;
+        max-width: 100%; /* En móvil, ocupar todo el ancho */
+    }
+
+    body.side-panel-open .main-content {
+        margin-right: 0; /* No ajustar en móvil */
     }
 
     .gcal-week-header {

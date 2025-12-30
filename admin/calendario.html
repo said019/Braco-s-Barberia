@@ -178,6 +178,11 @@
 
                     <input type="text" id="filter-search" class="search-input"
                         placeholder="Buscar por cliente o servicio...">
+
+                    <label class="filter-checkbox" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); font-size: 0.9rem;">
+                        <input type="checkbox" id="filter-show-cancelled" style="width: 18px; height: 18px; accent-color: var(--gold);">
+                        <span>Mostrar canceladas</span>
+                    </label>
                 </div>
 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
@@ -233,6 +238,7 @@
 
         document.getElementById('filter-status').addEventListener('change', applyFilters);
         document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
+        document.getElementById('filter-show-cancelled').addEventListener('change', applyFilters);
 
         // Load appointments
         async function loadAppointments() {
@@ -268,13 +274,18 @@
         function applyFilters() {
             const statusFilter = document.getElementById('filter-status').value;
             const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+            const showCancelled = document.getElementById('filter-show-cancelled').checked;
 
             filteredAppointments = allAppointments.filter(apt => {
                 // Status filter
                 if (statusFilter) {
                     if (apt.status !== statusFilter) return false;
                 }
-                // Ya no ocultamos canceladas - se muestran con su estado visual
+
+                // Ocultar canceladas por defecto (a menos que el checkbox esté marcado o se filtró específicamente por canceladas)
+                if (!showCancelled && statusFilter !== 'cancelled' && apt.status === 'cancelled') {
+                    return false;
+                }
 
                 // Search filter
                 if (searchFilter) {
