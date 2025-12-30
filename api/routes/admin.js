@@ -1751,6 +1751,18 @@ router.put('/products/:id', authenticateToken, async (req, res, next) => {
     }
 });
 
+// DELETE /api/admin/products/:id
+router.delete('/products/:id', authenticateToken, async (req, res, next) => {
+    try {
+        // Soft delete - desactivar producto en lugar de eliminar
+        await db.query('UPDATE products SET is_active = false WHERE id = $1', [req.params.id]);
+        res.json({ success: true, message: 'Producto desactivado' });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // ============================
 // REPORTES
 // ============================
