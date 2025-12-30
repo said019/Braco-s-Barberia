@@ -7,16 +7,16 @@ export const Checkout = {
         console.log('Processing checkout with data:', JSON.stringify(data, null, 2));
         return transaction(async (client) => {
             const {
-                appointment_id,
-                client_id,
-                service_cost,
+                appointment_id = null,
+                client_id = null,
+                service_cost = 0,
                 products_cost = 0,
                 discount = 0,
-                total,
-                payment_method,
-                use_membership,
+                total = 0,
+                payment_method = 'cash',
+                use_membership = false,
                 products = [],
-                notes
+                notes = ''
             } = data;
 
             // ... (rest of code)
