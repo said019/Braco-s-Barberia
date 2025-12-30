@@ -103,7 +103,7 @@ export const checkoutController = {
                             if (isMembership) {
                                 // Calcular restantes
                                 const remaining = (data.total_services || 0) - (data.used_services || 0);
-                                const baseUrl = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+                                const baseUrl = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
 
                                 payload.type = 'membership';
                                 payload.membershipName = data.mem_name;

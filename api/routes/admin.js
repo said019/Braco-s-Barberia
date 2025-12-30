@@ -112,7 +112,7 @@ router.post('/forgot-password', async (req, res, next) => {
         );
 
         // Construir URL de reset
-        const publicUrl = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+        const publicUrl = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
         const resetUrl = `${publicUrl}/admin/reset-password.html?token=${resetToken}`;
 
         // Enviar email
@@ -703,7 +703,7 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             const conflicting = collisionCheck.rows[0];
             console.warn(`[ADMIN] Time slot collision blocked: ${start_time}-${end_time} conflicts with ${conflicting.client_name}'s appointment ${conflicting.start_time}-${conflicting.end_time}`);
             return res.status(409).json({
-                error: `Horario no disponible. Ya hay una cita de ${conflicting.client_name} de ${conflicting.start_time.slice(0,5)} a ${conflicting.end_time.slice(0,5)}`,
+                error: `Horario no disponible. Ya hay una cita de ${conflicting.client_name} de ${conflicting.start_time.slice(0, 5)} a ${conflicting.end_time.slice(0, 5)}`,
                 conflicting_appointment: {
                     id: conflicting.id,
                     client_name: conflicting.client_name,

@@ -99,7 +99,7 @@ async function handleConfirmation(phone) {
 // ============================================================================
 async function handleCancellationRequest(phone) {
     const cleanPhone = phone.slice(-10);
-    const url = process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app';
+    const url = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
 
     console.log(`[WEBHOOK] Cancellation/Modification request from phone ending in ${cleanPhone}`);
 
