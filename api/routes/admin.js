@@ -206,7 +206,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 
         const salesToday = await db.query(
             `SELECT COALESCE(SUM(amount), 0) as total FROM transactions 
-             WHERE DATE(created_at) = $1`,
+             WHERE transaction_date = $1`,
             [today]
         );
 
@@ -242,11 +242,11 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              ORDER BY a.appointment_date ASC, a.start_time ASC LIMIT 10`
         );
 
-        // Recent transactions (Global last 10, not just today)
+        // Recent transactions (Global last 10, not just today) - LEFT JOIN para incluir ventas sin cliente
         const recentTransactions = await db.query(
-            `SELECT t.*, c.name as client_name, t.payment_method
+            `SELECT t.*, COALESCE(c.name, 'Público General') as client_name, t.payment_method
              FROM transactions t
-             JOIN clients c ON t.client_id = c.id
+             LEFT JOIN clients c ON t.client_id = c.id
              ORDER BY t.created_at DESC LIMIT 10`
         );
 
