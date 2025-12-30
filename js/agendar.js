@@ -755,8 +755,13 @@ function showSuccessWithDepositInfo() {
         const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
         const time = state.selectedTime;
         const serviceName = state.selectedService.name;
-        const message = `Hola, soy *${clientName}*.%0AQuiero agendar una cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A%0ASoy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
-        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+        const message = `Hola, soy *${clientName}*.
+Quiero agendar una cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
+
+Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
 
         successNotice.innerHTML = `
             <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.05)); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -800,9 +805,14 @@ function sendDepositWhatsApp() {
     const time = state.selectedTime;
     const serviceName = state.selectedService.name;
 
-    const message = `Hola, soy *${name}*.%0AQuiero agendar una cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A%0ASoy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+    const message = `Hola, soy *${name}*.
+Quiero agendar una cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
 
-    const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+
+    const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 
     // Después de enviar WhatsApp, mostrar pantalla de éxito
@@ -918,8 +928,11 @@ async function confirmPrepayOption() {
         showSuccessWithPaymentInfo(result, client);
 
         // Open WhatsApp for sending proof
-        const message = `Hola, soy *${client.name}*.%0AHe agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.%0A%0AAnexo mi comprobante de pago anticipado.`;
-        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+        const message = `Hola, soy *${client.name}*.
+He agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.
+
+Anexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }
 }
@@ -986,8 +999,14 @@ function showSuccessWithPaymentInfo(appointmentData, client) {
         const time = state.selectedTime;
         const serviceName = state.selectedService.name;
         const price = state.selectedService.price;
-        const message = `Hola, soy *${clientName}*.%0AHe agendado mi cita para:%0A🗓 *${dateFormatted}* a las *${time}*%0A💇‍♂️ *${serviceName}*%0A💰 *$${price}*%0A%0AAnexo mi comprobante de pago anticipado.`;
-        const whatsappUrl = `https://wa.me/525573432027?text=${message}`;
+        const message = `Hola, soy *${clientName}*.
+He agendado mi cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
+💰 *$${price}*
+
+Anexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
 
         successNotice.innerHTML = `
             <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05)); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
