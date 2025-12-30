@@ -5654,4 +5654,115 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         font-size: 1rem !important;
         color: #c4a35a !important;
     }
+
+    /* =====================================================
+       FIX: BADGES Y ETIQUETAS DENTRO DE CELDAS
+       Estilizado consistente para badges en móvil
+       ===================================================== */
+
+    /* Badges dentro de celdas de tabla */
+    .data-table td .badge,
+    .data-table td span.badge,
+    td .badge,
+    td span[class*="badge"],
+    .badge {
+        display: inline-block !important;
+        padding: 4px 12px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        text-align: left !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        vertical-align: middle !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Badge success (membresía activa, etc.) */
+    .badge-success,
+    .badge.badge-success {
+        background: rgba(76, 175, 80, 0.2) !important;
+        color: #4caf50 !important;
+        border: 1px solid rgba(76, 175, 80, 0.3) !important;
+    }
+
+    /* Badge warning */
+    .badge-warning,
+    .badge.badge-warning {
+        background: rgba(255, 193, 7, 0.2) !important;
+        color: #ffc107 !important;
+        border: 1px solid rgba(255, 193, 7, 0.3) !important;
+    }
+
+    /* Badge danger */
+    .badge-danger,
+    .badge.badge-danger {
+        background: rgba(244, 67, 54, 0.2) !important;
+        color: #f44336 !important;
+        border: 1px solid rgba(244, 67, 54, 0.3) !important;
+    }
+
+    /* Badge info / default */
+    .badge-info,
+    .badge.badge-info,
+    .badge-primary,
+    .badge.badge-primary {
+        background: rgba(196, 163, 90, 0.2) !important;
+        color: #c4a35a !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
+    }
+
+    /* Etiquetas de tipo cliente (NUEVO, VIP, FRECUENTE, etc.) */
+    td .client-type,
+    .data-table td .client-type {
+        display: inline-block !important;
+        padding: 4px 12px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 4px !important;
+        background: rgba(196, 163, 90, 0.15) !important;
+        color: #c4a35a !important;
+        border: 1px solid rgba(196, 163, 90, 0.25) !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Texto muted - mantener simple */
+    td .text-muted,
+    .data-table td .text-muted {
+        display: inline-block !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        color: rgba(245, 243, 238, 0.5) !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Texto gold - mantener simple */
+    td .text-gold,
+    .data-table td .text-gold,
+    td.text-gold {
+        display: inline-block !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        color: #c4a35a !important;
+        font-weight: 600 !important;
+    }
+
+    /* Consistencia de altura en contenido de celdas */
+    .data-table td > *,
+    td > span,
+    td > div:not(.actions) {
+        min-height: 20px !important;
+        line-height: 1.4 !important;
+    }
 }
