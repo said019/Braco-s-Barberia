@@ -225,6 +225,43 @@ export const sendCancellationResponse = async ({ phone, service, date, bookingUr
 };
 
 // ============================================================================
+// 11. Bienvenida Cliente Nuevo (ID de 4 dígitos)
+// Mensaje de texto libre con el código de cliente para login futuro
+// ============================================================================
+export const sendWelcomeWithClientCode = async ({ phone, name, clientCode }) => {
+    const message = `🎉 *¡Bienvenido a Braco's Barbería, ${name}!*
+
+Tu código de cliente es: *${clientCode}*
+
+Guárdalo para agendar tus próximas citas de forma rápida. Solo ingresa este código y te reconoceremos al instante.
+
+¡Nos vemos pronto! 💈`;
+
+    return await sendTextMessage(phone, message);
+};
+
+// ============================================================================
+// 12. Admin: Cancelación de Cita (Notificación al dueño)
+// Mensaje de texto libre cuando un cliente cancela
+// ============================================================================
+export const sendAdminCancellation = async ({ clientName, serviceName, date, time, reason }) => {
+    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
+    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
+
+    const message = `⚠️ *CITA CANCELADA*
+
+Cliente: ${clientName}
+Servicio: ${serviceName}
+Fecha: ${date}
+Hora: ${time}
+${reason ? `Motivo: ${reason}` : ''}
+
+El horario ha quedado disponible.`;
+
+    return await sendTextMessage(adminPhone, message);
+};
+
+// ============================================================================
 // Texto Libre (Solo funciona dentro de ventana de 24h)
 // ============================================================================
 export const sendTextMessage = async (phone, message) => {
@@ -251,12 +288,16 @@ export const sendTextMessage = async (phone, message) => {
     }
 };
 
+// Alias para compatibilidad
+export const sendWhatsAppDepositAccepted = sendDepositConfirmed;
+
 // Default export for backward compatibility
 export default {
     sendBookingConfirmation,
     sendWhatsAppBookingConfirmation,
     sendDepositConfirmed,
     sendDepositAccepted,
+    sendWhatsAppDepositAccepted,
     sendReceiptStandard,
     sendReceiptMembership,
     sendCheckoutReceipt,
@@ -264,7 +305,9 @@ export default {
     sendReminder24h,
     sendAdminNewAppointment,
     sendAdminFullPayment,
+    sendAdminCancellation,
     sendConfirmationResponse,
     sendCancellationResponse,
+    sendWelcomeWithClientCode,
     sendTextMessage
 };

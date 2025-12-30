@@ -1,7 +1,58 @@
 import express from 'express';
 import db from '../config/database.js';
+import Client from '../models/Client.js';
 
 const router = express.Router();
+
+// GET /api/public/client/login/:code - Login con código de 4 dígitos
+router.get('/client/login/:code', async (req, res, next) => {
+    try {
+        const { code } = req.params;
+
+        // Validar que sea un código de 4 dígitos
+        if (!code || !/^\d{4}$/.test(code)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Código inválido. Debe ser un número de 4 dígitos.'
+            });
+        }
+
+        const client = await Client.getByCode(code);
+
+        if (!client) {
+            return res.status(404).json({
+                success: false,
+                error: 'No se encontró ningún cliente con ese código.'
+            });
+        }
+
+        // Obtener membresías activas del cliente
+        const memberships = await Client.getActiveMemberships(client.id);
+
+        // Retornar información del cliente (sin datos sensibles)
+        res.json({
+            success: true,
+            client: {
+                id: client.id,
+                name: client.name,
+                phone: client.phone,
+                email: client.email,
+                client_code: client.client_code,
+                total_visits: client.total_visits || 0,
+                client_type: client.client_type_name
+            },
+            memberships: memberships.map(m => ({
+                name: m.membership_name,
+                remaining: m.remaining_services,
+                total: m.total_services,
+                expiration: m.expiration_date
+            }))
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
 
 // GET /api/public/membership/:uuid
 router.get('/membership/:uuid', async (req, res, next) => {

@@ -291,6 +291,20 @@ export const appointmentController = {
             });
             console.log(`[CREATE APPT] Admin New Appointment Notification SENT. IsNewClient: ${isNewClient}`);
           }
+
+          // Enviar mensaje de bienvenida con código de cliente para NUEVOS clientes
+          if (isNewClient && client.phone && client.client_code) {
+            try {
+              await whatsappService.sendWelcomeWithClientCode({
+                phone: client.phone,
+                name: client.name,
+                clientCode: client.client_code
+              });
+              console.log(`[CREATE APPT] Welcome message with client code sent to ${client.name}`);
+            } catch (welcomeError) {
+              console.error('[CREATE APPT] Welcome message error:', welcomeError);
+            }
+          }
         }
       } catch (adminError) {
         console.error('[CREATE APPT] Admin Notification Error:', adminError);
@@ -474,18 +488,40 @@ export const appointmentController = {
   async cancel(req, res, next) {
     try {
       const { reason } = req.body;
-      const appointment = await Appointment.cancel(req.params.id, reason);
-      if (!appointment) {
+
+      // Obtener datos completos ANTES de cancelar para la notificación
+      const fullAppointment = await Appointment.getById(req.params.id);
+      if (!fullAppointment) {
         throw new AppError('Cita no encontrada', 404);
       }
 
+      const appointment = await Appointment.cancel(req.params.id, reason);
+
       // Sync Google Calendar (Update con estado cancelado, no delete)
       try {
-        const fullAppointment = await Appointment.getById(req.params.id);
-        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        await googleCalendar.updateEvent(req.params.id, appointment);
         console.log(`[CANCEL APPT] Updated Google Calendar (cancelled): ${req.params.id}`);
       } catch (gcalError) {
         console.error('[CANCEL APPT] Google Calendar sync error:', gcalError.message);
+      }
+
+      // Notificar al admin sobre la cancelación
+      try {
+        const dateObj = new Date(fullAppointment.appointment_date);
+        const formattedDate = dateObj.toLocaleDateString('es-MX', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        await whatsappService.sendAdminCancellation({
+          clientName: fullAppointment.client_name,
+          serviceName: fullAppointment.service_name,
+          date: formattedDate,
+          time: fullAppointment.start_time,
+          reason: reason
+        });
+        console.log(`[CANCEL APPT] Admin cancellation notification sent`);
+      } catch (adminError) {
+        console.error('[CANCEL APPT] Admin notification error:', adminError);
       }
 
       res.json({
