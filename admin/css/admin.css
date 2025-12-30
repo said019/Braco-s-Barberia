@@ -5568,4 +5568,90 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         max-width: 100vw !important;
         overflow-x: hidden !important;
     }
+
+    /* =====================================================
+       FIX DEFINITIVO: TARJETAS Y ACCIONES
+       Soluciona el desbordamiento del div.actions
+       ===================================================== */
+
+    /* TODOS los elementos dentro de tablas con box-sizing */
+    .data-table *,
+    table *,
+    .table-container * {
+        box-sizing: border-box !important;
+    }
+
+    /* TR como tarjeta - límite estricto de ancho */
+    .data-table tr,
+    .data-table tbody tr,
+    table tbody tr {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    /* TD - ancho 100% con box-sizing */
+    .data-table td,
+    table td {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    /* ===== FIX CRÍTICO: DIV.ACTIONS ===== */
+    .actions,
+    div.actions,
+    td .actions,
+    .data-table .actions,
+    .data-table td .actions,
+    td > .actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Botones dentro de actions - tamaño fijo */
+    .actions .btn-icon,
+    .actions button,
+    div.actions .btn-icon,
+    td .actions .btn-icon {
+        flex: 0 0 auto !important;
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: rgba(196,163,90,0.1) !important;
+        border: 1px solid rgba(196,163,90,0.3) !important;
+        border-radius: 8px !important;
+        color: #c4a35a !important;
+    }
+
+    /* Iconos dentro de botones */
+    .actions .btn-icon i,
+    .actions button i {
+        font-size: 1rem !important;
+        color: #c4a35a !important;
+    }
 }
