@@ -297,8 +297,6 @@ function prefillClientForm(client) {
         // Formatear fecha a YYYY-MM-DD para el input date
         const date = client.birthdate.split('T')[0];
         birthdateInput.value = date;
-        birthdateInput.readOnly = true;
-        birthdateInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
     }
 }
 
