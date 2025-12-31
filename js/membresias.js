@@ -8,53 +8,62 @@ const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:300
 const PLAN_FEATURES = {
     'Golden Card Tradicional': [
         '6 Servicios',
+        'Corte de Caballero',
         'Ritual de Barba',
         'Servicio Dúo (Corte + Barba)',
-        'Bebidas de cortesía',
-        'Prioridad en agenda'
+        'Bebidas de cortesía'
+    ],
+    'Golden NeoCapilar': [
+        'Incluye 8 sesiones',
+        'Ozonoterapia',
+        'Altafrecuencia',
+        'Fotobiomodulación',
+        'Productos Premium'
     ],
     'Terapia Integral Capilar (TIC)': [
         'Incluye 8 sesiones',
         'Ozonoterapia',
         'Altafrecuencia',
         'Fotobiomodulación',
-        'Productos Premium',
-        'Solo para TIC'
+        'Productos Premium'
     ],
     'Black Card': [
-        '6 Servicios',
+        '12 Servicios',
         'Corte de Cabello',
         'Ritual de Barba',
         'Servicio Dúo',
         'Transferible',
-        'Bebidas Premium',
-        'La Neocapilar'
+        'Bebidas Premium'
     ]
 };
 
 const PLAN_ICONS = {
     'Golden Card Tradicional': '<i class="fas fa-crown"></i>',
-    'Terapia Integral Capilar (TIC)': '<i class="fas fa-hand-holding-medical"></i>',
+    'Golden NeoCapilar': '<i class="fas fa-seedling"></i>',
+    'Terapia Integral Capilar (TIC)': '<i class="fas fa-seedling"></i>',
     'Black Card': '<i class="fas fa-gem"></i>'
 };
 
 const PLAN_BADGES = {
     'Golden Card Tradicional': 'Más Popular',
-    'Terapia Integral Capilar (TIC)': 'Solo para TIC',
+    'Golden NeoCapilar': 'Tratamiento Capilar',
+    'Terapia Integral Capilar (TIC)': 'Tratamiento Capilar',
     'Black Card': 'Exclusivo'
 };
 
 const PLAN_STYLES = {
     'Golden Card Tradicional': '',
+    'Golden NeoCapilar': 'tic-card',
     'Terapia Integral Capilar (TIC)': 'tic-card',
     'Black Card': 'featured' // dark theme
 };
 
-// Subtítulos para las tarjetas
+// Subtítulos para las tarjetas (vacíos para quitar el tagline)
 const PLAN_SUBTITLES = {
     'Golden Card Tradicional': '',
-    'Terapia Integral Capilar (TIC)': 'Terapia Integral Capilar TIC',
-    'Black Card': 'Paquete Anual Flexible'
+    'Golden NeoCapilar': '',
+    'Terapia Integral Capilar (TIC)': '',
+    'Black Card': ''
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -81,28 +90,25 @@ async function loadMembershipPlans() {
             const styleClass = PLAN_STYLES[plan.name] || '';
             const subtitle = PLAN_SUBTITLES[plan.name] || '';
             const isBlack = plan.name.includes('Black');
-            const isTIC = plan.name.includes('TIC');
-
-            // Texto descriptivo según el tipo
-            let servicesText = `Incluye ${plan.total_services} servicios`;
-            if (isBlack) servicesText = 'Paquete Anual Flexible';
-            if (isTIC) servicesText = 'Incluye 8 sesiones';
+            const isTIC = plan.name.includes('TIC') || plan.name.includes('NeoCapilar');
 
             // Determine styling classes
             let cardClass = 'plan-card';
             if (isBlack) cardClass += ' featured';
             if (isTIC) cardClass += ' tic-card';
 
+            // Nombre a mostrar (renombrar TIC a Golden NeoCapilar)
+            let displayName = plan.name;
+            if (plan.name.includes('TIC')) {
+                displayName = 'Golden NeoCapilar';
+            }
+
             const cardHTML = `
                 <div class="${cardClass}">
                     <div class="plan-badge ${isBlack ? 'premium' : ''}">${badge}</div>
                     <div class="plan-header">
                         <div class="plan-icon" style="font-size: 3rem; margin-bottom: 1rem; color: var(--gold);">${icon}</div>
-                        <h3 class="plan-name" style="font-size: 1.6rem;">${plan.name}</h3>
-                        ${subtitle ? `<p class="plan-subtitle" style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.25rem;">${subtitle}</p>` : ''}
-                        <p class="plan-tagline">
-                           ${servicesText}
-                        </p>
+                        <h3 class="plan-name" style="font-size: 2rem; font-weight: 700;">${displayName}</h3>
                     </div>
                     <div class="plan-price">
                         <span class="price-amount" style="font-size: 2.5rem;">$${parseFloat(plan.price).toLocaleString()}</span>
