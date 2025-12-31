@@ -735,10 +735,12 @@ async function submitBooking() {
             try {
                 // Si es nuevo de verdad, crearlo ahora
                 if (isBrandNew) {
+                    const birthdateInput = document.getElementById('client-birthdate');
                     const newClient = await API.createClient({
                         name: data.name,
                         phone: phone,
-                        email: data.email || null
+                        email: data.email || null,
+                        birthdate: birthdateInput?.value || null
                     });
                     if (newClient && newClient.id) {
                         client = newClient; // Asignar para usar abajo

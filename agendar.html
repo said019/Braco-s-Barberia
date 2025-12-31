@@ -74,8 +74,8 @@
                     <h3><i class="fas fa-user-check"></i> ¿Ya tienes código de cliente?</h3>
                     <p>Ingresa tu código de 4 dígitos para agendar más rápido</p>
                     <div class="quick-login-form">
-                        <input type="text" id="client-code-input" maxlength="4" pattern="[0-9]{4}"
-                               placeholder="0000" inputmode="numeric" autocomplete="off">
+                        <input type="text" id="client-code-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000"
+                            inputmode="numeric" autocomplete="off">
                         <button type="button" class="btn-primary" id="btn-quick-login">
                             <i class="fas fa-arrow-right"></i>
                         </button>
@@ -220,6 +220,11 @@
                         <label for="client-email">Correo electrónico (opcional)</label>
                         <input type="email" id="client-email" name="email" placeholder="Ej: correo@ejemplo.com">
                         <span class="form-hint">Recibirás confirmación y recibo por correo</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-birthdate">Fecha de nacimiento (opcional)</label>
+                        <input type="date" id="client-birthdate" name="birthdate">
+                        <span class="form-hint">Nos ayuda a brindarte una atención personalizada</span>
                     </div>
                     <div class="form-group">
                         <label for="client-notes">Notas adicionales (opcional)</label>
@@ -491,7 +496,8 @@
                         <button class="btn-primary btn-block" style="margin-top: 1rem;" onclick="confirmPrepayOption()">
                             <i class="fab fa-whatsapp"></i> Enviar Comprobante
                         </button>
-                        <button class="btn-cancel-subtle" style="margin-top: 0.75rem; width: 100%;" onclick="confirmPrepayLater()">
+                        <button class="btn-cancel-subtle" style="margin-top: 0.75rem; width: 100%;"
+                            onclick="confirmPrepayLater()">
                             <i class="fas fa-clock"></i> Lo haré después (ver datos en pantalla)
                         </button>
                     </div>

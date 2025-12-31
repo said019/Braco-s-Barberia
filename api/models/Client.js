@@ -92,18 +92,18 @@ export const Client = {
 
   // Crear cliente
   async create(clientData) {
-    const { name, email, phone, notes } = clientData;
+    const { name, email, phone, notes, birthdate } = clientData;
 
     // Generar código único de 4 dígitos para el cliente
     const codeResult = await query(`SELECT generate_unique_client_code() as code`);
     const clientCode = codeResult.rows[0].code;
 
     const sql = `
-      INSERT INTO clients (name, email, phone, notes, client_code)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO clients (name, email, phone, notes, client_code, birthdate)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id
     `;
-    const result = await query(sql, [name, email, phone, notes, clientCode]);
+    const result = await query(sql, [name, email, phone, notes, clientCode, birthdate || null]);
     const clientId = result.rows[0].id;
 
     // Retornar el cliente completo con el tipo de cliente
