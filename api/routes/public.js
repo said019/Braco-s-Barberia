@@ -37,6 +37,7 @@ router.get('/client/login/:code', async (req, res, next) => {
                 name: client.name,
                 phone: client.phone,
                 email: client.email,
+                birthdate: client.birthdate,
                 client_code: client.client_code,
                 total_visits: client.total_visits || 0,
                 client_type: client.client_type_name

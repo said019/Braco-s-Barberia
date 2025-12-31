@@ -275,6 +275,7 @@ function prefillClientForm(client) {
     const nameInput = document.getElementById('client-name');
     const phoneInput = document.getElementById('client-phone');
     const emailInput = document.getElementById('client-email');
+    const birthdateInput = document.getElementById('client-birthdate');
 
     if (nameInput && client.name) {
         nameInput.value = client.name;
@@ -290,6 +291,14 @@ function prefillClientForm(client) {
 
     if (emailInput && client.email) {
         emailInput.value = client.email;
+    }
+
+    if (birthdateInput && client.birthdate) {
+        // Formatear fecha a YYYY-MM-DD para el input date
+        const date = client.birthdate.split('T')[0];
+        birthdateInput.value = date;
+        birthdateInput.readOnly = true;
+        birthdateInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
     }
 }
 
