@@ -1416,6 +1416,11 @@
     .hero .btn-primary {
         margin: 0 auto;
     }
+    
+    /* Ocultar scroll indicator en móvil */
+    .scroll-indicator {
+        display: none !important;
+    }
 }
 
 @media (max-width: 480px) {

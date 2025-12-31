@@ -32,10 +32,20 @@ const PLAN_FEATURES = {
         'Corte de Cabello',
         'Ritual de Barba',
         'Servicio Dúo',
-        'Transferible',
+        'Manicura Caballero',
+        'Mascarilla de Arcilla',
+        'Transferible para familiar o amigo',
         'Bebidas Premium'
     ]
 };
+
+// Orden de las tarjetas (Black Card en medio)
+const PLAN_ORDER = [
+    'Golden Card Tradicional',
+    'Black Card',
+    'Golden NeoCapilar',
+    'Terapia Integral Capilar (TIC)'
+];
 
 const PLAN_ICONS = {
     'Golden Card Tradicional': '<i class="fas fa-crown"></i>',
@@ -55,10 +65,9 @@ const PLAN_STYLES = {
     'Golden Card Tradicional': '',
     'Golden NeoCapilar': 'tic-card',
     'Terapia Integral Capilar (TIC)': 'tic-card',
-    'Black Card': 'featured' // dark theme
+    'Black Card': 'featured'
 };
 
-// Subtítulos para las tarjetas (vacíos para quitar el tagline)
 const PLAN_SUBTITLES = {
     'Golden Card Tradicional': '',
     'Golden NeoCapilar': '',
@@ -80,24 +89,28 @@ async function loadMembershipPlans() {
         if (!response.ok) throw new Error('Error al cargar membresías');
 
         const plans = await response.json();
+        container.innerHTML = '';
 
-        container.innerHTML = ''; // Clear loading
+        // Ordenar planes según PLAN_ORDER (Black Card en medio)
+        const sortedPlans = plans.sort((a, b) => {
+            const orderA = PLAN_ORDER.indexOf(a.name);
+            const orderB = PLAN_ORDER.indexOf(b.name);
+            const posA = orderA === -1 ? 999 : orderA;
+            const posB = orderB === -1 ? 999 : orderB;
+            return posA - posB;
+        });
 
-        plans.forEach(plan => {
+        sortedPlans.forEach(plan => {
             const features = PLAN_FEATURES[plan.name] || ['Servicios Premium', 'Atención Personalizada'];
             const icon = PLAN_ICONS[plan.name] || '<i class="fas fa-cut"></i>';
             const badge = PLAN_BADGES[plan.name] || 'Premium';
-            const styleClass = PLAN_STYLES[plan.name] || '';
-            const subtitle = PLAN_SUBTITLES[plan.name] || '';
             const isBlack = plan.name.includes('Black');
             const isTIC = plan.name.includes('TIC') || plan.name.includes('NeoCapilar');
 
-            // Determine styling classes
             let cardClass = 'plan-card';
             if (isBlack) cardClass += ' featured';
             if (isTIC) cardClass += ' tic-card';
 
-            // Nombre a mostrar (renombrar TIC a Golden NeoCapilar)
             let displayName = plan.name;
             if (plan.name.includes('TIC')) {
                 displayName = 'Golden NeoCapilar';
@@ -111,7 +124,7 @@ async function loadMembershipPlans() {
                         <h3 class="plan-name" style="font-size: 2rem; font-weight: 700;">${displayName}</h3>
                     </div>
                     <div class="plan-price">
-                        <span class="price-amount" style="font-size: 2.5rem;">$${parseFloat(plan.price).toLocaleString()}</span>
+                        <span class="price-amount" style="font-size: 2.5rem;">${parseFloat(plan.price).toLocaleString()}</span>
                     </div>
                     <div class="plan-features">
                         ${features.map(f => `
@@ -133,7 +146,6 @@ async function loadMembershipPlans() {
             container.insertAdjacentHTML('beforeend', cardHTML);
         });
 
-        // Re-trigger animations for new elements
         setupAnimations();
 
     } catch (error) {
@@ -142,7 +154,6 @@ async function loadMembershipPlans() {
     }
 }
 
-// ... existing setupFAQ and setupAnimations ...
 function setupFAQ() {
     const faqItems = document.querySelectorAll('.faq-item');
     faqItems.forEach(item => {
@@ -170,7 +181,6 @@ function setupAnimations() {
     }, observerOptions);
 
     document.querySelectorAll('.plan-card, .step-item, .faq-item').forEach(el => {
-        // Only set initial state if not already set (to avoid hiding already visible elements)
         if (!el.style.opacity) {
             el.style.opacity = '0';
             el.style.transform = 'translateY(30px)';
@@ -179,7 +189,8 @@ function setupAnimations() {
         }
     });
 }
-// Smooth scroll preserved
+
+// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
