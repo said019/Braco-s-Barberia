@@ -11,6 +11,9 @@ const API_BASE_URL = (window.location.hostname === 'localhost' || window.locatio
 // CONFIGURACIÓN
 // ============================================================================
 const API = {
+    // URL base para peticiones
+    BASE_URL: API_BASE_URL,
+
     // Token de autenticación (si existe)
     token: localStorage.getItem('auth_token') || null,
 
