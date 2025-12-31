@@ -33,6 +33,7 @@ const PLAN_FEATURES = {
         'Ritual de Barba',
         'Servicio Dúo',
         'Manicura Caballero',
+        'Mascarilla de Carbón Activado',
         'Mascarilla de Arcilla',
         'Transferible para familiar o amigo',
         'Bebidas Premium'
@@ -124,7 +125,7 @@ async function loadMembershipPlans() {
                         <h3 class="plan-name" style="font-size: 2rem; font-weight: 700;">${displayName}</h3>
                     </div>
                     <div class="plan-price">
-                        <span class="price-amount" style="font-size: 2.5rem;">${parseFloat(plan.price).toLocaleString()}</span>
+                        <span class="price-amount" style="font-size: 2.5rem;">$${parseFloat(plan.price).toLocaleString()}</span>
                     </div>
                     <div class="plan-features">
                         ${features.map(f => `
