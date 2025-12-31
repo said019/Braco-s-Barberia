@@ -710,6 +710,92 @@
     flex-wrap: wrap;
 }
 
+/* Gold Card Marketing Banner */
+.gold-card-promo {
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.15), rgba(196, 163, 90, 0.05));
+    border: 1px solid rgba(196, 163, 90, 0.4);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.gold-card-promo .promo-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--gold), #d4af37);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.gold-card-promo .promo-icon i {
+    font-size: 1.4rem;
+    color: var(--charcoal-dark);
+}
+
+.gold-card-promo .promo-content h4 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--cream);
+    margin: 0 0 0.4rem 0;
+}
+
+.gold-card-promo .promo-highlight {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.gold-card-promo .promo-content p {
+    font-size: 0.85rem;
+    color: rgba(245, 245, 240, 0.8);
+    margin: 0 0 0.6rem 0;
+    line-height: 1.5;
+}
+
+.gold-card-promo .promo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.gold-card-promo .promo-link:hover {
+    color: #d4af37;
+    transform: translateX(4px);
+}
+
+.gold-card-promo .promo-link i {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.gold-card-promo .promo-link:hover i {
+    transform: translateX(3px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Step Actions */
 .step-actions {
     display: flex;
