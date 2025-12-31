@@ -118,7 +118,7 @@
                         <button class="btn-icon" onclick="nextPeriod()" title="Siguiente"><i
                                 class="fas fa-chevron-right"></i></button>
                     </div>
-                    
+
                     <!-- View Controls -->
                     <div class="calendar-view-controls">
                         <button class="btn btn-secondary btn-sm" onclick="goToday()">HOY</button>
@@ -179,8 +179,10 @@
                     <input type="text" id="filter-search" class="search-input"
                         placeholder="Buscar por cliente o servicio...">
 
-                    <label class="filter-checkbox" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); font-size: 0.9rem;">
-                        <input type="checkbox" id="filter-show-cancelled" style="width: 18px; height: 18px; accent-color: var(--gold);">
+                    <label class="filter-checkbox"
+                        style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); font-size: 0.9rem;">
+                        <input type="checkbox" id="filter-show-cancelled"
+                            style="width: 18px; height: 18px; accent-color: var(--gold);">
                         <span>Mostrar canceladas</span>
                     </label>
                 </div>
@@ -223,6 +225,39 @@
         let filteredAppointments = [];
         let allClients = [];
         let allServices = [];
+
+        // Colores por servicio/estilista
+        // Miguel (Rojo): Dúo, Corte de cabello, Barba, Prótesis capilar
+        // Bárbara (Azul marino): TIC, Mascarillas, Manicura, Pedicura
+        // Golden Card (Morado), Black Card (Negro)
+        function getServiceColor(serviceName) {
+            const name = serviceName?.toLowerCase() || '';
+
+            // Black Card - Negro
+            if (name.includes('black')) return '#1a1a1a';
+
+            // Golden Card - Morado
+            if (name.includes('golden')) return '#8B5CF6';
+
+            // Bárbara (Azul marino) - TIC, mascarillas, manicura, pedicura
+            if (name.includes('tic') || name.includes('neocapilar') ||
+                name.includes('mascarilla') || name.includes('manicura') ||
+                name.includes('pedicura') || name.includes('facial') ||
+                name.includes('limpieza')) {
+                return '#1E3A5F'; // Azul marino
+            }
+
+            // Miguel (Rojo) - Dúo, corte, barba, prótesis
+            if (name.includes('dúo') || name.includes('duo') ||
+                name.includes('corte') || name.includes('barba') ||
+                name.includes('prótesis') || name.includes('protesis') ||
+                name.includes('cabello')) {
+                return '#DC2626'; // Rojo
+            }
+
+            // Default - Dorado
+            return '#C4A35A';
+        }
 
         // Initialize
         document.getElementById('current-date').textContent =
@@ -364,7 +399,8 @@
                             ${dayAppointments.map(apt => `
                                 <div class="calendar-appointment ${apt.status}"
                                      onclick="viewAppointmentDetail(${apt.id})"
-                                     title="${apt.start_time.slice(0, 5)} - ${apt.client_name}">
+                                     title="${apt.start_time.slice(0, 5)} - ${apt.client_name} - ${apt.service_name}"
+                                     style="background-color: ${getServiceColor(apt.service_name)}; border-left: 3px solid ${getServiceColor(apt.service_name)};">
                                     ${apt.start_time.slice(0, 5)} ${apt.client_name}
                                 </div>
                             `).join('')}
@@ -449,7 +485,7 @@
                         gridHTML += `
                             <div class="gcal-appointment ${apt.status}"
                                  onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                                 style="top: ${top}px; height: ${Math.max(height, 30)}px;">
+                                 style="top: ${top}px; height: ${Math.max(height, 30)}px; background-color: ${getServiceColor(apt.service_name)};">
                                 <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)}</span>
                                 <span class="gcal-appointment-client">${apt.client_name}</span>
                                 <span class="gcal-appointment-service">${apt.service_name}</span>
@@ -516,7 +552,7 @@
                     gridHTML += `
                         <div class="gcal-appointment ${apt.status}"
                              onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                             style="top: ${top}px; height: ${Math.max(height, 40)}px;">
+                             style="top: ${top}px; height: ${Math.max(height, 40)}px; background-color: ${getServiceColor(apt.service_name)};">
                             <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)} - ${apt.end_time.slice(0, 5)}</span>
                             <span class="gcal-appointment-client">${apt.client_name}</span>
                             <span class="gcal-appointment-service">${apt.service_name}</span>

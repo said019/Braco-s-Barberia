@@ -307,9 +307,19 @@ export const Appointment = {
     return this.updateStatus(id, 'cancelled', reason);
   },
 
-  // Confirmar cita
+  // Confirmar cita (también actualiza nota de depósito)
   async confirm(id) {
-    return this.updateStatus(id, 'confirmed');
+    // Actualizar status y cambiar nota de "Pendiente de Depósito" a "Depósito Confirmado"
+    const sql = `
+      UPDATE appointments 
+      SET status = 'confirmed',
+          notes = REPLACE(COALESCE(notes, ''), 'Pendiente de Depósito $100', 'Depósito Confirmado ✓'),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await query(sql, [id]);
+    return result.rows[0];
   },
 
   // Marcar como no show

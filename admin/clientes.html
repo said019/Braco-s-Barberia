@@ -161,6 +161,7 @@
                         <table class="data-table" id="clients-table">
                             <thead>
                                 <tr>
+                                    <th>Código</th>
                                     <th>Cliente</th>
                                     <th>Teléfono</th>
                                     <th>Tipo</th>
@@ -318,7 +319,7 @@
             if (paginated.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-muted" style="text-align: center; padding: 3rem;">
+                        <td colspan="9" class="text-muted" style="text-align: center; padding: 3rem;">
                             No se encontraron clientes
                         </td>
                     </tr>
@@ -326,6 +327,7 @@
             } else {
                 tbody.innerHTML = paginated.map(c => `
                     <tr>
+                        <td data-label="Código"><code style="background: rgba(196,163,90,0.15); padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--gold);">${c.client_code || '-'}</code></td>
                         <td data-label="Cliente">
                             <div>
                                 <strong style="display: block;">${c.name}</strong>
@@ -494,6 +496,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <div>
                         <h4 style="color: var(--gold); margin-bottom: 1rem;">Información</h4>
+                        <p><strong>Código de Cliente:</strong> <code style="background: rgba(196,163,90,0.2); padding: 4px 10px; border-radius: 4px; font-size: 1.2rem; font-weight: 700; color: var(--gold);">${c.client_code || '-'}</code></p>
                         <p><strong>Nombre:</strong> ${c.name}</p>
                         <p><strong>Teléfono:</strong> ${formatPhone(c.phone)}</p>
                         <p><strong>Email:</strong> ${c.email || '-'}</p>
