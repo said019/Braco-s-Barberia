@@ -700,10 +700,13 @@ async function submitBooking() {
         // Determinar si requiere depósito:
         // 1. Si NO existe (es brand new)
         // 2. Si existe PERO es tipo "Nuevo" (ID 1)
+        // 3. Si es PAQUETE NUPCIAL D'lux (siempre requiere depósito de $200)
         const isBrandNew = !client;
         const isExistingNew = client && client.client_type_id === 1; // 1 = Nuevo (según update_client_types.sql)
+        const isNupcialPackage = state.selectedService.name.toLowerCase().includes('nupcial');
 
-        const requiresDeposit = isBrandNew || isExistingNew;
+        const requiresDeposit = isBrandNew || isExistingNew || isNupcialPackage;
+        const depositAmount = isNupcialPackage ? 200 : 100;
 
         // Si requiere depósito, mostrar modal
         if (requiresDeposit) {
@@ -761,10 +764,10 @@ async function submitBooking() {
                     service_id: state.selectedService.id,
                     appointment_date: localDate,
                     start_time: state.selectedTime,
-                    notes: (data.notes || '') + ' - Pendiente de Depósito $100',
+                    notes: (data.notes || '') + ` - Pendiente de Depósito $${depositAmount}`,
                     status: 'pending',
                     deposit_required: true,
-                    deposit_amount: 100,
+                    deposit_amount: depositAmount,
                     email: data.email || null
                 };
 
@@ -856,10 +859,15 @@ function showDepositModal() {
         const serviceEl = document.getElementById('deposit-service');
         const dateEl = document.getElementById('deposit-date');
         const timeEl = document.getElementById('deposit-time');
+        const amountEl = document.getElementById('deposit-amount');
 
         if (serviceEl) serviceEl.textContent = state.selectedService?.name || '-';
         if (dateEl) dateEl.textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         if (timeEl) timeEl.textContent = state.selectedTime || '-';
+
+        // Monto según servicio (Nupcial = $200, otros = $100)
+        const isNupcial = state.selectedService?.name?.toLowerCase().includes('nupcial');
+        if (amountEl) amountEl.textContent = isNupcial ? '200' : '100';
     }
 
     modal.classList.remove('hidden');
