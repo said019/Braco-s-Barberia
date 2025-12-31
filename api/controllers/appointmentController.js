@@ -281,8 +281,8 @@ export const appointmentController = {
               date: formattedDate
             });
             console.log(`[CREATE APPT] Admin Full Payment Notification SENT (auto-confirmed).`);
-          } else {
-            // No es pago completo - Requiere validación del admin
+          } else if (isNewClient) {
+            // SOLO notificar al admin si es cliente NUEVO que requiere validación
             await whatsappService.sendAdminNewAppointment({
               clientName: clientDisplayName,
               serviceName: service.name,
@@ -290,6 +290,9 @@ export const appointmentController = {
               time: start_time
             });
             console.log(`[CREATE APPT] Admin New Appointment Notification SENT. IsNewClient: ${isNewClient}`);
+          } else {
+            // Cliente recurrente - NO enviar notificación al admin
+            console.log(`[CREATE APPT] Skipping admin notification - recurring client ${client.name}`);
           }
 
           // Enviar mensaje de bienvenida con código de cliente para NUEVOS clientes
