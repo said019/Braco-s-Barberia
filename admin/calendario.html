@@ -471,6 +471,8 @@
 
                     gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                      onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                     oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                     title="Click: Nueva cita | Click derecho: Bloquear"
                                      style="cursor: pointer;">`;
 
                     hourAppointments.forEach(apt => {
@@ -538,6 +540,8 @@
 
                 gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                  onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                 oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                 title="Click: Nueva cita | Click derecho: Bloquear"
                                  style="cursor: pointer;">`;
 
                 hourAppointments.forEach(apt => {
@@ -932,10 +936,145 @@
             }
         }
 
+        // ================================
+        // BLOQUEAR HORARIOS
+        // ================================
+
+        let blockedTimeSlots = [];
+
+        async function loadBlockedTimeSlots(date) {
+            try {
+                const response = await fetch(`/api/admin/blocked-time-slots?date=${date}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+                blockedTimeSlots = await response.json();
+                return blockedTimeSlots;
+            } catch (error) {
+                console.error('Error loading blocked slots:', error);
+                return [];
+            }
+        }
+
+        function openBlockTimeModal(date, time) {
+            const modal = document.getElementById('block-time-modal');
+            document.getElementById('block-date').value = date;
+            document.getElementById('block-start-time').value = time;
+
+            // Calcular hora de fin (1 hora después por defecto)
+            const [hours, mins] = time.split(':').map(Number);
+            const endHour = Math.min(hours + 1, 21);
+            document.getElementById('block-end-time').value = `${endHour.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+            document.getElementById('block-reason').value = '';
+
+            modal.showModal();
+        }
+
+        async function saveBlockedTime() {
+            const date = document.getElementById('block-date').value;
+            const startTime = document.getElementById('block-start-time').value;
+            const endTime = document.getElementById('block-end-time').value;
+            const reason = document.getElementById('block-reason').value;
+
+            if (!date || !startTime || !endTime) {
+                showToast('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+
+            if (startTime >= endTime) {
+                showToast('La hora de inicio debe ser menor que la hora de fin', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/blocked-time-slots', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({ date, start_time: startTime, end_time: endTime, reason })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al bloquear horario');
+                }
+
+                showToast('Horario bloqueado exitosamente', 'success');
+                document.getElementById('block-time-modal').close();
+                loadAppointments(); // Recargar calendario
+
+            } catch (error) {
+                console.error('Error blocking time:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function deleteBlockedTime(id) {
+            if (!confirm('¿Deseas desbloquear este horario?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/blocked-time-slots/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar');
+                }
+
+                showToast('Horario desbloqueado', 'success');
+                loadAppointments();
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
         // Initial load
         loadClientsAndServices();
         loadAppointments();
     </script>
+
+    <!-- Modal para bloquear horarios -->
+    <dialog id="block-time-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-ban" style="color: #e74c3c;"></i> Bloquear Horario</h3>
+                <button class="btn-close" onclick="document.getElementById('block-time-modal').close()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="block-date">Fecha</label>
+                    <input type="date" id="block-date" class="form-control" readonly>
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="block-start-time">Hora Inicio</label>
+                        <input type="time" id="block-start-time" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="block-end-time">Hora Fin</label>
+                        <input type="time" id="block-end-time" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="block-reason">Motivo (opcional)</label>
+                    <input type="text" id="block-reason" class="form-control" placeholder="Ej: Comida, reunión, etc.">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('block-time-modal').close()">Cancelar</button>
+                <button class="btn btn-danger" onclick="saveBlockedTime()">
+                    <i class="fas fa-ban"></i> Bloquear
+                </button>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Mobile Menu Script -->
     <!-- Mobile Menu Script Removed -->

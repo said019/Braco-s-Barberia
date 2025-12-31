@@ -2678,6 +2678,96 @@ router.delete('/blocked-dates/:id', authenticateToken, async (req, res, next) =>
 });
 
 // ============================
+// HORARIOS BLOQUEADOS (Time Slots)
+// ============================
+
+// GET /api/admin/blocked-time-slots
+router.get('/blocked-time-slots', authenticateToken, async (req, res, next) => {
+    try {
+        const { date } = req.query;
+
+        let query = `
+            SELECT id, blocked_date, start_time, end_time, reason, created_at, created_by
+            FROM blocked_time_slots
+        `;
+        const params = [];
+
+        if (date) {
+            query += ` WHERE blocked_date = $1`;
+            params.push(date);
+        } else {
+            query += ` WHERE blocked_date >= CURRENT_DATE`;
+        }
+
+        query += ` ORDER BY blocked_date, start_time`;
+
+        const result = await db.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/admin/blocked-time-slots
+router.post('/blocked-time-slots', authenticateToken, async (req, res, next) => {
+    try {
+        const { date, start_time, end_time, reason } = req.body;
+
+        if (!date || !start_time || !end_time) {
+            return res.status(400).json({
+                error: 'Se requieren date, start_time y end_time'
+            });
+        }
+
+        // Verificar que start_time sea menor que end_time
+        if (start_time >= end_time) {
+            return res.status(400).json({
+                error: 'La hora de inicio debe ser menor a la hora de fin'
+            });
+        }
+
+        const result = await db.query(`
+            INSERT INTO blocked_time_slots (blocked_date, start_time, end_time, reason, created_by)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `, [date, start_time, end_time, reason || 'Sin motivo', req.user?.name || 'Admin']);
+
+        res.status(201).json({
+            success: true,
+            message: 'Horario bloqueado exitosamente',
+            data: result.rows[0]
+        });
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(400).json({
+                error: 'Ya existe un bloqueo para esa fecha y hora'
+            });
+        }
+        next(error);
+    }
+});
+
+// DELETE /api/admin/blocked-time-slots/:id
+router.delete('/blocked-time-slots/:id', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(
+            'DELETE FROM blocked_time_slots WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Horario bloqueado no encontrado' });
+        }
+
+        res.json({ success: true, message: 'Horario desbloqueado' });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ============================
 // CONFIGURACIÓN DEL SISTEMA
 // ============================
 

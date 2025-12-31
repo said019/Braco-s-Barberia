@@ -108,7 +108,15 @@ router.get('/slots', async (req, res, next) => {
             ? parseInt(settingsResult.rows[0].value)
             : 30;
 
-        // 7. Generar slots con el algoritmo inteligente
+        // 7. Obtener horarios bloqueados para esa fecha
+        const blockedSlotsResult = await db.query(`
+            SELECT start_time, end_time, reason
+            FROM blocked_time_slots
+            WHERE blocked_date = $1
+            ORDER BY start_time
+        `, [date]);
+
+        // 8. Generar slots con el algoritmo inteligente
         const slots = generateAvailableSlots({
             serviceDuration,
             businessHours: {
@@ -119,6 +127,7 @@ router.get('/slots', async (req, res, next) => {
                 is_open: businessHours.is_open
             },
             existingAppointments: appointmentsResult.rows,
+            blockedSlots: blockedSlotsResult.rows,
             slotInterval
         });
 
