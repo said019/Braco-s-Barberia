@@ -6,48 +6,55 @@ const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:300
 
 // Map features based on plan Name (since DB doesn't store display features)
 const PLAN_FEATURES = {
-    'Golden Card Corte': [
-        '6 Servicios al mes',
-        'Corte de Cabello',
+    'Golden Card Tradicional': [
+        '6 Servicios',
         'Ritual de Barba',
         'Servicio Dúo (Corte + Barba)',
         'Bebidas de cortesía',
         'Prioridad en agenda'
     ],
-    'Golden NeoCapilar': [
-        '8 Servicios Premium',
-        'Terapia Integral Capilar (TIC)',
-        'Exfoliación + Alta Frecuencia',
-        'Ozonoterapia + Mascarillas',
-        'Mantenimiento de Prótesis',
-        'Bebidas Premium'
+    'Terapia Integral Capilar (TIC)': [
+        'Incluye 8 sesiones',
+        'Ozonoterapia',
+        'Altafrecuencia',
+        'Fotobiomodulación',
+        'Productos Premium',
+        'Solo para TIC'
     ],
     'Black Card': [
-        '12 Servicios (Pagas 11)',
-        'Corte de Cabello o Barba',
-        'Vigencia: 1 Año',
-        'Tú decides cuándo usarlos',
-        'Máxima prioridad en agenda',
-        'Descuentos en productos'
+        '6 Servicios',
+        'Corte de Cabello',
+        'Ritual de Barba',
+        'Servicio Dúo',
+        'Transferible',
+        'Bebidas Premium',
+        'La Neocapilar'
     ]
 };
 
 const PLAN_ICONS = {
-    'Golden Card Corte': '<i class="fas fa-crown"></i>',
-    'Golden NeoCapilar': '<i class="fas fa-spa"></i>',
+    'Golden Card Tradicional': '<i class="fas fa-crown"></i>',
+    'Terapia Integral Capilar (TIC)': '<i class="fas fa-hand-holding-medical"></i>',
     'Black Card': '<i class="fas fa-gem"></i>'
 };
 
 const PLAN_BADGES = {
-    'Golden Card Corte': 'Más Popular',
-    'Golden NeoCapilar': 'Especializado',
+    'Golden Card Tradicional': 'Más Popular',
+    'Terapia Integral Capilar (TIC)': 'Solo para TIC',
     'Black Card': 'Exclusivo'
 };
 
 const PLAN_STYLES = {
-    'Golden Card Corte': '',
-    'Golden NeoCapilar': '', // standard
+    'Golden Card Tradicional': '',
+    'Terapia Integral Capilar (TIC)': 'tic-card',
     'Black Card': 'featured' // dark theme
+};
+
+// Subtítulos para las tarjetas
+const PLAN_SUBTITLES = {
+    'Golden Card Tradicional': '',
+    'Terapia Integral Capilar (TIC)': 'Terapia Integral Capilar TIC',
+    'Black Card': 'Paquete Anual Flexible'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -72,30 +79,33 @@ async function loadMembershipPlans() {
             const icon = PLAN_ICONS[plan.name] || '<i class="fas fa-cut"></i>';
             const badge = PLAN_BADGES[plan.name] || 'Premium';
             const styleClass = PLAN_STYLES[plan.name] || '';
+            const subtitle = PLAN_SUBTITLES[plan.name] || '';
             const isBlack = plan.name.includes('Black');
+            const isTIC = plan.name.includes('TIC');
 
-            // Fix formatting
-            const validity = plan.validity_days || 30;
-            const durationText = validity >= 300 ? '1 año' : `${validity} días`;
-            const servicesText = isBlack ? 'Paquete Anual Flexible' : `Incluye ${plan.total_services} servicios`;
+            // Texto descriptivo según el tipo
+            let servicesText = `Incluye ${plan.total_services} servicios`;
+            if (isBlack) servicesText = 'Paquete Anual Flexible';
+            if (isTIC) servicesText = 'Incluye 8 sesiones';
 
             // Determine styling classes
             let cardClass = 'plan-card';
-            if (isBlack) cardClass += ' featured'; // Black card gets featured dark style
+            if (isBlack) cardClass += ' featured';
+            if (isTIC) cardClass += ' tic-card';
 
             const cardHTML = `
                 <div class="${cardClass}">
                     <div class="plan-badge ${isBlack ? 'premium' : ''}">${badge}</div>
                     <div class="plan-header">
                         <div class="plan-icon" style="font-size: 3rem; margin-bottom: 1rem; color: var(--gold);">${icon}</div>
-                        <h3 class="plan-name">${plan.name}</h3>
+                        <h3 class="plan-name" style="font-size: 1.6rem;">${plan.name}</h3>
+                        ${subtitle ? `<p class="plan-subtitle" style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.25rem;">${subtitle}</p>` : ''}
                         <p class="plan-tagline">
                            ${servicesText}
                         </p>
                     </div>
                     <div class="plan-price">
-                        <span class="price-amount">$${parseFloat(plan.price).toLocaleString()}</span>
-                        <span class="price-period">/ ${durationText}</span>
+                        <span class="price-amount" style="font-size: 2.5rem;">$${parseFloat(plan.price).toLocaleString()}</span>
                     </div>
                     <div class="plan-features">
                         ${features.map(f => `
@@ -105,8 +115,8 @@ async function loadMembershipPlans() {
                             </div>
                         `).join('')}
                     </div>
-                    <a href="https://wa.me/525573432027?text=Hola,%20me%20interesa%20la%20membresía%20${encodeURIComponent(plan.name)}" 
-                       class="btn-primary btn-block" 
+                    <a href="https://wa.me/525573432027?text=Hola,%20me%20interesa%20la%20membresía%20${encodeURIComponent(plan.name)}"
+                       class="btn-primary btn-block"
                        style="color: #000; background-color: var(--gold); border: none; font-weight: 600; white-space: normal; height: auto; padding: 15px 10px; line-height: 1.2;"
                        target="_blank">
                        ADQUIRIR ${plan.name.toUpperCase()}
