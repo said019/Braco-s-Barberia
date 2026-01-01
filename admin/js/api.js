@@ -37,8 +37,12 @@ const api = {
 
             return result;
         } catch (error) {
+            // Si es error de aborto (usuario navegó a otra página)
+            if (error.name === 'AbortError') {
+                throw error; // Re-throw para que el caller lo maneje
+            }
             // Si es error de red o el servidor no responde
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
                 console.error('Error de conexión:', error);
                 throw new Error('No se pudo conectar con el servidor');
             }
