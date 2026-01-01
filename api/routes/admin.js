@@ -2596,10 +2596,10 @@ router.put('/business-hours/:day', authenticateToken, async (req, res, next) => 
 router.get('/blocked-dates', authenticateToken, async (req, res, next) => {
     try {
         const result = await db.query(`
-            SELECT id, blocked_date, reason, created_at
+            SELECT id, blocked_date, reason, start_time, end_time, created_at
             FROM blocked_dates 
             WHERE blocked_date >= CURRENT_DATE
-            ORDER BY blocked_date
+            ORDER BY blocked_date, start_time
         `);
         res.json(result.rows);
     } catch (error) {
@@ -2610,7 +2610,7 @@ router.get('/blocked-dates', authenticateToken, async (req, res, next) => {
 // POST /api/admin/blocked-dates
 router.post('/blocked-dates', authenticateToken, async (req, res, next) => {
     try {
-        const { date, reason } = req.body;
+        const { date, reason, start_time, end_time } = req.body;
 
         if (!date) {
             return res.status(400).json({ error: 'Se requiere la fecha' });
@@ -2632,22 +2632,25 @@ router.post('/blocked-dates', authenticateToken, async (req, res, next) => {
             });
         }
 
-        const existing = await db.query(
-            'SELECT 1 FROM blocked_dates WHERE blocked_date = $1',
-            [date]
-        );
+        // Si es bloqueo de día completo, verificar que no exista
+        if (!start_time && !end_time) {
+            const existing = await db.query(
+                'SELECT 1 FROM blocked_dates WHERE blocked_date = $1 AND start_time IS NULL',
+                [date]
+            );
 
-        if (existing.rows.length > 0) {
-            return res.status(409).json({
-                error: 'Esta fecha ya está bloqueada'
-            });
+            if (existing.rows.length > 0) {
+                return res.status(409).json({
+                    error: 'Esta fecha ya está bloqueada como día completo'
+                });
+            }
         }
 
         const result = await db.query(`
-            INSERT INTO blocked_dates (blocked_date, reason)
-            VALUES ($1, $2)
+            INSERT INTO blocked_dates (blocked_date, reason, start_time, end_time)
+            VALUES ($1, $2, $3, $4)
             RETURNING *
-        `, [date, reason || null]);
+        `, [date, reason || null, start_time || null, end_time || null]);
 
         res.status(201).json({ success: true, data: result.rows[0] });
 

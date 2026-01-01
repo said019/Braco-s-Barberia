@@ -50,9 +50,9 @@ router.get('/slots', async (req, res, next) => {
         const serviceDuration = serviceResult.rows[0].duration_minutes;
         const serviceName = serviceResult.rows[0].name;
 
-        // 2. Verificar si la fecha está bloqueada
+        // 2. Verificar si la fecha está bloqueada (día completo)
         const blockedResult = await db.query(
-            'SELECT reason FROM blocked_dates WHERE blocked_date = $1',
+            'SELECT reason FROM blocked_dates WHERE blocked_date = $1 AND start_time IS NULL',
             [date]
         );
 
@@ -108,11 +108,11 @@ router.get('/slots', async (req, res, next) => {
             ? parseInt(settingsResult.rows[0].value)
             : 30;
 
-        // 7. Obtener horarios bloqueados para esa fecha
+        // 7. Obtener horarios bloqueados para esa fecha (parciales)
         const blockedSlotsResult = await db.query(`
             SELECT start_time, end_time, reason
-            FROM blocked_time_slots
-            WHERE blocked_date = $1
+            FROM blocked_dates
+            WHERE blocked_date = $1 AND start_time IS NOT NULL
             ORDER BY start_time
         `, [date]);
 

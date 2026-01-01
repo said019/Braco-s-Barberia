@@ -1413,20 +1413,41 @@
                 }
 
                 tbody.innerHTML = dates.map(d => {
-                    const date = new Date(d.blocked_date + 'T12:00:00');
-                    const dateStr = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                    const capitalizedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+                    // Manejar diferentes formatos de fecha de PostgreSQL
+                    let dateStr = d.blocked_date;
+                    if (typeof dateStr === 'string') {
+                        // Si viene con timezone o formato ISO completo, extraer solo la fecha
+                        dateStr = dateStr.split('T')[0];
+                    }
+                    const date = new Date(dateStr + 'T12:00:00');
+                    
+                    // Verificar si la fecha es válida
+                    if (isNaN(date.getTime())) {
+                        console.error('Fecha inválida:', d.blocked_date);
+                        return '';
+                    }
+                    
+                    const formattedDate = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+                    // Determinar si es día completo o horario específico
+                    const isPartial = d.start_time && d.end_time;
+                    const timeRange = isPartial 
+                        ? `${formatTime(d.start_time)} - ${formatTime(d.end_time)}`
+                        : 'Día completo';
 
                     return `
                         <tr style="transition: background 0.3s ease;">
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                                     <div style="width: 40px; height: 40px; background: rgba(229, 57, 53, 0.15); border: 1px solid rgba(229, 57, 53, 0.3); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #EF5350;">
-                                        <i class="fas fa-ban"></i>
+                                        <i class="fas ${isPartial ? 'fa-clock' : 'fa-ban'}"></i>
                                     </div>
                                     <div>
                                         <div style="font-weight: 500; color: var(--cream);">${capitalizedDate}</div>
-                                        <div style="font-size: 0.75rem; color: rgba(245, 243, 238, 0.5);">${getDaysUntil(date)}</div>
+                                        <div style="font-size: 0.75rem; color: ${isPartial ? 'var(--gold)' : 'rgba(245, 243, 238, 0.5)'};">
+                                            ${isPartial ? `<i class="fas fa-clock" style="margin-right: 4px;"></i>${timeRange}` : getDaysUntil(date)}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -1436,7 +1457,7 @@
                                 </span>
                             </td>
                             <td style="text-align: center;">
-                                <button class="btn-icon" onclick="deleteBlockedDate(${d.id})" title="Desbloquear fecha" style="color: #EF5350; border-color: rgba(229, 57, 53, 0.3);">
+                                <button class="btn-icon" onclick="deleteBlockedDate(${d.id})" title="Desbloquear" style="color: #EF5350; border-color: rgba(229, 57, 53, 0.3);">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -1463,13 +1484,24 @@
             return `En ${Math.ceil(days / 30)} meses`;
         }
 
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            // timeStr viene como "HH:MM:SS" o "HH:MM"
+            const parts = timeStr.split(':');
+            let hours = parseInt(parts[0]);
+            const minutes = parts[1];
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
         window.openBlockDateModal = function () {
             const content = `
                 <form id="block-date-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div style="background: rgba(229, 57, 53, 0.1); border: 1px solid rgba(229, 57, 53, 0.2); border-radius: 6px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
                         <i class="fas fa-exclamation-triangle" style="color: #EF5350; font-size: 1.2rem;"></i>
                         <div style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.8);">
-                            Las citas agendadas en esta fecha serán canceladas automáticamente.
+                            Las citas agendadas en este horario serán canceladas automáticamente.
                         </div>
                     </div>
 
@@ -1484,6 +1516,40 @@
                             min="${new Date().toISOString().split('T')[0]}"
                             style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.875rem;">
                     </div>
+
+                    <!-- Tipo de bloqueo -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: var(--gold); letter-spacing: 0.05em;">
+                            <i class="fas fa-clock"></i> Tipo de Bloqueo
+                        </label>
+                        <div style="display: flex; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem 1rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); border-radius: 4px; flex: 1;">
+                                <input type="radio" name="block-type" value="full" checked onchange="toggleTimeInputs()" style="accent-color: var(--gold);">
+                                <span style="color: var(--cream); font-size: 0.85rem;">Día completo</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem 1rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); border-radius: 4px; flex: 1;">
+                                <input type="radio" name="block-type" value="partial" onchange="toggleTimeInputs()" style="accent-color: var(--gold);">
+                                <span style="color: var(--cream); font-size: 0.85rem;">Horario específico</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Horarios (oculto por defecto) -->
+                    <div id="time-inputs-container" style="display: none; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem;">
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label style="font-size: 0.8rem; color: rgba(245, 243, 238, 0.6);">Desde</label>
+                                <input type="time" id="block-start-time" value="10:00"
+                                    style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                            </div>
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label style="font-size: 0.8rem; color: rgba(245, 243, 238, 0.6);">Hasta</label>
+                                <input type="time" id="block-end-time" value="14:00"
+                                    style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <label style="font-size: 0.875rem; font-weight: 500; color: var(--gold); letter-spacing: 0.05em;">
                             <i class="fas fa-comment-alt"></i> Motivo <span style="color: rgba(245, 243, 238, 0.5); font-weight: 400;">(Opcional)</span>
@@ -1491,7 +1557,7 @@
                         <input
                             type="text"
                             id="block-reason"
-                            placeholder="Ej. Feriado Nacional, Mantenimiento, Vacaciones"
+                            placeholder="Ej. Cita médica, Salida personal, Mantenimiento"
                             style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.875rem;">
                     </div>
                 </form>
@@ -1501,10 +1567,16 @@
                     <i class="fas fa-times"></i> Cancelar
                 </button>
                 <button class="btn btn-primary" onclick="saveBlockedDate()" style="background: #EF5350; border-color: #EF5350;">
-                    <i class="fas fa-ban"></i> Bloquear Fecha
+                    <i class="fas fa-ban"></i> Bloquear
                 </button>
             `;
-            showCustomModal('blockDateModal', '<i class="fas fa-calendar-times"></i> Bloquear Fecha', content, footer);
+            showCustomModal('blockDateModal', '<i class="fas fa-calendar-times"></i> Bloquear Fecha/Horario', content, footer);
+        };
+
+        window.toggleTimeInputs = function() {
+            const blockType = document.querySelector('input[name="block-type"]:checked').value;
+            const container = document.getElementById('time-inputs-container');
+            container.style.display = blockType === 'partial' ? 'flex' : 'none';
         };
 
         function showCustomModal(id, title, content, footer) {
@@ -1530,11 +1602,30 @@
             const dateInput = document.getElementById('block-date');
             const date = dateInput.value;
             const reason = document.getElementById('block-reason').value || 'Sin motivo especificado';
+            const blockType = document.querySelector('input[name="block-type"]:checked').value;
 
             if (!date) {
                 dateInput.style.borderColor = '#EF5350';
                 dateInput.focus();
                 return;
+            }
+
+            let startTime = null;
+            let endTime = null;
+
+            if (blockType === 'partial') {
+                startTime = document.getElementById('block-start-time').value;
+                endTime = document.getElementById('block-end-time').value;
+                
+                if (!startTime || !endTime) {
+                    showToast('Por favor selecciona el horario a bloquear', 'error');
+                    return;
+                }
+                
+                if (startTime >= endTime) {
+                    showToast('La hora de inicio debe ser menor a la hora de fin', 'error');
+                    return;
+                }
             }
 
             try {
@@ -1543,7 +1634,12 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bloqueando...';
                 btn.disabled = true;
 
-                await api.post('/admin/blocked-dates', { date, reason });
+                await api.post('/admin/blocked-dates', { 
+                    date, 
+                    reason,
+                    start_time: startTime,
+                    end_time: endTime
+                });
 
                 // Success animation
                 btn.innerHTML = '<i class="fas fa-check"></i> Bloqueado!';
@@ -1556,7 +1652,7 @@
             } catch (error) {
                 showToast('Error: ' + error.message, 'error');
                 event.target.disabled = false;
-                event.target.innerHTML = '<i class="fas fa-ban"></i> Bloquear Fecha';
+                event.target.innerHTML = '<i class="fas fa-ban"></i> Bloquear';
             }
         }
 
