@@ -6,7 +6,9 @@
 • Servicio: {servicio}
 • Fecha: {fecha}
 • Hora: {hora}
-• Código: {codigo}
+• Código: *{codigo}*
+
+💡 *Importante:* Este código lo ocuparás para tu checkout al momento de agendar tu cita.
 
 📍 *Ubicación:* {direccion}
 
