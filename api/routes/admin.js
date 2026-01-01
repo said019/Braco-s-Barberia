@@ -465,14 +465,15 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
 router.put('/clients/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, phone, email, birthdate, notes } = req.body;
+        const { name, phone, email, birthdate, notes, client_type_id } = req.body;
 
         const result = await db.query(
             `UPDATE clients 
-             SET name = $2, phone = $3, email = $4, birthdate = $5, notes = $6, updated_at = CURRENT_TIMESTAMP
+             SET name = $2, phone = $3, email = $4, birthdate = $5, notes = $6, 
+                 client_type_id = COALESCE($7, client_type_id), updated_at = CURRENT_TIMESTAMP
              WHERE id = $1
              RETURNING *`,
-            [id, name, phone, email, birthdate || null, notes || null]
+            [id, name, phone, email, birthdate || null, notes || null, client_type_id || null]
         );
 
         if (result.rows.length === 0) {
@@ -481,6 +482,81 @@ router.put('/clients/:id', authenticateToken, async (req, res, next) => {
 
         res.json(result.rows[0]);
 
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/admin/clients/:id/promote - Cambiar cliente de Nuevo a Recurrente y enviar notificaciones
+router.post('/clients/:id/promote', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        
+        // Obtener datos del cliente
+        const clientResult = await db.query(
+            'SELECT id, name, phone, email, client_code, client_type_id FROM clients WHERE id = $1',
+            [id]
+        );
+        
+        if (clientResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente no encontrado' });
+        }
+        
+        const client = clientResult.rows[0];
+        
+        // Verificar que sea cliente "Nuevo" (type_id = 1)
+        if (client.client_type_id !== 1) {
+            return res.status(400).json({ error: 'Solo se pueden promover clientes con tipo "Nuevo"' });
+        }
+        
+        // Actualizar a Recurrente (type_id = 2)
+        await db.query(
+            'UPDATE clients SET client_type_id = 2, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+            [id]
+        );
+        
+        // Enviar notificaciones
+        const notifications = { email: false, whatsapp: false };
+        
+        // Enviar Email si tiene email
+        if (client.email) {
+            try {
+                const emailService = (await import('../services/emailService.js')).default;
+                await emailService.sendClientWelcome({
+                    to: client.email,
+                    clientName: client.name,
+                    clientCode: client.client_code
+                });
+                notifications.email = true;
+                console.log(`[PROMOTE] Email enviado a ${client.email}`);
+            } catch (emailError) {
+                console.error('[PROMOTE] Error enviando email:', emailError.message);
+            }
+        }
+        
+        // Enviar WhatsApp
+        if (client.phone) {
+            try {
+                const whatsappService = await import('../services/whatsappService.js');
+                const result = await whatsappService.sendWelcomeWithClientCode({
+                    phone: client.phone,
+                    name: client.name,
+                    clientCode: client.client_code
+                });
+                notifications.whatsapp = result.success;
+                console.log(`[PROMOTE] WhatsApp enviado a ${client.phone}: ${result.success}`);
+            } catch (whatsappError) {
+                console.error('[PROMOTE] Error enviando WhatsApp:', whatsappError.message);
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Cliente promovido a Recurrente',
+            client_code: client.client_code,
+            notifications
+        });
+        
     } catch (error) {
         next(error);
     }

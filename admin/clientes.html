@@ -335,7 +335,7 @@
                             </div>
                         </td>
                         <td data-label="Teléfono">${formatPhone(c.phone)}</td>
-                        <td data-label="Tipo"><span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></td>
+                        <td data-label="Tipo">${getTypeBadge(c)}</td>
                         <td data-label="Visitas">${c.total_visits || 0}</td>
                         <td data-label="Total" class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
                         <td data-label="Membresía">
@@ -554,6 +554,43 @@
                 month: 'short',
                 year: 'numeric'
             });
+        }
+
+        // Generar badge de tipo de cliente
+        function getTypeBadge(c) {
+            const isNew = c.client_type_id === 1;
+            if (isNew) {
+                return `<span class="badge badge-gold" style="cursor: pointer;" onclick="promoteClient(${c.id}, '${(c.name || '').replace(/'/g, "\\'")}', event)" title="Clic para promover a Recurrente">${c.client_type_name || 'Nuevo'} <i class="fas fa-arrow-up" style="font-size: 0.7rem; margin-left: 4px;"></i></span>`;
+            }
+            return `<span class="badge badge-gold">${c.client_type_name || 'Normal'}</span>`;
+        }
+
+        // Promover cliente de Nuevo a Recurrente
+        async function promoteClient(id, name, event) {
+            event.stopPropagation();
+            
+            if (!confirm(`¿Promover a "${name}" a cliente Recurrente?\n\nSe le enviará un email y WhatsApp con su código de cliente.`)) {
+                return;
+            }
+            
+            try {
+                const result = await api.post(`/admin/clients/${id}/promote`);
+                
+                let message = `✅ ${name} ahora es cliente Recurrente\n\nCódigo: ${result.client_code}`;
+                
+                if (result.notifications.email) {
+                    message += '\n📧 Email enviado';
+                }
+                if (result.notifications.whatsapp) {
+                    message += '\n📱 WhatsApp enviado';
+                }
+                
+                alert(message);
+                loadClients(); // Recargar lista
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
 
         // Demo data

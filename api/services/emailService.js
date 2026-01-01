@@ -207,10 +207,43 @@ export async function sendPasswordReset(data) {
     }
 }
 
+/**
+ * Send client welcome email (when promoted to Recurrente)
+ */
+export async function sendClientWelcome(data) {
+    const { to, clientName, clientCode } = data;
+
+    if (!to) return { success: false, error: 'No email provided' };
+
+    const html = loadTemplate('client-welcome', {
+        clientName: clientName,
+        clientCode: clientCode,
+        year: new Date().getFullYear()
+    });
+
+    if (!html) return { success: false, error: 'Template not found' };
+
+    try {
+        const result = await resend.emails.send({
+            from: FROM_EMAIL,
+            to: to,
+            subject: `🎉 ¡Bienvenido a la Familia Braco's! - Tu Código de Cliente`,
+            html
+        });
+
+        console.log('Client welcome email sent:', result);
+        return { success: true, id: result.id };
+    } catch (error) {
+        console.error('Error sending client welcome email:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 export default {
     sendBookingConfirmation,
     sendDepositAccepted,
     sendMembershipWelcome,
     sendCheckoutReceipt,
-    sendPasswordReset
+    sendPasswordReset,
+    sendClientWelcome
 };

@@ -1,0 +1,13 @@
+¡Hola {nombre}! 👋
+
+🎉 *¡Bienvenido a la familia Braco's Barbería!*
+
+Ahora eres parte de nuestros clientes recurrentes. Tu número de cliente es:
+
+🆔 *{codigo}*
+
+💡 Usa este código para agendar tus próximas citas de forma más rápida y acceder a tu historial.
+
+📱 Agenda aquí: bracosbarberia.com/agendar.html
+
+¡Gracias por tu preferencia! ✂️💈
