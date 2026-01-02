@@ -435,13 +435,26 @@ export const appointmentController = {
       // Send deposit accepted email if client has email AND enabled
       const clientData = await Client.getById(appointment.client_id);
 
+      // Helper para formatear fecha correctamente
+      const formatAppointmentDate = (dateValue) => {
+        let dateStr = dateValue;
+        // Si es un objeto Date, convertir a ISO string
+        if (dateValue instanceof Date) {
+          dateStr = dateValue.toISOString().split('T')[0];
+        } else if (typeof dateValue === 'string' && dateValue.includes('T')) {
+          dateStr = dateValue.split('T')[0];
+        }
+        // Crear fecha con hora fija para evitar problemas de timezone
+        const dateObj = new Date(dateStr + 'T12:00:00');
+        return dateObj.toLocaleDateString('es-MX', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+      };
+
+      const formattedDate = formatAppointmentDate(appointment.appointment_date);
+
       if (appointment.client_email && clientData.email_enabled !== false) {
         try {
-          const dateObj = new Date(appointment.appointment_date);
-          const formattedDate = dateObj.toLocaleDateString('es-MX', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-          });
-
           await emailService.sendDepositAccepted({
             email: appointment.client_email,
             name: appointment.client_name,
@@ -458,11 +471,6 @@ export const appointmentController = {
       // Send WhatsApp deposit confirmation if enabled
       if (appointment.client_phone && clientData.whatsapp_enabled !== false) {
         try {
-          const dateObj = new Date(appointment.appointment_date);
-          const formattedDate = dateObj.toLocaleDateString('es-MX', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-          });
-
           await whatsappService.sendWhatsAppDepositAccepted({
             phone: appointment.client_phone,
             name: appointment.client_name,
@@ -510,10 +518,21 @@ export const appointmentController = {
 
       // Notificar al admin sobre la cancelación
       try {
-        const dateObj = new Date(fullAppointment.appointment_date);
-        const formattedDate = dateObj.toLocaleDateString('es-MX', {
-          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        });
+        // Helper para formatear fecha correctamente
+        const formatDate = (dateValue) => {
+          let dateStr = dateValue;
+          if (dateValue instanceof Date) {
+            dateStr = dateValue.toISOString().split('T')[0];
+          } else if (typeof dateValue === 'string' && dateValue.includes('T')) {
+            dateStr = dateValue.split('T')[0];
+          }
+          const dateObj = new Date(dateStr + 'T12:00:00');
+          return dateObj.toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+        };
+
+        const formattedDate = formatDate(fullAppointment.appointment_date);
 
         await whatsappService.sendAdminCancellation({
           clientName: fullAppointment.client_name,
