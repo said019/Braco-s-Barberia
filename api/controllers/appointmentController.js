@@ -517,10 +517,10 @@ export const appointmentController = {
 
         await whatsappService.sendAdminCancellation({
           clientName: fullAppointment.client_name,
+          clientPhone: fullAppointment.client_phone,
           serviceName: fullAppointment.service_name,
           date: formattedDate,
-          time: fullAppointment.start_time,
-          reason: reason
+          time: fullAppointment.start_time
         });
         console.log(`[CANCEL APPT] Admin cancellation notification sent`);
       } catch (adminError) {

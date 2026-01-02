@@ -242,23 +242,37 @@ Guárdalo para agendar tus próximas citas de forma rápida. Solo ingresa este c
 
 // ============================================================================
 // 12. Admin: Cancelación de Cita (Notificación al dueño)
-// Mensaje de texto libre cuando un cliente cancela
+// Template: admin_cancelacion - Variables: {{1}} Client, {{2}} Phone, {{3}} Service, {{4}} Date, {{5}} Time
 // ============================================================================
-export const sendAdminCancellation = async ({ clientName, serviceName, date, time, reason }) => {
+export const sendAdminCancellation = async ({ clientName, clientPhone, serviceName, date, time }) => {
+    const variables = {
+        "1": clientName,
+        "2": clientPhone || 'No disponible',
+        "3": serviceName,
+        "4": date,
+        "5": time
+    };
+    const sid = process.env.TWILIO_TEMPLATE_ADMIN_CANCEL_SID;
     const adminPhone = process.env.TWILIO_ADMIN_PHONE;
+
+    if (!sid) return { success: false, error: 'Admin Cancel Template SID missing' };
     if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
 
-    const message = `⚠️ *CITA CANCELADA*
+    return await sendTemplate(adminPhone, sid, variables);
+};
 
-Cliente: ${clientName}
-Servicio: ${serviceName}
-Fecha: ${date}
-Hora: ${time}
-${reason ? `Motivo: ${reason}` : ''}
-
-El horario ha quedado disponible.`;
-
-    return await sendTextMessage(adminPhone, message);
+// ============================================================================
+// 13. Cliente Recurrente (Cuando se promueve de Nuevo a Recurrente)
+// Template: copy_recurrente - Variables: {{1}} Name, {{2}} ClientCode
+// ============================================================================
+export const sendRecurringClientWelcome = async ({ phone, name, clientCode }) => {
+    const variables = {
+        "1": name,
+        "2": clientCode
+    };
+    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID;
+    if (!sid) return { success: false, error: 'Recurring Template SID missing' };
+    return await sendTemplate(phone, sid, variables);
 };
 
 // ============================================================================
@@ -306,6 +320,7 @@ export default {
     sendAdminNewAppointment,
     sendAdminFullPayment,
     sendAdminCancellation,
+    sendRecurringClientWelcome,
     sendConfirmationResponse,
     sendCancellationResponse,
     sendWelcomeWithClientCode,
