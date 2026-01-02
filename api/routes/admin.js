@@ -564,57 +564,72 @@ router.post('/clients/:id/promote', authenticateToken, async (req, res, next) =>
 
 // DELETE /api/admin/clients/:id
 router.delete('/clients/:id', authenticateToken, async (req, res, next) => {
+    const client = await db.connect();
     try {
         const { id } = req.params;
         console.log(`[DELETE CLIENT] Starting deletion for client ${id}`);
 
         // Verificar que el cliente existe
-        const clientCheck = await db.query('SELECT id FROM clients WHERE id = $1', [id]);
+        const clientCheck = await client.query('SELECT id, name FROM clients WHERE id = $1', [id]);
         if (clientCheck.rows.length === 0) {
+            client.release();
             return res.status(404).json({ error: 'Cliente no encontrado' });
         }
 
+        // Iniciar transacción
+        await client.query('BEGIN');
+        console.log(`[DELETE CLIENT] Deleting client: ${clientCheck.rows[0].name}`);
+
         // Borrar en orden correcto para evitar FK violations
-        // Primero las tablas que tienen FK a otras tablas intermedias
-        try {
-            await db.query('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id]);
-        } catch (e) { console.log('[DELETE] membership_usage:', e.message); }
+        // Orden: tablas más anidadas primero
 
-        try {
-            await db.query('DELETE FROM checkouts WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
-        } catch (e) { console.log('[DELETE] checkouts via appts:', e.message); }
+        // 1. checkout_products (FK a checkouts)
+        const cp = await client.query('DELETE FROM checkout_products WHERE checkout_id IN (SELECT id FROM checkouts WHERE client_id = $1)', [id]);
+        console.log(`[DELETE] checkout_products: ${cp.rowCount} rows`);
 
-        try {
-            await db.query('DELETE FROM calendar_mappings WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
-        } catch (e) { console.log('[DELETE] calendar_mappings:', e.message); }
+        // 2. membership_usage (FK a client_memberships y puede tener appointment_id)
+        const mu = await client.query('DELETE FROM membership_usage WHERE membership_id IN (SELECT id FROM client_memberships WHERE client_id = $1)', [id]);
+        console.log(`[DELETE] membership_usage: ${mu.rowCount} rows`);
 
-        // Ahora las tablas con FK directo a clients
-        try {
-            await db.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
-            console.log('[DELETE] client_memberships: OK');
-        } catch (e) { console.log('[DELETE] client_memberships:', e.message); }
+        // 3. checkouts (FK a appointments y clients) - eliminar ANTES de appointments
+        const co = await client.query('DELETE FROM checkouts WHERE client_id = $1', [id]);
+        console.log(`[DELETE] checkouts: ${co.rowCount} rows`);
 
+        // 4. calendar_mappings (FK a appointments) - tiene ON DELETE CASCADE pero por si acaso
         try {
-            await db.query('DELETE FROM appointments WHERE client_id = $1', [id]);
-            console.log('[DELETE] appointments: OK');
-        } catch (e) { console.log('[DELETE] appointments:', e.message); }
+            const cm = await client.query('DELETE FROM calendar_mappings WHERE appointment_id IN (SELECT id FROM appointments WHERE client_id = $1)', [id]);
+            console.log(`[DELETE] calendar_mappings: ${cm.rowCount} rows`);
+        } catch (e) {
+            // Tabla puede no existir
+            console.log('[DELETE] calendar_mappings: table may not exist');
+        }
 
-        try {
-            await db.query('DELETE FROM transactions WHERE client_id = $1', [id]);
-        } catch (e) { console.log('[DELETE] transactions:', e.message); }
+        // 5. transactions (FK a clients y checkouts)
+        const tr = await client.query('DELETE FROM transactions WHERE client_id = $1', [id]);
+        console.log(`[DELETE] transactions: ${tr.rowCount} rows`);
 
-        try {
-            await db.query('DELETE FROM checkouts WHERE client_id = $1', [id]);
-        } catch (e) { console.log('[DELETE] checkouts direct:', e.message); }
+        // 6. appointments (FK a clients)
+        const ap = await client.query('DELETE FROM appointments WHERE client_id = $1', [id]);
+        console.log(`[DELETE] appointments: ${ap.rowCount} rows`);
 
-        // Finalmente borrar el cliente
-        await db.query('DELETE FROM clients WHERE id = $1', [id]);
+        // 7. client_memberships (FK a clients)
+        const cmem = await client.query('DELETE FROM client_memberships WHERE client_id = $1', [id]);
+        console.log(`[DELETE] client_memberships: ${cmem.rowCount} rows`);
+
+        // 8. Finalmente borrar el cliente
+        await client.query('DELETE FROM clients WHERE id = $1', [id]);
         console.log(`[DELETE CLIENT] Successfully deleted client ${id}`);
+
+        // Confirmar transacción
+        await client.query('COMMIT');
+        client.release();
 
         res.json({ success: true, message: 'Cliente eliminado correctamente' });
 
     } catch (error) {
-        console.error('[DELETE CLIENT] Final error:', error.message);
+        await client.query('ROLLBACK');
+        client.release();
+        console.error('[DELETE CLIENT] Error:', error.message);
         res.status(400).json({ error: 'No se pudo eliminar el cliente: ' + error.message });
     }
 });
