@@ -71,10 +71,10 @@ export const Checkout = {
           JOIN membership_types mt ON cm.membership_type_id = mt.id
           WHERE cm.client_id = $1 
           AND cm.status = 'active'
-          AND cm.expiration_date >= CURRENT_DATE
+          AND (cm.expiration_date IS NULL OR cm.expiration_date >= CURRENT_DATE)
           AND (cm.total_services - cm.used_services) > 0
           AND $2 = ANY(mt.applicable_services)
-          ORDER BY cm.expiration_date ASC
+          ORDER BY cm.expiration_date ASC NULLS LAST
           LIMIT 1
         `, [client_id, serviceId]);
 

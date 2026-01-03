@@ -172,8 +172,8 @@ export const Client = {
       JOIN membership_types mt ON cm.membership_type_id = mt.id
       WHERE cm.client_id = $1
         AND cm.status = 'active'
-        AND cm.expiration_date >= CURRENT_DATE
-      ORDER BY cm.expiration_date ASC
+        AND (cm.expiration_date IS NULL OR cm.expiration_date >= CURRENT_DATE)
+      ORDER BY cm.expiration_date ASC NULLS LAST
     `;
     const result = await query(sql, [clientId]);
     return result.rows;

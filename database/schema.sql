@@ -420,4 +420,4 @@ FROM client_memberships cm
 JOIN clients c ON cm.client_id = c.id
 JOIN membership_types mt ON cm.membership_type_id = mt.id
 WHERE cm.status = 'active'
-AND cm.expiration_date >= CURRENT_DATE;
+AND (cm.expiration_date IS NULL OR cm.expiration_date >= CURRENT_DATE);

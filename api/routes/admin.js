@@ -212,7 +212,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 
         const activeMemberships = await db.query(
             `SELECT COUNT(*) as count FROM client_memberships 
-             WHERE status = 'active' AND expiration_date >= CURRENT_DATE`
+             WHERE status = 'active' AND (expiration_date IS NULL OR expiration_date >= CURRENT_DATE)`
         );
 
         const totalClients = await db.query('SELECT COUNT(*) as count FROM clients');
@@ -324,8 +324,8 @@ router.get('/birthdays', authenticateToken, async (req, res, next) => {
 // GET /api/admin/clients
 router.get('/clients', authenticateToken, async (req, res, next) => {
     try {
-        // Maintenance: Expire memberships and downgrade clients
-        await db.query(`UPDATE client_memberships SET status = 'expired' WHERE status = 'active' AND expiration_date < CURRENT_DATE`);
+        // Maintenance: Expire memberships and downgrade clients (solo las que tienen fecha de vencimiento)
+        await db.query(`UPDATE client_memberships SET status = 'expired' WHERE status = 'active' AND expiration_date IS NOT NULL AND expiration_date < CURRENT_DATE`);
         // Downgrade clients with no active membership to 'Recurrente' (ID 2) if they are currently Membership Types (3,4,5)
         await db.query(`
             UPDATE clients 
@@ -1443,19 +1443,18 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
 
         // Execute in transaction
         const result = await transaction(async (client) => {
-            // Create membership
+            // Create membership (sin fecha de vencimiento - expiran al usar todos los servicios)
             const res = await client.query(
                 `INSERT INTO client_memberships 
                  (client_id, membership_type_id, status, total_services, used_services,
                   purchase_date, activation_date, expiration_date, payment_method, payment_amount, folio_number, uuid)
-                 VALUES ($1, $2, 'active', $3, 0, $4, $4, $5, $6, $7, $8, gen_random_uuid())
+                 VALUES ($1, $2, 'active', $3, 0, $4, $4, NULL, $5, $6, $7, gen_random_uuid())
                  RETURNING *, (SELECT name FROM membership_types WHERE id = $2) as type_name`,
                 [
                     client_id,
                     membership_type_id,
                     membershipType.total_services,
                     purchaseDate.toISOString().split('T')[0],
-                    expirationDate.toISOString().split('T')[0],
                     dbPaymentMethod,
                     membershipType.price,
                     folio_number
@@ -2531,7 +2530,7 @@ router.get('/reports/membership-roi', authenticateToken, async (req, res, next) 
                 cm.expiration_date,
                 cm.status,
                 CASE
-                    WHEN cm.status = 'active' AND cm.expiration_date < CURRENT_DATE THEN 'expired'
+                    WHEN cm.status = 'active' AND cm.expiration_date IS NOT NULL AND cm.expiration_date < CURRENT_DATE THEN 'expired'
                     ELSE cm.status
                 END as actual_status,
 
