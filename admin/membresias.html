@@ -205,8 +205,8 @@
                 <div class="stat-card">
                     <div class="stat-icon">👑</div>
                     <div class="stat-content">
-                        <span class="stat-value" id="stat-lifetime">0</span>
-                        <span class="stat-label">Lifetime (Black)</span>
+                        <span class="stat-value" id="stat-black">0</span>
+                        <span class="stat-label">Black Card</span>
                     </div>
                 </div>
             </section>
@@ -289,10 +289,10 @@
                     .reduce((sum, m) => sum + parseFloat(m.type_price || 0), 0);
                 document.getElementById('stat-revenue').textContent = formatCurrency(monthlyRevenue);
 
-                const lifetime = allMemberships.filter(m =>
+                const blackCards = allMemberships.filter(m =>
                     m.status === 'active' && m.type_name === 'black'
                 ).length;
-                document.getElementById('stat-lifetime').textContent = lifetime;
+                document.getElementById('stat-black').textContent = blackCards;
 
                 applyFilters();
 
@@ -372,7 +372,7 @@
                     field: 'expiration_date',
                     label: 'Vencimiento',
                     format: (value, row) => {
-                        if (!value) return '<span class="text-success">Lifetime</span>';
+                        if (!value) return '<span class="text-success">Sin vigencia</span>';
 
                         const date = new Date(value);
                         const today = new Date();
@@ -755,7 +755,7 @@
             const typeName = option.textContent.split(' - ')[0];
 
             const start = new Date(startDate);
-            let endDate = 'Sin vencimiento (Lifetime)';
+            let endDate = 'Sin vigencia';
 
             if (typeName.toLowerCase() !== 'black') {
                 const end = new Date(start);
@@ -906,7 +906,7 @@
                         <p><strong>Folio:</strong> ${membership.folio_number || 'N/A'}</p>
                         <p><strong>Precio:</strong> ${formatCurrency(membership.type_price)}</p>
                         <p><strong>Fecha de Inicio:</strong> ${formatDate(membership.start_date)}</p>
-                        <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vencimiento (Lifetime)'}</p>
+                        <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vigencia'}</p>
                         <p><strong>Servicios Restantes:</strong> ${membership.type_name === 'black' ? 'Ilimitados' : `${membership.remaining_services || 0}`}</p>
                         <p><strong>Estado:</strong> 
                             ${membership.status === 'active'
