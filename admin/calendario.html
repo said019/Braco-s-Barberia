@@ -229,17 +229,30 @@
         let allClients = [];
         let allServices = [];
 
-        // Colores por servicio/estilista
+        // Colores por servicio/estilista y tipo de cliente
         // Miguel (Rojo): Dúo, Corte de cabello, Barba, Prótesis capilar
         // Bárbara (Azul marino): TIC, Mascarillas, Manicura, Pedicura
         // Golden Card (Morado), Black Card (Negro)
-        function getServiceColor(serviceName) {
+        function getAppointmentColor(serviceName, clientColor) {
             const name = serviceName?.toLowerCase() || '';
 
-            // Black Card - Negro
+            // Si el cliente es Golden Card o Black Card, usar color especial
+            if (clientColor) {
+                const color = clientColor.toLowerCase();
+                // Golden Card - Morado (color en BD es #FFD700 dorado, pero queremos morado)
+                if (color === '#ffd700' || color.includes('ffd700')) {
+                    return '#8B5CF6'; // Morado
+                }
+                // Black Card - Negro
+                if (color === '#1a1a1a' || color.includes('1a1a1a')) {
+                    return '#1a1a1a';
+                }
+            }
+
+            // Black Card por nombre de servicio - Negro
             if (name.includes('black')) return '#1a1a1a';
 
-            // Golden Card - Morado
+            // Golden Card por nombre de servicio - Morado
             if (name.includes('golden')) return '#8B5CF6';
 
             // Bárbara (Azul marino) - TIC, mascarillas, manicura, pedicura
@@ -260,6 +273,11 @@
 
             // Default - Dorado
             return '#C4A35A';
+        }
+        
+        // Alias para compatibilidad
+        function getServiceColor(serviceName) {
+            return getAppointmentColor(serviceName, null);
         }
 
         // Initialize
@@ -403,7 +421,7 @@
                                 <div class="calendar-appointment ${apt.status}"
                                      onclick="viewAppointmentDetail(${apt.id})"
                                      title="${apt.start_time.slice(0, 5)} - ${apt.client_name} - ${apt.service_name}"
-                                     style="background-color: ${getServiceColor(apt.service_name)}; border-left: 3px solid ${getServiceColor(apt.service_name)};">
+                                     style="background-color: ${getAppointmentColor(apt.service_name, apt.client_color)}; border-left: 3px solid ${getAppointmentColor(apt.service_name, apt.client_color)};">
                                     ${apt.start_time.slice(0, 5)} ${apt.client_name}
                                 </div>
                             `).join('')}
@@ -490,7 +508,7 @@
                         gridHTML += `
                             <div class="gcal-appointment ${apt.status}"
                                  onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                                 style="top: ${top}px; height: ${Math.max(height, 30)}px; background-color: ${getServiceColor(apt.service_name)};">
+                                 style="top: ${top}px; height: ${Math.max(height, 30)}px; background-color: ${getAppointmentColor(apt.service_name, apt.client_color)};">
                                 <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)}</span>
                                 <span class="gcal-appointment-client">${apt.client_name}</span>
                                 <span class="gcal-appointment-service">${apt.service_name}</span>
@@ -559,7 +577,7 @@
                     gridHTML += `
                         <div class="gcal-appointment ${apt.status}"
                              onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                             style="top: ${top}px; height: ${Math.max(height, 40)}px; background-color: ${getServiceColor(apt.service_name)};">
+                             style="top: ${top}px; height: ${Math.max(height, 40)}px; background-color: ${getAppointmentColor(apt.service_name, apt.client_color)};">
                             <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)} - ${apt.end_time.slice(0, 5)}</span>
                             <span class="gcal-appointment-client">${apt.client_name}</span>
                             <span class="gcal-appointment-service">${apt.service_name}</span>
