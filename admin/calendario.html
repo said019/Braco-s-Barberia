@@ -892,10 +892,73 @@
 
             const footer = `
                 <button class="btn btn-secondary" onclick="window.newAppointmentModal.close()">Cancelar</button>
-                <button class="btn btn-primary" onclick="createNewAppointment()">Crear Cita</button>
+                <button class="btn btn-primary" onclick="confirmNewAppointment()">Crear Cita</button>
             `;
 
             window.newAppointmentModal = showModal('newAppointmentModal', 'Nueva Cita', content, footer);
+        }
+
+        // Confirm before creating - ask about notifications
+        function confirmNewAppointment() {
+            const clientInputValue = document.getElementById('appointment-client').value;
+            const serviceId = document.getElementById('appointment-service').value;
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+
+            // Validar campos
+            const client = allClients.find(c => `${c.name} - ${formatPhone(c.phone)}` === clientInputValue);
+            if (!client) {
+                showToast('Por favor selecciona un cliente válido de la lista', 'warning');
+                return;
+            }
+
+            if (!serviceId || !date || !time) {
+                showToast('Por favor completa todos los campos requeridos', 'error');
+                return;
+            }
+
+            // Obtener nombre del servicio
+            const serviceSelect = document.getElementById('appointment-service');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].text.split(' - ')[0];
+
+            // Formatear fecha para mostrar
+            const dateObj = new Date(date + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+
+            const confirmContent = `
+                <div style="text-align: center; padding: 1rem 0;">
+                    <i class="fas fa-calendar-check" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem; color: var(--cream);">Confirmar Cita</h3>
+                    <p style="color: var(--cream); margin-bottom: 0.5rem;"><strong>${client.name}</strong></p>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">${serviceName}</p>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${formattedDate} a las ${time}</p>
+                    
+                    <div style="background: rgba(196, 163, 90, 0.1); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p style="color: var(--cream); margin-bottom: 0.75rem; font-weight: 500;">
+                            <i class="fas fa-bell"></i> ¿Enviar notificaciones al cliente?
+                        </p>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="send-whatsapp-notification" checked style="width: 18px; height: 18px; accent-color: var(--gold);">
+                            <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream);">
+                            <input type="checkbox" id="send-email-notification" checked style="width: 18px; height: 18px; accent-color: var(--gold);">
+                            <i class="fas fa-envelope" style="color: #EA4335;"></i> Email
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            const confirmFooter = `
+                <button class="btn btn-secondary" onclick="window.confirmModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="createNewAppointment()">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            `;
+
+            window.confirmModal = showModal('confirmAppointmentModal', '', confirmContent, confirmFooter);
         }
 
         // Create new appointment
@@ -915,6 +978,10 @@
                 const clientId = client.id;
                 const notes = document.getElementById('appointment-notes').value;
 
+                // Obtener preferencias de notificación del modal de confirmación
+                const sendWhatsApp = document.getElementById('send-whatsapp-notification')?.checked ?? true;
+                const sendEmail = document.getElementById('send-email-notification')?.checked ?? true;
+
                 if (!clientId || !serviceId || !date || !time) {
                     showToast('Por favor completa todos los campos requeridos', 'error');
                     return;
@@ -925,12 +992,18 @@
                     service_id: parseInt(serviceId),
                     appointment_date: date,
                     start_time: time,
-                    notes: notes
+                    notes: notes,
+                    send_whatsapp: sendWhatsApp,
+                    send_email: sendEmail
                 };
 
                 await AdminAPI.createAppointment(appointmentData);
                 showToast('Cita creada exitosamente', 'success');
-                window.newAppointmentModal.close();
+                
+                // Cerrar ambos modales
+                if (window.confirmModal) window.confirmModal.close();
+                if (window.newAppointmentModal) window.newAppointmentModal.close();
+                
                 loadAppointments();
 
             } catch (error) {

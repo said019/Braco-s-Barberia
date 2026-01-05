@@ -736,7 +736,7 @@ router.get('/appointments/:id', authenticateToken, async (req, res, next) => {
 // POST /api/admin/appointments - Crear nueva cita
 router.post('/appointments', authenticateToken, async (req, res, next) => {
     try {
-        const { client_id, service_id, appointment_date, start_time, notes } = req.body;
+        const { client_id, service_id, appointment_date, start_time, notes, send_whatsapp = true, send_email = true } = req.body;
         let { end_time } = req.body;
 
         // Validaciones
@@ -847,8 +847,8 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
 
         const appointment = result.rows[0];
 
-        // Enviar email de confirmación si el cliente tiene email
-        if (client.email) {
+        // Enviar email de confirmación si el cliente tiene email Y está habilitado
+        if (send_email && client.email) {
             try {
                 const dateObj = new Date(appointment_date + 'T12:00:00');
                 const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -875,12 +875,14 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             } catch (emailError) {
                 console.error('[ADMIN] Error sending confirmation email:', emailError);
             }
+        } else if (!send_email) {
+            console.log(`[ADMIN] Email notification disabled by admin for this appointment`);
         } else {
             console.warn(`[ADMIN] No email for client ${client.name}, skipping confirmation.`);
         }
 
-        // Enviar WhatsApp de confirmación si el cliente tiene teléfono y WhatsApp habilitado
-        if (client.phone && client.whatsapp_enabled !== false) {
+        // Enviar WhatsApp de confirmación si está habilitado Y el cliente tiene teléfono
+        if (send_whatsapp && client.phone && client.whatsapp_enabled !== false) {
             try {
                 const dateObj = new Date(appointment_date + 'T12:00:00');
                 const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -916,6 +918,8 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             } catch (whatsappError) {
                 console.error('[ADMIN] Error sending WhatsApp:', whatsappError);
             }
+        } else if (!send_whatsapp) {
+            console.log(`[ADMIN] WhatsApp notification disabled by admin for this appointment`);
         } else {
             console.warn(`[ADMIN] No phone or WhatsApp disabled for ${client.name}, skipping WhatsApp.`);
         }
