@@ -441,11 +441,8 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
             return res.status(400).json({ error: 'Nombre y teléfono requeridos' });
         }
 
-        // Verificar teléfono único
-        const existing = await db.query('SELECT id FROM clients WHERE phone = $1', [phone]);
-        if (existing.rows.length > 0) {
-            return res.status(409).json({ error: 'Ya existe un cliente con ese teléfono' });
-        }
+        // Ya no verificamos teléfono único - permite múltiples clientes con el mismo número
+        // (ej: padre e hijo compartiendo teléfono)
 
         const result = await db.query(
             `INSERT INTO clients (name, phone, email, birthdate, client_type_id, notes)
