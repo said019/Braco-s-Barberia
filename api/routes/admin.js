@@ -898,6 +898,18 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
 
                 if (whatsappRes.success) {
                     console.log(`[ADMIN] WhatsApp sent to ${client.name}: ${whatsappRes.id}`);
+                    
+                    // Enviar políticas después de la confirmación
+                    setTimeout(async () => {
+                        try {
+                            const policiesRes = await whatsappService.sendPolicies(client.phone);
+                            if (policiesRes.success) {
+                                console.log(`[ADMIN] Policies WhatsApp SENT: ${policiesRes.id}`);
+                            }
+                        } catch (e) {
+                            console.error('[ADMIN] Error sending policies:', e.message);
+                        }
+                    }, 2000);
                 } else {
                     console.error(`[ADMIN] WhatsApp failed: ${whatsappRes.error}`);
                 }
@@ -1017,6 +1029,17 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
                         code: prevAppointment.checkout_code || '----'
                     });
                     console.log(`[APPROVE APPT] WhatsApp confirmación enviado: ${whatsappRes.success}`);
+                    
+                    // Enviar políticas después de la confirmación
+                    if (whatsappRes.success) {
+                        setTimeout(async () => {
+                            try {
+                                await whatsappService.sendPolicies(prevAppointment.client_phone);
+                            } catch (e) {
+                                console.error('[APPROVE APPT] Error sending policies:', e.message);
+                            }
+                        }, 2000);
+                    }
                 } catch (whatsappError) {
                     console.error('[APPROVE APPT] Error WhatsApp:', whatsappError);
                 }
@@ -1147,6 +1170,17 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
                     code: prevAppointment.checkout_code || '----'
                 });
                 whatsappSent = !!whatsappRes.success;
+                
+                // Enviar políticas después de la confirmación
+                if (whatsappRes.success) {
+                    setTimeout(async () => {
+                        try {
+                            await whatsappService.sendPolicies(prevAppointment.client_phone);
+                        } catch (e) {
+                            console.error('[RESCHEDULE] Error sending policies:', e.message);
+                        }
+                    }, 2000);
+                }
             } catch (whatsappError) {
                 console.error('[RESCHEDULE] Error sending WhatsApp:', whatsappError);
             }
@@ -1211,6 +1245,16 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
 
         if (whatsappRes.success) {
             console.log(`[ADMIN] WhatsApp reenviado a ${appointment.client_name}: ${whatsappRes.id}`);
+            
+            // Enviar políticas después de la confirmación
+            setTimeout(async () => {
+                try {
+                    await whatsappService.sendPolicies(appointment.client_phone);
+                } catch (e) {
+                    console.error('[ADMIN] Error sending policies:', e.message);
+                }
+            }, 2000);
+            
             res.json({
                 success: true,
                 message: `WhatsApp enviado a ${appointment.client_name}`,

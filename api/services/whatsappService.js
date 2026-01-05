@@ -276,6 +276,23 @@ export const sendRecurringClientWelcome = async ({ phone, name, clientCode }) =>
 };
 
 // ============================================================================
+// 14. Políticas de Cita (Se envía después de cada confirmación)
+// Template: copy_politicas - Sin variables (mensaje fijo)
+// ============================================================================
+export const sendPolicies = async (phone) => {
+    const sid = process.env.TWILIO_TEMPLATE_POLICIES_SID || 'HX8c65f1d6db173c8fcd816915228461d6';
+    return await sendTemplate(phone, sid, {});
+};
+
+// Enviar también al admin
+export const sendAdminPolicies = async () => {
+    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
+    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
+    const sid = process.env.TWILIO_TEMPLATE_POLICIES_SID || 'HX8c65f1d6db173c8fcd816915228461d6';
+    return await sendTemplate(adminPhone, sid, {});
+};
+
+// ============================================================================
 // Texto Libre (Solo funciona dentro de ventana de 24h)
 // ============================================================================
 export const sendTextMessage = async (phone, message) => {
@@ -324,5 +341,7 @@ export default {
     sendConfirmationResponse,
     sendCancellationResponse,
     sendWelcomeWithClientCode,
-    sendTextMessage
+    sendTextMessage,
+    sendPolicies,
+    sendAdminPolicies
 };

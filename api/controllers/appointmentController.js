@@ -226,6 +226,18 @@ export const appointmentController = {
 
           if (whatsappRes.success) {
             console.log(`[CREATE APPT] WhatsApp SENT: ${whatsappRes.id}`);
+            
+            // Enviar políticas después de la confirmación
+            setTimeout(async () => {
+              try {
+                const policiesRes = await whatsappService.sendPolicies(client.phone);
+                if (policiesRes.success) {
+                  console.log(`[CREATE APPT] Policies WhatsApp SENT: ${policiesRes.id}`);
+                }
+              } catch (e) {
+                console.error('[CREATE APPT] Error sending policies:', e.message);
+              }
+            }, 2000); // Esperar 2 segundos para no saturar
           } else {
             console.error(`[CREATE APPT] WhatsApp FAILED: ${whatsappRes.error}`);
           }

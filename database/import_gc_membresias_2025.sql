@@ -246,7 +246,7 @@ appointments_ins AS (
   WHERE NOT EXISTS (
     SELECT 1
     FROM appointments a
-    WHERE a.client_id = cm.client_id
+    WHERE a.client_id = cm.client_id∫
       AND a.service_id = uwt.service_id
       AND a.appointment_date = uwt.used_date
       AND a.start_time = uwt.start_time
