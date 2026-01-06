@@ -635,13 +635,15 @@ router.post('/clients/:id/resend-code', authenticateToken, async (req, res, next
 
         const notifications = { whatsapp: false, email: false };
 
-        // Enviar WhatsApp
+        // Enviar WhatsApp usando template aprobado
         if (client.phone) {
             try {
-                const message = `Hola ${client.name}, tu código de cliente en Braco's Barbería es: *${client.client_code}*\n\nÚsalo para agendar tus citas más rápido en:\nhttps://braco-s-barberia-production.up.railway.app/agendar.html`;
-
                 const whatsappService = (await import('../services/whatsappService.js')).default;
-                const result = await whatsappService.sendTextMessage(client.phone, message);
+                const result = await whatsappService.sendRecurringClientWelcome({
+                    phone: client.phone,
+                    name: client.name,
+                    clientCode: client.client_code
+                });
                 notifications.whatsapp = result.success;
                 console.log(`[RESEND CODE] WhatsApp enviado a ${client.phone}: ${result.success}`);
             } catch (whatsappError) {
