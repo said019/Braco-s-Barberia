@@ -217,21 +217,11 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 
         const totalClients = await db.query('SELECT COUNT(*) as count FROM clients');
 
-        // Upcoming appointments (confirmed today)
-        const upcomingAppointments = await db.query(
-            `SELECT a.*, c.name as client_name, c.phone as client_phone,
-                    ct.color as client_color, s.name as service_name
-             FROM appointments a
-             JOIN clients c ON a.client_id = c.id
-             JOIN client_types ct ON c.client_type_id = ct.id
-             JOIN services s ON a.service_id = s.id
-             WHERE a.appointment_date = $1 
-             AND a.status IN ('confirmed', 'in_progress')
-             ORDER BY a.start_time LIMIT 10`,
-            [today]
-        );
+        // Upcoming appointments (confirmed today) - ELIMINADO del frontend por petición, pero mantenemos query base o lo reducimos
+        // El usuario pidió: "Citas por confirmar", "Recordatorios 24h", "Recordatorios 2h"
 
-        // Pending confirmation (scheduled but not confirmed - next 48h)
+        // 1. Citas por Confirmar (Pendientes futuras, excluyendo próximas 24h/2h para evitar duplicados)
+        // Definición: Status 'scheduled', Fecha > Mañana (Las de mañana van en Recordatorios 24h)
         const pendingConfirmation = await db.query(
             `SELECT a.*, c.name as client_name, c.phone as client_phone,
                     ct.color as client_color, s.name as service_name
@@ -240,26 +230,12 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN client_types ct ON c.client_type_id = ct.id
              JOIN services s ON a.service_id = s.id
              WHERE a.status = 'scheduled'
-             AND a.appointment_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '2 days'
+             AND a.appointment_date > CURRENT_DATE + INTERVAL '1 day'
              ORDER BY a.appointment_date, a.start_time LIMIT 10`
         );
 
-        // Reminders 2h (appointments in next 2 hours that need reminder)
-        const reminders2h = await db.query(
-            `SELECT a.*, c.name as client_name, c.phone as client_phone,
-                    ct.color as client_color, s.name as service_name
-             FROM appointments a
-             JOIN clients c ON a.client_id = c.id
-             JOIN client_types ct ON c.client_type_id = ct.id
-             JOIN services s ON a.service_id = s.id
-             WHERE a.appointment_date = $1
-             AND a.status IN ('scheduled', 'confirmed')
-             AND a.start_time BETWEEN LOCALTIME AND LOCALTIME + INTERVAL '2 hours'
-             ORDER BY a.start_time LIMIT 10`,
-            [today]
-        );
-
-        // Reminders 24h (appointments tomorrow)
+        // 2. Recordatorios 24h (Citas para MAÑANA)
+        // Mostrar etiqueta: Enviado o Pendiente (usa campo reminder_sent)
         const reminders24h = await db.query(
             `SELECT a.*, c.name as client_name, c.phone as client_phone,
                     ct.color as client_color, s.name as service_name
@@ -269,7 +245,24 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN services s ON a.service_id = s.id
              WHERE a.appointment_date = CURRENT_DATE + INTERVAL '1 day'
              AND a.status IN ('scheduled', 'confirmed')
-             ORDER BY a.start_time LIMIT 10`
+             ORDER BY a.start_time ASC`
+        );
+
+        // 3. Recordatorios 2h (Citas HOY próximas)
+        // Mostrar etiqueta: Confirmada o Pendiente (usa campo status)
+        const reminders2h = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    ct.color as client_color, s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN client_types ct ON c.client_type_id = ct.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.appointment_date = $1
+             AND a.status IN ('scheduled', 'confirmed')
+             AND a.start_time >= LOCALTIME  
+             AND a.start_time <= LOCALTIME + INTERVAL '4 hours'
+             ORDER BY a.start_time ASC`,
+            [today]
         );
 
         // Expiring memberships
@@ -284,7 +277,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              ORDER BY cm.expiration_date LIMIT 5`
         );
 
-        // Recent transactions (Global last 10, not just today) - LEFT JOIN para incluir ventas sin cliente
+        // Recent transactions
         const recentTransactions = await db.query(
             `SELECT t.*, COALESCE(c.name, 'Público General') as client_name, t.payment_method
              FROM transactions t
@@ -311,7 +304,8 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
                 active_memberships: parseInt(activeMemberships.rows[0].count),
                 total_clients: parseInt(totalClients.rows[0].count)
             },
-            upcoming_appointments: upcomingAppointments.rows,
+            // upcoming_appointments eliminado o vacío, ya no se usa
+            upcoming_appointments: [],
             pending_confirmation: pendingConfirmation.rows,
             reminders_2h: reminders2h.rows,
             reminders_24h: reminders24h.rows,

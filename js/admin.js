@@ -187,14 +187,28 @@ function formatCurrency(amount) {
 }
 
 function formatDate(date) {
-    // Evitar conversión de timezone - si es solo fecha (YYYY-MM-DD), agregarle T12:00:00
+    if (!date) return '-';
+
+    // Si ya es un objeto Date, obtener YYYY-MM-DD en UTC (asumiendo que viene de BD DATE)
+    // o simplemente convertirlo a string ISO para normalizar
     let dateStr = date;
-    if (typeof date === 'string' && date.length === 10) {
-        dateStr = date + 'T12:00:00';
-    } else if (typeof date === 'string' && date.includes('T')) {
-        // Si ya tiene T, extraer solo la fecha y agregar T12:00:00
-        dateStr = date.split('T')[0] + 'T12:00:00';
+    if (date instanceof Date) {
+        // Para tipos DATE de Postgres, el driver suele devolverlo a las 00:00:00 UTC
+        // Al usar toISOString() obtenemos "YYYY-MM-DD..."
+        dateStr = date.toISOString().split('T')[0];
     }
+
+    // Asegurar formato YYYY-MM-DD y agregar mediodía para evitar saltos
+    if (typeof dateStr === 'string') {
+        const clean = dateStr.split('T')[0];
+        const localDate = new Date(clean + 'T12:00:00');
+        return localDate.toLocaleDateString('es-MX', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
     return new Date(dateStr).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'long',
@@ -203,12 +217,19 @@ function formatDate(date) {
 }
 
 function formatDateTime(datetime) {
-    // Evitar conversión de timezone
-    let dateStr = datetime;
-    if (typeof datetime === 'string' && datetime.length === 10) {
-        dateStr = datetime + 'T12:00:00';
+    if (!datetime) return '-';
+
+    let d = datetime;
+    if (typeof datetime === 'string') {
+        // Si no tiene T, asumimos que es fecha pura y fijamos mediodía
+        if (!datetime.includes('T')) {
+            d = new Date(datetime + 'T12:00:00');
+        } else {
+            d = new Date(datetime);
+        }
     }
-    return new Date(dateStr).toLocaleDateString('es-MX', {
+
+    return new Date(d).toLocaleString('es-MX', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

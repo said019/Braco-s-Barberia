@@ -158,141 +158,27 @@
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <!-- Próximas Citas (Confirmadas) -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h3 class="card-title"><i class="fas fa-check-circle"
-                                        style="color: var(--success);"></i> Próximas Citas</h3>
-                                <p class="card-subtitle">Citas confirmadas para hoy</p>
-                            </div>
-                            <a href="citas.html?status=pending" class="btn btn-secondary btn-sm">Ver Pendientes</a>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="data-table" id="pending-appointments">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Recordatorios 24h (Para confirmar / reprogramar) -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h3 class="card-title" style="color: #25D366;">Recordatorios 24h</h3>
-                                <p class="card-subtitle">Citas entre 23h y 25h (revisar / reprogramar)</p>
-                            </div>
-                            <a href="calendario.html" class="btn btn-secondary btn-sm">Abrir Calendario</a>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="data-table" id="reminders-24h">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha/Hora</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Recordatorios 2h (Citas próximas) -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h3 class="card-title" style="color: #FF6B6B;">Recordatorios 2h</h3>
-                                <p class="card-subtitle">Citas en las próximas 2-3 horas</p>
-                            </div>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="data-table" id="reminders-2h">
-                                <thead>
-                                    <tr>
-                                        <th>Hora</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
                     <!-- Citas por Confirmar -->
                     <div class="card">
                         <div class="card-header">
                             <div>
                                 <h3 class="card-title"><i class="fas fa-clock" style="color: var(--warning);"></i> Citas
                                     por Confirmar</h3>
-                                <p class="card-subtitle">Pendientes próximas 48h</p>
+                                <p class="card-subtitle">Pendientes (Futuras)</p>
                             </div>
                             <a href="citas.html?status=scheduled" class="btn btn-secondary btn-sm">Ver Todas</a>
                         </div>
-
                         <div class="table-container">
                             <table class="data-table" id="pending-confirmation">
                                 <thead>
                                     <tr>
-                                        <th>Fecha/Hora</th>
+                                        <th>Fecha</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
-                                        <th>Acción</th>
+                                        <th>Confirmar</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recordatorios -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                    <!-- Recordatorios 2h -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h3 class="card-title"><i class="fas fa-bell" style="color: var(--error);"></i>
-                                    Recordatorios 2h</h3>
-                                <p class="card-subtitle">Citas en las próximas 2 horas</p>
-                            </div>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="data-table" id="reminders-2h">
-                                <thead>
-                                    <tr>
-                                        <th>Hora</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -301,12 +187,10 @@
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title"><i class="fas fa-calendar-day" style="color: #2196F3;"></i>
-                                    Recordatorios 24h</h3>
-                                <p class="card-subtitle">Citas para mañana</p>
+                                <h3 class="card-title" style="color: #25D366;">Recordatorios 24h</h3>
+                                <p class="card-subtitle">Citas para Mañana</p>
                             </div>
                         </div>
-
                         <div class="table-container">
                             <table class="data-table" id="reminders-24h">
                                 <thead>
@@ -314,18 +198,37 @@
                                         <th>Hora</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
-                                        <th>Acción</th>
+                                        <th>WhatsApp</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Se llena con JavaScript -->
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
-                </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <!-- Recordatorios 2h -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title" style="color: #FF6B6B;">Recordatorios 2h</h3>
+                                <p class="card-subtitle">Citas Próximas (Hoy)</p>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-2h">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>WhatsApp</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Membresías por Vencer -->
                     <div class="card">
                         <div class="card-header">
@@ -547,10 +450,13 @@
                     let daysLeft = 0;
 
                     if (b.next_birthday) {
-                        const dateStr = typeof b.next_birthday === 'string' && b.next_birthday.includes('T')
-                            ? b.next_birthday.split('T')[0]
-                            : b.next_birthday;
+                        let d = b.next_birthday;
+                        // Si es un objeto Date (driver PG), convertir a string ISO para extraer solo la fecha
+                        if (d instanceof Date) {
+                            d = d.toISOString().split('T')[0];
+                        }
 
+                        const dateStr = typeof d === 'string' ? d.split('T')[0] : d;
                         const nextDate = new Date(dateStr + 'T12:00:00');
                         birthdayDateDisplay = nextDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 
@@ -723,8 +629,14 @@
 
         function formatDateShort(dateStr) {
             if (!dateStr) return '-';
+
+            let d = dateStr;
+            if (d instanceof Date) {
+                d = d.toISOString().split('T')[0];
+            }
+
             // Fix timezone: forzar mediodía para evitar saltos de día por conversión UTC
-            const cleanDate = typeof dateStr === 'string' && dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            const cleanDate = typeof d === 'string' ? d.split('T')[0] : d;
             const date = new Date(cleanDate + 'T12:00:00');
             return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         }
