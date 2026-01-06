@@ -100,7 +100,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
 
         const totalClients = await db.query('SELECT COUNT(*) as count FROM clients');
 
-        // Upcoming appointments
+        // Upcoming appointments (confirmed today)
         const upcomingAppointments = await db.query(
             `SELECT a.*, c.name as client_name, c.phone as client_phone,
                     ct.color as client_color, s.name as service_name
@@ -108,9 +108,51 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN clients c ON a.client_id = c.id
              JOIN client_types ct ON c.client_type_id = ct.id
              JOIN services s ON a.service_id = s.id
-             WHERE a.appointment_date = $1 AND a.status NOT IN ('cancelled', 'completed')
+             WHERE a.appointment_date = $1 
+             AND a.status IN ('confirmed', 'in_progress')
              ORDER BY a.start_time LIMIT 10`,
             [today]
+        );
+
+        // Pending confirmation (scheduled but not confirmed - next 48h)
+        const pendingConfirmation = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    ct.color as client_color, s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN client_types ct ON c.client_type_id = ct.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.status = 'scheduled'
+             AND a.appointment_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '2 days'
+             ORDER BY a.appointment_date, a.start_time LIMIT 10`
+        );
+
+        // Reminders 2h (appointments in next 2 hours that need reminder)
+        const reminders2h = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    ct.color as client_color, s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN client_types ct ON c.client_type_id = ct.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.appointment_date = $1
+             AND a.status IN ('scheduled', 'confirmed')
+             AND a.start_time BETWEEN LOCALTIME AND LOCALTIME + INTERVAL '2 hours'
+             ORDER BY a.start_time LIMIT 10`,
+            [today]
+        );
+
+        // Reminders 24h (appointments tomorrow)
+        const reminders24h = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    ct.color as client_color, s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN client_types ct ON c.client_type_id = ct.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.appointment_date = CURRENT_DATE + INTERVAL '1 day'
+             AND a.status IN ('scheduled', 'confirmed')
+             ORDER BY a.start_time LIMIT 10`
         );
 
         // Expiring memberships
@@ -135,6 +177,18 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
             [today]
         );
 
+        // Membership sales today
+        const membershipSales = await db.query(
+            `SELECT cm.*, c.name as client_name, c.phone as client_phone,
+                    mt.name as membership_type, mt.price as membership_price
+             FROM client_memberships cm
+             JOIN clients c ON cm.client_id = c.id
+             JOIN membership_types mt ON cm.membership_type_id = mt.id
+             WHERE DATE(cm.created_at) = $1
+             ORDER BY cm.created_at DESC`,
+            [today]
+        );
+
         res.json({
             stats: {
                 appointments_today: parseInt(appointmentsToday.rows[0].count),
@@ -143,8 +197,12 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
                 total_clients: parseInt(totalClients.rows[0].count)
             },
             upcoming_appointments: upcomingAppointments.rows,
+            pending_confirmation: pendingConfirmation.rows,
+            reminders_2h: reminders2h.rows,
+            reminders_24h: reminders24h.rows,
             expiring_memberships: expiringMemberships.rows,
-            recent_transactions: recentTransactions.rows
+            recent_transactions: recentTransactions.rows,
+            membership_sales: membershipSales.rows
         });
 
     } catch (error) {
@@ -834,10 +892,23 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
+        // Membership sales in date range
+        const membershipSales = await db.query(
+            `SELECT cm.*, c.name as client_name, c.phone as client_phone,
+                    mt.name as membership_type, mt.price as membership_price
+             FROM client_memberships cm
+             JOIN clients c ON cm.client_id = c.id
+             JOIN membership_types mt ON cm.membership_type_id = mt.id
+             WHERE DATE(cm.created_at) BETWEEN $1 AND $2
+             ORDER BY cm.created_at DESC`,
+            [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
+        );
+
         res.json({
             daily_sales: dailySales.rows,
             services_sales: servicesSales.rows,
-            totals: totals.rows[0]
+            totals: totals.rows[0],
+            membership_sales: membershipSales.rows
         });
 
     } catch (error) {

@@ -139,12 +139,13 @@
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <!-- Próximas Citas -->
+                    <!-- Próximas Citas (Confirmadas) -->
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title">Próximas Citas</h3>
-                                <p class="card-subtitle">Citas programadas para hoy</p>
+                                <h3 class="card-title"><i class="fas fa-check-circle"
+                                        style="color: var(--success);"></i> Próximas Citas</h3>
+                                <p class="card-subtitle">Citas confirmadas para hoy</p>
                             </div>
                             <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
                         </div>
@@ -166,11 +167,99 @@
                         </div>
                     </div>
 
+                    <!-- Citas por Confirmar -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-clock" style="color: var(--warning);"></i> Citas
+                                    por Confirmar</h3>
+                                <p class="card-subtitle">Pendientes próximas 48h</p>
+                            </div>
+                            <a href="citas.html?status=scheduled" class="btn btn-secondary btn-sm">Ver Todas</a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="pending-confirmation">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha/Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recordatorios -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <!-- Recordatorios 2h -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-bell" style="color: var(--error);"></i>
+                                    Recordatorios 2h</h3>
+                                <p class="card-subtitle">Citas en las próximas 2 horas</p>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-2h">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recordatorios 24h -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-calendar-day" style="color: #2196F3;"></i>
+                                    Recordatorios 24h</h3>
+                                <p class="card-subtitle">Citas para mañana</p>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-24h">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
                     <!-- Membresías por Vencer -->
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title">Membresías por Vencer</h3>
+                                <h3 class="card-title"><i class="fas fa-crown" style="color: var(--gold);"></i>
+                                    Membresías por Vencer</h3>
                                 <p class="card-subtitle">Próximos 30 días</p>
                             </div>
                             <a href="membresias.html" class="btn btn-secondary btn-sm">Ver Todas</a>
@@ -192,33 +281,33 @@
                             </table>
                         </div>
                     </div>
-                </div>
 
-                <!-- Últimas Transacciones -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <div>
-                            <h3 class="card-title">Últimas Transacciones</h3>
-                            <p class="card-subtitle">Ventas de hoy</p>
+                    <!-- Últimas Transacciones -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-receipt" style="color: var(--success);"></i>
+                                    Últimas Transacciones</h3>
+                                <p class="card-subtitle">Ventas de hoy</p>
+                            </div>
+                            <a href="reportes.html" class="btn btn-secondary btn-sm">Ver Reporte</a>
                         </div>
-                        <a href="reportes.html" class="btn btn-secondary btn-sm">Ver Reporte</a>
-                    </div>
 
-                    <div class="table-container">
-                        <table class="data-table" id="recent-transactions">
-                            <thead>
-                                <tr>
-                                    <th>Hora</th>
-                                    <th>Cliente</th>
-                                    <th>Concepto</th>
-                                    <th>Método</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Se llena con JavaScript -->
-                            </tbody>
-                        </table>
+                        <div class="table-container">
+                            <table class="data-table" id="recent-transactions">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Concepto</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -245,6 +334,9 @@
             year: 'numeric'
         });
 
+        // Número de WhatsApp del negocio (sin el 52)
+        const BUSINESS_PHONE = '5573432027';
+
         // Cargar dashboard
         async function loadDashboard() {
             try {
@@ -259,8 +351,17 @@
                 // Badge del nav
                 document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
 
-                // Próximas citas
+                // Próximas citas (confirmadas)
                 renderUpcomingAppointments(data.upcoming_appointments);
+
+                // Citas por confirmar
+                renderPendingConfirmation(data.pending_confirmation || []);
+
+                // Recordatorios 2h
+                renderReminders2h(data.reminders_2h || []);
+
+                // Recordatorios 24h
+                renderReminders24h(data.reminders_24h || []);
 
                 // Membresías por vencer
                 renderExpiringMemberships(data.expiring_memberships || []);
@@ -275,6 +376,21 @@
             }
         }
 
+        // Función para generar enlace de WhatsApp
+        function getWhatsAppLink(phone, clientName, date, time, serviceName, type = 'confirm') {
+            const cleanPhone = phone.replace(/\D/g, '');
+            const phoneWithCode = cleanPhone.startsWith('52') ? cleanPhone : `52${cleanPhone}`;
+
+            let message = '';
+            if (type === 'confirm') {
+                message = `Hola ${clientName}, te recordamos tu cita en Braco's Barbería:\n\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¿Confirmas tu asistencia?\n\nResponde:\n✅ SÍ para confirmar\n❌ NO para cancelar`;
+            } else if (type === 'reminder') {
+                message = `Hola ${clientName}, este es un recordatorio de tu cita en Braco's:\n\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¡Te esperamos!`;
+            }
+
+            return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
+        }
+
         function renderUpcomingAppointments(appointments) {
             const tbody = document.querySelector('#upcoming-appointments tbody');
 
@@ -282,7 +398,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas programadas para hoy
+                            No hay citas confirmadas para hoy
                         </td>
                     </tr>
                 `;
@@ -304,6 +420,116 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function renderPendingConfirmation(appointments) {
+            const tbody = document.querySelector('#pending-confirmation tbody');
+
+            if (!appointments || appointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay citas pendientes de confirmar
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
+                const aptDate = new Date(apt.appointment_date);
+                const dateStr = aptDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, dateStr, apt.start_time.slice(0, 5), apt.service_name, 'confirm');
+
+                return `
+                    <tr>
+                        <td>
+                            <strong>${dateStr}</strong><br>
+                            <span class="text-muted">${apt.start_time.slice(0, 5)}</span>
+                        </td>
+                        <td>
+                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
+                            ${apt.client_name}
+                        </td>
+                        <td>${apt.service_name}</td>
+                        <td>
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar WhatsApp para confirmar">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderReminders2h(appointments) {
+            const tbody = document.querySelector('#reminders-2h tbody');
+
+            if (!appointments || appointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay citas próximas en 2 horas
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Hoy', apt.start_time.slice(0, 5), apt.service_name, 'reminder');
+
+                return `
+                    <tr>
+                        <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
+                        <td>
+                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
+                            ${apt.client_name}
+                        </td>
+                        <td>${apt.service_name}</td>
+                        <td>
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar recordatorio WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+
+            if (!appointments || appointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
+                            No hay citas para mañana
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Mañana', apt.start_time.slice(0, 5), apt.service_name, 'confirm');
+
+                return `
+                    <tr>
+                        <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
+                        <td>
+                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
+                            ${apt.client_name}
+                        </td>
+                        <td>${apt.service_name}</td>
+                        <td>
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar recordatorio WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function renderExpiringMemberships(memberships) {
@@ -343,7 +569,7 @@
             if (!transactions || transactions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-muted" style="text-align: center; padding: 2rem;">
+                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
                             No hay transacciones hoy
                         </td>
                     </tr>
@@ -356,7 +582,6 @@
                     <td>${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${t.client_name}</td>
                     <td>${t.description}</td>
-                    <td>${getPaymentMethodText(t.payment_method)}</td>
                     <td class="text-gold"><strong>$${parseFloat(t.amount).toLocaleString()}</strong></td>
                 </tr>
             `).join('');
@@ -402,13 +627,32 @@
             document.getElementById('stat-clientes').textContent = '156';
             document.getElementById('nav-badge-citas').textContent = '8';
 
-            // Demo citas
+            // Demo citas confirmadas
             const demoAppointments = [
                 { start_time: '10:00', client_name: 'Carlos Mendoza', client_color: '#C4A35A', service_name: 'Corte Caballero', status: 'confirmed' },
-                { start_time: '11:00', client_name: 'Roberto García', client_color: '#D4B76A', service_name: 'DÚO (Corte + Barba)', status: 'scheduled' },
-                { start_time: '13:00', client_name: 'Miguel Torres', client_color: '#1A1A1A', service_name: 'Ritual de Barba', status: 'scheduled' }
+                { start_time: '11:00', client_name: 'Roberto García', client_color: '#D4B76A', service_name: 'DÚO (Corte + Barba)', status: 'confirmed' }
             ];
             renderUpcomingAppointments(demoAppointments);
+
+            // Demo citas por confirmar
+            const demoPending = [
+                { appointment_date: new Date(), start_time: '14:00', client_name: 'Miguel Torres', client_phone: '5512345678', client_color: '#1A1A1A', service_name: 'Ritual de Barba' },
+                { appointment_date: new Date(Date.now() + 86400000), start_time: '11:00', client_name: 'Juan Pérez', client_phone: '5587654321', client_color: '#C4A35A', service_name: 'Corte Caballero' }
+            ];
+            renderPendingConfirmation(demoPending);
+
+            // Demo recordatorios 2h
+            const demoReminders2h = [
+                { start_time: '14:00', client_name: 'Luis Martínez', client_phone: '5511112222', client_color: '#D4B76A', service_name: 'Corte Niño' }
+            ];
+            renderReminders2h(demoReminders2h);
+
+            // Demo recordatorios 24h
+            const demoReminders24h = [
+                { start_time: '10:00', client_name: 'Fernando López', client_phone: '5533334444', client_color: '#C4A35A', service_name: 'DÚO' },
+                { start_time: '12:00', client_name: 'Andrés Ramírez', client_phone: '5555556666', client_color: '#1A1A1A', service_name: 'Paquete Nupcial' }
+            ];
+            renderReminders24h(demoReminders24h);
 
             // Demo membresías
             const demoMemberships = [
