@@ -267,6 +267,22 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              LIMIT 30`
         );
 
+        // Appointments needing 2h reminder: show all scheduled/confirmed within the next 2-3 hours
+        const reminders2h = await db.query(
+            `SELECT a.id, a.uuid, a.appointment_date, a.start_time, a.end_time, a.status,
+                    a.reminder_2h_sent, a.checkout_code,
+                    c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+                    s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.status IN ('scheduled', 'confirmed')
+               AND (a.appointment_date || ' ' || a.start_time)::timestamp
+                   BETWEEN NOW() AND NOW() + INTERVAL '3 hours'
+             ORDER BY a.appointment_date ASC, a.start_time ASC
+             LIMIT 20`
+        );
+
         res.json({
             stats: {
                 appointments_today: parseInt(appointmentsToday.rows[0].count),
@@ -277,6 +293,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
             upcoming_appointments: upcomingAppointments.rows,
             pending_appointments: pendingAppointments.rows,
             reminders_due_24h: remindersDue.rows,
+            reminders_due_2h: reminders2h.rows,
             recent_transactions: recentTransactions.rows
         });
 

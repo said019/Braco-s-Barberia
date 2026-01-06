@@ -212,6 +212,32 @@
                         </div>
                     </div>
 
+                    <!-- Recordatorios 2h (Citas próximas) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title" style="color: #FF6B6B;">Recordatorios 2h</h3>
+                                <p class="card-subtitle">Citas en las próximas 2-3 horas</p>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-2h">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Próximas Citas (Agendadas/Confirmadas) -->
                     <div class="card">
                         <div class="card-header">
@@ -500,6 +526,7 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                 renderPendingAppointments(data.pending_appointments || []);
                 renderUpcomingAppointments(data.upcoming_appointments || []);
                 renderReminders24h(data.reminders_due_24h || []);
+                renderReminders2h(data.reminders_due_2h || []);
                 renderRecentTransactions(data.recent_transactions || []);
 
             } catch (error) {
@@ -570,6 +597,32 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                             <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</button>
                             ${resendBtn}
                         </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderReminders2h(appointments) {
+            const tbody = document.querySelector('#reminders-2h tbody');
+            if (!tbody) return;
+
+            if (!appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay citas en las próximas 2-3 horas</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_2h_sent 
+                    ? `<span class="badge badge-success">Enviado</span>` 
+                    : `<span class="badge badge-warning">Pendiente</span>`;
+
+                return `
+                    <tr>
+                        <td><strong>${time}</strong></td>
+                        <td>${apt.client_name}</td>
+                        <td>${apt.service_name}</td>
+                        <td>${reminderBadge}</td>
                     </tr>
                 `;
             }).join('');

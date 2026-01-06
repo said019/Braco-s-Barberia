@@ -783,9 +783,9 @@ a {
 }
 
 .appointment-status.cancelled {
-    background: rgba(229, 57, 53, 0.15);
-    color: #EF5350;
-    border-color: rgba(229, 57, 53, 0.3);
+    background: rgba(255, 105, 180, 0.15);
+    color: #FF69B4;
+    border-color: rgba(255, 105, 180, 0.3);
 }
 
 .appointment-status.no_show {
@@ -1238,8 +1238,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .calendar-appointment.cancelled {
-    background: rgba(229, 57, 53, 0.15);
-    color: var(--error);
+    background: rgba(255, 105, 180, 0.2);
+    color: #FF69B4;
 }
 
 .calendar-appointment.no_show {
@@ -4164,7 +4164,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     .calendar-appointment.cancelled {
-        background-color: var(--error) !important;
+        background-color: #FF69B4 !important;
     }
 
     /* Hide Week/Day view scroll if user is on Month view (controlled by JS toggling classes usually, but here we prioritize month fit) */
