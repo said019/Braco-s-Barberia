@@ -444,11 +444,15 @@ router.post('/clients', authenticateToken, async (req, res, next) => {
         // Ya no verificamos teléfono único - permite múltiples clientes con el mismo número
         // (ej: padre e hijo compartiendo teléfono)
 
+        // Generar código de cliente único
+        const codeResult = await db.query('SELECT generate_unique_client_code() as code');
+        const clientCode = codeResult.rows[0].code;
+
         const result = await db.query(
-            `INSERT INTO clients (name, phone, email, birthdate, client_type_id, notes)
-             VALUES ($1, $2, $3, $4, 1, $5)
+            `INSERT INTO clients (name, phone, email, birthdate, client_type_id, notes, client_code)
+             VALUES ($1, $2, $3, $4, 1, $5, $6)
              RETURNING *`,
-            [name, phone, email || null, birthdate || null, notes || null]
+            [name, phone, email || null, birthdate || null, notes || null, clientCode]
         );
 
         res.status(201).json(result.rows[0]);
@@ -550,6 +554,74 @@ router.post('/clients/:id/promote', authenticateToken, async (req, res, next) =>
         res.json({ 
             success: true, 
             message: 'Cliente promovido a Recurrente',
+            client_code: client.client_code,
+            notifications
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/admin/clients/:id/resend-code - Reenviar código de cliente por WhatsApp
+router.post('/clients/:id/resend-code', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        
+        // Obtener datos del cliente
+        const clientResult = await db.query(
+            'SELECT id, name, phone, email, client_code FROM clients WHERE id = $1',
+            [id]
+        );
+        
+        if (clientResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente no encontrado' });
+        }
+        
+        const client = clientResult.rows[0];
+        
+        // Si no tiene código, generarlo
+        if (!client.client_code) {
+            const codeResult = await db.query('SELECT generate_unique_client_code() as code');
+            client.client_code = codeResult.rows[0].code;
+            await db.query('UPDATE clients SET client_code = $1 WHERE id = $2', [client.client_code, id]);
+        }
+        
+        const notifications = { whatsapp: false, email: false };
+        
+        // Enviar WhatsApp
+        if (client.phone) {
+            try {
+                const message = `Hola ${client.name}, tu código de cliente en Braco's Barbería es: *${client.client_code}*\n\nÚsalo para agendar tus citas más rápido en:\nhttps://braco-s-barberia-production.up.railway.app/agendar.html`;
+                
+                const whatsappService = (await import('../services/whatsappService.js')).default;
+                const result = await whatsappService.sendTextMessage(client.phone, message);
+                notifications.whatsapp = result.success;
+                console.log(`[RESEND CODE] WhatsApp enviado a ${client.phone}: ${result.success}`);
+            } catch (whatsappError) {
+                console.error('[RESEND CODE] Error enviando WhatsApp:', whatsappError.message);
+            }
+        }
+        
+        // Enviar Email si tiene
+        if (client.email) {
+            try {
+                const emailService = (await import('../services/emailService.js')).default;
+                await emailService.sendClientWelcome({
+                    to: client.email,
+                    clientName: client.name,
+                    clientCode: client.client_code
+                });
+                notifications.email = true;
+                console.log(`[RESEND CODE] Email enviado a ${client.email}`);
+            } catch (emailError) {
+                console.error('[RESEND CODE] Error enviando email:', emailError.message);
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            message: `Código ${client.client_code} reenviado`,
             client_code: client.client_code,
             notifications
         });
