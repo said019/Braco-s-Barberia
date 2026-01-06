@@ -158,6 +158,35 @@
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+                    <!-- Solicitudes Pendientes (Nuevas) -->
+                    <div class="card" id="pending-requests-card" style="display: none;">
+                        <div class="card-header" style="border-bottom: 2px solid var(--warning);">
+                            <div>
+                                <h3 class="card-title">Solicitudes Pendientes</h3>
+                                <p class="card-subtitle">Nuevos clientes / Por aprobar</p>
+                            </div>
+                            <span class="badge badge-warning" id="pending-requests-count">0</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="table-container" style="padding: 0;">
+                                <table class="data-table" id="pending-requests">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Cliente</th>
+                                            <th>Servicio</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- JS content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Citas por Confirmar -->
                     <div class="card">
                         <div class="card-header">
@@ -168,21 +197,24 @@
                             </div>
                             <a href="citas.html?status=scheduled" class="btn btn-secondary btn-sm">Ver Todas</a>
                         </div>
-                        <div class="table-container">
-                            <table class="data-table" id="pending-confirmation">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Confirmar</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                        <div class="card-content">
+                            <div class="table-container" style="padding: 0;">
+                                <table class="data-table" id="pending-confirmation">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Cliente</th>
+                                            <th>Servicio</th>
+                                            <th>WhatsApp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <!-- Recordatorios 24h -->
                     <div class="card">
                         <div class="card-header">
@@ -409,8 +441,8 @@
                 // Cargar cumpleaños (sección lateral)
                 loadBirthdays();
 
-                // Fila 1: Próximas Citas (Confirmadas) | Citas por Confirmar (Pendientes 48h)
-                renderUpcomingAppointments(data.upcoming_appointments || []);
+                // Fila 1: Solicitudes Pendientes | Citas por Confirmar
+                renderPendingRequests(data.pending_requests || []);
                 renderPendingConfirmation(data.pending_confirmation || []);
 
                 // Fila 2: Recordatorios 2h | Recordatorios 24h
@@ -428,82 +460,80 @@
             }
         }
 
-        // Función para cargar cumpleaños con corrección de timezone (Fix para el bug de "1 día antes")
-        async function loadBirthdays() {
-            const container = document.getElementById('birthday-list');
-            if (!container) return;
-
+        async function approveAppointment(id) {
+            if (!confirm('¿Aprobar esta cita y confirmar el depósito?')) return;
             try {
-                const birthdays = await api.get('/admin/birthdays?days=30');
-
-                if (!birthdays || birthdays.length === 0) {
-                    container.innerHTML = '<p class="text-muted" style="text-align: center; padding: 1rem;">No hay cumpleaños próximos</p>';
-                    return;
-                }
-
-                container.innerHTML = birthdays.map(b => {
-                    const phone = (b.phone || '').replace(/\D/g, '');
-                    const phoneWithCode = phone.startsWith('52') ? phone : `52${phone}`;
-
-                    // Formateo de fecha con fix de timezone (T12:00:00)
-                    let birthdayDateDisplay = '';
-                    let daysLeft = 0;
-
-                    if (b.next_birthday) {
-                        let d = b.next_birthday;
-                        // Si es un objeto Date (driver PG), convertir a string ISO para extraer solo la fecha
-                        if (d instanceof Date) {
-                            d = d.toISOString().split('T')[0];
-                        }
-
-                        const dateStr = typeof d === 'string' ? d.split('T')[0] : d;
-                        const nextDate = new Date(dateStr + 'T12:00:00');
-                        birthdayDateDisplay = nextDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-
-                        const today = new Date();
-                        today.setHours(12, 0, 0, 0);
-                        daysLeft = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
-                    }
-
-                    return `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
-                            <div>
-                                <strong style="display: block;">${b.name}</strong>
-                                <div class="text-muted" style="font-size: 0.85rem;">
-                                    🎂 ${birthdayDateDisplay} ${daysLeft === 0 ? '<span class="badge badge-gold">¡Hoy!</span>' : daysLeft === 1 ? '<span class="badge badge-warning">Mañana</span>' : `(${daysLeft} días)`}
-                                </div>
-                            </div>
-                            <button class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" onclick="openBirthdayModal('${b.name.replace(/'/g, "\\'")}', '${phoneWithCode}')">
-                                <i class="fab fa-whatsapp"></i>
-                            </button>
-                        </div>
-                    `;
-                }).join('');
+                await api.post(`/appointments/${id}/confirm`);
+                showToast('Cita aprobada y confirmada', 'success');
+                loadDashboard(); // Recargar
             } catch (error) {
-                console.error('Error loading birthdays:', error);
-                container.innerHTML = '<p class="text-muted" style="text-align: center;">Error al cargar</p>';
+                console.error(error);
+                showToast('Error al aprobar la cita', 'error');
             }
         }
 
-        // --- Renderizadores del Dashboard (6 secciones) ---
+        async function rejectAppointment(id) {
+            const reason = prompt('Motivo del rechazo:');
+            if (!reason) return;
+            try {
+                await api.post(`/appointments/${id}/cancel`, { reason });
+                showToast('Cita rechazada', 'success');
+                loadDashboard();
+            } catch (error) {
+                console.error(error);
+                showToast('Error al rechazar cita', 'error');
+            }
+        }
 
-        function renderUpcomingAppointments(appointments) {
-            const tbody = document.querySelector('#upcoming-appointments tbody');
-            if (!tbody) return;
+        function renderPendingRequests(appointments) {
+            const card = document.getElementById('pending-requests-card');
+            const countBadge = document.getElementById('pending-requests-count');
+            const tbody = document.querySelector('#pending-requests tbody');
+
+            if (!tbody || !card) return;
+
+            if (countBadge) countBadge.textContent = appointments.length;
 
             if (appointments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas confirmadas hoy</td></tr>';
+                card.style.display = 'none';
                 return;
             }
 
-            tbody.innerHTML = appointments.map(apt => `
-                <tr>
-                    <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
-                    <td>${apt.client_name}</td>
-                    <td>${apt.service_name}</td>
-                    <td><a href="citas.html?search=${apt.client_phone}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Ver</a></td>
-                </tr>
-            `).join('');
+            card.style.display = 'block';
+
+            tbody.innerHTML = appointments.map(apt => {
+                const dateStr = formatDateShort(apt.appointment_date);
+                return `
+                    <tr>
+                        <td>${dateStr} <br> <small>${apt.start_time.slice(0, 5)}</small></td>
+                        <td>
+                            ${apt.client_name}
+                            ${apt.client_phone ? `<br><small class="text-muted"><a href="https://wa.me/${apt.client_phone.replace(/\D/g, '')}" target="_blank">${apt.client_phone}</a></small>` : ''}
+                        </td>
+                        <td>
+                            ${apt.service_name}
+                            ${apt.deposit_amount ? `<br><small class="text-gold">Depósito: $${apt.deposit_amount}</small>` : ''}
+                        </td>
+                        <td>
+                            <div class="actions" style="display:flex; gap:5px;">
+                                <button class="btn btn-sm btn-whatsapp" onclick="approveAppointment(${apt.id})" title="Aprobar" style="padding:4px 8px;">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="rejectAppointment(${apt.id})" title="Rechazar" style="padding:4px 8px; background:var(--danger); border-color:var(--danger);">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderUpcomingAppointments(appointments) {
+            // ... (Keep existing if needed, but likely unused in new layout)
+            // Keeping empty or basic implementation to avoid errors if called
+            const tbody = document.querySelector('#upcoming-appointments tbody');
+            if (tbody) tbody.innerHTML = '';
         }
 
         function renderPendingConfirmation(appointments) {

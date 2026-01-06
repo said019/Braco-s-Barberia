@@ -220,6 +220,19 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         // Upcoming appointments (confirmed today) - ELIMINADO del frontend por petición, pero mantenemos query base o lo reducimos
         // El usuario pidió: "Citas por confirmar", "Recordatorios 24h", "Recordatorios 2h"
 
+        // 0. Solicitudes Pendientes (Nuevas citas que requieren aprobación/depósito)
+        // Status 'pending'
+        const pendingRequests = await db.query(
+            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+                    ct.color as client_color, s.name as service_name
+             FROM appointments a
+             JOIN clients c ON a.client_id = c.id
+             JOIN client_types ct ON c.client_type_id = ct.id
+             JOIN services s ON a.service_id = s.id
+             WHERE a.status = 'pending'
+             ORDER BY a.appointment_date, a.start_time ASC`
+        );
+
         // 1. Citas por Confirmar (Pendientes futuras, excluyendo próximas 24h/2h para evitar duplicados)
         // Definición: Status 'scheduled', Fecha > Mañana (Las de mañana van en Recordatorios 24h)
         const pendingConfirmation = await db.query(
@@ -305,6 +318,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
                 total_clients: parseInt(totalClients.rows[0].count)
             },
             // upcoming_appointments eliminado o vacío, ya no se usa
+            pending_requests: pendingRequests.rows, // Solicitudes pendientes
             upcoming_appointments: [],
             pending_confirmation: pendingConfirmation.rows,
             reminders_2h: reminders2h.rows,
@@ -1652,7 +1666,8 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
                 const cData = clientPhone.rows[0];
 
                 if (cData.phone && cData.whatsapp_enabled !== false) {
-                    const cleanDate = new Date(mem.expiration_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const mem = result.rows[0];
+                    const cleanDate = mem.expiration_date ? new Date(mem.expiration_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Sin vigencia';
 
                     // Asegurar que importamos whatsappService arriba
                     await whatsappService.sendMembershipWelcome({

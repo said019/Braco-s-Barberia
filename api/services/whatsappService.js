@@ -244,15 +244,27 @@ export const sendCancellationResponse = async ({ phone, service, date, bookingUr
 // Mensaje de texto libre con el código de cliente para login futuro
 // ============================================================================
 export const sendWelcomeWithClientCode = async ({ phone, name, clientCode }) => {
-    const message = `🎉 *¡Bienvenido a Braco's Barbería, ${name}!*
+    // Usamos el template de cliente recurrente que contiene {{1}} Nombre y {{2}} Código
+    // Esto asegura que el mensaje llegue aunque no haya conversación previa (regla de 24h)
+    const variables = {
+        "1": name,
+        "2": clientCode
+    };
+    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID;
+
+    if (!sid) {
+        console.warn('Recurring Template SID missing, falling back to text (might fail)');
+        const message = `🎉 *¡Bienvenido a Braco's Barbería, ${name}!*
 
 Tu código de cliente es: *${clientCode}*
 
 Guárdalo para agendar tus próximas citas de forma rápida. Solo ingresa este código y te reconoceremos al instante.
 
 ¡Nos vemos pronto! 💈`;
+        return await sendTextMessage(phone, message);
+    }
 
-    return await sendTextMessage(phone, message);
+    return await sendTemplate(phone, sid, variables);
 };
 
 // ============================================================================
