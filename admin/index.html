@@ -588,6 +588,72 @@
             }).join('');
         }
 
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas para mañana</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Mañana', (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
+                const statusBadge = apt.reminder_sent ? '<span class="badge badge-success">Enviado</span>' : '<span class="badge badge-warning">Pendiente</span>';
+
+                return `
+                    <tr>
+                        <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
+                        <td>${apt.client_name}</td>
+                        <td>
+                            ${apt.service_name}
+                            <div style="font-size:0.75rem; margin-top:2px;">${statusBadge}</div>
+                        </td>
+                        <td>
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="Enviar Recordatorio Mañana" onclick="markReminderSent(${apt.id}, '24h')">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderReminders2h(appointments) {
+            const tbody = document.querySelector('#reminders-2h tbody');
+            if (!tbody) return;
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas próximas hoy</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Hoy', (apt.start_time || '').slice(0, 5), apt.service_name, 'reminder');
+
+                // Mostrar estado de la cita (Confirmada vs Pendiente)
+                const statusBadge = apt.status === 'confirmed'
+                    ? '<span class="badge badge-success">Confirmada</span>'
+                    : '<span class="badge badge-warning">Pendiente</span>';
+
+                return `
+                    <tr>
+                        <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
+                        <td>
+                            ${apt.client_name}
+                            <div style="font-size:0.75rem;">${statusBadge}</div>
+                        </td>
+                        <td>${apt.service_name}</td>
+                        <td>
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Recordatorio">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         function renderExpiringMemberships(memberships) {
             const tbody = document.querySelector('#expiring-memberships tbody');
             if (!tbody) return;
