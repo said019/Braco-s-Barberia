@@ -160,6 +160,21 @@ export const sendReminder24h = async ({ phone, name, service, time, code }) => {
 };
 
 // ============================================================================
+// 6b. Recordatorio 2h antes de la cita
+// Template: recordatorio_2h - Variables: {{1}} Name, {{2}} Service, {{3}} Time, {{4}} Code
+// ============================================================================
+export const sendReminder2h = async ({ phone, name, service, time, code }) => {
+    const variables = {
+        "1": name,
+        "2": service,
+        "3": time,
+        "4": code || '----'
+    };
+    const sid = process.env.TWILIO_TEMPLATE_REMINDER_2H_SID || 'HX6ec4206e7a24fbc8b4a6ad2adf64addf';
+    return await sendTemplate(phone, sid, variables);
+};
+
+// ============================================================================
 // 7. Admin: Nueva Cita (Notificación al dueño)
 // Template: admin_nva_cita - Variables: {{1}} Client, {{2}} Service, {{3}} Date, {{4}} Time
 // ============================================================================
@@ -334,6 +349,7 @@ export default {
     sendCheckoutReceipt,
     sendMembershipWelcome,
     sendReminder24h,
+    sendReminder2h,
     sendAdminNewAppointment,
     sendAdminFullPayment,
     sendAdminCancellation,
