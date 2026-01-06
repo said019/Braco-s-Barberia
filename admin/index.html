@@ -759,6 +759,78 @@
             return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
         }
 
+        // Cargar cumpleaños próximos
+        async function loadBirthdays() {
+            try {
+                const birthdayList = document.getElementById('birthday-list');
+                const clients = await api.get('/admin/clients');
+
+                const today = new Date();
+                const upcomingBirthdays = [];
+
+                // Filtrar clientes con cumpleaños en los próximos 30 días
+                clients.forEach(client => {
+                    if (!client.birthdate) return;
+
+                    const birthDate = new Date(client.birthdate);
+                    const thisYear = today.getFullYear();
+                    const nextBirthday = new Date(thisYear, birthDate.getMonth(), birthDate.getDate());
+
+                    // Si ya pasó este año, usar el próximo año
+                    if (nextBirthday < today) {
+                        nextBirthday.setFullYear(thisYear + 1);
+                    }
+
+                    const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+
+                    if (daysUntil >= 0 && daysUntil <= 30) {
+                        upcomingBirthdays.push({
+                            name: client.name,
+                            phone: client.phone,
+                            date: nextBirthday,
+                            daysUntil
+                        });
+                    }
+                });
+
+                // Ordenar por días hasta el cumpleaños
+                upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+
+                if (upcomingBirthdays.length === 0) {
+                    birthdayList.innerHTML = '<p class="text-muted" style="padding: 1rem;">No hay cumpleaños próximos</p>';
+                    return;
+                }
+
+                // Renderizar lista de cumpleaños
+                birthdayList.innerHTML = upcomingBirthdays.map(b => {
+                    const dateStr = b.date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
+                    const badgeColor = b.daysUntil === 0 ? 'badge-success' : b.daysUntil <= 7 ? 'badge-warning' : 'badge-info';
+                    const dayText = b.daysUntil === 0 ? 'Hoy' : b.daysUntil === 1 ? 'Mañana' : `${b.daysUntil} días`;
+
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #333;">
+                            <div>
+                                <strong>${b.name}</strong>
+                                <div style="font-size: 0.85rem; color: #999;">${dateStr}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="badge ${badgeColor}">${dayText}</span>
+                                <button onclick="openBirthdayModal('${b.name.replace(/'/g, "\\'")}', '${b.phone}')"
+                                        class="btn btn-sm"
+                                        style="background: #25D366; color: white; padding: 4px 8px;">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading birthdays:', error);
+                document.getElementById('birthday-list').innerHTML = '<p class="text-muted" style="padding: 1rem;">Error al cargar cumpleaños</p>';
+            }
+        }
+
         // Modal de cumpleaños
         function openBirthdayModal(name, phone) {
             document.getElementById('birthday-client-name').textContent = name;
@@ -785,7 +857,6 @@
     </script>
 
     <script src="js/sidebar.js"></script>
-    <script src="../js/admin.js"></script>
 </body>
 
 </html>
