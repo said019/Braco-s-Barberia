@@ -202,21 +202,71 @@ export const Appointment = {
 
   // Crear cita
   async create(appointmentData) {
-    const { client_id, service_id, appointment_date, start_time, end_time, notes, created_by } = appointmentData;
+    const {
+      client_id,
+      service_id,
+      appointment_date,
+      start_time,
+      end_time,
+      notes,
+      created_by,
+      status,
+      deposit_required,
+      deposit_amount
+    } = appointmentData;
 
     // Generar código de checkout
-    const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
-    const checkout_code = codeResult.rows[0].code;
+    let checkout_code;
+    try {
+      const codeResult = await query(`SELECT generate_checkout_code($1) as code`, [appointment_date]);
+      checkout_code = codeResult.rows[0].code;
+    } catch (e) {
+      console.error('Error generating checkout code from DB:', e);
+    }
+
+    // Fallback generation if DB function fails or returns null
+    if (!checkout_code) {
+      checkout_code = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 chars random
+      console.warn(`Generated fallback checkout code: ${checkout_code}`);
+    }
+
+    // Use provided status or default to 'scheduled'
+    const appointmentStatus = status || 'scheduled';
 
     const sql = `
       INSERT INTO appointments 
-        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status, deposit_required, deposit_amount)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `;
     const result = await query(sql, [
-      client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by || 'client'
+      client_id,
+      service_id,
+      appointment_date,
+      start_time,
+      end_time,
+      checkout_code,
+      notes,
+      created_by || 'client',
+      appointmentStatus,
+      deposit_required || false,
+      deposit_amount || 0
     ]);
+    return result.rows[0];
+  },
+
+  // Marcar depósito como pagado
+  async markDepositPaid(id) {
+    const sql = `
+      UPDATE appointments 
+      SET deposit_paid = TRUE, 
+          deposit_paid_at = CURRENT_TIMESTAMP,
+          status = 'scheduled',
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await query(sql, [id]);
     return result.rows[0];
   },
 
@@ -257,9 +307,19 @@ export const Appointment = {
     return this.updateStatus(id, 'cancelled', reason);
   },
 
-  // Confirmar cita
+  // Confirmar cita (también actualiza nota de depósito)
   async confirm(id) {
-    return this.updateStatus(id, 'confirmed');
+    // Actualizar status y cambiar nota de "Pendiente de Depósito" a "Depósito Confirmado"
+    const sql = `
+      UPDATE appointments 
+      SET status = 'confirmed',
+          notes = REPLACE(COALESCE(notes, ''), 'Pendiente de Depósito $100', 'Depósito Confirmado ✓'),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await query(sql, [id]);
+    return result.rows[0];
   },
 
   // Marcar como no show

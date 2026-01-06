@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link rel="stylesheet" href="css/admin.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -14,6 +15,13 @@
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
 
     <div class="admin-layout">
         <!-- Sidebar -->
@@ -37,7 +45,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -97,6 +105,10 @@
                 <h1 class="page-title">Dashboard</h1>
                 <div class="header-actions">
                     <span class="header-date" id="header-date"></span>
+                    <a href="ventas-mostrador.html" class="btn btn-primary"
+                        style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem;">
+                        <i class="fas fa-cash-register"></i> Nueva Venta
+                    </a>
                 </div>
             </header>
 
@@ -137,7 +149,14 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Cumpleaños Próximos (30 días)</h3>
+                    </div>
+                    <div class="card-body" id="birthday-list">
+                        <p class="text-muted">Cargando…</p>
+                    </div>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <!-- Próximas Citas (Confirmadas) -->
                     <div class="card">
@@ -147,11 +166,64 @@
                                         style="color: var(--success);"></i> Próximas Citas</h3>
                                 <p class="card-subtitle">Citas confirmadas para hoy</p>
                             </div>
-                            <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                            <a href="citas.html?status=pending" class="btn btn-secondary btn-sm">Ver Pendientes</a>
                         </div>
 
                         <div class="table-container">
-                            <table class="data-table" id="upcoming-appointments">
+                            <table class="data-table" id="pending-appointments">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recordatorios 24h (Para confirmar / reprogramar) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title" style="color: #25D366;">Recordatorios 24h</h3>
+                                <p class="card-subtitle">Citas entre 23h y 25h (revisar / reprogramar)</p>
+                            </div>
+                            <a href="calendario.html" class="btn btn-secondary btn-sm">Abrir Calendario</a>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-24h">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha/Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Servicio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llena con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recordatorios 2h (Citas próximas) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title" style="color: #FF6B6B;">Recordatorios 2h</h3>
+                                <p class="card-subtitle">Citas en las próximas 2-3 horas</p>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="reminders-2h">
                                 <thead>
                                     <tr>
                                         <th>Hora</th>
@@ -262,17 +334,17 @@
                                     Membresías por Vencer</h3>
                                 <p class="card-subtitle">Próximos 30 días</p>
                             </div>
-                            <a href="membresias.html" class="btn btn-secondary btn-sm">Ver Todas</a>
+                            <a href="citas.html" class="btn btn-secondary btn-sm">Ver Todas</a>
                         </div>
 
                         <div class="table-container">
-                            <table class="data-table" id="expiring-memberships">
+                            <table class="data-table" id="upcoming-appointments">
                                 <thead>
                                     <tr>
+                                        <th>Fecha/Hora</th>
                                         <th>Cliente</th>
-                                        <th>Plan</th>
-                                        <th>Restantes</th>
-                                        <th>Vence</th>
+                                        <th>Servicio</th>
+                                        <th>Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -314,6 +386,69 @@
         </main>
     </div>
 
+    <!-- Modal: Mensaje de Cumpleaños -->
+    <div class="modal-overlay" id="modal-birthday">
+        <div class="modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🎂 Felicitar a <span id="birthday-client-name"></span></h3>
+                <button class="modal-close" onclick="closeBirthdayModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Mensaje de Cumpleaños</label>
+                    <textarea class="form-textarea" id="birthday-message" rows="6"
+                        placeholder="Escribe tu mensaje de felicitación..."></textarea>
+                </div>
+
+                <!-- Barra de Emojis -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.85rem; color: #888;">Insertar Emoji</label>
+                    <div class="emoji-picker" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: rgba(196, 163, 90, 0.05); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2);">
+                        <!-- Usamos codepoints numéricos para evitar problemas de encoding al guardar/servir HTML -->
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F382)" title="Pastel">🎂</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F389)" title="Fiesta">🎉</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F388)" title="Globo">🎈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F381)" title="Regalo">🎁</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F973)" title="Celebración">🥳</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F38A)" title="Confeti">🎊</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2728)" title="Brillos">✨</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F488)" title="Barbería">💈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AA)" title="Fuerza">💪</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F64C)" title="Manos arriba">🙌</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F451)" title="Corona">👑</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2764, 0xFE0F)" title="Corazón">❤️</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F525)" title="Fuego">🔥</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2B50)" title="Estrella">⭐</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AF)" title="100">💯</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBirthdayModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmSendBirthday()" style="background: #25D366; border-color: #25D366;">
+                    <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .emoji-btn {
+            font-size: 1.5rem;
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid rgba(196, 163, 90, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .emoji-btn:hover {
+            background: rgba(196, 163, 90, 0.2);
+            transform: scale(1.1);
+            border-color: var(--gold);
+        }
+    </style>
+
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script>
@@ -348,7 +483,8 @@
                 document.getElementById('stat-membresias').textContent = data.stats.active_memberships;
                 document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
 
-                // Badge del nav
+                // Call loadBirthdays after stats are set
+                loadBirthdays();
                 document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
 
                 // Próximas citas (confirmadas)
@@ -371,8 +507,8 @@
 
             } catch (error) {
                 console.error('Error:', error);
-                // Datos de ejemplo para desarrollo
-                loadDemoData();
+                // Demo data fallback handled if needed, usually just show empty
+                document.querySelector('#pending-appointments tbody').innerHTML = `<tr><td colspan="4" class="text-center p-3 text-error">Error cargando datos</td></tr>`;
             }
         }
 
@@ -404,20 +540,12 @@
                 `;
                 return;
             }
-
-            tbody.innerHTML = appointments.slice(0, 5).map(apt => `
+            tbody.innerHTML = appointments.map(apt => `
                 <tr>
-                    <td>
-                        <strong>${apt.start_time.slice(0, 5)}</strong>
-                    </td>
-                    <td>
-                        <span class="client-type-dot" style="background: ${apt.client_color}"></span>
-                        ${apt.client_name}
-                    </td>
+                    <td>${formatDateShort(apt.appointment_date)}</td>
+                    <td>${apt.client_name}<br><small class="text-muted">${apt.client_phone}</small></td>
                     <td>${apt.service_name}</td>
-                    <td>
-                        <span class="badge badge-${getStatusBadge(apt.status)}">${getStatusText(apt.status)}</span>
-                    </td>
+                    <td><a href="citas.html?search=${apt.client_phone}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Revisar</a></td>
                 </tr>
             `).join('');
         }
@@ -535,36 +663,43 @@
         function renderExpiringMemberships(memberships) {
             const tbody = document.querySelector('#expiring-memberships tbody');
 
-            if (!memberships || memberships.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay membresías por vencer
-                        </td>
-                    </tr>
-                `;
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
+
+            if (!appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay recordatorios en las próximas 24h</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = memberships.slice(0, 5).map(m => {
-                const daysLeft = Math.ceil((new Date(m.expiration_date) - new Date()) / (1000 * 60 * 60 * 24));
+            tbody.innerHTML = appointments.map(apt => {
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                const resendBtn = waDisabled
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.7rem; opacity: 0.6;">WhatsApp</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.7rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
+
+                const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
+
                 return `
                     <tr>
-                        <td>${m.client_name}</td>
-                        <td>${m.membership_type}</td>
-                        <td>${m.remaining_services}/${m.total_services}</td>
-                        <td>
-                            <span class="badge ${daysLeft <= 7 ? 'badge-error' : 'badge-warning'}">
-                                ${daysLeft} días
-                            </span>
+                        <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
+                        <td>${apt.client_name}<br><small class="text-muted">${phone}</small></td>
+                        <td>${apt.service_name}</td>
+                        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</button>
+                            ${resendBtn}
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function renderRecentTransactions(transactions) {
-            const tbody = document.querySelector('#recent-transactions tbody');
+        function renderReminders2h(appointments) {
+            const tbody = document.querySelector('#reminders-2h tbody');
+            if (!tbody) return;
 
             if (!transactions || transactions.length === 0) {
                 tbody.innerHTML = `
@@ -577,9 +712,66 @@
                 return;
             }
 
-            tbody.innerHTML = transactions.slice(0, 5).map(t => `
+            tbody.innerHTML = appointments.map(apt => {
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_2h_sent 
+                    ? `<span class="badge badge-success">Enviado</span>` 
+                    : `<span class="badge badge-warning">Pendiente</span>`;
+
+                return `
+                    <tr>
+                        <td><strong>${time}</strong></td>
+                        <td>${apt.client_name}</td>
+                        <td>${apt.service_name}</td>
+                        <td>${reminderBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openRescheduleModal(appointmentId, currentDate, currentTime) {
+            const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
+            if (!date) return;
+            const time = prompt('Nueva hora (HH:MM):', currentTime);
+            if (!time) return;
+            rescheduleAppointment(appointmentId, date, time);
+        }
+
+        async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
+            try {
+                const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
+                    appointment_date,
+                    start_time
+                });
+                alert(data.message || 'Cita reprogramada');
+                loadDashboard();
+            } catch (e) {
+                console.error('Error reprogramando cita:', e);
+                alert(e.message || 'Error reprogramando cita');
+            }
+        }
+
+        async function resendReminder24h(appointmentId) {
+            try {
+                // Usamos el endpoint específico de recordatorio 24h (usa plantilla reminder24h)
+                const data = await api.post(`/admin/appointments/${appointmentId}/send-reminder`, {});
+                alert(data.message || 'Recordatorio 24h enviado');
+                loadDashboard();
+            } catch (e) {
+                console.error('Error enviando recordatorio 24h:', e);
+                alert('Error enviando recordatorio 24h');
+            }
+        }
+
+        function renderRecentTransactions(transactions) {
+            const tbody = document.querySelector('#recent-transactions tbody');
+            if (!transactions.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted p-3">No hay movimientos recientes</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = transactions.map(t => `
                 <tr>
-                    <td>${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td>${formatDateShort(t.created_at)} ${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${t.client_name}</td>
                     <td>${t.description}</td>
                     <td class="text-gold"><strong>$${parseFloat(t.amount).toLocaleString()}</strong></td>
@@ -587,36 +779,35 @@
             `).join('');
         }
 
+        function formatDateShort(dateStr) {
+            // Evitar conversión de timezone al agregar T12:00:00
+            if (!dateStr) return '-';
+            // Si dateStr es solo fecha (YYYY-MM-DD), parsearlo sin timezone
+            if (dateStr.length === 10) {
+                const date = new Date(dateStr + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            // Si tiene T, extraer solo la fecha y agregar T12:00:00
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                const date = new Date(dateStr.split('T')[0] + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+
         function getStatusBadge(status) {
-            const badges = {
-                'scheduled': 'info',
-                'confirmed': 'success',
-                'in_progress': 'warning',
-                'completed': 'gold',
-                'cancelled': 'error',
-                'no_show': 'error'
-            };
+            const badges = { 'scheduled': 'info', 'confirmed': 'success', 'in_progress': 'warning', 'completed': 'gold', 'cancelled': 'error', 'no_show': 'error', 'pending': 'warning' };
             return badges[status] || 'info';
         }
 
         function getStatusText(status) {
-            const texts = {
-                'scheduled': 'Agendada',
-                'confirmed': 'Confirmada',
-                'in_progress': 'En Progreso',
-                'completed': 'Completada',
-                'cancelled': 'Cancelada',
-                'no_show': 'No Asistió'
-            };
+            const texts = { 'scheduled': 'Programada', 'confirmed': 'Confirmada', 'in_progress': 'En Curso', 'completed': 'Completada', 'cancelled': 'Cancelada', 'no_show': 'No Asistió', 'pending': 'Por Confirmar' };
             return texts[status] || status;
         }
 
         function getPaymentMethodText(method) {
-            const methods = {
-                'cash': '<i class="fas fa-money-bill-wave"></i> Efectivo',
-                'card': '<i class="fas fa-credit-card"></i> Tarjeta',
-                'transfer': '<i class="fas fa-mobile-alt"></i> Transferencia'
-            };
+            const methods = { 'cash': '💵 Efectivo', 'card': '💳 Tarjeta', 'transfer': '📱 Transferencia', 'membership': '👑 Membresía' };
             return methods[method] || method;
         }
 
@@ -673,6 +864,8 @@
         loadDashboard();
     </script>
 
+    <script src="js/sidebar.js"></script>
+    <script src="../js/admin.js"></script>
 </body>
 
 </html>

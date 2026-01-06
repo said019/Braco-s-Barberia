@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario | Admin</title>
+    <title>Calendario | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -14,6 +15,14 @@
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -35,7 +44,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -99,27 +108,34 @@
             </header>
 
             <!-- Calendar Controls Bar -->
-            <section class="content-section" style="padding: 1rem 1.5rem;">
-                <div
-                    style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
-                    <!-- Left: Navigation -->
-                    <div class="calendar-nav" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button class="btn-icon" onclick="previousPeriod()">←</button>
-                        <h3 class="calendar-title" id="calendar-title"
-                            style="margin: 0; min-width: 180px; text-align: center;">Diciembre 2024</h3>
-                        <button class="btn-icon" onclick="nextPeriod()">→</button>
-                        <button class="btn btn-secondary" onclick="goToday()" style="margin-left: 0.5rem;">Hoy</button>
+            <section class="content-section calendar-controls-section">
+                <div class="calendar-controls-wrapper">
+                    <!-- Navigation -->
+                    <div class="calendar-nav">
+                        <button class="btn-icon" onclick="previousPeriod()" title="Anterior"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <h3 class="calendar-title" id="calendar-title">Diciembre 2024</h3>
+                        <button class="btn-icon" onclick="nextPeriod()" title="Siguiente"><i
+                                class="fas fa-chevron-right"></i></button>
                     </div>
 
-                    <!-- Right: View + New Appointment -->
-                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                        <select id="view-select" class="search-input" style="width: auto; min-width: 140px;">
-                            <option value="month">Vista Mensual</option>
-                            <option value="week">Vista Semanal</option>
-                            <option value="day">Vista Diaria</option>
+                    <!-- View Controls -->
+                    <div class="calendar-view-controls">
+                        <button class="btn btn-secondary btn-sm" onclick="goToday()">HOY</button>
+                        <select id="view-select" class="form-select">
+                            <option value="month">Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="day">Día</option>
                         </select>
+                    </div>
+
+                    <!-- New Appointment -->
+                    <div class="calendar-new-btn" style="display: flex; gap: 0.5rem;">
                         <button class="btn btn-primary" onclick="openNewAppointmentModal(new Date(), '09:00')">
-                            <i class="fas fa-plus"></i> Nueva Cita
+                            <i class="fas fa-plus"></i> <span class="btn-text">Nueva Cita</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="openBlockTimeModal(new Date().toISOString().split('T')[0], '10:00')" title="Bloquear horario">
+                            <i class="fas fa-ban"></i> <span class="btn-text">Bloquear</span>
                         </button>
                     </div>
                 </div>
@@ -154,6 +170,7 @@
                 <div class="filters-bar">
                     <select id="filter-status" class="search-input" style="width: auto;">
                         <option value="">Todos los estados</option>
+                        <option value="pending">Pendientes (Depósito)</option>
                         <option value="scheduled">Agendadas</option>
                         <option value="confirmed">Confirmadas</option>
                         <option value="in_progress">En Curso</option>
@@ -164,9 +181,19 @@
 
                     <input type="text" id="filter-search" class="search-input"
                         placeholder="Buscar por cliente o servicio...">
+
+                    <label class="filter-checkbox"
+                        style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); font-size: 0.9rem;">
+                        <input type="checkbox" id="filter-show-cancelled"
+                            style="width: 18px; height: 18px; accent-color: var(--gold);">
+                        <span>Mostrar canceladas</span>
+                    </label>
                 </div>
 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="appointment-status pending"><i class="fas fa-hourglass-half"></i> Pendiente</span>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span class="appointment-status scheduled"><i class="far fa-calendar"></i> Agendada</span>
                     </div>
@@ -202,6 +229,57 @@
         let allClients = [];
         let allServices = [];
 
+        // Colores por servicio/estilista y tipo de cliente
+        // Miguel (Rojo): Dúo, Corte de cabello, Barba, Prótesis capilar
+        // Bárbara (Azul marino): TIC, Mascarillas, Manicura, Pedicura
+        // Golden Card (Morado), Black Card (Negro)
+        function getAppointmentColor(serviceName, clientColor) {
+            const name = serviceName?.toLowerCase() || '';
+
+            // Si el cliente es Golden Card o Black Card, usar color especial
+            if (clientColor) {
+                const color = clientColor.toLowerCase();
+                // Golden Card - Morado (color en BD es #FFD700 dorado, pero queremos morado)
+                if (color === '#ffd700' || color.includes('ffd700')) {
+                    return '#8B5CF6'; // Morado
+                }
+                // Black Card - Negro
+                if (color === '#1a1a1a' || color.includes('1a1a1a')) {
+                    return '#1a1a1a';
+                }
+            }
+
+            // Black Card por nombre de servicio - Negro
+            if (name.includes('black')) return '#1a1a1a';
+
+            // Golden Card por nombre de servicio - Morado
+            if (name.includes('golden')) return '#8B5CF6';
+
+            // Bárbara (Azul marino) - TIC, mascarillas, manicura, pedicura
+            if (name.includes('tic') || name.includes('neocapilar') ||
+                name.includes('mascarilla') || name.includes('manicura') ||
+                name.includes('pedicura') || name.includes('facial') ||
+                name.includes('limpieza')) {
+                return '#1E3A5F'; // Azul marino
+            }
+
+            // Miguel (Rojo) - Dúo, corte, barba, prótesis
+            if (name.includes('dúo') || name.includes('duo') ||
+                name.includes('corte') || name.includes('barba') ||
+                name.includes('prótesis') || name.includes('protesis') ||
+                name.includes('cabello')) {
+                return '#DC2626'; // Rojo
+            }
+
+            // Default - Dorado
+            return '#C4A35A';
+        }
+        
+        // Alias para compatibilidad
+        function getServiceColor(serviceName) {
+            return getAppointmentColor(serviceName, null);
+        }
+
         // Initialize
         document.getElementById('current-date').textContent =
             new Date().toLocaleDateString('es-MX', {
@@ -216,6 +294,7 @@
 
         document.getElementById('filter-status').addEventListener('change', applyFilters);
         document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
+        document.getElementById('filter-show-cancelled').addEventListener('change', applyFilters);
 
         // Load appointments
         async function loadAppointments() {
@@ -251,10 +330,18 @@
         function applyFilters() {
             const statusFilter = document.getElementById('filter-status').value;
             const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+            const showCancelled = document.getElementById('filter-show-cancelled').checked;
 
             filteredAppointments = allAppointments.filter(apt => {
                 // Status filter
-                if (statusFilter && apt.status !== statusFilter) return false;
+                if (statusFilter) {
+                    if (apt.status !== statusFilter) return false;
+                }
+
+                // Ocultar canceladas por defecto (a menos que el checkbox esté marcado o se filtró específicamente por canceladas)
+                if (!showCancelled && statusFilter !== 'cancelled' && apt.status === 'cancelled') {
+                    return false;
+                }
 
                 // Search filter
                 if (searchFilter) {
@@ -333,7 +420,8 @@
                             ${dayAppointments.map(apt => `
                                 <div class="calendar-appointment ${apt.status}"
                                      onclick="viewAppointmentDetail(${apt.id})"
-                                     title="${apt.start_time.slice(0, 5)} - ${apt.client_name}">
+                                     title="${apt.start_time.slice(0, 5)} - ${apt.client_name} - ${apt.service_name}"
+                                     style="background-color: ${getAppointmentColor(apt.service_name, apt.client_color)}; border-left: 3px solid ${getAppointmentColor(apt.service_name, apt.client_color)};">
                                     ${apt.start_time.slice(0, 5)} ${apt.client_name}
                                 </div>
                             `).join('')}
@@ -404,6 +492,8 @@
 
                     gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                      onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                     oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                     title="Click: Nueva cita | Click derecho: Bloquear"
                                      style="cursor: pointer;">`;
 
                     hourAppointments.forEach(apt => {
@@ -418,7 +508,7 @@
                         gridHTML += `
                             <div class="gcal-appointment ${apt.status}"
                                  onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                                 style="top: ${top}px; height: ${Math.max(height, 30)}px;">
+                                 style="top: ${top}px; height: ${Math.max(height, 30)}px; background-color: ${getAppointmentColor(apt.service_name, apt.client_color)};">
                                 <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)}</span>
                                 <span class="gcal-appointment-client">${apt.client_name}</span>
                                 <span class="gcal-appointment-service">${apt.service_name}</span>
@@ -471,6 +561,8 @@
 
                 gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                  onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                 oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
+                                 title="Click: Nueva cita | Click derecho: Bloquear"
                                  style="cursor: pointer;">`;
 
                 hourAppointments.forEach(apt => {
@@ -485,7 +577,7 @@
                     gridHTML += `
                         <div class="gcal-appointment ${apt.status}"
                              onclick="event.stopPropagation(); viewAppointmentDetail(${apt.id})"
-                             style="top: ${top}px; height: ${Math.max(height, 40)}px;">
+                             style="top: ${top}px; height: ${Math.max(height, 40)}px; background-color: ${getAppointmentColor(apt.service_name, apt.client_color)};">
                             <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)} - ${apt.end_time.slice(0, 5)}</span>
                             <span class="gcal-appointment-client">${apt.client_name}</span>
                             <span class="gcal-appointment-service">${apt.service_name}</span>
@@ -621,6 +713,9 @@
                     <button class="btn btn-secondary" onclick="closeSidePanel()">
                         <i class="fas fa-times"></i> Cerrar
                     </button>
+                    <button class="btn btn-success" onclick="resendWhatsApp(${appointment.id})" title="Reenviar WhatsApp de confirmación" style="background: #25D366; border-color: #25D366;">
+                        <i class="fab fa-whatsapp"></i> Reenviar WhatsApp
+                    </button>
                     <button class="btn btn-primary" onclick="changeStatus(${appointment.id})">
                         <i class="fas fa-edit"></i> Cambiar Estado
                     </button>
@@ -629,6 +724,7 @@
 
             document.getElementById('side-panel-content').innerHTML = content;
             document.getElementById('appointment-side-panel').classList.add('open');
+            document.body.classList.add('side-panel-open');
 
             // Add overlay for mobile
             let overlay = document.getElementById('side-panel-overlay');
@@ -644,6 +740,7 @@
 
         function closeSidePanel() {
             document.getElementById('appointment-side-panel').classList.remove('open');
+            document.body.classList.remove('side-panel-open');
             const overlay = document.getElementById('side-panel-overlay');
             if (overlay) {
                 overlay.classList.remove('active');
@@ -661,6 +758,7 @@
                 <div class="form-group">
                     <label for="new-status">Nuevo Estado</label>
                     <select id="new-status" class="search-input">
+                        <option value="pending">Pendiente (Depósito)</option>
                         <option value="scheduled">Agendada</option>
                         <option value="confirmed">Confirmada</option>
                         <option value="in_progress">En Curso</option>
@@ -693,8 +791,30 @@
             }
         }
 
+        // Reenviar WhatsApp de confirmación
+        async function resendWhatsApp(id) {
+            try {
+                showToast('Enviando WhatsApp...', 'info');
+
+                // Usar fetchWithAuth que ya maneja la autenticación correctamente
+                const data = await fetchWithAuth(`/admin/appointments/${id}/resend-whatsapp`, {
+                    method: 'POST'
+                });
+
+                if (data && data.success) {
+                    showToast(data.message || 'WhatsApp enviado correctamente', 'success');
+                } else {
+                    showToast(data?.error || 'Error al enviar WhatsApp', 'error');
+                }
+            } catch (error) {
+                console.error('Error resending WhatsApp:', error);
+                showToast(error.message || 'Error al enviar WhatsApp', 'error');
+            }
+        }
+
         function getStatusLabel(status) {
             const labels = {
+                'pending': '⏳ Pendiente',
                 'scheduled': 'Agendada',
                 'confirmed': 'Confirmada',
                 'in_progress': 'En Curso',
@@ -730,55 +850,155 @@
             const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
             const timeStr = time || '09:00';
 
+            // Generar opciones de hora (09:00 a 20:00 cada 30 min)
+            let timeOptions = '';
+            const startHour = 9;
+            const endHour = 20;
+            for (let h = startHour; h <= endHour; h++) {
+                const hour = h.toString().padStart(2, '0');
+
+                // :00
+                const t1 = `${hour}:00`;
+                const display1 = t1 > '11:59' ? (t1 === '12:00' ? '12:00 PM' : `${h - 12 || 12}:00 PM`) : `${h}:00 AM`;
+                timeOptions += `<option value="${t1}" ${timeStr === t1 ? 'selected' : ''}>${display1}</option>`;
+
+                // :30 (skip if endHour is reached and strict, but usually last appt is at closing - duration. Allow 20:00?)
+                // Assuming last slot is 20:00
+                if (h < endHour) {
+                    const t2 = `${hour}:30`;
+                    const display2 = t2 > '11:59' ? (t2 === '12:30' ? '12:30 PM' : `${h - 12 || 12}:30 PM`) : `${h}:30 AM`;
+                    timeOptions += `<option value="${t2}" ${timeStr === t2 ? 'selected' : ''}>${display2}</option>`;
+                }
+            }
+            // Add last slot 20:00 specifically if loop logic missed it or if needed
+            // Loop goes <= endHour so 20:00 is added.
+
             const content = `
                 <div class="form-group">
-                    <label for="appointment-client">Cliente *</label>
-                    <select id="appointment-client" class="search-input" required>
-                        <option value="">Seleccionar cliente</option>
-                        ${allClients.map(c => `<option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>`).join('')}
-                    </select>
+                    <label for="appointment-client" class="form-label">Cliente *</label>
+                    <input list="client-list" id="appointment-client" class="form-input" placeholder="Buscar o escribir nombre..." required autocomplete="off">
+                    <datalist id="client-list">
+                        ${allClients.map(c => `<option value="${c.name} - ${formatPhone(c.phone)}">`).join('')}
+                    </datalist>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-service">Servicio *</label>
-                    <select id="appointment-service" class="search-input" required>
+                    <label for="appointment-service" class="form-label">Servicio *</label>
+                    <select id="appointment-service" class="form-select" required>
                         <option value="">Seleccionar servicio</option>
                         ${allServices.map(s => `<option value="${s.id}" data-duration="${s.duration_minutes}">${s.name} - ${formatCurrency(s.price)} (${s.duration_minutes} min)</option>`).join('')}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-date">Fecha *</label>
-                    <input type="date" id="appointment-date" class="search-input" value="${dateStr}" required>
+                    <label for="appointment-date" class="form-label">Fecha *</label>
+                    <input type="date" id="appointment-date" class="form-input" value="${dateStr}" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-time">Hora de inicio *</label>
-                    <input type="time" id="appointment-time" class="search-input" value="${timeStr}" required>
+                    <label for="appointment-time" class="form-label">Hora de inicio *</label>
+                    <select id="appointment-time" class="form-select" required>
+                        ${timeOptions}
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="appointment-notes">Notas</label>
-                    <textarea id="appointment-notes" class="search-input" rows="3" placeholder="Notas adicionales..."></textarea>
+                    <label for="appointment-notes" class="form-label">Notas</label>
+                    <textarea id="appointment-notes" class="form-textarea" rows="3" placeholder="Notas adicionales..."></textarea>
                 </div>
             `;
 
             const footer = `
                 <button class="btn btn-secondary" onclick="window.newAppointmentModal.close()">Cancelar</button>
-                <button class="btn btn-primary" onclick="createNewAppointment()">Crear Cita</button>
+                <button class="btn btn-primary" onclick="confirmNewAppointment()">Crear Cita</button>
             `;
 
             window.newAppointmentModal = showModal('newAppointmentModal', 'Nueva Cita', content, footer);
         }
 
+        // Confirm before creating - ask about notifications
+        function confirmNewAppointment() {
+            const clientInputValue = document.getElementById('appointment-client').value;
+            const serviceId = document.getElementById('appointment-service').value;
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+
+            // Validar campos
+            const client = allClients.find(c => `${c.name} - ${formatPhone(c.phone)}` === clientInputValue);
+            if (!client) {
+                showToast('Por favor selecciona un cliente válido de la lista', 'warning');
+                return;
+            }
+
+            if (!serviceId || !date || !time) {
+                showToast('Por favor completa todos los campos requeridos', 'error');
+                return;
+            }
+
+            // Obtener nombre del servicio
+            const serviceSelect = document.getElementById('appointment-service');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].text.split(' - ')[0];
+
+            // Formatear fecha para mostrar
+            const dateObj = new Date(date + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+
+            const confirmContent = `
+                <div style="text-align: center; padding: 1rem 0;">
+                    <i class="fas fa-calendar-check" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem; color: var(--cream);">Confirmar Cita</h3>
+                    <p style="color: var(--cream); margin-bottom: 0.5rem;"><strong>${client.name}</strong></p>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">${serviceName}</p>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${formattedDate} a las ${time}</p>
+                    
+                    <div style="background: rgba(196, 163, 90, 0.1); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p style="color: var(--cream); margin-bottom: 0.75rem; font-weight: 500;">
+                            <i class="fas fa-bell"></i> ¿Enviar notificaciones al cliente?
+                        </p>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream); margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="send-whatsapp-notification" checked style="width: 18px; height: 18px; accent-color: var(--gold);">
+                            <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--cream);">
+                            <input type="checkbox" id="send-email-notification" checked style="width: 18px; height: 18px; accent-color: var(--gold);">
+                            <i class="fas fa-envelope" style="color: #EA4335;"></i> Email
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            const confirmFooter = `
+                <button class="btn btn-secondary" onclick="window.confirmModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="createNewAppointment()">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            `;
+
+            window.confirmModal = showModal('confirmAppointmentModal', '', confirmContent, confirmFooter);
+        }
+
         // Create new appointment
         async function createNewAppointment() {
             try {
-                const clientId = document.getElementById('appointment-client').value;
+                const clientInputValue = document.getElementById('appointment-client').value;
                 const serviceId = document.getElementById('appointment-service').value;
                 const date = document.getElementById('appointment-date').value;
                 const time = document.getElementById('appointment-time').value;
+
+                // Resolver Cliente desde el Datalist
+                const client = allClients.find(c => `${c.name} - ${formatPhone(c.phone)}` === clientInputValue);
+                if (!client) {
+                    showToast('Por favor selecciona un cliente válido de la lista', 'warning');
+                    return;
+                }
+                const clientId = client.id;
                 const notes = document.getElementById('appointment-notes').value;
+
+                // Obtener preferencias de notificación del modal de confirmación
+                const sendWhatsApp = document.getElementById('send-whatsapp-notification')?.checked ?? true;
+                const sendEmail = document.getElementById('send-email-notification')?.checked ?? true;
 
                 if (!clientId || !serviceId || !date || !time) {
                     showToast('Por favor completa todos los campos requeridos', 'error');
@@ -790,12 +1010,18 @@
                     service_id: parseInt(serviceId),
                     appointment_date: date,
                     start_time: time,
-                    notes: notes
+                    notes: notes,
+                    send_whatsapp: sendWhatsApp,
+                    send_email: sendEmail
                 };
 
                 await AdminAPI.createAppointment(appointmentData);
                 showToast('Cita creada exitosamente', 'success');
-                window.newAppointmentModal.close();
+                
+                // Cerrar ambos modales
+                if (window.confirmModal) window.confirmModal.close();
+                if (window.newAppointmentModal) window.newAppointmentModal.close();
+                
                 loadAppointments();
 
             } catch (error) {
@@ -804,13 +1030,166 @@
             }
         }
 
+        // ================================
+        // BLOQUEAR HORARIOS
+        // ================================
+
+        let blockedTimeSlots = [];
+
+        async function loadBlockedTimeSlots(date) {
+            try {
+                const response = await fetch(`/api/admin/blocked-time-slots?date=${date}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+                blockedTimeSlots = await response.json();
+                return blockedTimeSlots;
+            } catch (error) {
+                console.error('Error loading blocked slots:', error);
+                return [];
+            }
+        }
+
+        function openBlockTimeModal(date, time) {
+            const modal = document.getElementById('block-time-modal');
+            document.getElementById('block-date').value = date;
+            document.getElementById('block-start-time').value = time;
+
+            // Calcular hora de fin (1 hora después por defecto)
+            const [hours, mins] = time.split(':').map(Number);
+            const endHour = Math.min(hours + 1, 21);
+            document.getElementById('block-end-time').value = `${endHour.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+            document.getElementById('block-reason').value = '';
+
+            modal.classList.add('active');
+        }
+
+        function closeBlockModal() {
+            document.getElementById('block-time-modal').classList.remove('active');
+        }
+
+        async function saveBlockedTime() {
+            const date = document.getElementById('block-date').value;
+            const startTime = document.getElementById('block-start-time').value;
+            const endTime = document.getElementById('block-end-time').value;
+            const reason = document.getElementById('block-reason').value;
+
+            if (!date || !startTime || !endTime) {
+                showToast('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+
+            if (startTime >= endTime) {
+                showToast('La hora de inicio debe ser menor que la hora de fin', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/blocked-dates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ date, start_time: startTime, end_time: endTime, reason })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al bloquear horario');
+                }
+
+                showToast('Horario bloqueado exitosamente', 'success');
+                closeBlockModal();
+                loadAppointments(); // Recargar calendario
+
+            } catch (error) {
+                console.error('Error blocking time:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function deleteBlockedTime(id) {
+            if (!confirm('¿Deseas desbloquear este horario?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/blocked-time-slots/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar');
+                }
+
+                showToast('Horario desbloqueado', 'success');
+                loadAppointments();
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
         // Initial load
         loadClientsAndServices();
         loadAppointments();
     </script>
 
+    <!-- Modal para bloquear horarios -->
+    <!-- Modal para bloquear horarios -->
+    <div class="modal-overlay" id="block-time-modal">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-ban" style="color: #EF5350; margin-right: 0.5rem;"></i>Bloquear Horario</h3>
+                <button class="modal-close" onclick="closeBlockModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: rgba(239, 83, 80, 0.1); border: 1px solid rgba(239, 83, 80, 0.3); border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-info-circle" style="color: #EF5350;"></i>
+                    <span style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.8);">Este horario no estará disponible para agendar citas.</span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label" style="color: var(--gold); margin-bottom: 0.5rem; display: block;">
+                        <i class="far fa-calendar"></i> Fecha
+                    </label>
+                    <input type="date" id="block-date" class="form-input" style="width: 100%;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--gold); margin-bottom: 0.5rem; display: block;">
+                            <i class="fas fa-clock"></i> Hora Inicio
+                        </label>
+                        <input type="time" id="block-start-time" class="form-input" style="width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--gold); margin-bottom: 0.5rem; display: block;">
+                            <i class="fas fa-clock"></i> Hora Fin
+                        </label>
+                        <input type="time" id="block-end-time" class="form-input" style="width: 100%;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" style="color: var(--gold); margin-bottom: 0.5rem; display: block;">
+                        <i class="fas fa-comment-alt"></i> Motivo <span style="color: rgba(245, 243, 238, 0.5); font-weight: 400;">(opcional)</span>
+                    </label>
+                    <input type="text" id="block-reason" class="form-input" placeholder="Ej: Comida, cita médica, reunión..." style="width: 100%;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeBlockModal()">Cancelar</button>
+                <button class="btn" onclick="saveBlockedTime()" style="background: #EF5350; border-color: #EF5350; color: white;">
+                    <i class="fas fa-ban"></i> Bloquear Horario
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Menu Script -->
     <!-- Mobile Menu Script Removed -->
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

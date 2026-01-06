@@ -4,20 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes de Ventas | Braco's Admin</title>
+    <title>Reportes | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link rel="stylesheet" href="css/admin.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
+        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <img src="../assets/logo.png" alt="Logo"
                     style="height: 60px; margin-bottom: 10px; display: block; margin: 0 auto 10px;">
-                <p class="sidebar-subtitle">Administración</p>
+                <p class="sidebar-subtitle">Administracion</p>
             </div>
 
             <nav class="sidebar-nav">
@@ -33,20 +44,19 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
-                        <span class="badge" id="nav-badge-citas">0</span>
+                        <span>Citas</span>
                     </a>
                 </div>
 
                 <div class="nav-section">
-                    <span class="nav-section-title">Gestión</span>
+                    <span class="nav-section-title">Gestion</span>
                     <a href="clientes.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-users"></i></span>
                         <span>Clientes</span>
                     </a>
                     <a href="membresias.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-crown"></i></span>
-                        <span>Membresías</span>
+                        <span>Membresias</span>
                     </a>
                     <a href="servicios.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-cut"></i></span>
@@ -70,7 +80,7 @@
                     <span class="nav-section-title">Sistema</span>
                     <a href="configuracion.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                        <span>Configuración</span>
+                        <span>Configuracion</span>
                     </a>
                 </div>
             </nav>
@@ -83,7 +93,7 @@
                         <div class="admin-role" id="admin-role">Administrador</div>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesion</button>
             </div>
         </aside>
 
@@ -91,17 +101,17 @@
             <header class="top-header">
                 <div>
                     <h1 class="page-title">Reporte de Ventas</h1>
-                    <p class="text-muted">Análisis de ingresos y rendimiento</p>
+                    <p class="text-muted">Analisis de ingresos y rendimiento</p>
                 </div>
                 <!-- Date Filter -->
                 <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
                     <div class="date-range-picker"
-                        style="display: flex; gap: 0.5rem; align-items: center; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                        <input type="date" id="start-date" class="form-control-sm"
-                            style="border: none; background: transparent; color: var(--text-primary);">
+                        style="display: flex; gap: 0.5rem; align-items: center; background: var(--charcoal-dark); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(196,163,90,0.2);">
+                        <input type="date" id="start-date" class="form-input"
+                            style="border: none; background: transparent; color: var(--cream); padding: 0.5rem;">
                         <span class="text-muted">a</span>
-                        <input type="date" id="end-date" class="form-control-sm"
-                            style="border: none; background: transparent; color: var(--text-primary);">
+                        <input type="date" id="end-date" class="form-input"
+                            style="border: none; background: transparent; color: var(--cream); padding: 0.5rem;">
                         <button class="btn-icon" onclick="loadReports()" title="Filtrar"
                             style="width: 30px; height: 30px;"><i class="fas fa-filter"></i></button>
                     </div>
@@ -139,6 +149,44 @@
                         <div class="stat-info">
                             <h3 class="stat-value" id="avg-ticket">$0.00</h3>
                             <p class="stat-label">Ticket Promedio</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(156,39,176,0.2); color: #9C27B0;">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 class="stat-value" id="membership-sales">$0.00</h3>
+                            <p class="stat-label">Venta de Membresias</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Breakdown -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar" style="margin-right: 0.5rem;"></i>Desglose de Ingresos</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div
+                                style="text-align: center; padding: 1rem; background: rgba(76,175,80,0.1); border-radius: 4px;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);"
+                                    id="services-revenue">$0.00</div>
+                                <div class="text-muted">Servicios Pagados</div>
+                            </div>
+                            <div
+                                style="text-align: center; padding: 1rem; background: rgba(156,39,176,0.1); border-radius: 4px;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #9C27B0;"
+                                    id="memberships-revenue">$0.00</div>
+                                <div class="text-muted">Membresias Vendidas</div>
+                            </div>
+                            <div
+                                style="text-align: center; padding: 1rem; background: rgba(255,152,0,0.1); border-radius: 4px;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #FF9800;"
+                                    id="products-revenue">$0.00</div>
+                                <div class="text-muted">Productos</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -210,6 +258,7 @@
     <script src="js/api.js"></script>
     <script>
         let salesChart = null;
+        let currentAbortController = null;
 
         async function init() {
             checkAuth();
@@ -226,25 +275,48 @@
         }
 
         function setupDates() {
-            // Default: Current Month
-            const date = new Date();
-            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            // Default: Current Week (Monday to Sunday)
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
 
-            document.getElementById('start-date').value = firstDay.toISOString().split('T')[0];
-            document.getElementById('end-date').value = lastDay.toISOString().split('T')[0];
+            document.getElementById('start-date').value = monday.toISOString().split('T')[0];
+            document.getElementById('end-date').value = sunday.toISOString().split('T')[0];
         }
 
         async function loadReports() {
             const start = document.getElementById('start-date').value;
             const end = document.getElementById('end-date').value;
 
+            // Cancel any pending requests
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+            currentAbortController = new AbortController();
+
             try {
-                const data = await api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`);
-                updateDashboard(data);
+                // Load both reports in parallel
+                const [salesData, revenueData, servicesData] = await Promise.all([
+                    api.get(`/admin/reports/sales?start_date=${start}&end_date=${end}`),
+                    api.get(`/admin/reports/revenue?start_date=${start}&end_date=${end}`),
+                    api.get(`/admin/reports/services-provided?start_date=${start}&end_date=${end}`)
+                ]);
+
+                updateDashboard(salesData, revenueData, servicesData);
             } catch (error) {
+                // Ignore abort errors (user navigated away)
+                if (error.name === 'AbortError') {
+                    console.log('Request cancelled');
+                    return;
+                }
                 console.error('Error loading reports:', error);
-                alert('Error al cargar reporte: ' + error.message);
+                // Only show alert if it's a real error, not a navigation
+                if (document.visibilityState === 'visible') {
+                    showToast('Error al cargar reporte: ' + error.message, 'error');
+                }
             }
         }
 
@@ -252,21 +324,29 @@
             // Unpack Data
             const { daily_sales, services_sales, totals, membership_sales } = data;
 
-            // 1. Update Cards
+            // 1. Update Main Cards
             const revenue = totals?.total_revenue || 0;
             const transactions = totals?.total_transactions || 0;
             const avg = totals?.avg_ticket || 0;
+            const membershipSales = revenueTotals.total_memberships || 0;
 
             document.getElementById('total-revenue').textContent = formatCurrency(revenue);
             document.getElementById('total-transactions').textContent = transactions;
             document.getElementById('avg-ticket').textContent = formatCurrency(avg);
+            document.getElementById('membership-sales').textContent = formatCurrency(membershipSales);
 
-            // 2. Update Chart
+            // 2. Update Revenue Breakdown
+            document.getElementById('services-revenue').textContent = formatCurrency(revenueTotals.total_services || 0);
+            document.getElementById('memberships-revenue').textContent = formatCurrency(revenueTotals.total_memberships || 0);
+            document.getElementById('products-revenue').textContent = formatCurrency(revenueTotals.total_products || 0);
+
+            // 3. Update Chart
             updateChart(daily_sales);
 
-            // 3. Update Top Services
+            // 4. Update Top Services (only paid services)
             const tbody = document.getElementById('top-services-body');
-            tbody.innerHTML = (services_sales || []).map(s => `
+            const paidServices = (services_sales || []).filter(s => parseFloat(s.total) > 0);
+            tbody.innerHTML = paidServices.map(s => `
                 <tr>
                     <td>
                         <div class="font-medium">${s.name}</div>
@@ -318,11 +398,8 @@
         function updateChart(dailyData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
 
-            // Prepare Data
             const labels = dailyData.map(d => {
-                const date = new Date(d.date); // d.date is string YYYY-MM-DD
-                // Adjust for timezone offset if necessary or just split
-                // Best to display visual date
+                const date = new Date(d.date);
                 return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
             });
             const values = dailyData.map(d => d.total);
@@ -338,7 +415,7 @@
                     datasets: [{
                         label: 'Ventas ($)',
                         data: values,
-                        borderColor: '#C4A35A', // Gold
+                        borderColor: '#C4A35A',
                         backgroundColor: 'rgba(196, 163, 90, 0.1)',
                         borderWidth: 2,
                         fill: true,
@@ -372,16 +449,80 @@
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
         }
 
-        function exportReport() {
-            // Simple CSV export of daily sales
+        async function exportReport() {
             const start = document.getElementById('start-date').value;
             const end = document.getElementById('end-date').value;
-            // Ideally trigger backend export or just download current chart data
-            alert('Funcionalidad de exportación detallada en desarrollo. Captura de pantalla recomendada.');
+
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    alert('Sesion expirada. Por favor inicia sesion de nuevo.');
+                    logout();
+                    return;
+                }
+
+                const url = `${API_BASE}/admin/reports/sales/excel?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '');
+                    throw new Error(text || 'No se pudo generar el Excel');
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Reporte_Ventas_${start}_${end}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+                alert('Reporte exportado correctamente');
+            } catch (error) {
+                console.error('Error exporting report:', error);
+                alert('Error al exportar reporte: ' + error.message);
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T12:00:00');
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function showToast(message, type = 'info') {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success)' : 'var(--gold)'};
+                color: var(--charcoal-dark);
+                padding: 1rem 1.5rem;
+                border-radius: 4px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
         }
 
         init();
     </script>
+    <script src="js/sidebar.js"></script>
+    <script src="../js/admin.js"></script>
 </body>
 
 </html>

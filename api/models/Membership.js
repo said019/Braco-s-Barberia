@@ -98,18 +98,16 @@ export const Membership = {
     const type = await this.getTypeById(membership_type_id);
     if (!type) throw new Error('Tipo de membresía no encontrado');
 
-    // Calcular fecha de expiración
+    // Las membresías ya no tienen fecha de vencimiento - expiran al usar todos los servicios
     const purchaseDate = new Date(purchase_date || Date.now());
-    const expirationDate = new Date(purchaseDate);
-    expirationDate.setDate(expirationDate.getDate() + type.validity_days);
 
     return transaction(async (client) => {
-      // Crear membresía
+      // Crear membresía (sin fecha de vencimiento)
       const sql = `
         INSERT INTO client_memberships 
           (client_id, membership_type_id, total_services, purchase_date, expiration_date, 
            payment_method, payment_amount, notes)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, NULL, $5, $6, $7)
         RETURNING *
       `;
       const result = await client.query(sql, [
@@ -117,7 +115,6 @@ export const Membership = {
         membership_type_id,
         type.total_services,
         purchase_date,
-        expirationDate,
         payment_method,
         payment_amount,
         notes
@@ -232,12 +229,13 @@ export const Membership = {
     return result.rows[0];
   },
 
-  // Actualizar membresías expiradas (job automático)
+  // Actualizar membresías expiradas (job automático) - solo las que tienen fecha de vencimiento
   async expireOldMemberships() {
     const sql = `
       UPDATE client_memberships
       SET status = 'expired'
       WHERE status = 'active'
+        AND expiration_date IS NOT NULL
         AND expiration_date < CURRENT_DATE
       RETURNING *
     `;

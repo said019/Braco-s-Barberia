@@ -25,7 +25,7 @@ export const validateClient = [
   body('phone')
     .trim()
     .notEmpty().withMessage('El teléfono es requerido')
-    .matches(/^[0-9]{10}$/).withMessage('El teléfono debe tener 10 dígitos'),
+    .matches(/^\d{7,10}$/).withMessage('El teléfono debe tener entre 7 y 10 dígitos'),
   body('email')
     .optional()
     .isEmail().withMessage('Email inválido')
@@ -42,10 +42,18 @@ export const validateAppointment = [
   body('appointment_date')
     .isDate().withMessage('Fecha inválida')
     .custom((value) => {
-      const date = new Date(value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (date < today) {
+      // Crear fechas comparables en zona horaria de México
+      const inputDate = new Date(value + 'T12:00:00'); // Mediodía para evitar problemas de borde
+
+      const nowInMexico = new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" });
+      const todayMexico = new Date(nowInMexico);
+      todayMexico.setHours(0, 0, 0, 0); // Inicio del día en México
+
+      // Normalizar inputDate para comparación de solo fecha
+      const checkDate = new Date(inputDate);
+      checkDate.setHours(0, 0, 0, 0);
+
+      if (checkDate < todayMexico) {
         throw new Error('No se pueden agendar citas en fechas pasadas');
       }
       return true;

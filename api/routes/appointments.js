@@ -20,7 +20,7 @@ router.get('/:id', authenticateToken, isAdmin, validateId, appointmentController
 // Actualización
 router.put('/:id', authenticateToken, isAdmin, validateId, appointmentController.update);
 router.patch('/:id/status', authenticateToken, isAdmin, validateId, [
-  body('status').isIn(['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show']),
+  body('status').isIn(['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'pending']),
   validate
 ], appointmentController.updateStatus);
 

@@ -14,6 +14,14 @@ const state = {
     client: null
 };
 
+// Helper para formatear fecha en formato YYYY-MM-DD sin timezone issues
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // ============================================================================
 // SERVICIOS ESTÁTICOS (12 servicios completos)
 // ============================================================================
@@ -46,7 +54,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/ritual_barba.jpeg"
     },
     {
-        id: 4,
+        id: 11,
         name: "DÚO",
         description: "Duración 120min (2horas)\n• Visagismo\n• Corte de cabello\n• Ritual tradicional para rasurado o arreglo de barba y bigote",
         duration_minutes: 120,
@@ -55,34 +63,34 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/duo.png"
     },
     {
-        id: 5,
+        id: 4,
         name: "INSTALACIÓN DE PRÓTESIS CAPILAR",
-        description: "Las prótesis o reemplazo capilar es una solución innovadora y efectiva para aquellos que experimentan pérdida de cabello o calvicie severa.\n\nTiempo aproximado 180 minutos (3 horas)\n• Diagnóstico\n• Prótesis capilar\n• Visagismo\n• Personalización",
+        description: "Las prótesis o reemplazo capilar representan una solución innovadora y efectiva para aquellos que experimentan pérdida de cabello.\n\n• Mejora instantánea en la apariencia y confianza\n• Solución no quirúrgica y resultados naturales\n• Personalización total y fácil mantenimiento\n• No afecta el crecimiento del cabello natural\n• Durabilidad a largo plazo",
         duration_minutes: 180,
         price: 4800,
         category_id: 3,
         image_url: "assets/instalacio_protesis.jpeg"
     },
     {
-        id: 6,
+        id: 5,
         name: "MANTENIMIENTO DE PRÓTESIS CAPILAR",
-        description: "Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación.\n\nTiempo aproximado 120 minutos (2 horas)\n• Retiro seguro\n• Limpieza profesional\n• Ajuste de adhesivos\n• Colocación segura",
+        description: "Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación.\n\n• Retiro seguro y limpieza profesional\n• Ajuste de adhesivos y colocación segura\n• Hidratación de la pieza",
         duration_minutes: 120,
         price: 650,
         category_id: 3,
         image_url: "assets/mant_protesis.jpeg"
     },
     {
-        id: 7,
+        id: 6,
         name: "TERAPIA INTEGRAL CAPILAR (TIC)",
-        description: "Recomendado para las personas que inician con un problema de calvicie de leve a moderada.\n\nEl TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo con el objetivo de lograr un cuero cabelludo sano y por lo tanto un cabello grueso y en ocasiones abundante.\n\nDuración 60 minutos\n• Exfoliación capilar\n• Alta Frecuencia\n• Fotobiomodulación\n• Ozonoterapia\n• Aplicación de productos Premium",
+        description: "Braco’s NeoCapilar: Salud y prevención de la caída del cabello. Restaura, fortalece y estimula el crecimiento natural.\n\n• Ozonoterapia: Purifica y oxigena\n• Alta Frecuencia: Estimula irrigación sanguínea\n• Fotobiomodulación (Luz LED): Regeneración celular\n• Productos dermatológicos premium\n• Diagnóstico inicial requerido",
         duration_minutes: 60,
         price: 550,
         category_id: 3,
         image_url: "assets/TIC.jpeg"
     },
     {
-        id: 8,
+        id: 7,
         name: "MASCARILLA PLASTIFICADA NEGRA",
         description: "Recomendada para obtener un rostro limpio de puntos negros y espinillas.\n\nDuración 60 minutos\n• Limpieza de rostro\n• Aplicación y retiro de mascarilla\n• Aplicación de productos Premium\n• Masaje facial",
         duration_minutes: 60,
@@ -91,7 +99,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/mascarilla_negra.jpeg"
     },
     {
-        id: 9,
+        id: 8,
         name: "MASCARILLA DE ARCILLA",
         description: "Después de la aplicación de la mascarilla plástica recomendamos como mantenimiento la mascarilla de arcilla que exfolia el rostro de una manera más amigable y sutil pero sin perder efectividad en el proceso.\n\nDuración 60 minutos\n• Limpieza de rostro\n• Aplicación y retiro de mascarilla\n• Aplicación de productos Premium\n• Masaje facial",
         duration_minutes: 60,
@@ -100,7 +108,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/arcilla.jpeg"
     },
     {
-        id: 10,
+        id: 9,
         name: "MANICURA CABALLERO",
         description: "Duración aproximada 60 minutos\n• Retiro de cutícula\n• Exfoliación de manos\n• Recorte de uñas\n• Arreglo de uñas\n• Humectación de manos\n• Masaje de manos y dedos",
         duration_minutes: 60,
@@ -109,7 +117,7 @@ const SERVICIOS_BRACOS = [
         image_url: "assets/manicura_caballero.jpeg"
     },
     {
-        id: 11,
+        id: 10,
         name: "PEDICURA CABALLERO",
         description: "Duración aproximada 60 minutos\n• Retiro de cutícula\n• Exfoliación de pies\n• Recorte y limado de uñas\n• Limado de callosidad\n• Humectación de pies\n• Masaje de pies",
         duration_minutes: 60,
@@ -147,6 +155,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', async () => {
     await loadServices();
     setupEventListeners();
+    setupQuickLogin();
     renderCalendar();
 
     // Check if service is pre-selected from URL
@@ -162,12 +171,212 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ============================================================================
+// QUICK LOGIN CON CÓDIGO DE 4 DÍGITOS
+// ============================================================================
+function setupQuickLogin() {
+    const codeInput = document.getElementById('client-code-input');
+    const btnLogin = document.getElementById('btn-quick-login');
+    const btnLogout = document.getElementById('btn-logout-code');
+    const hint = document.getElementById('quick-login-hint');
+
+    if (!codeInput || !btnLogin) return;
+
+    // Auto-format input (only numbers)
+    codeInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+
+        // Auto-submit when 4 digits entered
+        if (e.target.value.length === 4) {
+            loginWithCode(e.target.value);
+        }
+    });
+
+    // Submit on button click
+    btnLogin.addEventListener('click', () => {
+        if (codeInput.value.length === 4) {
+            loginWithCode(codeInput.value);
+        } else {
+            hint.textContent = 'Ingresa un código de 4 dígitos';
+            hint.classList.remove('success');
+        }
+    });
+
+    // Submit on Enter
+    codeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && codeInput.value.length === 4) {
+            loginWithCode(codeInput.value);
+        }
+    });
+
+    // Logout button
+    if (btnLogout) {
+        btnLogout.addEventListener('click', logoutQuickLogin);
+    }
+}
+
+async function loginWithCode(code) {
+    const hint = document.getElementById('quick-login-hint');
+    const loginCard = document.querySelector('.quick-login-card');
+    const welcomeCard = document.getElementById('quick-login-welcome');
+
+    hint.textContent = 'Buscando...';
+    hint.classList.remove('success');
+
+    try {
+        const response = await fetch(`${API.BASE_URL}/public/client/login/${code}`);
+        const data = await response.json();
+
+        if (data.success && data.client) {
+            // Store logged in client
+            state.loggedInClient = data.client;
+            state.clientMemberships = data.memberships || [];
+
+            // Show welcome message
+            document.getElementById('welcome-client-name').textContent = data.client.name.split(' ')[0];
+            loginCard.style.display = 'none';
+            welcomeCard.classList.remove('hidden');
+
+            // Pre-fill form if visible
+            prefillClientForm(data.client);
+
+            console.log('Client logged in:', data.client);
+        } else {
+            hint.textContent = data.error || 'Código no encontrado';
+            hint.classList.remove('success');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        hint.textContent = 'Error al buscar código';
+        hint.classList.remove('success');
+    }
+}
+
+function logoutQuickLogin() {
+    const loginCard = document.querySelector('.quick-login-card');
+    const welcomeCard = document.getElementById('quick-login-welcome');
+    const codeInput = document.getElementById('client-code-input');
+    const hint = document.getElementById('quick-login-hint');
+
+    // Clear state
+    state.loggedInClient = null;
+    state.clientMemberships = [];
+
+    // Reset UI
+    loginCard.style.display = 'block';
+    welcomeCard.classList.add('hidden');
+    codeInput.value = '';
+    hint.textContent = '';
+
+    // Clear form
+    clearClientForm();
+}
+
+function prefillClientForm(client) {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const emailInput = document.getElementById('client-email');
+    const birthdateInput = document.getElementById('client-birthdate');
+
+    if (nameInput && client.name) {
+        nameInput.value = client.name;
+        nameInput.readOnly = true;
+        nameInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
+    }
+
+    if (phoneInput && client.phone) {
+        phoneInput.value = client.phone;
+        phoneInput.readOnly = true;
+        phoneInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
+    }
+
+    if (emailInput && client.email) {
+        emailInput.value = client.email;
+    }
+
+    if (birthdateInput && client.birthdate) {
+        // Formatear fecha a YYYY-MM-DD para el input date
+        const date = client.birthdate.split('T')[0];
+        birthdateInput.value = date;
+    }
+}
+
+function clearClientForm() {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const emailInput = document.getElementById('client-email');
+
+    if (nameInput) {
+        nameInput.value = '';
+        nameInput.readOnly = false;
+        nameInput.style.backgroundColor = '';
+    }
+
+    if (phoneInput) {
+        phoneInput.value = '';
+        phoneInput.readOnly = false;
+        phoneInput.style.backgroundColor = '';
+    }
+
+    if (emailInput) {
+        emailInput.value = '';
+    }
+}
+
+// ============================================================================
 // CARGAR SERVICIOS
 // ============================================================================
 async function loadServices() {
-    // Usar servicios estáticos directamente
-    state.services = SERVICIOS_BRACOS;
+    try {
+        // Intentar cargar servicios desde la API
+        const apiServices = await API.getServices();
+        if (apiServices && apiServices.length > 0) {
+            // Mapear servicios de la API al formato esperado
+            state.services = apiServices.map(s => ({
+                id: s.id,
+                name: s.name,
+                description: s.description || '',
+                duration_minutes: s.duration_minutes,
+                price: s.price,
+                category_id: s.category_id,
+                image_url: s.image_url || getServiceImage(s.id, s.name)  // Use DB image or fallback
+            }));
+            console.log('Servicios cargados desde API:', state.services);
+        } else {
+            // Fallback a servicios estáticos
+            state.services = SERVICIOS_BRACOS;
+            console.log('Usando servicios estáticos');
+        }
+    } catch (error) {
+        console.error('Error cargando servicios, usando fallback:', error);
+        state.services = SERVICIOS_BRACOS;
+    }
     renderServices(state.services);
+}
+
+// Helper para obtener imagen del servicio
+function getServiceImage(id, name) {
+    const imageMap = {
+        'corte de cabello para caballero': 'assets/corte_caballero.jpeg',
+        'corte de cabello niño': 'assets/corte_nino.jpeg',
+        'ritual tradicional de barba': 'assets/ritual_barba.jpeg',
+        'dúo': 'assets/duo.png',
+        'instalación de prótesis capilar': 'assets/instalacio_protesis.jpeg',
+        'mantenimiento de prótesis capilar': 'assets/mant_protesis.jpeg',
+        'terapia integral capilar': 'assets/TIC.jpeg',
+        'mascarilla plastificada negra': 'assets/mascarilla_negra.jpeg',
+        'mascarilla de arcilla': 'assets/arcilla.jpeg',
+        'manicura caballero': 'assets/manicura_caballero.jpeg',
+        'pedicura caballero': 'assets/pedicura.jpeg',
+        'paquete nupcial': 'assets/pqte_dlux.jpeg'
+    };
+
+    const nameLower = name.toLowerCase();
+    for (const [key, value] of Object.entries(imageMap)) {
+        if (nameLower.includes(key)) {
+            return value;
+        }
+    }
+    return 'assets/logo.png';
 }
 
 // ============================================================================
@@ -393,10 +602,14 @@ function renderTimeSlots() {
 function selectTime(slotElement) {
     document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
     slotElement.classList.add('selected');
-
     state.selectedTime = slotElement.dataset.time;
     elements.btnToStep3.disabled = false;
+    // Clear hint message
+    const hint = document.getElementById('time-hint');
+    if (hint) hint.textContent = '';
 }
+
+
 
 // ============================================================================
 // ACTUALIZAR RESUMEN
@@ -481,30 +694,128 @@ async function submitBooking() {
     const phone = formData.get('phone').replace(/\D/g, '');
 
     try {
-        // Verificar si el cliente existe
-        let client = await API.getClientByPhone(phone);
+        // Si hay cliente logueado con código, usarlo directamente
+        let client = state.loggedInClient || await API.getClientByPhone(phone);
 
-        // Si no existe, crear nuevo cliente
-        if (!client) {
-            client = await API.createClient({
-                name: formData.get('name'),
-                phone: phone
-            });
+        // Determinar si requiere depósito:
+        // 1. Si NO existe (es brand new)
+        // 2. Si existe PERO es tipo "Nuevo" (ID 1)
+        // 3. Si es PAQUETE NUPCIAL D'lux (siempre requiere depósito de $200)
+        const isBrandNew = !client;
+        const isExistingNew = client && client.client_type_id === 1; // 1 = Nuevo (según update_client_types.sql)
+        const isNupcialPackage = state.selectedService.name.toLowerCase().includes('nupcial');
+
+        const requiresDeposit = isBrandNew || isExistingNew || isNupcialPackage;
+        const depositAmount = isNupcialPackage ? 200 : 100;
+
+        // Si requiere depósito, mostrar modal
+        if (requiresDeposit) {
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = originalText;
+
+            // Datos temporales para el modal
+            const emailInput = document.getElementById('client-email');
+            const email = emailInput ? emailInput.value : null;
+
+            // Usar fecha local sin timezone issues
+            const localDate = formatLocalDate(state.selectedDate);
+
+            const data = {
+                name: isBrandNew ? formData.get('name') : client.name, // Usar nombre de form o de DB
+                phone: phone,
+                email: email,
+                notes: formData.get('notes'),
+                appointment_date: localDate
+            };
+
+            state.tempClient = {
+                name: data.name,
+                phone: data.phone,
+                service: state.selectedService.name,
+                date: data.appointment_date,
+                displayDate: new Date(`${data.appointment_date}T00:00:00`).toLocaleDateString('es-MX', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                }),
+                time: state.selectedTime,
+                start_time: state.selectedTime
+            };
+
+            try {
+                // Si es nuevo de verdad, crearlo ahora
+                if (isBrandNew) {
+                    const birthdateInput = document.getElementById('client-birthdate');
+                    const newClient = await API.createClient({
+                        name: data.name,
+                        phone: phone,
+                        email: data.email || null,
+                        birthdate: birthdateInput?.value || null
+                    });
+                    if (newClient && newClient.id) {
+                        client = newClient; // Asignar para usar abajo
+                    } else {
+                        throw new Error('Error al registrar cliente.');
+                    }
+                }
+
+                const appointmentData = {
+                    client_id: client.id,
+                    service_id: state.selectedService.id,
+                    appointment_date: localDate,
+                    start_time: state.selectedTime,
+                    notes: (data.notes || '') + ` - Pendiente de Depósito $${depositAmount}`,
+                    status: 'pending',
+                    deposit_required: true,
+                    deposit_amount: depositAmount,
+                    email: data.email || null
+                };
+
+                const appointment = await API.createAppointment(appointmentData);
+
+                if (appointment && appointment.id) {
+                    state.clientCode = client.code;
+                    showDepositModal(state.tempClient);
+                } else {
+                    throw new Error('No se pudo pre-agendar la cita.');
+                }
+
+            } catch (error) {
+                console.error('Error flow depósito:', error);
+                showToast('Error: ' + error.message, 'error');
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = originalText;
+            }
+            return; // Detener flujo normal
         }
 
-        // Crear la cita
-        const bookingData = {
-            client_id: client.id,
-            service_id: state.selectedService.id,
-            appointment_date: state.selectedDate.toISOString().split('T')[0],
-            start_time: state.selectedTime,
-            notes: formData.get('notes') || null
+        // =====================================================
+        // RECURRING CLIENT FLOW - Show Payment Options Modal
+        // =====================================================
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = originalText;
+
+        // Store client & form data for later use
+        state.recurringClient = client;
+        state.recurringFormData = {
+            notes: formData.get('notes') || ''
         };
 
-        const result = await API.createAppointment(bookingData);
+        // Check for memberships
+        let memberships = [];
+        try {
+            memberships = await API.getClientMemberships(client.id);
+            // Filter to only active with remaining services
+            memberships = memberships.filter(m => m.remaining_services > 0);
+        } catch (e) {
+            console.log('No memberships or error fetching:', e);
+        }
 
-        // Mostrar pantalla de éxito
-        showSuccess(result);
+        state.clientMemberships = memberships;
+
+        // Show payment options modal
+        showPaymentOptionsModal(client, memberships);
+        return;
 
     } catch (error) {
         console.error('Error:', error);
@@ -535,3 +846,409 @@ function showSuccess(appointmentData) {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// ============================================================================
+// DEPOSIT MODAL LOGIC
+// ============================================================================
+
+function showDepositModal() {
+    const modal = document.getElementById('deposit-modal');
+
+    // Populate appointment summary
+    if (state.tempClient) {
+        const serviceEl = document.getElementById('deposit-service');
+        const dateEl = document.getElementById('deposit-date');
+        const timeEl = document.getElementById('deposit-time');
+        const amountEl = document.getElementById('deposit-amount');
+
+        if (serviceEl) serviceEl.textContent = state.selectedService?.name || '-';
+        if (dateEl) dateEl.textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        if (timeEl) timeEl.textContent = state.selectedTime || '-';
+
+        // Monto según servicio (Nupcial = $200, otros = $100)
+        const isNupcial = state.selectedService?.name?.toLowerCase().includes('nupcial');
+        if (amountEl) amountEl.textContent = isNupcial ? '200' : '100';
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closeDepositModal() {
+    const modal = document.getElementById('deposit-modal');
+    modal.classList.remove('visible');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        // Mostrar pantalla de éxito con info de depósito pendiente
+        showSuccessWithDepositInfo();
+    }, 300);
+}
+
+function showSuccessWithDepositInfo() {
+    // Ocultar todos los pasos
+    elements.steps.forEach(s => s.classList.add('hidden'));
+
+    // Mostrar pantalla de éxito
+    const successStep = document.getElementById('step-success');
+    successStep.classList.remove('hidden');
+
+    // Llenar datos
+    document.getElementById('success-code').textContent = '----';
+    document.getElementById('success-service').textContent = state.selectedService.name;
+    document.getElementById('success-datetime').textContent =
+        `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
+    document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
+
+    // Cambiar título de éxito
+    const successTitle = document.querySelector('.success-title');
+    if (successTitle) {
+        successTitle.textContent = '¡Cita Pre-Agendada!';
+        successTitle.style.color = '#FFC107';
+    }
+
+    const successMessage = document.querySelector('.success-message');
+    if (successMessage) {
+        successMessage.innerHTML = 'Tu cita requiere un <strong>depósito de $100 MXN</strong> para confirmarse';
+    }
+
+    // Agregar aviso de depósito pendiente con botón de WhatsApp
+    const successNotice = document.querySelector('.success-notice');
+    if (successNotice) {
+        const clientName = state.tempClient?.name || 'Cliente';
+        const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        const time = state.selectedTime;
+        const serviceName = state.selectedService.name;
+        const message = `Hola, soy *${clientName}*.
+Quiero agendar una cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
+
+Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
+
+        successNotice.innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.05)); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <p style="color: #FFC107; margin-bottom: 1rem; font-size: 1.1rem;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>DEPÓSITO REQUERIDO</strong>
+                </p>
+                <p style="margin-bottom: 1rem;">Como eres cliente nuevo, necesitamos un depósito de <strong>$100 MXN</strong> para confirmar tu cita. Este monto se descuenta del total.</p>
+
+                <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000176357788')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
+                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
+                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                </div>
+
+                <a href="${whatsappUrl}" target="_blank" style="display: block; background: #25D366; color: white; text-align: center; padding: 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+                    <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
+                </a>
+            </div>
+        `;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function sendDepositWhatsApp() {
+    if (!state.tempClient) return;
+
+    const name = state.tempClient.name;
+    const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+    const time = state.selectedTime;
+    const serviceName = state.selectedService.name;
+
+    const message = `Hola, soy *${name}*.
+Quiero agendar una cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
+
+Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
+
+    const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+
+    // Después de enviar WhatsApp, mostrar pantalla de éxito
+    closeDepositModal();
+}
+
+function toggleBankDetails() {
+    const card = document.getElementById('bank-details-card');
+    const btn = document.getElementById('btn-show-bank-details');
+
+    if (card.classList.contains('hidden')) {
+        card.classList.remove('hidden');
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar Datos';
+    } else {
+        card.classList.add('hidden');
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-credit-card"></i> Ver Datos Bancarios';
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('¡Copiado al portapapeles!', 'success');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+    });
+}
+
+// Make functions global
+window.showDepositModal = showDepositModal;
+window.closeDepositModal = closeDepositModal;
+window.sendDepositWhatsApp = sendDepositWhatsApp;
+window.toggleBankDetails = toggleBankDetails;
+window.copyToClipboard = copyToClipboard;
+
+// ============================================================================
+// PAYMENT OPTIONS MODAL (RECURRING CLIENTS)
+// ============================================================================
+
+function showPaymentOptionsModal(client, memberships) {
+    const modal = document.getElementById('payment-options-modal');
+
+    // Populate data
+    document.getElementById('po-client-name').textContent = client.name.split(' ')[0]; // First name
+    document.getElementById('po-service').textContent = state.selectedService?.name || '-';
+    document.getElementById('po-date').textContent = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('po-time').textContent = state.selectedTime || '-';
+
+    // Show membership option if available
+    const membershipOption = document.getElementById('po-membership-option');
+    if (memberships && memberships.length > 0) {
+        membershipOption.classList.remove('hidden');
+        const m = memberships[0];
+        document.getElementById('po-membership-name').textContent = `${m.membership_name} (${m.remaining_services} servicios)`;
+        state.selectedMembership = m;
+    } else {
+        membershipOption.classList.add('hidden');
+        state.selectedMembership = null;
+    }
+
+    // Hide bank details initially
+    document.getElementById('po-bank-details').classList.add('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closePaymentOptionsModal() {
+    const modal = document.getElementById('payment-options-modal');
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+async function selectPaymentOption(option) {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    let appointmentNotes = notes;
+
+    if (option === 'membership') {
+        // Record intent to use membership
+        const m = state.selectedMembership;
+        appointmentNotes = `${notes} [INTENCIÓN: Usar membresía ${m.membership_name}]`.trim();
+        await createRecurringAppointment(client, appointmentNotes);
+        closePaymentOptionsModal();
+
+    } else if (option === 'prepay') {
+        // Show bank details section
+        document.getElementById('po-bank-details').classList.remove('hidden');
+        // Scroll to it
+        document.getElementById('po-bank-details').scrollIntoView({ behavior: 'smooth' });
+
+    } else if (option === 'skip') {
+        // Just create appointment normally
+        await createRecurringAppointment(client, appointmentNotes);
+        closePaymentOptionsModal();
+    }
+}
+
+async function confirmPrepayOption() {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
+    // Enviar flag de pago completo
+    const result = await createRecurringAppointmentWithResult(client, appointmentNotes, { is_full_payment: true });
+    closePaymentOptionsModal();
+
+    if (result) {
+        // Mostrar pantalla de éxito con datos de pago
+        showSuccessWithPaymentInfo(result, client);
+
+        // Open WhatsApp for sending proof
+        const message = `Hola, soy *${client.name}*.
+He agendado mi cita para el *${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })}* a las *${state.selectedTime}*.
+
+Anexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+}
+
+// Versión que retorna el resultado para uso en confirmPrepayOption
+async function createRecurringAppointmentWithResult(client, notes, extraData = {}) {
+    try {
+        const emailInput = document.getElementById('client-email');
+        const email = emailInput ? emailInput.value : null;
+
+        const bookingData = {
+            client_id: client.id,
+            service_id: state.selectedService.id,
+            appointment_date: formatLocalDate(state.selectedDate),
+            start_time: state.selectedTime,
+            notes: notes || null,
+            status: 'scheduled',
+            email: email || null,
+            ...extraData
+        };
+
+        const result = await API.createAppointment(bookingData);
+        return result;
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        showToast(error.message || 'Error al crear la cita', 'error');
+        return null;
+    }
+}
+
+// Pantalla de éxito con datos de pago (para clientes recurrentes que eligen "Pagar Ahora")
+function showSuccessWithPaymentInfo(appointmentData, client) {
+    // Ocultar todos los pasos
+    elements.steps.forEach(s => s.classList.add('hidden'));
+
+    // Mostrar pantalla de éxito
+    const successStep = document.getElementById('step-success');
+    successStep.classList.remove('hidden');
+
+    // Llenar datos
+    document.getElementById('success-code').textContent = appointmentData.checkout_code || '----';
+    document.getElementById('success-service').textContent = state.selectedService.name;
+    document.getElementById('success-datetime').textContent =
+        `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
+    document.getElementById('success-price').textContent = `$${state.selectedService.price}`;
+
+    // Cambiar título
+    const successTitle = document.querySelector('.success-title');
+    if (successTitle) {
+        successTitle.textContent = '¡Cita Confirmada!';
+        successTitle.style.color = '#4CAF50';
+    }
+
+    const successMessage = document.querySelector('.success-message');
+    if (successMessage) {
+        successMessage.innerHTML = 'Tu cita está confirmada. <strong>Envía tu comprobante de pago por WhatsApp.</strong>';
+    }
+
+    // Agregar datos bancarios en la pantalla de éxito
+    const successNotice = document.querySelector('.success-notice');
+    if (successNotice) {
+        const clientName = client?.name || 'Cliente';
+        const dateFormatted = formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' });
+        const time = state.selectedTime;
+        const serviceName = state.selectedService.name;
+        const price = state.selectedService.price;
+        const message = `Hola, soy *${clientName}*.
+He agendado mi cita para:
+🗓 *${dateFormatted}* a las *${time}*
+💇‍♂️ *${serviceName}*
+💰 *$${price}*
+
+Anexo mi comprobante de pago anticipado.`;
+        const whatsappUrl = `https://wa.me/525573432027?text=${encodeURIComponent(message)}`;
+
+        successNotice.innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05)); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <p style="color: #4CAF50; margin-bottom: 1rem; font-size: 1.1rem;">
+                    <i class="fas fa-check-circle"></i> <strong>PAGO ANTICIPADO</strong>
+                </p>
+                <p style="margin-bottom: 1rem;">Has elegido pagar por adelantado. Transfiere el monto de <strong>$${price} MXN</strong> y envía tu comprobante.</p>
+
+                <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000176357788')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
+                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
+                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
+                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
+                    </div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                </div>
+
+                <a href="${whatsappUrl}" target="_blank" style="display: block; background: #25D366; color: white; text-align: center; padding: 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+                    <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
+                </a>
+            </div>
+        `;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function createRecurringAppointment(client, notes, extraData = {}) {
+    try {
+        // Get email from form if available
+        const emailInput = document.getElementById('client-email');
+        const email = emailInput ? emailInput.value : null;
+
+        const bookingData = {
+            client_id: client.id,
+            service_id: state.selectedService.id,
+            appointment_date: formatLocalDate(state.selectedDate),
+            start_time: state.selectedTime,
+            notes: notes || null,
+            status: 'scheduled', // Recurring clients get scheduled directly
+            email: email || null,
+            ...extraData // Include optional flags (like is_full_payment)
+        };
+
+        const result = await API.createAppointment(bookingData);
+        showSuccess(result);
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        showToast(error.message || 'Error al crear la cita', 'error');
+    }
+}
+
+// Cerrar modal y ver datos en pantalla (sin abrir WhatsApp automáticamente)
+async function confirmPrepayLater() {
+    const client = state.recurringClient;
+    const notes = state.recurringFormData?.notes || '';
+
+    const appointmentNotes = `${notes} [PREPAGO: Cliente indicó que transferirá por adelantado]`.trim();
+    // Enviar flag de pago completo
+    const result = await createRecurringAppointmentWithResult(client, appointmentNotes, { is_full_payment: true });
+    closePaymentOptionsModal();
+
+    if (result) {
+        // Mostrar pantalla de éxito con datos de pago (sin abrir WhatsApp)
+        showSuccessWithPaymentInfo(result, client);
+    }
+}
+
+// Export payment options functions
+window.showPaymentOptionsModal = showPaymentOptionsModal;
+window.closePaymentOptionsModal = closePaymentOptionsModal;
+window.selectPaymentOption = selectPaymentOption;
+window.confirmPrepayOption = confirmPrepayOption;
+window.confirmPrepayLater = confirmPrepayLater;

@@ -32,6 +32,11 @@
     position: relative;
     z-index: 1;
     max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 /* Hero Logo */
@@ -728,6 +733,105 @@
 }
 
 /* ============================================================================
+   BEVERAGES SECTION - Bebidas de Cortesía
+   ============================================================================ */
+.beverages-section {
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg,
+            rgba(196, 163, 90, 0.08) 0%,
+            rgba(45, 45, 45, 0.95) 50%,
+            rgba(196, 163, 90, 0.05) 100%);
+    border-top: 1px solid rgba(196, 163, 90, 0.2);
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+}
+
+.beverages-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    border: 1px solid rgba(196, 163, 90, 0.25);
+    backdrop-filter: blur(10px);
+}
+
+.beverages-icon {
+    font-size: 3.5rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 15px rgba(196, 163, 90, 0.5));
+}
+
+.beverages-content {
+    flex: 1;
+}
+
+.beverages-title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.beverages-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--cream);
+    opacity: 0.9;
+    margin-bottom: 0.75rem;
+}
+
+.beverages-text strong {
+    color: var(--gold);
+}
+
+.beverages-adult {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--cream);
+    opacity: 0.85;
+}
+
+.age-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+    .beverages-container {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .beverages-icon {
+        font-size: 2.5rem;
+    }
+
+    .beverages-title {
+        font-size: 1.3rem;
+    }
+
+    .beverages-adult {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* ============================================================================
    MEMBERSHIP CTA
    ============================================================================ */
 .membership-cta {
@@ -905,7 +1009,11 @@
     }
 
     .hero-logo-img {
-        height: 120px;
+        height: auto;
+        max-height: 150px;
+        width: auto;
+        max-width: 90vw;
+        object-fit: contain;
     }
 
     .hero-title {
@@ -1053,7 +1161,11 @@
     }
 
     .hero-logo-img {
-        height: 90px;
+        height: auto;
+        max-height: 120px;
+        width: auto;
+        max-width: 90vw;
+        object-fit: contain;
     }
 
     .hero-title {
@@ -1272,5 +1384,52 @@
 
     .scroll-indicator {
         display: none;
+    }
+}
+
+/* Fix centrado en móviles */
+@media (max-width: 768px) {
+    .hero {
+        text-align: center;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .hero-content {
+        align-items: center;
+        text-align: center;
+        padding: 0 0.5rem;
+    }
+
+    .hero-logo {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .hero-description {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero .btn-primary {
+        margin: 0 auto;
+    }
+    
+    /* Ocultar scroll indicator en móvil */
+    .scroll-indicator {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content {
+        padding: 0;
+    }
+
+    .hero-logo-img {
+        max-width: 280px;
+        width: 80vw;
     }
 }

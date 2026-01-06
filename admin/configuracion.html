@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -517,6 +518,14 @@
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -538,7 +547,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -610,6 +619,15 @@
                     </button>
                     <button class="tab-btn" onclick="switchTab('blocked')">
                         <i class="fas fa-ban"></i> Días Bloqueados
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('notifications')">
+                        <i class="fas fa-bell"></i> Notificaciones
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('reminders24h')">
+                        <i class="fab fa-whatsapp"></i> Recordatorios 24h
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('gcalendar')">
+                        <i class="fab fa-google"></i> Google Calendar
                     </button>
                 </div>
 
@@ -694,6 +712,29 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- DANGER ZONE -->
+                            <div class="setting-item"
+                                style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: rgba(229, 57, 53, 0.05); border-radius: 8px; border: 1px solid rgba(229, 57, 53, 0.3);">
+                                <div>
+                                    <h4
+                                        style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--error); margin-bottom: 0.5rem;">
+                                        <i class="fas fa-exclamation-triangle"
+                                            style="color: var(--error); margin-right: 0.5rem;"></i>
+                                        Zona de Peligro
+                                    </h4>
+                                    <p
+                                        style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.6); margin: 0; max-width: 400px;">
+                                        Acciones destructivas e irreversibles. Ten cuidado.
+                                    </p>
+                                </div>
+                                <div>
+                                    <button class="btn" onclick="startFactoryReset()"
+                                        style="background: rgba(229, 57, 53, 0.1); border: 1px solid var(--error); color: var(--error);">
+                                        <i class="fas fa-trash-alt"></i> ELIMINAR TODA LA BASE DE DATOS
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -752,6 +793,174 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tab: Notifications -->
+                <div id="tab-notifications" class="tab-content">
+                    <div class="info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Gestiona las preferencias de notificaciones de WhatsApp y Email por cliente.</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" style="justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3
+                                    style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--gold); margin-bottom: 0.25rem;">
+                                    <i class="fab fa-whatsapp"></i> Preferencias de Notificaciones
+                                </h3>
+                                <p style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.5); margin: 0;">Control de
+                                    notificaciones por cliente</p>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.7);">Filtrar:</label>
+                                    <select id="notification-filter" class="form-select"
+                                        style="min-width: 180px; padding: 0.5rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 6px; color: var(--cream); font-size: 0.85rem;">
+                                        <option value="all">Todos los clientes</option>
+                                        <option value="whatsapp_off">WhatsApp desactivado</option>
+                                        <option value="email_off">Email desactivado</option>
+                                        <option value="both_off">Ambos desactivados</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user"></i> Cliente</th>
+                                        <th><i class="fas fa-phone"></i> Teléfono</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th style="text-align: center;"><i class="fab fa-whatsapp"></i> WhatsApp</th>
+                                        <th style="text-align: center;"><i class="fas fa-envelope"></i> Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="notifications-body">
+                                    <!-- Loading state -->
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 3rem;">
+                                            <i class="fas fa-spinner fa-spin"
+                                                style="font-size: 2rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                                            <div style="color: rgba(245, 243, 238, 0.6);">Cargando preferencias...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Recordatorios 24h -->
+                <div id="tab-reminders24h" class="tab-content">
+                    <div class="info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Revisa las citas entre 23h y 25h y reprograma si es necesario (se reenvía WhatsApp automáticamente).</span>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" style="justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #25D366; margin-bottom: 0.25rem;">
+                                    <i class="fab fa-whatsapp"></i> Recordatorios 24h
+                                </h3>
+                                <p style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.5); margin: 0;">Citas entre 23h y 25h (revisar / reprogramar)</p>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                <button class="btn btn-secondary btn-sm" onclick="loadReminders24h()">
+                                    <i class="fas fa-sync"></i> Actualizar
+                                </button>
+                                <a href="calendario.html" class="btn btn-secondary btn-sm">
+                                    <i class="far fa-calendar-alt"></i> Abrir Calendario
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table" id="reminders-24h">
+                                <thead>
+                                    <tr>
+                                        <th><i class="far fa-calendar"></i> Fecha/Hora</th>
+                                        <th><i class="fas fa-user"></i> Cliente</th>
+                                        <th><i class="fas fa-cut"></i> Servicio</th>
+                                        <th style="width: 220px; text-align: center;"><i class="fas fa-bolt"></i> Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 2rem; color: rgba(245, 243, 238, 0.6);">
+                                            <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
+                                            Cargando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Google Calendar -->
+            <div id="tab-gcalendar" class="tab-content">
+                <div class="info-badge">
+                    <i class="fab fa-google"></i>
+                    <span>Sincroniza automáticamente las citas con Google Calendar.</span>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Integración con Google Calendar</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Connection Status -->
+                        <div id="gcal-status-container" style="margin-bottom: 2rem;">
+                            <div
+                                style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(196, 163, 90, 0.05); border-radius: 8px;">
+                                <div id="gcal-status-icon"
+                                    style="width: 50px; height: 50px; border-radius: 50%; background: rgba(196, 163, 90, 0.15); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fab fa-google" style="font-size: 1.5rem; color: var(--gold);"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div id="gcal-status-text"
+                                        style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem;">
+                                        Verificando conexión...
+                                    </div>
+                                    <div id="gcal-last-sync" style="font-size: 0.85rem; opacity: 0.7;">
+                                        -
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button id="btn-connect-gcal" class="btn btn-primary" onclick="connectGoogleCalendar()"
+                                style="display: none;">
+                                <i class="fab fa-google"></i> Conectar con Google
+                            </button>
+
+                            <button id="btn-sync-gcal" class="btn btn-secondary" onclick="syncGoogleCalendar()"
+                                style="display: none;">
+                                <i class="fas fa-sync"></i> Sincronizar Ahora
+                            </button>
+
+                            <button id="btn-disconnect-gcal" class="btn btn-danger" onclick="disconnectGoogleCalendar()"
+                                style="display:none;">
+                                <i class="fas fa-unlink"></i> Desconectar
+                            </button>
+                        </div>
+
+                        <!-- Help Text -->
+                        <div
+                            style="margin-top: 2rem; padding: 1rem; background: rgba(33, 150, 243, 0.05); border-left: 3px solid #2196F3; border-radius: 4px;">
+                            <p style="margin: 0; font-size: 0.9rem;"><i class="fas fa-info-circle"></i> <strong>Cómo
+                                    funciona:</strong></p>
+                            <ul style="margin: 0.5rem 0 0 1.5rem; font-size: 0.85rem; opacity: 0.8;">
+                                <li>Al conectar, podrás sincronizar todas tus citas con Google Calendar</li>
+                                <li>Las nuevas citas se crearán automáticamente en tu calendario</li>
+                                <li>Los cambios se sincronizarán en tiempo real</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -759,6 +968,7 @@
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="js/google-calendar.js"></script>
     <script>
         const daysMap = {
             0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
@@ -774,6 +984,74 @@
             5: 'fa-star',         // Viernes - estrella
             6: 'fa-cocktail'      // Sábado - cocktail
         };
+
+        function startFactoryReset() {
+            const title = '⚠️ ZONA DE PELIGRO';
+            const content = `
+                <div style="text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #E53935; margin-bottom: 1rem;"></i>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">¿Estás seguro de que quieres eliminar <strong>TODO</strong>?</p>
+                    <div style="background: rgba(229, 57, 53, 0.05); padding: 1rem; border-radius: 8px; text-align: left; margin-bottom: 1rem;">
+                        <p style="margin-bottom: 0.5rem; color: #E53935; font-weight: 600;">Se eliminarán permanentemente:</p>
+                        <ul style="margin-left: 1.5rem; color: #E53935;">
+                            <li>Todos los clientes</li>
+                            <li>Todas las citas</li>
+                            <li>Todas las membresías</li>
+                            <li>Todos los pagos</li>
+                        </ul>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666;">Esta acción no se puede deshacer.</p>
+                </div>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="document.getElementById('resetModal').remove()">Cancelar</button>
+                <button class="btn btn-primary" onclick="executeFactoryReset()" style="background: #E53935; border-color: #E53935;">
+                    <i class="fas fa-trash-alt"></i> SÍ, ELIMINAR TODO
+                </button>
+            `;
+
+            showCustomModal('resetModal', title, content, footer);
+        }
+
+        async function executeFactoryReset() {
+            const modal = document.getElementById('resetModal');
+            if (modal) modal.remove();
+
+            const btn = document.querySelector('button[onclick="startFactoryReset()"]');
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ELIMINANDO...';
+            }
+
+            try {
+                const response = await fetch('/api/system/wipe-database-danger', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('✅ BASE DE DATOS LIMPIADA CORRECTAMENTE', 'success');
+                    // Reload to reflect changes
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('❌ Error: ' + error.message, 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
+        }
 
         async function init() {
             checkAuth();
@@ -851,8 +1129,22 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tab).classList.add('active');
+            // Find the button that was clicked and add active class
+            // This is safer than relying on global event.target
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tab}'`));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const tabContent = document.getElementById('tab-' + tab);
+            if (tabContent) tabContent.classList.add('active');
+
+            // Load data when switching to specific tabs
+            if (tab === 'notifications') {
+                loadNotificationSettings();
+            } else if (tab === 'reminders24h') {
+                loadReminders24h();
+            } else if (tab === 'gcalendar') {
+                loadGoogleCalendarStatus();
+            }
         }
 
         // --- Business Hours Logic ---
@@ -977,6 +1269,130 @@
             }
         }
 
+        // ==========================
+        // Recordatorios 24h (Config)
+        // ==========================
+
+        function formatDateShort(dateStr) {
+            if (!dateStr) return '-';
+            if (typeof dateStr === 'string' && dateStr.length === 10) {
+                const date = new Date(dateStr + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                const date = new Date(dateStr.split('T')[0] + 'T12:00:00');
+                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            }
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+
+        function renderReminders24h(appointments) {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
+
+            if (!appointments || !appointments.length) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.6);">No hay recordatorios en las próximas 24h</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                const resendBtn = waDisabled
+                    ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.75rem; opacity: 0.6;">WhatsApp</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.75rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
+
+                const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
+
+                return `
+                    <tr>
+                        <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
+                        <td>${apt.client_name}<br><small style="opacity:0.7;">${phone || '-'}</small></td>
+                        <td>${apt.service_name || '-'}</td>
+                        <td style="text-align:center;">
+                            <div style="display:flex; gap: 6px; justify-content:center; flex-wrap: wrap;">
+                                <button class="btn btn-secondary btn-sm" onclick="openReschedulePrompt(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.75rem;">Cambiar hora</button>
+                                ${resendBtn}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadReminders24h() {
+            const tbody = document.querySelector('#reminders-24h tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 2rem; color: rgba(245,243,238,0.6);"><i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Cargando...</td></tr>`;
+            }
+
+            try {
+                const data = await api.get('/admin/dashboard');
+                renderReminders24h(data.reminders_due_24h || []);
+            } catch (e) {
+                console.error('Error cargando recordatorios 24h:', e);
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 1.5rem; color: rgba(245,243,238,0.8);">Error cargando recordatorios</td></tr>`;
+                }
+                if (typeof showToast === 'function') {
+                    showToast('Error cargando recordatorios 24h', 'error');
+                }
+            }
+        }
+
+        function openReschedulePrompt(appointmentId, currentDate, currentTime) {
+            const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
+            if (!date) return;
+            const time = prompt('Nueva hora (HH:MM):', currentTime);
+            if (!time) return;
+            rescheduleAppointment(appointmentId, date, time);
+        }
+
+        async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
+            try {
+                const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
+                    appointment_date,
+                    start_time
+                });
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'Cita reprogramada', 'success');
+                } else {
+                    alert(data.message || 'Cita reprogramada');
+                }
+                loadReminders24h();
+            } catch (e) {
+                console.error('Error reprogramando cita:', e);
+                if (typeof showToast === 'function') {
+                    showToast(e.message || 'Error reprogramando cita', 'error');
+                } else {
+                    alert(e.message || 'Error reprogramando cita');
+                }
+            }
+        }
+
+        async function resendReminder24h(appointmentId) {
+            try {
+                // Usar el endpoint específico de recordatorio 24h
+                const data = await api.post(`/admin/appointments/${appointmentId}/send-reminder`, {});
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'Recordatorio 24h enviado', 'success');
+                } else {
+                    alert(data.message || 'Recordatorio 24h enviado');
+                }
+                loadReminders24h();
+            } catch (e) {
+                console.error('Error enviando recordatorio 24h:', e);
+                if (typeof showToast === 'function') {
+                    showToast(e.message || 'Error enviando recordatorio', 'error');
+                } else {
+                    alert(e.message || 'Error enviando recordatorio');
+                }
+            }
+        }
+
         // --- Blocked Dates Logic ---
         async function loadBlockedDates() {
             try {
@@ -997,20 +1413,41 @@
                 }
 
                 tbody.innerHTML = dates.map(d => {
-                    const date = new Date(d.blocked_date + 'T12:00:00');
-                    const dateStr = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                    const capitalizedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+                    // Manejar diferentes formatos de fecha de PostgreSQL
+                    let dateStr = d.blocked_date;
+                    if (typeof dateStr === 'string') {
+                        // Si viene con timezone o formato ISO completo, extraer solo la fecha
+                        dateStr = dateStr.split('T')[0];
+                    }
+                    const date = new Date(dateStr + 'T12:00:00');
+                    
+                    // Verificar si la fecha es válida
+                    if (isNaN(date.getTime())) {
+                        console.error('Fecha inválida:', d.blocked_date);
+                        return '';
+                    }
+                    
+                    const formattedDate = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+                    // Determinar si es día completo o horario específico
+                    const isPartial = d.start_time && d.end_time;
+                    const timeRange = isPartial 
+                        ? `${formatTime(d.start_time)} - ${formatTime(d.end_time)}`
+                        : 'Día completo';
 
                     return `
                         <tr style="transition: background 0.3s ease;">
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
                                     <div style="width: 40px; height: 40px; background: rgba(229, 57, 53, 0.15); border: 1px solid rgba(229, 57, 53, 0.3); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #EF5350;">
-                                        <i class="fas fa-ban"></i>
+                                        <i class="fas ${isPartial ? 'fa-clock' : 'fa-ban'}"></i>
                                     </div>
                                     <div>
                                         <div style="font-weight: 500; color: var(--cream);">${capitalizedDate}</div>
-                                        <div style="font-size: 0.75rem; color: rgba(245, 243, 238, 0.5);">${getDaysUntil(date)}</div>
+                                        <div style="font-size: 0.75rem; color: ${isPartial ? 'var(--gold)' : 'rgba(245, 243, 238, 0.5)'};">
+                                            ${isPartial ? `<i class="fas fa-clock" style="margin-right: 4px;"></i>${timeRange}` : getDaysUntil(date)}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -1020,7 +1457,7 @@
                                 </span>
                             </td>
                             <td style="text-align: center;">
-                                <button class="btn-icon" onclick="deleteBlockedDate(${d.id})" title="Desbloquear fecha" style="color: #EF5350; border-color: rgba(229, 57, 53, 0.3);">
+                                <button class="btn-icon" onclick="deleteBlockedDate(${d.id})" title="Desbloquear" style="color: #EF5350; border-color: rgba(229, 57, 53, 0.3);">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -1047,13 +1484,24 @@
             return `En ${Math.ceil(days / 30)} meses`;
         }
 
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            // timeStr viene como "HH:MM:SS" o "HH:MM"
+            const parts = timeStr.split(':');
+            let hours = parseInt(parts[0]);
+            const minutes = parts[1];
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
         window.openBlockDateModal = function () {
             const content = `
                 <form id="block-date-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div style="background: rgba(229, 57, 53, 0.1); border: 1px solid rgba(229, 57, 53, 0.2); border-radius: 6px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
                         <i class="fas fa-exclamation-triangle" style="color: #EF5350; font-size: 1.2rem;"></i>
                         <div style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.8);">
-                            Las citas agendadas en esta fecha serán canceladas automáticamente.
+                            Las citas agendadas en este horario serán canceladas automáticamente.
                         </div>
                     </div>
 
@@ -1068,6 +1516,40 @@
                             min="${new Date().toISOString().split('T')[0]}"
                             style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.875rem;">
                     </div>
+
+                    <!-- Tipo de bloqueo -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-size: 0.875rem; font-weight: 500; color: var(--gold); letter-spacing: 0.05em;">
+                            <i class="fas fa-clock"></i> Tipo de Bloqueo
+                        </label>
+                        <div style="display: flex; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem 1rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); border-radius: 4px; flex: 1;">
+                                <input type="radio" name="block-type" value="full" checked onchange="toggleTimeInputs()" style="accent-color: var(--gold);">
+                                <span style="color: var(--cream); font-size: 0.85rem;">Día completo</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem 1rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); border-radius: 4px; flex: 1;">
+                                <input type="radio" name="block-type" value="partial" onchange="toggleTimeInputs()" style="accent-color: var(--gold);">
+                                <span style="color: var(--cream); font-size: 0.85rem;">Horario específico</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Horarios (oculto por defecto) -->
+                    <div id="time-inputs-container" style="display: none; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem;">
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label style="font-size: 0.8rem; color: rgba(245, 243, 238, 0.6);">Desde</label>
+                                <input type="time" id="block-start-time" value="10:00"
+                                    style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                            </div>
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label style="font-size: 0.8rem; color: rgba(245, 243, 238, 0.6);">Hasta</label>
+                                <input type="time" id="block-end-time" value="14:00"
+                                    style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <label style="font-size: 0.875rem; font-weight: 500; color: var(--gold); letter-spacing: 0.05em;">
                             <i class="fas fa-comment-alt"></i> Motivo <span style="color: rgba(245, 243, 238, 0.5); font-weight: 400;">(Opcional)</span>
@@ -1075,7 +1557,7 @@
                         <input
                             type="text"
                             id="block-reason"
-                            placeholder="Ej. Feriado Nacional, Mantenimiento, Vacaciones"
+                            placeholder="Ej. Cita médica, Salida personal, Mantenimiento"
                             style="background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.2); color: var(--cream); padding: 0.75rem; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.875rem;">
                     </div>
                 </form>
@@ -1085,10 +1567,16 @@
                     <i class="fas fa-times"></i> Cancelar
                 </button>
                 <button class="btn btn-primary" onclick="saveBlockedDate()" style="background: #EF5350; border-color: #EF5350;">
-                    <i class="fas fa-ban"></i> Bloquear Fecha
+                    <i class="fas fa-ban"></i> Bloquear
                 </button>
             `;
-            showCustomModal('blockDateModal', '<i class="fas fa-calendar-times"></i> Bloquear Fecha', content, footer);
+            showCustomModal('blockDateModal', '<i class="fas fa-calendar-times"></i> Bloquear Fecha/Horario', content, footer);
+        };
+
+        window.toggleTimeInputs = function() {
+            const blockType = document.querySelector('input[name="block-type"]:checked').value;
+            const container = document.getElementById('time-inputs-container');
+            container.style.display = blockType === 'partial' ? 'flex' : 'none';
         };
 
         function showCustomModal(id, title, content, footer) {
@@ -1114,11 +1602,30 @@
             const dateInput = document.getElementById('block-date');
             const date = dateInput.value;
             const reason = document.getElementById('block-reason').value || 'Sin motivo especificado';
+            const blockType = document.querySelector('input[name="block-type"]:checked').value;
 
             if (!date) {
                 dateInput.style.borderColor = '#EF5350';
                 dateInput.focus();
                 return;
+            }
+
+            let startTime = null;
+            let endTime = null;
+
+            if (blockType === 'partial') {
+                startTime = document.getElementById('block-start-time').value;
+                endTime = document.getElementById('block-end-time').value;
+                
+                if (!startTime || !endTime) {
+                    showToast('Por favor selecciona el horario a bloquear', 'error');
+                    return;
+                }
+                
+                if (startTime >= endTime) {
+                    showToast('La hora de inicio debe ser menor a la hora de fin', 'error');
+                    return;
+                }
             }
 
             try {
@@ -1127,7 +1634,12 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bloqueando...';
                 btn.disabled = true;
 
-                await api.post('/admin/blocked-dates', { date, reason });
+                await api.post('/admin/blocked-dates', { 
+                    date, 
+                    reason,
+                    start_time: startTime,
+                    end_time: endTime
+                });
 
                 // Success animation
                 btn.innerHTML = '<i class="fas fa-check"></i> Bloqueado!';
@@ -1140,7 +1652,7 @@
             } catch (error) {
                 showToast('Error: ' + error.message, 'error');
                 event.target.disabled = false;
-                event.target.innerHTML = '<i class="fas fa-ban"></i> Bloquear Fecha';
+                event.target.innerHTML = '<i class="fas fa-ban"></i> Bloquear';
             }
         }
 
@@ -1330,9 +1842,204 @@
 
         init();
 
+        // ============================
+        // NOTIFICATION PREFERENCES
+        // ============================
+        let allClients = [];
+
+        async function loadNotificationSettings() {
+            try {
+                const response = await API.get('/admin/notification-settings');
+
+                if (response.success) {
+                    allClients = response.clients;
+                    renderNotificationSettings(allClients);
+                }
+            } catch (error) {
+                console.error('Error loading notification settings:', error);
+                document.getElementById('notifications-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--error);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <div>Error cargando preferencias</div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderNotificationSettings(clients) {
+            const tbody = document.getElementById('notifications-body');
+
+            if (!clients || clients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: rgba(245, 243, 238, 0.5);">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <div>No hay clientes registrados</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = clients.map(client => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 500;">${escapeHtml(client.name)}</div>
+                    </td>
+                    <td>${escapeHtml(client.phone || '-')}</td>
+                    <td>${escapeHtml(client.email || '-')}</td>
+                    <td style="text-align: center;">
+                        <label class="switch" title="${client.whatsapp_enabled ? 'Desactivar WhatsApp' : 'Activar WhatsApp'}">
+                            <input type="checkbox" 
+                                   ${client.whatsapp_enabled ? 'checked' : ''} 
+                                   onchange="toggleNotification(${client.id}, 'whatsapp', this.checked)"
+                                   ${!client.phone ? 'disabled' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                        ${!client.phone ? '<div style="font-size: 0.7rem; color: rgba(245, 243, 238, 0.4); margin-top: 0.25rem;">Sin tel\u00e9fono</div>' : ''}
+                    </td>
+                    <td style="text-align: center;">
+                        <label class="switch" title="${client.email_enabled ? 'Desactivar Email' : 'Activar Email'}">
+                            <input type="checkbox" 
+                                   ${client.email_enabled ? 'checked' : ''} 
+                                   onchange="toggleNotification(${client.id}, 'email', this.checked)"
+                                   ${!client.email ? 'disabled' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                        ${!client.email ? '<div style="font-size: 0.7rem; color: rgba(245, 243, 238, 0.4); margin-top: 0.25rem;">Sin email</div>' : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggleNotification(clientId, type, enabled) {
+            try {
+                const payload = type === 'whatsapp'
+                    ? { whatsapp_enabled: enabled }
+                    : { email_enabled: enabled };
+
+                const response = await API.put(`/admin/clients/${clientId}/notifications`, payload);
+
+                if (response.success) {
+                    // Update local data
+                    const client = allClients.find(c => c.id === clientId);
+                    if (client) {
+                        if (type === 'whatsapp') {
+                            client.whatsapp_enabled = enabled;
+                        } else {
+                            client.email_enabled = enabled;
+                        }
+                    }
+
+                    // Show success feedback
+                    showToast(`${type === 'whatsapp' ? 'WhatsApp' : 'Email'} ${enabled ? 'activado' : 'desactivado'} para ${response.data.name}`, 'success');
+                } else {
+                    throw new Error(response.error || 'Error actualizando preferencia');
+                }
+            } catch (error) {
+                console.error('Error toggling notification:', error);
+                showToast('Error actualizando preferencia', 'error');
+
+                // Reload to reset state
+                await loadNotificationSettings();
+            }
+        }
+
+        function filterNotificationSettings() {
+            const filter = document.getElementById('notification-filter').value;
+
+            let filteredClients = [...allClients];
+
+            switch (filter) {
+                case 'whatsapp_off':
+                    filteredClients = allClients.filter(c => !c.whatsapp_enabled);
+                    break;
+                case 'email_off':
+                    filteredClients = allClients.filter(c => !c.email_enabled);
+                    break;
+                case 'both_off':
+                    filteredClients = allClients.filter(c => !c.whatsapp_enabled && !c.email_enabled);
+                    break;
+                // 'all' - no filtering
+            }
+
+            renderNotificationSettings(filteredClients);
+        }
+
+        // Attach filter listener
+        document.getElementById('notification-filter')?.addEventListener('change', filterNotificationSettings);
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+        }
+
+        function showToast(message, type = 'success') {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: ${type === 'success' ? 'var(--gold)' : 'var(--error)'};
+                color: ${type === 'success' ? 'var(--charcoal-dark)' : 'var(--cream)'};
+                padding: 1rem 1.5rem;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-size: 0.9rem;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+
+
         // Initialize time picker listeners after a short delay to ensure DOM is ready
         setTimeout(initTimePickerListeners, 100);
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

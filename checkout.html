@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout | Barbería</title>
-
-    <!-- Fonts -->
+    <title>Checkout | Braco's Barbería</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -34,7 +34,7 @@
                 <li><a href="membresias.html">Membresías</a></li>
             </ul>
 
-            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+            <a href="agendar.html" class="btn-primary nav-cta">Reservar Cita</a>
 
             <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
                 <span></span>
@@ -52,7 +52,7 @@
             <li><a href="agendar.html">Agendar</a></li>
             <li><a href="checkout.html">Checkout</a></li>
             <li><a href="membresias.html">Membresías</a></li>
-            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+            <li><a href="agendar.html" class="btn-primary btn-block">Reservar Cita</a></li>
         </ul>
     </div>
 
@@ -70,7 +70,8 @@
             <!-- Step 1: Enter Code -->
             <section class="checkout-step" id="step-code">
                 <div class="code-entry-container">
-                    <div class="code-icon">🔐</div>
+                    <div class="code-icon"><i class="fas fa-lock" style="font-size: 2rem; color: var(--gold);"></i>
+                    </div>
                     <h2 class="code-title">Ingresa tu Código de Cita</h2>
                     <p class="code-description">Recibiste este código de 4 dígitos al agendar tu cita</p>
 
@@ -120,7 +121,7 @@
                 <!-- Membership Section -->
                 <div class="membership-section" id="membership-section">
                     <h3 class="section-subtitle">
-                        <span class="subtitle-icon">👑</span>
+                        <span class="subtitle-icon"><i class="fas fa-crown"></i></span>
                         Membresía Activa
                     </h3>
 
@@ -145,7 +146,7 @@
                 <!-- Products Section -->
                 <div class="products-section">
                     <h3 class="section-subtitle">
-                        <span class="subtitle-icon">🧴</span>
+                        <span class="subtitle-icon"><i class="fas fa-pump-soap"></i></span>
                         Productos Disponibles
                     </h3>
 
@@ -184,17 +185,17 @@
                         <div class="payment-options">
                             <label class="payment-option">
                                 <input type="radio" name="payment-method" value="efectivo" checked>
-                                <span class="payment-icon">💵</span>
+                                <span class="payment-icon"><i class="fas fa-money-bill-wave"></i></span>
                                 <span class="payment-label">Efectivo</span>
                             </label>
                             <label class="payment-option">
                                 <input type="radio" name="payment-method" value="tarjeta">
-                                <span class="payment-icon">💳</span>
+                                <span class="payment-icon"><i class="far fa-credit-card"></i></span>
                                 <span class="payment-label">Tarjeta</span>
                             </label>
                             <label class="payment-option">
                                 <input type="radio" name="payment-method" value="transferencia">
-                                <span class="payment-icon">📱</span>
+                                <span class="payment-icon"><i class="fas fa-mobile-alt"></i></span>
                                 <span class="payment-label">Transferencia</span>
                             </label>
                         </div>
@@ -209,7 +210,7 @@
             <!-- Step 3: Success -->
             <section class="checkout-step hidden" id="step-success">
                 <div class="success-container">
-                    <div class="success-icon">✓</div>
+                    <div class="success-icon"><i class="fas fa-check" style="font-size: 2rem;"></i></div>
                     <h2 class="success-title">¡Pago Completado!</h2>
                     <p class="success-message">
                         Gracias por tu visita a <span class="brand-name">Braco's Barbería</span>

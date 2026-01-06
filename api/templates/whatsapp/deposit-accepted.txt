@@ -1,0 +1,15 @@
+¡Excelente noticia, {nombre}! 🎉
+
+✅ Hemos confirmado tu apartado y tu cita está 100% confirmada.
+
+📋 *Tu cita:*
+• Servicio: {servicio}
+• Fecha: {fecha}
+• Hora: {hora}
+• Código: {codigo}
+
+💰 Tu depósito ha sido verificado. Solo resta completar el pago el día de tu cita.
+
+📍 *Ubicación:* {direccion}
+
+¡Nos vemos pronto! ✂️

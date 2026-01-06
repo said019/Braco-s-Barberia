@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Membresías | Admin</title>
+    <title>Membresías | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
         rel="stylesheet">
@@ -13,6 +14,14 @@
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -34,7 +43,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -96,9 +105,79 @@
                     <p class="header-date">Administra planes y suscripciones</p>
                 </div>
                 <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportMemberships()" style="margin-right: 10px;">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
                     <button class="btn btn-primary" onclick="openActivateMembershipModal()">+ Activar Membresía</button>
                 </div>
             </header>
+
+            <!-- Catalog Section -->
+            <section class="membership-catalog-section">
+                <div class="section-header">
+                    <h3>Catálogo de Membresías</h3>
+                    <p class="text-muted">Planes disponibles para venta</p>
+                </div>
+                <div class="membership-cards-grid">
+                    <!-- Golden Card Corte -->
+                    <div class="membership-card-display golden">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-cut"></i></span>
+                            <h4>Golden Card Corte</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $1,500 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 6 Servicios Totales</li>
+                            <li><i class="fas fa-check"></i> Corte de Cabello</li>
+                            <li><i class="fas fa-check"></i> Ritual de Barba</li>
+                            <li><i class="fas fa-check"></i> Servicio Dúo</li>
+                            <li class="restricted"><i class="fas fa-user-lock"></i> Intransferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block" onclick="openActivateMembershipModal(8)">Vender
+                            Plan</button>
+                    </div>
+
+                    <!-- Golden Card NeoCapilar -->
+                    <div class="membership-card-display golden">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-spa"></i></span>
+                            <h4>Golden NeoCapilar</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $3,850 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 8 Servicios Totales (Paga 7)</li>
+                            <li><i class="fas fa-check"></i> Terapia Integral Capilar (TIC)</li>
+                            <li><i class="fas fa-check"></i> Salud y Prevención</li>
+                            <li class="restricted"><i class="fas fa-user-lock"></i> Intransferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block" onclick="openActivateMembershipModal(9)">Vender
+                            Plan</button>
+                    </div>
+
+                    <!-- Black Card -->
+                    <div class="membership-card-display black">
+                        <div class="card-header-display">
+                            <span class="card-icon"><i class="fas fa-crown"></i></span>
+                            <h4>Black Card</h4>
+                        </div>
+                        <div class="card-price-display">
+                            $3,300 <span class="currency">MXN</span>
+                        </div>
+                        <ul class="card-features-display">
+                            <li><i class="fas fa-check"></i> 12 Servicios Totales (Paga 11)</li>
+                            <li><i class="fas fa-check"></i> Cortes, Barba, Mascarillas</li>
+                            <li><i class="fas fa-check"></i> Manicura y Pedicura</li>
+                            <li class="highlight"><i class="fas fa-share-alt"></i> Transferible</li>
+                        </ul>
+                        <button class="btn btn-primary btn-sm btn-block"
+                            onclick="openActivateMembershipModal(10)">Vender Plan</button>
+                    </div>
+                </div>
+            </section>
 
             <!-- Stats -->
             <section class="stats-grid">
@@ -126,8 +205,8 @@
                 <div class="stat-card">
                     <div class="stat-icon">👑</div>
                     <div class="stat-content">
-                        <span class="stat-value" id="stat-lifetime">0</span>
-                        <span class="stat-label">Lifetime (Black)</span>
+                        <span class="stat-value" id="stat-black">0</span>
+                        <span class="stat-label">Black Card</span>
                     </div>
                 </div>
             </section>
@@ -172,6 +251,8 @@
     </div>
 
     <script src="../js/admin.js"></script>
+    <!-- SheetJS para exportar a Excel (XLSX) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         checkAuth();
 
@@ -208,10 +289,10 @@
                     .reduce((sum, m) => sum + parseFloat(m.type_price || 0), 0);
                 document.getElementById('stat-revenue').textContent = formatCurrency(monthlyRevenue);
 
-                const lifetime = allMemberships.filter(m =>
+                const blackCards = allMemberships.filter(m =>
                     m.status === 'active' && m.type_name === 'black'
                 ).length;
-                document.getElementById('stat-lifetime').textContent = lifetime;
+                document.getElementById('stat-black').textContent = blackCards;
 
                 applyFilters();
 
@@ -273,6 +354,11 @@
                     `
                 },
                 {
+                    field: 'folio_number',
+                    label: 'Folio',
+                    format: (value) => value ? `<span class="badge" style="background: rgba(196, 163, 90, 0.1); color: var(--primary-gold);">${value}</span>` : '-'
+                },
+                {
                     field: 'membership_type',
                     label: 'Plan',
                     format: (value) => `<span class="font-medium text-gold">${value}</span>`
@@ -286,13 +372,13 @@
                     field: 'expiration_date',
                     label: 'Vencimiento',
                     format: (value, row) => {
-                        if (!value) return '<span class="text-success">Lifetime</span>';
-                        
+                        if (!value) return '<span class="text-success">Sin vigencia</span>';
+
                         const date = new Date(value);
                         const today = new Date();
                         const diffTime = date - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         let badge = '';
                         if (diffDays < 0) {
                             badge = ' <span class="badge inactive">Vencida</span>';
@@ -306,7 +392,7 @@
                     field: 'remaining_services',
                     label: 'Servicios',
                     format: (value, row) => {
-                         // Check for unlimited (e.g. Black) based on type or value
+                        // Check for unlimited (e.g. Black) based on type or value
                         if (row.membership_type.toLowerCase() === 'black') return '♾️';
                         return `${value !== undefined ? value : '?'} est.`;
                     }
@@ -328,6 +414,8 @@
                     format: (value, row) => `
                         <div class="actions">
                             <button class="btn-icon" onclick="viewMembershipDetail(${value})" title="Ver detalles"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="copyCardLink('${row.uuid}')" title="Copiar Link de Tarjeta"><i class="fas fa-copy"></i></button>
+                            <button class="btn-icon" onclick="sendCardByWhatsApp('${row.uuid}', '${row.client_phone}', '${row.client_name}')" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button>
                             ${row.status === 'active' ?
                             `<button class="btn-icon" onclick="cancelMembership(${value})" title="Cancelar"><i class="fas fa-ban"></i></button>`
                             : ''}
@@ -339,7 +427,216 @@
             container.innerHTML = createTable(filteredMemberships, columns);
         }
 
-        async function openActivateMembershipModal() {
+        function copyCardLink(uuid) {
+            const url = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.createElement('div');
+                toast.textContent = 'Link copiado al portapapeles';
+                toast.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #4CAF50; color: white; padding: 12px 24px; border-radius: 4px; z-index: 10000; animation: fadeIn 0.3s, fadeOut 0.3s 2s forwards;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            }).catch(err => {
+                console.error('Error al copiar link: ', err);
+                alert('No se pudo copiar el link automáticamente. Por favor selecciónalo: ' + url);
+            });
+        }
+
+        function sendCardByWhatsApp(uuid, phone, clientName) {
+            // Limpiar el número de teléfono (quitar espacios, guiones, etc)
+            const cleanPhone = phone.replace(/\D/g, '');
+
+            // Construir el link de la tarjeta
+            const cardUrl = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
+
+            // Mensaje personalizado
+            const message = `Hola *${clientName}*,\n\nAquí está el link de tu *Tarjeta Digital de Membresía* de Braco's Barbería:\n\n${cardUrl}\n\nGuárdalo y preséntalo en tu próxima visita.\n\n*Gracias por ser miembro de Braco's.*`;
+
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+
+            // Abrir WhatsApp con el mensaje pre-escrito
+            const whatsappUrl = `https://wa.me/521${cleanPhone}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // ... existing openActivateMembershipModal ...
+
+        function getCardHtml(membership) {
+            const type = (membership.membership_type || '').toLowerCase();
+            let cardClass = '';
+            let typeTitle = '';
+            let typeSubtitle = '';
+            let totalDiamonds = 0;
+
+            // Configuration based on type
+            if (type.includes('black')) {
+                cardClass = 'card-black';
+                typeTitle = 'BLACK CARD';
+                typeSubtitle = 'Exclusivo • 12 Servicios';
+                totalDiamonds = 12;
+            } else if (type.includes('neocapilar')) {
+                cardClass = 'card-neocapilar';
+                typeTitle = 'NEOCAPILAR';
+                typeSubtitle = 'Tratamiento Premium';
+                totalDiamonds = 8;
+            } else {
+                cardClass = 'card-golden';
+                typeTitle = 'GOLDEN CARD';
+                typeSubtitle = 'Barbería & Peluquería';
+                totalDiamonds = 6;
+            }
+
+            // Generate Diamonds
+            const usedServices = membership.used_services || 0;
+            // For Black Card (grid layout) vs others (flex)
+            const isGrid = totalDiamonds > 8;
+            const containerClass = isGrid ? 'diamonds-grid' : 'diamonds-container';
+
+            let diamondsHtml = `<div class="${containerClass}">`;
+
+            for (let i = 0; i < totalDiamonds; i++) {
+                const isFilled = i < usedServices;
+                const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
+
+                // SVG differences (Gold vs Silver gradients)
+                const isSilver = cardClass === 'card-black';
+                const gradientPrefix = isSilver ? 'silver' : 'gold';
+                const strokeColor = isSilver ? '#666' : '#8B7335';
+
+                // Define gradients once if not exists (handled in modal wrapper or inline)
+                // For simplicity, we'll embed defs in the first diamond or use a shared SVG definition
+
+                diamondsHtml += `
+                    <div class="${diamondClass}">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="url(#${gradientPrefix}Gradient1)" stroke="${strokeColor}" stroke-width="0.5"/>
+                            ${isFilled ? `
+                            <path d="M12 2L7 9H17L12 2Z" fill="url(#${gradientPrefix}Gradient2)" opacity="${isSilver ? 0.8 : 0.7}"/>
+                            <path d="M7 9L12 22L2 9H7Z" fill="url(#${gradientPrefix}Gradient3)" opacity="${isSilver ? 0.6 : 0.5}"/>
+                            ` : ''}
+                        </svg>
+                    </div>
+                `;
+            }
+            diamondsHtml += '</div>';
+
+            // SVG Definitions (Hidden but accessible for URL references)
+            const defs = `
+                <svg width="0" height="0" style="position: absolute;">
+                    <defs>
+                        <linearGradient id="goldGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E8D5A3"/>
+                            <stop offset="50%" style="stop-color:#C4A35A"/>
+                            <stop offset="100%" style="stop-color:#8B7335"/>
+                        </linearGradient>
+                        <linearGradient id="goldGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFF8E7"/>
+                            <stop offset="100%" style="stop-color:#C4A35A"/>
+                        </linearGradient>
+                        <linearGradient id="goldGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#8B7335"/>
+                            <stop offset="100%" style="stop-color:#5C4D23"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E8E8E8"/>
+                            <stop offset="30%" style="stop-color:#C0C0C0"/>
+                            <stop offset="50%" style="stop-color:#A8A8A8"/>
+                            <stop offset="70%" style="stop-color:#C0C0C0"/>
+                            <stop offset="100%" style="stop-color:#808080"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFFFFF"/>
+                            <stop offset="100%" style="stop-color:#C0C0C0"/>
+                        </linearGradient>
+                        <linearGradient id="silverGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#808080"/>
+                            <stop offset="100%" style="stop-color:#404040"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            `;
+
+            return `
+                ${defs}
+                <div class="card-wrapper" onclick="this.classList.toggle('flipped')">
+                    <div class="card-flipper">
+                        <div class="card-front loyalty-card ${cardClass}">
+                            <div class="card-shine"></div>
+                            ${[...Array(6)].map(() => '<div class="sparkle"></div>').join('')}
+                            
+                            <div class="card-inner">
+                                <div class="card-header">
+                                    <img src="../assets/logo.png" alt="Braco's" class="card-logo" style="width: 80px !important; height: auto !important; max-width: 80px;">
+                                    <div class="card-type-wrapper">
+                                        <div class="card-type">${typeTitle}</div>
+                                        <div class="card-type-sub">${typeSubtitle}</div>
+                                    </div>
+                                </div>
+
+                                ${diamondsHtml}
+
+                                <div class="card-footer">
+                                    <div class="card-number">No. ${membership.folio_number || '---'}</div>
+                                    <div class="contact-info">
+                                        <div class="phone">${formatPhone(membership.client_phone)}</div>
+                                        <div class="social">
+                                            <span>◉</span> @bracosbarberia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-back" ${cardClass === 'card-black' ? 'style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a); border: 1px solid rgba(196, 163, 90, 0.3);"' : ''}>
+                            <div class="address">
+                                <strong>UBICACIÓN</strong>
+                                Heroico Colegio Militar #46, Local J<br>
+                                Planta Baja, Plaza Comercial Hacienda<br>
+                                El Pedregal, Tequisquiapan, Qro.
+                            </div>
+                            <div class="card-back-footer">
+                                <img src="../assets/logo.png" alt="Braco's" class="back-logo" style="width: 50px !important; height: auto !important;">
+                                <div class="qr-placeholder">QR CODE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #888;">Clic en la tarjeta para ver reverso</p>
+            `;
+        }
+
+        function viewCard(id) {
+            const membership = allMemberships.find(m => m.id === id);
+            if (!membership) return;
+
+            const content = `
+                <div style="padding: 2rem 0; display: flex; justify-content: center;">
+                    ${getCardHtml(membership)}
+                </div>
+            `;
+
+            showModal('cardModal', 'Tarjeta Digital', content);
+        }
+
+        // ... existing activateMembership ...
+
+        // Update success modal to show card
+        // In activateMembership function:
+        /*
+            const uuid = response.uuid;
+            // Fetch the just created membership to get types and details, or construct pseudo-object
+            // For now, let's just construct a pseudo object from form data + prefix/folio
+            const pseudoMembership = {
+                 membership_type: document.getElementById('membership-type').options[document.getElementById('membership-type').selectedIndex].text.split(' - ')[0],
+                 folio_number: document.getElementById('folio-prefix').textContent + document.getElementById('membership-folio').value,
+                 client_phone: '55...', // fetch from client select or just leave placeholder
+                 used_services: 0
+            };
+            // Actually, better to just show successful creation and a button to "Ver Tarjeta"
+        */
+
+
+        async function openActivateMembershipModal(preSelectedTypeId = null) {
             // Load clients and membership types for dropdown
             try {
                 // Use fetchWithAuth for secured types endpoint
@@ -350,25 +647,27 @@
 
                 const clients = clientsData.clients || [];
                 membershipTypes = typesData.types || [];
+                // Store clients globally for later use
+                window.membershipClients = clients;
 
                 const content = `
-                    <form id="membership-form" class="admin-form">
+                    <form id="membership-form">
                         <div class="form-group">
-                            <label for="membership-client">Cliente *</label>
-                            <select id="membership-client" required>
+                            <label class="form-label">Cliente *</label>
+                            <select id="membership-client" class="form-select" required>
                                 <option value="">Selecciona un cliente</option>
                                 ${clients.map(c => `
-                                    <option value="${c.id}">${c.name} - ${formatPhone(c.phone)}</option>
+                                    <option value="${c.id}" data-phone="${c.phone}" data-name="${c.name}">${c.name} - ${formatPhone(c.phone)}</option>
                                 `).join('')}
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label for="membership-type">Plan *</label>
-                            <select id="membership-type" required onchange="updateMembershipPreview()">
+                            <label class="form-label">Plan *</label>
+                            <select id="membership-type" class="form-select" required onchange="updateMembershipPreview()">
                                 <option value="">Selecciona un plan</option>
                                 ${membershipTypes.map(t => `
-                                    <option value="${t.id}" data-price="${t.price}" data-services="${t.total_services || 0}">
+                                    <option value="${t.id}" data-price="${t.price}" data-services="${t.total_services || 0}" data-transferable="${t.is_transferable}">
                                         ${t.name} - ${formatCurrency(t.price)}
                                     </option>
                                 `).join('')}
@@ -376,33 +675,53 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="payment-method">Método de Pago *</label>
-                            <select id="payment-method" required>
-                                <option value="efectivo">Efectivo</option>
-                                <option value="tarjeta">Tarjeta</option>
-                                <option value="transferencia">Transferencia</option>
+                            <label class="form-label">Folio *</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span id="folio-prefix" style="background: linear-gradient(135deg, rgba(196, 163, 90, 0.2), rgba(196, 163, 90, 0.1)); padding: 0.75rem 1rem; border-radius: 6px; color: var(--gold); font-weight: 700; min-width: 55px; text-align: center; border: 1px solid rgba(196, 163, 90, 0.3); font-size: 1.1rem;">-</span>
+                                <input type="number" id="membership-folio" class="form-input" required placeholder="Número (ej: 1)" style="flex: 1;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Método de Pago *</label>
+                            <select id="payment-method" class="form-select" required>
+                                <option value="efectivo">💵 Efectivo</option>
+                                <option value="tarjeta">💳 Tarjeta</option>
+                                <option value="transferencia">📱 Transferencia</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label>Fecha de Inicio</label>
-                            <input type="text" value="Hoy (${formatDate(new Date())})" disabled class="form-control" style="opacity: 0.7;">
-                            <small class="text-muted">La membresía se activa inmediatamente.</small>
+                            <label class="form-label">Fecha de Inicio</label>
+                            <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 6px; padding: 0.75rem 1rem; color: #81c784;">
+                                <i class="fas fa-calendar-check" style="margin-right: 8px;"></i>
+                                Hoy (${formatDate(new Date())})
+                            </div>
+                            <small style="color: #888; font-size: 0.8rem; margin-top: 0.5rem; display: block;">La membresía se activa inmediatamente.</small>
                         </div>
-                        
-                        <div id="membership-preview" style="margin-top: 1rem; padding: 1rem; background: rgba(196, 163, 90, 0.1); display: none;">
-                            <p><strong>Resumen:</strong></p>
-                            <p id="preview-details"></p>
+
+                        <div id="membership-preview" style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(196, 163, 90, 0.1), rgba(196, 163, 90, 0.05)); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2); display: none;">
+                            <p style="color: var(--gold); font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-receipt" style="margin-right: 8px;"></i>Resumen:</p>
+                            <p id="preview-details" style="line-height: 1.8; color: #ccc;"></p>
                         </div>
                     </form>
                 `;
 
                 const footer = `
                     <button class="btn btn-secondary" onclick="activateMembershipModal.close()">Cancelar</button>
-                    <button class="btn btn-primary" onclick="activateMembership()">Activar Membresía</button>
+                    <button class="btn btn-primary" onclick="activateMembership()"><i class="fas fa-crown" style="margin-right: 8px;"></i>Activar Membresía</button>
                 `;
 
                 window.activateMembershipModal = showModal('activateMembershipModal', 'Activar Membresía', content, footer);
+
+                if (preSelectedTypeId) {
+                    const typeSelect = document.getElementById('membership-type');
+                    typeSelect.value = preSelectedTypeId;
+                    updateMembershipPreview();
+                }
+
+                // Initialize prefix if empty selection (or just trigger update)
+                updateMembershipPreview();
 
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -410,13 +729,22 @@
             }
         }
 
+        function getPrefixForType(name) {
+            const lower = name.toLowerCase();
+            if (lower.includes('black')) return 'BC';
+            if (lower.includes('neocapilar')) return 'GN';
+            if (lower.includes('corte')) return 'GC';
+            if (lower.includes('golden')) return 'GC'; // Fallback for other golden
+            return 'MB';
+        }
+
         function updateMembershipPreview() {
             const typeSelect = document.getElementById('membership-type');
-            const startDate = document.getElementById('membership-start-date').value;
+            const startDate = document.getElementById('membership-start-date') ? document.getElementById('membership-start-date').value : new Date().toISOString().split('T')[0];
             const preview = document.getElementById('membership-preview');
             const details = document.getElementById('preview-details');
 
-            if (!typeSelect.value || !startDate) {
+            if (!typeSelect.value) {
                 preview.style.display = 'none';
                 return;
             }
@@ -427,7 +755,7 @@
             const typeName = option.textContent.split(' - ')[0];
 
             const start = new Date(startDate);
-            let endDate = 'Sin vencimiento (Lifetime)';
+            let endDate = 'Sin vigencia';
 
             if (typeName.toLowerCase() !== 'black') {
                 const end = new Date(start);
@@ -435,10 +763,16 @@
                 endDate = formatDate(end.toISOString().split('T')[0]);
             }
 
+            // Update Prefix
+            const prefix = getPrefixForType(typeName);
+            const prefixSpan = document.getElementById('folio-prefix');
+            if (prefixSpan) prefixSpan.textContent = prefix;
+
             details.innerHTML = `
                 Plan: ${typeName}<br>
                 Precio: ${formatCurrency(price)}<br>
-                Servicios mensuales: ${services > 0 ? services : 'Ilimitados'}<br>
+                Servicios: ${services > 0 ? services : 'Ilimitados'}<br>
+                Transferible: ${option.dataset.transferable === 'true' ? 'Sí' : 'No'}<br>
                 Inicio: ${formatDate(startDate)}<br>
                 Vencimiento: ${endDate}
             `;
@@ -453,22 +787,111 @@
                 return;
             }
 
+            // Get client info from selected option
+            const clientSelect = document.getElementById('membership-client');
+            const selectedOption = clientSelect.options[clientSelect.selectedIndex];
+            const clientPhone = selectedOption.dataset.phone || '';
+            const clientName = selectedOption.dataset.name || 'Cliente';
+
+            console.log('[MEMBERSHIP] Client phone from dataset:', clientPhone);
+            console.log('[MEMBERSHIP] Client name from dataset:', clientName);
+
             const membershipData = {
-                client_id: parseInt(document.getElementById('membership-client').value),
+                client_id: parseInt(clientSelect.value),
                 membership_type_id: parseInt(document.getElementById('membership-type').value),
-                payment_method: document.getElementById('payment-method').value
+                payment_method: document.getElementById('payment-method').value,
+                folio_number: document.getElementById('folio-prefix').textContent + document.getElementById('membership-folio').value
             };
+
+            // Get plan name for message
+            const typeSelect = document.getElementById('membership-type');
+            const planName = typeSelect.options[typeSelect.selectedIndex].textContent.split(' - ')[0];
 
             try {
                 // AdminAPI.createMembership uses POST /api/admin/memberships
-                await AdminAPI.createMembership(membershipData);
-                showToast('Membresía activada correctamente', 'success');
+                const response = await AdminAPI.createMembership(membershipData);
+
+                // Show Success Modal with Share Link
                 window.activateMembershipModal.close();
+
+                const uuid = response.uuid;
+                const shareLink = `https://braco-s-barberia-production.up.railway.app/tarjeta.html?id=${uuid}`;
+
+                // Clean phone number - remove all non-digits
+                let cleanPhone = clientPhone.replace(/\D/g, '');
+                // Remove country code if present (52 for Mexico)
+                if (cleanPhone.startsWith('52') && cleanPhone.length > 10) {
+                    cleanPhone = cleanPhone.substring(2);
+                }
+                // Remove leading 1 if present (some numbers have 521)
+                if (cleanPhone.startsWith('1') && cleanPhone.length === 11) {
+                    cleanPhone = cleanPhone.substring(1);
+                }
+                console.log('[MEMBERSHIP] Cleaned phone:', cleanPhone);
+
+                // Build WhatsApp message with client name and plan
+                const whatsappMsg = `¡Hola *${clientName}*! 🎉\n\n¡Felicidades! Tu membresía *${planName}* de Braco's Barbería ha sido activada con éxito. 👑\n\nAquí está tu *Tarjeta Digital*:\n${shareLink}\n\n✨ Guárdala y preséntala en tu próxima visita.\n\n¡Gracias por confiar en Braco's! 💈`;
+                const whatsappUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
+                console.log('[MEMBERSHIP] WhatsApp URL:', whatsappUrl);
+
+                const successContent = `
+                    <div style="text-align: center; padding: 1rem;">
+                        <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1)); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 2px solid rgba(76, 175, 80, 0.3);">
+                            <i class="fas fa-crown" style="font-size: 2.5rem; color: #4CAF50;"></i>
+                        </div>
+                        <h3 style="color: var(--gold); margin-bottom: 0.5rem; font-size: 1.5rem;">¡Membresía Activada!</h3>
+                        <p style="color: #ccc; margin-bottom: 0.5rem;">Cliente: <strong>${clientName}</strong></p>
+                        <p style="color: var(--gold); margin-bottom: 1.5rem;">Plan: <strong>${planName}</strong></p>
+
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(196, 163, 90, 0.2);">
+                            <p style="font-size: 0.8rem; color: #888; margin-bottom: 0.5rem;">ENLACE DE TARJETA DIGITAL</p>
+                            <input type="text" value="${shareLink}" readonly
+                                style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(196, 163, 90, 0.3); color: #fff; padding: 0.75rem; text-align: center; font-size: 0.85rem; border-radius: 6px;"
+                                onclick="this.select()">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="${whatsappUrl}" target="_blank" class="btn" style="background: #25D366; border: none; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar por WhatsApp
+                            </a>
+                            <button onclick="copyToClipboard('${shareLink}')" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+                                <i class="fas fa-copy"></i> Copiar Link
+                            </button>
+                        </div>
+
+                        <p style="font-size: 0.8rem; color: #666; margin-top: 1.5rem;">
+                            <i class="fas fa-info-circle"></i> El cliente recibirá su tarjeta digital por WhatsApp
+                        </p>
+                    </div>
+                `;
+
+                window.successModal = showModal('successModal', '✅ Membresía Activada', successContent, '<button class="btn btn-primary" onclick="window.successModal.close()">Cerrar</button>');
+
+                // Auto-open WhatsApp to send the membership card
+                // Use setTimeout to avoid popup blocker after async operation
+                setTimeout(() => {
+                    if (cleanPhone && cleanPhone.length >= 10) {
+                        const popup = window.open(whatsappUrl, '_blank');
+                        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                            // Popup was blocked
+                            showToast('Haz clic en el botón de WhatsApp para enviar', 'info');
+                        }
+                    } else {
+                        showToast('Número de teléfono no válido para WhatsApp', 'warning');
+                    }
+                }, 500);
+
                 loadMemberships();
             } catch (error) {
                 console.error('Error activating membership:', error);
                 showToast(error.message || 'Error al activar la membresía', 'error');
             }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Enlace copiado al portapapeles', 'success');
+            }).catch(console.error);
         }
 
         async function viewMembershipDetail(id) {
@@ -480,9 +903,10 @@
                         <p><strong>Cliente:</strong> ${membership.client_name}</p>
                         <p><strong>Teléfono:</strong> ${formatPhone(membership.client_phone)}</p>
                         <p><strong>Plan:</strong> ${membership.type_name}</p>
+                        <p><strong>Folio:</strong> ${membership.folio_number || 'N/A'}</p>
                         <p><strong>Precio:</strong> ${formatCurrency(membership.type_price)}</p>
                         <p><strong>Fecha de Inicio:</strong> ${formatDate(membership.start_date)}</p>
-                        <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vencimiento (Lifetime)'}</p>
+                        <p><strong>Fecha de Vencimiento:</strong> ${membership.end_date ? formatDate(membership.end_date) : 'Sin vigencia'}</p>
                         <p><strong>Servicios Restantes:</strong> ${membership.type_name === 'black' ? 'Ilimitados' : `${membership.remaining_services || 0}`}</p>
                         <p><strong>Estado:</strong> 
                             ${membership.status === 'active'
@@ -494,11 +918,32 @@
                                 <p><strong>Historial de Pagos:</strong></p>
                                 ${membership.payment_history.map(p => `
                                     <div style="padding: 0.5rem 0;">
-                                        ${formatDate(p.payment_date)} - ${formatCurrency(p.amount)}
+                                        ${formatDate(p.payment_date)} - ${formatCurrency(p.amount)} <small>(${p.payment_method})</small>
                                     </div>
                                 `).join('')}
                             </div>
                         ` : ''}
+
+                        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(196, 163, 90, 0.1);">
+                            <p><strong>Historial de Uso (Sellos):</strong></p>
+                            ${membership.usage_history && membership.usage_history.length > 0 ?
+                        membership.usage_history.map(u => `
+                                    <div style="padding: 0.8rem; margin-bottom: 0.5rem; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4CAF50; border-radius: 4px;">
+                                        <div style="font-weight: 500; color: #4CAF50;">✅ Servicio Completado</div>
+                                        <div style="font-size: 0.9em;">${u.service_name || 'Servicio'}</div>
+                                        <div style="font-size: 0.8em; color: #666;">${formatDate(u.used_at)}</div>
+                                    </div>
+                                `).join('')
+                        : '<p style="color: #999; font-style: italic;">Sin uso registrado</p>'
+                    }
+                            ${(membership.total_services - membership.used_services) > 0 ?
+                        ` <div style="padding: 0.8rem; margin-top: 0.5rem; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px;">
+                                    <div style="font-weight: 500; color: #2196F3;">🔵 Servicios Restantes</div>
+                                    <div style="font-size: 0.9em;">${membership.total_services - membership.used_services} Disponibles</div>
+                                  </div>`
+                        : ''
+                    }
+                        </div>
                     </div>
                 `;
 
@@ -534,18 +979,169 @@
             );
         }
 
-        function exportMemberships() {
-            const exportData = filteredMemberships.map(m => ({
+        async function exportMemberships() {
+            try {
+                showToast('Generando reporte detallado...', 'info');
+
+                const response = await AdminAPI.exportMembershipsDetailed();
+
+                if (!response || response.length === 0) {
+                    showToast('No hay datos para exportar', 'warning');
+                    return;
+                }
+
+                exportToExcelDetailed(response, `Membresias_Detalle_${new Date().toISOString().split('T')[0]}`);
+
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('Error al exportar: ' + error.message, 'error');
+            }
+        }
+
+        function exportToExcelDetailed(memberships, filenameBase) {
+            if (!memberships || !memberships.length) return;
+            if (typeof XLSX === 'undefined') {
+                throw new Error('Libreria XLSX no disponible');
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Resumen de Membresias
+            const summaryData = memberships.map(m => ({
+                'Folio': m.folio || 'S/N',
                 'Cliente': m.client_name,
-                'Plan': m.type_name,
-                'Precio': m.type_price,
-                'Inicio': formatDate(m.start_date),
-                'Vencimiento': m.end_date ? formatDate(m.end_date) : 'Lifetime',
-                'Servicios Restantes': m.type_name === 'black' ? 'Ilimitados' : m.remaining_services,
-                'Estado': m.status === 'active' ? 'Activa' : 'Cancelada'
+                'Telefono': m.client_phone || '',
+                'Plan': m.plan_name,
+                'Precio': parseFloat(m.price) || 0,
+                'Estado': m.status === 'active' ? 'Activa' : 'Cancelada',
+                'Inicio': m.start_date ? formatDateExcel(m.start_date) : '',
+                'Vencimiento': m.end_date ? formatDateExcel(m.end_date) : 'N/A',
+                'Servicios Totales': m.total_services || 0,
+                'Servicios Usados': m.used_services || 0,
+                'Servicios Restantes': m.remaining_services || 0,
+                'Pagos Registrados': m.payments?.length || 0,
+                'Usos Registrados': m.usage_history?.length || 0
             }));
 
-            exportToExcel(exportData, `membresias_${new Date().toISOString().split('T')[0]}`);
+            const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+            autoFitColumns(wsSummary, summaryData);
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+
+            // Sheet 2: Historial de Pagos
+            const paymentsData = [];
+            memberships.forEach(m => {
+                if (m.payments && m.payments.length > 0) {
+                    m.payments.forEach(p => {
+                        paymentsData.push({
+                            'Folio Membresia': m.folio || 'S/N',
+                            'Cliente': m.client_name,
+                            'Plan': m.plan_name,
+                            'Fecha Pago': p.transaction_date ? formatDateExcel(p.transaction_date) : formatDateExcel(p.created_at),
+                            'Monto': parseFloat(p.amount) || 0,
+                            'Metodo': getPaymentMethodText(p.payment_method)
+                        });
+                    });
+                } else {
+                    // Include memberships without payments too
+                    paymentsData.push({
+                        'Folio Membresia': m.folio || 'S/N',
+                        'Cliente': m.client_name,
+                        'Plan': m.plan_name,
+                        'Fecha Pago': 'Sin registro',
+                        'Monto': parseFloat(m.price) || 0,
+                        'Metodo': 'No registrado'
+                    });
+                }
+            });
+
+            const wsPayments = XLSX.utils.json_to_sheet(paymentsData);
+            autoFitColumns(wsPayments, paymentsData);
+            XLSX.utils.book_append_sheet(wb, wsPayments, 'Historial Pagos');
+
+            // Sheet 3: Historial de Uso (Sellos)
+            const usageData = [];
+            memberships.forEach(m => {
+                // Add completed services
+                if (m.usage_history && m.usage_history.length > 0) {
+                    m.usage_history.forEach(u => {
+                        usageData.push({
+                            'Folio Membresia': m.folio || 'S/N',
+                            'Cliente': m.client_name,
+                            'Plan': m.plan_name,
+                            'Estado': 'Completado',
+                            'Servicio': u.service_name,
+                            'Fecha Uso': u.used_at ? formatDateTimeExcel(u.used_at) : '',
+                            'Valor Servicio': parseFloat(u.service_value) || 0
+                        });
+                    });
+                }
+                // Add remaining services info
+                const remaining = m.remaining_services || 0;
+                if (remaining > 0) {
+                    usageData.push({
+                        'Folio Membresia': m.folio || 'S/N',
+                        'Cliente': m.client_name,
+                        'Plan': m.plan_name,
+                        'Estado': 'Disponible',
+                        'Servicio': `${remaining} servicios restantes`,
+                        'Fecha Uso': '',
+                        'Valor Servicio': ''
+                    });
+                }
+            });
+
+            if (usageData.length === 0) {
+                usageData.push({
+                    'Folio Membresia': '',
+                    'Cliente': '',
+                    'Plan': '',
+                    'Estado': '',
+                    'Servicio': 'Sin registros de uso',
+                    'Fecha Uso': '',
+                    'Valor Servicio': ''
+                });
+            }
+
+            const wsUsage = XLSX.utils.json_to_sheet(usageData);
+            autoFitColumns(wsUsage, usageData);
+            XLSX.utils.book_append_sheet(wb, wsUsage, 'Historial Uso Sellos');
+
+            const filename = `${filenameBase}.xlsx`;
+            XLSX.writeFile(wb, filename);
+            showToast('Reporte exportado con 3 hojas: Resumen, Pagos y Uso', 'success');
+        }
+
+        function autoFitColumns(ws, data) {
+            if (!data || !data.length) return;
+            const keys = Object.keys(data[0] || {});
+            ws['!cols'] = keys.map(k => {
+                let max = k.length;
+                for (const r of data) {
+                    const v = r[k] == null ? '' : String(r[k]);
+                    if (v.length > max) max = v.length;
+                }
+                return { wch: Math.min(Math.max(max + 2, 12), 45) };
+            });
+        }
+
+        function formatDateExcel(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function formatDateTimeExcel(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) +
+                   ' ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getPaymentMethodText(method) {
+            const methods = { 'cash': 'Efectivo', 'card': 'Tarjeta', 'transfer': 'Transferencia' };
+            return methods[method] || method || 'No especificado';
         }
 
         // Initial load
@@ -554,6 +1150,7 @@
 
     <!-- Mobile Menu Script -->
     <!-- Mobile Menu Script Removed -->
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

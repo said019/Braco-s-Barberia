@@ -5,11 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servicios | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -31,7 +40,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -103,7 +112,7 @@
                 <div class="filters-bar">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="search-service" placeholder="Buscar servicio..."
+                        <input type="text" id="search-service" class="search-input" placeholder="Buscar servicio..."
                             onkeyup="filterServices()">
                     </div>
                 </div>
@@ -158,7 +167,7 @@
                     api.get('/admin/service-categories'),
                     api.get('/admin/services')
                 ]);
-                
+
                 serviceCategories = cats || [];
                 allServices = srvs || [];
                 renderTable(allServices);
@@ -171,7 +180,7 @@
 
         function renderTable(services) {
             const tbody = document.getElementById('services-table-body');
-            
+
             if (services.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">No hay servicios registrados</td></tr>`;
                 return;
@@ -179,23 +188,23 @@
 
             tbody.innerHTML = services.map(service => `
                 <tr>
-                    <td>
+                    <td data-label="Servicio">
                         <div class="font-medium">${service.name}</div>
                         <div class="text-sm text-muted">${service.description || '-'}</div>
                     </td>
-                    <td>
+                    <td data-label="Categoría">
                         <span class="badge" style="background: rgba(196, 163, 90, 0.1); color: var(--gold);">
                             ${service.category_name || 'General'}
                         </span>
                     </td>
-                    <td>${service.duration_minutes} min</td>
-                    <td class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(service.price)}</td>
-                    <td>
+                    <td data-label="Duración">${service.duration_minutes} min</td>
+                    <td data-label="Precio" class="font-medium">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(service.price)}</td>
+                    <td data-label="Estado">
                         <span class="badge ${service.is_active ? 'active' : 'inactive'}">
                             ${service.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </td>
-                    <td>
+                    <td data-label="">
                         <div class="actions">
                             <button class="btn-icon" onclick="openServiceModal(${service.id})" title="Editar"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon" onclick="toggleServiceStatus(${service.id}, ${service.is_active})" title="${service.is_active ? 'Desactivar' : 'Activar'}">
@@ -210,59 +219,73 @@
 
         function filterServices() {
             const query = document.getElementById('search-service').value.toLowerCase();
-            const filtered = allServices.filter(s => 
-                s.name.toLowerCase().includes(query) || 
+            const filtered = allServices.filter(s =>
+                s.name.toLowerCase().includes(query) ||
                 (s.category_name && s.category_name.toLowerCase().includes(query))
             );
             renderTable(filtered);
         }
 
         // Modal Logic
-        window.openServiceModal = function(id = null) {
+        window.openServiceModal = function (id = null) {
             const service = id ? allServices.find(s => s.id === id) : null;
             const title = service ? 'Editar Servicio' : 'Nuevo Servicio';
-            
+
             // Build Category Options
-            const categoryOptions = serviceCategories.map(c => 
+            const categoryOptions = serviceCategories.map(c =>
                 `<option value="${c.id}" ${service && service.category_id === c.id ? 'selected' : ''}>${c.name}</option>`
             ).join('');
 
             const content = `
                 <form id="service-form" class="admin-form">
-                    <div class="form-group">
-                        <label for="service-name">Nombre *</label>
-                        <input type="text" id="service-name" value="${service ? service.name : ''}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="service-category">Categoría *</label>
-                        <select id="service-category" required>
-                            <option value="">Selecciona una categoría</option>
-                            ${categoryOptions}
-                        </select>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                        <!-- Left Column: Image Upload -->
+                        <div>
+                            <div class="form-group">
+                                <label for="service-image">Imagen del Servicio</label>
+                                <input type="file" id="service-image" accept="image/*" onchange="handleServiceImage(event)" 
+                                    style="width: 100%; padding: 0.75rem; background: rgba(22, 22, 22, 0.95); border: 1px solid rgba(196, 163, 90, 0.3); color: var(--cream); border-radius: 4px; cursor: pointer; font-size: 0.9rem;">
+                                <input type="hidden" id="service-image-url" value="${service?.image_url || ''}">
+                                
+                                <div id="image-preview-container" style="margin-top: 10px; height: 200px; border: 1px dashed rgba(196, 163, 90, 0.3); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.2);">
+                                    ${service?.image_url ? `<img src="${service.image_url.startsWith('assets') ? '../' + service.image_url : service.image_url}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="color: rgba(255,255,255,0.3);">Sin imagen seleccionada</span>'}
+                                </div>
+                                <p class="form-hint" style="margin-top: 0.5rem; font-size: 0.85rem; color: #888;">Formatos: JPG, PNG, WEBP. Máx 500KB recomendado.</p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Service Details -->
+                        <div>
+                            <div class="form-group">
+                                <label for="service-name">Nombre *</label>
+                                <input type="text" id="service-name" value="${service ? service.name : ''}" required class="form-input">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="service-price">Precio ($) *</label>
+                                    <input type="number" id="service-price" value="${service ? service.price : ''}" required min="0" step="0.5" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="service-duration">Duración (min) *</label>
+                                    <input type="number" id="service-duration" value="${service ? service.duration_minutes : 30}" required min="5" step="5" class="form-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer; display: flex; align-items: center;">
+                                    <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''} style="width: auto; margin-right: 10px;">
+                                    <span>Servicio Activo (Disponible para citas)</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="service-price">Precio ($) *</label>
-                            <input type="number" id="service-price" value="${service ? service.price : ''}" required min="0" step="0.5">
-                        </div>
-                        <div class="form-group">
-                            <label for="service-duration">Duración (min) *</label>
-                            <input type="number" id="service-duration" value="${service ? service.duration_minutes : 30}" required min="5" step="5">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
+                    <!-- Description Field (Full Width) -->
+                    <div class="form-group" style="margin-top: 1rem;">
                         <label for="service-desc">Descripción</label>
-                        <textarea id="service-desc" rows="3">${service ? (service.description || '') : ''}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                         <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer;">
-                            <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''}>
-                            <span>Servicio Activo (Disponible para citas)</span>
-                        </label>
+                        <textarea id="service-desc" rows="4" class="form-textarea" style="width: 100%; background: rgba(22, 22, 22, 0.95); border: 1px solid rgba(196, 163, 90, 0.3); color: var(--cream); padding: 0.75rem; border-radius: 4px;">${service ? (service.description || '') : ''}</textarea>
+                        <p class="form-hint" style="margin-top: 0.5rem; font-size: 0.85rem; color: #888;">Describe el servicio, qué incluye, duración, etc.</p>
                     </div>
                 </form>
             `;
@@ -282,14 +305,14 @@
             // SOLUTION: Include simple modal logic here or rely on global if we include js/admin.js
             // But this is "admin/servicios.html" -> New Page.
             // I'll add simple modal logic inside the script or just inject HTML.
-            
+
             showCustomModal('serviceModal', title, content, footer);
         };
 
         // Simple Modal Helper (since api.js doesn't have it)
         function showCustomModal(id, title, content, footer) {
             const existing = document.getElementById(id);
-            if(existing) existing.remove();
+            if (existing) existing.remove();
 
             const html = `
                 <div class="modal-overlay active" id="${id}">
@@ -307,19 +330,39 @@
             window[id] = { close: () => document.getElementById(id).remove() };
         }
 
+        function handleServiceImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const base64 = e.target.result;
+                document.getElementById('service-image-url').value = base64;
+
+                // Update preview with proper styling
+                const preview = document.getElementById('image-preview-container');
+                preview.innerHTML = `<img src="${base64}" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
         async function saveService(id) {
             const form = document.getElementById('service-form');
-            if(!form.checkValidity()) {
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
+            // Get category_id from existing service or default to 1
+            const service = id ? allServices.find(s => s.id === id) : null;
+
             const data = {
                 name: document.getElementById('service-name').value,
-                category_id: document.getElementById('service-category').value,
+                category_id: service ? service.category_id : 1,  // Default to first category
                 price: parseFloat(document.getElementById('service-price').value),
                 duration_minutes: parseInt(document.getElementById('service-duration').value),
-                description: document.getElementById('service-desc').value,
+                description: document.getElementById('service-desc').value || '',  // Get edited description
+                image_url: document.getElementById('service-image-url').value || null,
                 is_active: document.getElementById('service-active').checked
             };
 
@@ -337,12 +380,12 @@
         }
 
         async function toggleServiceStatus(id, currentStatus) {
-            if(!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este servicio?`)) return;
+            if (!confirm(`¿Estás seguro de que quieres ${currentStatus ? 'desactivar' : 'activar'} este servicio?`)) return;
             // Assuming API supports partial update or we fetch full?
             // The API PUT expects full object.
             // To be safe, find service and flip status.
             const service = allServices.find(s => s.id === id);
-            if(!service) return;
+            if (!service) return;
 
             try {
                 // Construct full update payload (Backend expects all fields for PUT)
@@ -355,17 +398,18 @@
         }
 
         async function deleteService(id) {
-            if(!confirm('¿Eliminar servicio? Esta acción no se puede deshacer (se archivará).')) return;
+            if (!confirm('¿Eliminar servicio? Esta acción no se puede deshacer (se archivará).')) return;
             try {
                 await api.delete(`/admin/services/${id}`);
                 loadData();
-            } catch(error) {
+            } catch (error) {
                 alert('Error al eliminar: ' + error.message);
             }
         }
 
         init();
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

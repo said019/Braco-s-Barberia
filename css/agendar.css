@@ -47,6 +47,129 @@
     opacity: 0.8;
 }
 
+/* Quick Login Section */
+.quick-login-section {
+    margin-bottom: 2rem;
+}
+
+.quick-login-card {
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.1), rgba(196, 163, 90, 0.05));
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.quick-login-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+}
+
+.quick-login-card h3 i {
+    color: var(--gold);
+    margin-right: 0.5rem;
+}
+
+.quick-login-card p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+}
+
+.quick-login-form {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.quick-login-form input {
+    width: 120px;
+    padding: 0.75rem 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-align: center;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--gold);
+}
+
+.quick-login-form input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.1);
+}
+
+.quick-login-form input::placeholder {
+    opacity: 0.3;
+}
+
+.quick-login-form button {
+    padding: 0.75rem 1rem;
+    min-width: 50px;
+}
+
+.quick-login-hint {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    color: var(--error);
+    min-height: 20px;
+}
+
+.quick-login-hint.success {
+    color: var(--success, #4CAF50);
+}
+
+.quick-login-welcome {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.quick-login-welcome.hidden {
+    display: none;
+}
+
+.quick-login-welcome .welcome-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-login-welcome .welcome-message i {
+    font-size: 2rem;
+    color: #4CAF50;
+}
+
+.quick-login-welcome .welcome-message h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--cream);
+    margin: 0;
+}
+
+.quick-login-welcome .welcome-message p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.quick-login-welcome .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
 /* Steps Progress */
 .booking-steps {
     display: flex;
@@ -587,6 +710,92 @@
     flex-wrap: wrap;
 }
 
+/* Gold Card Marketing Banner */
+.gold-card-promo {
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.15), rgba(196, 163, 90, 0.05));
+    border: 1px solid rgba(196, 163, 90, 0.4);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.gold-card-promo .promo-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--gold), #d4af37);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.gold-card-promo .promo-icon i {
+    font-size: 1.4rem;
+    color: var(--charcoal-dark);
+}
+
+.gold-card-promo .promo-content h4 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--cream);
+    margin: 0 0 0.4rem 0;
+}
+
+.gold-card-promo .promo-highlight {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.gold-card-promo .promo-content p {
+    font-size: 0.85rem;
+    color: rgba(245, 245, 240, 0.8);
+    margin: 0 0 0.6rem 0;
+    line-height: 1.5;
+}
+
+.gold-card-promo .promo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.gold-card-promo .promo-link:hover {
+    color: #d4af37;
+    transform: translateX(4px);
+}
+
+.gold-card-promo .promo-link i {
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.gold-card-promo .promo-link:hover i {
+    transform: translateX(3px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Step Actions */
 .step-actions {
     display: flex;
@@ -603,11 +812,11 @@
     .booking-main {
         padding: 8rem 2rem 4rem;
     }
-    
+
     .services-select-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(5, 1fr);
     }
@@ -618,180 +827,180 @@
     .booking-main {
         padding: 6rem 1.5rem 3rem;
     }
-    
+
     .booking-header h1 {
         font-size: 2rem;
     }
-    
+
     .booking-header p {
         font-size: 0.9rem;
     }
-    
+
     .booking-steps {
         gap: 0.5rem;
         padding: 0 1rem;
     }
-    
+
     .step {
         min-width: 60px;
     }
-    
+
     .step-number {
         width: 35px;
         height: 35px;
         font-size: 0.9rem;
     }
-    
+
     .step-line {
         width: 30px;
         height: 2px;
     }
-    
+
     .step-label {
         font-size: 0.65rem;
     }
-    
+
     .booking-content {
         padding: 2rem 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.5rem;
     }
-    
+
     .category-tabs {
         flex-wrap: wrap;
         gap: 0.75rem;
     }
-    
+
     .category-tab {
         flex: 1 1 auto;
         min-width: 120px;
         padding: 0.75rem 1rem;
         font-size: 0.75rem;
     }
-    
+
     .services-select-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .service-option {
         padding: 1.25rem;
     }
-    
+
     .service-option-header h3 {
         font-size: 1rem;
     }
-    
+
     .service-duration,
     .service-price {
         font-size: 0.75rem;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .service-option-description {
         font-size: 0.85rem;
     }
-    
+
     .service-option-features li {
         font-size: 0.8rem;
     }
-    
+
     .datetime-container {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .calendar-widget {
         padding: 1.5rem;
     }
-    
+
     .calendar-header h3 {
         font-size: 1.1rem;
     }
-    
+
     .calendar-nav {
         gap: 1rem;
     }
-    
+
     .calendar-nav button {
         width: 35px;
         height: 35px;
         font-size: 1rem;
     }
-    
+
     .calendar-grid {
         gap: 0.25rem;
     }
-    
+
     .calendar-day {
         padding: 0.75rem 0.5rem;
         font-size: 0.85rem;
     }
-    
+
     .time-selection {
         padding: 1.5rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(4, 1fr);
         gap: 0.75rem;
     }
-    
+
     .time-slot {
         padding: 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
         gap: 1.25rem;
     }
-    
+
     .form-label {
         font-size: 0.8rem;
     }
-    
+
     .form-input,
     .form-textarea {
         padding: 0.875rem;
         font-size: 0.9rem;
     }
-    
+
     .booking-summary {
         padding: 1.5rem;
     }
-    
+
     .summary-title {
         font-size: 1.1rem;
     }
-    
+
     .summary-item-label {
         font-size: 0.8rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.9rem;
     }
-    
+
     .summary-total {
         padding-top: 1rem;
         margin-top: 1rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.9rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.5rem;
     }
-    
+
     .step-actions {
         gap: 1rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         padding: 1rem 2rem;
@@ -804,244 +1013,244 @@
     .booking-main {
         padding: 5rem 1rem 2rem;
     }
-    
+
     .booking-header {
         margin-bottom: 2rem;
     }
-    
+
     .booking-header h1 {
         font-size: 1.75rem;
     }
-    
+
     .booking-header p {
         font-size: 0.85rem;
     }
-    
+
     .booking-steps {
         gap: 0.25rem;
         padding: 0 0.5rem;
     }
-    
+
     .step {
         min-width: 50px;
     }
-    
+
     .step-number {
         width: 30px;
         height: 30px;
         font-size: 0.8rem;
     }
-    
+
     .step-line {
         width: 20px;
     }
-    
+
     .step-label {
         font-size: 0.6rem;
     }
-    
+
     .booking-content {
         padding: 1.5rem 1rem;
         border-radius: 12px;
     }
-    
+
     .step-title {
         font-size: 1.25rem;
         margin-bottom: 1.25rem;
     }
-    
+
     .category-tabs {
         gap: 0.5rem;
         flex-direction: column;
     }
-    
+
     .category-tab {
         width: 100%;
         padding: 0.625rem 1rem;
         font-size: 0.7rem;
     }
-    
+
     .services-select-grid {
         gap: 0.875rem;
     }
-    
+
     .service-option {
         padding: 1rem;
     }
-    
+
     .service-option-header {
         margin-bottom: 0.75rem;
     }
-    
+
     .service-option-header h3 {
         font-size: 0.95rem;
     }
-    
+
     .service-option-meta {
         gap: 0.5rem;
     }
-    
+
     .service-duration,
     .service-price {
         font-size: 0.7rem;
         padding: 0.35rem 0.7rem;
     }
-    
+
     .service-option-description {
         font-size: 0.8rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .service-option-features {
         gap: 0.35rem;
     }
-    
+
     .service-option-features li {
         font-size: 0.75rem;
         padding-left: 1.25rem;
     }
-    
+
     .calendar-widget,
     .time-selection {
         padding: 1.25rem;
     }
-    
+
     .calendar-header h3 {
         font-size: 1rem;
     }
-    
+
     .calendar-nav {
         gap: 0.75rem;
     }
-    
+
     .calendar-nav button {
         width: 32px;
         height: 32px;
         font-size: 0.9rem;
     }
-    
+
     .calendar-grid {
         gap: 0.15rem;
         font-size: 0.75rem;
     }
-    
+
     .calendar-day {
         padding: 0.5rem 0.25rem;
         font-size: 0.8rem;
     }
-    
+
     .time-selection h3 {
         font-size: 1rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.5rem;
     }
-    
+
     .time-slot {
         padding: 0.625rem;
         font-size: 0.8rem;
     }
-    
+
     .form-grid {
         gap: 1rem;
     }
-    
+
     .form-label {
         font-size: 0.75rem;
     }
-    
+
     .form-input,
     .form-textarea {
         padding: 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .form-textarea {
         min-height: 100px;
     }
-    
+
     .booking-summary {
         padding: 1.25rem;
     }
-    
+
     .summary-title {
         font-size: 1rem;
         margin-bottom: 1rem;
     }
-    
+
     .summary-item {
         padding: 0.75rem 0;
     }
-    
+
     .summary-item-label {
         font-size: 0.75rem;
     }
-    
+
     .summary-item-value {
         font-size: 0.85rem;
     }
-    
+
     .summary-total-label {
         font-size: 0.85rem;
     }
-    
+
     .summary-total-value {
         font-size: 1.3rem;
     }
-    
+
     .step-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .step-actions .btn-primary,
     .step-actions .btn-secondary {
         width: 100%;
         padding: 0.875rem 1.5rem;
         font-size: 0.8rem;
     }
-    
+
     .success-icon {
         width: 70px;
         height: 70px;
         font-size: 2rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .success-title {
         font-size: 1.75rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .success-message {
         font-size: 0.9rem;
         margin-bottom: 2rem;
     }
-    
+
     .success-details {
         padding: 1.25rem;
         margin-bottom: 2rem;
     }
-    
+
     .detail-item {
         padding: 0.75rem 0;
     }
-    
+
     .detail-label {
         font-size: 0.75rem;
     }
-    
+
     .detail-value {
         font-size: 0.9rem;
     }
-    
+
     .success-actions {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .success-actions .btn-primary,
     .success-actions .btn-outline {
         width: 100%;
@@ -1053,19 +1262,19 @@
     .booking-header h1 {
         font-size: 1.5rem;
     }
-    
+
     .step-title {
         font-size: 1.1rem;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .service-option-header h3 {
         font-size: 0.9rem;
     }
-    
+
     .success-title {
         font-size: 1.5rem;
     }
@@ -1076,12 +1285,789 @@
     .booking-main {
         padding: 4rem 1.5rem 2rem;
     }
-    
+
     .booking-steps {
         margin-bottom: 1.5rem;
     }
-    
+
     .datetime-container {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Payment Options in Modal */
+.bank-details-container {
+    background: rgba(196, 163, 90, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.section-label {
+    font-size: 0.85rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.payment-option {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-option:last-child {
+    margin-bottom: 0;
+}
+
+.payment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--cream);
+    font-size: 0.95rem;
+}
+
+.payment-icon {
+    font-size: 1.2rem;
+}
+
+.payment-info {
+    padding-left: 2rem;
+    font-size: 0.9rem;
+    color: rgba(245, 245, 240, 0.8);
+}
+
+.payment-info p {
+    margin: 0.2rem 0;
+}
+
+.copyable {
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    user-select: all;
+    color: var(--gold);
+}
+
+.beneficiary {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* ============================================================================
+   DEPOSIT MODAL - POPUP STYLE
+   ============================================================================ */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.deposit-modal-alert {
+    background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Close Button */
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--cream);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: rgba(229, 57, 53, 0.8);
+    border-color: rgba(229, 57, 53, 0.8);
+    transform: rotate(90deg);
+}
+
+/* Alert Header */
+.deposit-alert-header {
+    background: linear-gradient(135deg, rgba(196, 163, 90, 0.15) 0%, rgba(196, 163, 90, 0.05) 100%);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+}
+
+.alert-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    color: var(--gold);
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.alert-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 0;
+}
+
+/* Alert Body */
+.deposit-alert-body {
+    padding: 1.5rem;
+}
+
+.alert-message-box {
+    background: rgba(196, 163, 90, 0.08);
+    border-left: 3px solid var(--gold);
+    padding: 1rem 1.25rem;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 1.25rem;
+}
+
+.alert-message-box p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--cream);
+    font-size: 0.9rem;
+}
+
+.alert-message-box p strong {
+    color: var(--gold);
+}
+
+.alert-note {
+    margin-top: 0.75rem !important;
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-note i {
+    color: #64B5F6;
+}
+
+/* Appointment Summary */
+.deposit-appointment-summary {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.deposit-appointment-summary h4 {
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin: 0 0 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.deposit-appointment-summary .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+}
+
+.deposit-appointment-summary .summary-row:last-child {
+    border-bottom: none;
+}
+
+.deposit-appointment-summary .summary-row span {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.deposit-appointment-summary .summary-row strong {
+    color: var(--cream);
+    font-weight: 500;
+}
+
+/* Payment Section */
+.payment-section {
+    margin-top: 1rem;
+}
+
+.payment-section .btn-secondary {
+    background: rgba(196, 163, 90, 0.1);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    color: var(--gold);
+    padding: 0.875rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.payment-section .btn-secondary:hover {
+    background: rgba(196, 163, 90, 0.2);
+    border-color: var(--gold);
+}
+
+/* Bank Details Card */
+.bank-details-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 12px;
+    margin-top: 1rem;
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bank-details-card.hidden {
+    display: none;
+}
+
+.bank-details-card .card-header {
+    background: rgba(196, 163, 90, 0.1);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.15);
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-options-list {
+    padding: 0.5rem;
+}
+
+.payment-option-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.payment-option-item:hover {
+    background: rgba(196, 163, 90, 0.1);
+    border-color: rgba(196, 163, 90, 0.2);
+}
+
+.payment-option-item:active {
+    transform: scale(0.98);
+}
+
+.option-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: var(--gold);
+    font-size: 1rem;
+}
+
+.option-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.option-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.bank-name {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.bank-number {
+    font-family: 'SF Mono', 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: var(--cream);
+    letter-spacing: 0.02em;
+    display: block;
+}
+
+.copy-icon {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.payment-option-item:hover .copy-icon {
+    color: var(--gold);
+}
+
+.beneficiary-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 0;
+}
+
+/* Alert Actions */
+.deposit-alert-actions {
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-whatsapp-lg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-whatsapp-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(37, 211, 102, 0.4);
+}
+
+.btn-whatsapp-lg:active {
+    transform: translateY(0);
+}
+
+.btn-whatsapp-lg i {
+    font-size: 1.2rem;
+}
+
+.btn-cancel-subtle {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-align: center;
+}
+
+.btn-cancel-subtle:hover {
+    color: #E57373;
+}
+
+/* Modal Responsive */
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .deposit-modal-alert {
+        border-radius: 20px 20px 0 0;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .deposit-alert-header {
+        padding: 1.5rem 1.25rem 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .alert-title {
+        font-size: 1.5rem;
+    }
+
+    .deposit-alert-body {
+        padding: 1.25rem;
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .alert-message-box {
+        padding: 0.875rem 1rem;
+    }
+
+    .alert-message-box p {
+        font-size: 0.85rem;
+    }
+
+    .deposit-appointment-summary {
+        padding: 0.875rem 1rem;
+    }
+
+    .deposit-alert-actions {
+        padding: 1rem 1.25rem 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .btn-whatsapp-lg {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+
+    /* Bank details card mobile fixes */
+    .bank-details-card {
+        margin-bottom: 1rem;
+    }
+
+    .payment-option-item {
+        padding: 0.6rem;
+        gap: 0.5rem;
+    }
+
+    .option-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        font-size: 0.9rem;
+    }
+
+    .bank-name {
+        font-size: 0.65rem;
+    }
+
+    .bank-number {
+        font-size: 0.8rem;
+        word-break: break-all;
+    }
+
+    .copy-icon {
+        font-size: 0.75rem;
+        min-width: 20px;
+    }
+
+    .beneficiary-name {
+        font-size: 0.7rem;
+        padding: 0.5rem;
+    }
+}
+
+/* Bank Details Card */
+.bank-details-card {
+    background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bank-details-card.hidden {
+    display: none;
+}
+
+.card-header {
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.payment-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.payment-option-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-option-item:hover {
+    background: rgba(196, 163, 90, 0.1);
+    border-color: rgba(196, 163, 90, 0.3);
+    transform: translateX(5px);
+}
+
+.option-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--gold);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+}
+
+.option-icon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.option-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.bank-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bank-number {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+}
+
+.copy-icon {
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.2s;
+}
+
+.payment-option-item:hover .copy-icon {
+    color: var(--gold);
+}
+
+.beneficiary-name {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   PAYMENT OPTIONS CONTAINER (Recurring Clients Modal)
+   ============================================================================ */
+
+.payment-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 1.5rem 0;
+}
+
+.payment-option-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(196, 163, 90, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-option-card:hover {
+    background: rgba(196, 163, 90, 0.1);
+    border-color: var(--gold);
+    transform: translateX(5px);
+}
+
+.payment-option-card.hidden {
+    display: none;
+}
+
+.option-icon-lg {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--gold);
+    background: rgba(196, 163, 90, 0.1);
+    border-radius: 50%;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+}
+
+.option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.option-content strong {
+    font-size: 1rem;
+    color: var(--cream);
+}
+
+.option-content span {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.payment-option-card>i.fa-chevron-right {
+    color: rgba(196, 163, 90, 0.5);
+    transition: all 0.2s ease;
+}
+
+.payment-option-card:hover>i.fa-chevron-right {
+    color: var(--gold);
+    transform: translateX(3px);
+}
+
+/* Payment Options Modal Mobile */
+@media (max-width: 480px) {
+    .payment-options-container {
+        gap: 0.6rem;
+        margin: 1rem 0;
+    }
+
+    .payment-option-card {
+        padding: 0.875rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .option-icon-lg {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.1rem;
+    }
+
+    .option-content strong {
+        font-size: 0.9rem;
+    }
+
+    .option-content span {
+        font-size: 0.75rem;
+    }
+
+    #po-bank-details .payment-option-item {
+        padding: 0.6rem;
+        gap: 0.5rem;
+    }
+
+    #po-bank-details .option-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+
+    #po-bank-details .bank-number {
+        font-size: 0.75rem;
+        word-break: break-all;
     }
 }

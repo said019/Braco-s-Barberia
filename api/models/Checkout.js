@@ -7,92 +7,142 @@ export const Checkout = {
         console.log('Processing checkout with data:', JSON.stringify(data, null, 2));
         return transaction(async (client) => {
             const {
-                appointment_id,
-                client_id,
-                service_cost,
+                appointment_id = null,
+                client_id = null,
+                service_cost = 0,
                 products_cost = 0,
                 discount = 0,
-                total,
-                payment_method,
-                use_membership,
+                total = 0,
+                payment_method = 'cash',
+                use_membership = false,
                 products = [],
-                notes
+                notes = ''
             } = data;
 
             // ... (rest of code)
 
 
+            // 1. Verificar estado de la cita (Si existe)
+            let appointmentData = null;
+            let serviceId = null;
 
-            // 1. Verificar estado de la cita
-            const appointmentCheck = await client.query(
-                'SELECT status, service_id, checkout_code FROM appointments WHERE id = $1',
-                [appointment_id]
-            );
+            if (appointment_id) {
+                const appointmentCheck = await client.query(
+                    `SELECT status, service_id, checkout_code, deposit_required, deposit_amount, deposit_paid 
+                     FROM appointments WHERE id = $1`,
+                    [appointment_id]
+                );
 
-            if (appointmentCheck.rows.length === 0) {
-                throw new AppError('Cita no encontrada', 404);
+                if (appointmentCheck.rows.length === 0) {
+                    throw new AppError('Cita no encontrada', 404);
+                }
+
+                appointmentData = appointmentCheck.rows[0];
+
+                if (['completed', 'cancelled'].includes(appointmentData.status)) {
+                    throw new AppError('Esta cita ya ha sido procesada o cancelada', 400);
+                }
+                serviceId = appointmentData.service_id;
             }
 
-            if (['completed', 'cancelled'].includes(appointmentCheck.rows[0].status)) {
-                throw new AppError('Esta cita ya ha sido procesada o cancelada', 400);
+            // 1.5 Obtener datos del cliente
+            let clientData = null;
+            let clientName = 'Público General';
+            let clientPhone = '';
+
+            if (client_id) {
+                const clientResult = await client.query('SELECT name, phone FROM clients WHERE id = $1', [client_id]);
+                if (clientResult.rows.length > 0) {
+                    clientData = clientResult.rows[0];
+                    clientName = clientData.name;
+                    clientPhone = clientData.phone;
+                }
             }
 
-            const serviceId = appointmentCheck.rows[0].service_id;
+            // Service ID extracted above
             let membershipId = null;
 
-            // 2. Procesar membresía si se solicita
+            // 3. Procesar membresía si se solicita
             if (use_membership) {
                 // Buscar membresía activa válida para este servicio
-                // Nota: Por ahora asumimos que cualquier membresía activa cubre el servicio
-                // En un futuro se podría validar tipos de servicio específicos
                 const membershipResult = await client.query(`
-          SELECT cm.*, mt.name as membership_name 
+          SELECT cm.*, mt.name as membership_name, mt.applicable_services
           FROM client_memberships cm
           JOIN membership_types mt ON cm.membership_type_id = mt.id
           WHERE cm.client_id = $1 
           AND cm.status = 'active'
-          AND cm.expiration_date >= CURRENT_DATE
+          AND (cm.expiration_date IS NULL OR cm.expiration_date >= CURRENT_DATE)
           AND (cm.total_services - cm.used_services) > 0
-          ORDER BY cm.expiration_date ASC
+          AND $2 = ANY(mt.applicable_services)
+          ORDER BY cm.expiration_date ASC NULLS LAST
           LIMIT 1
-        `, [client_id]);
+        `, [client_id, serviceId]);
 
                 if (membershipResult.rows.length === 0) {
-                    throw new AppError('No hay membresía activa con servicios disponibles', 400);
+                    throw new AppError('No hay membresía activa válida para este servicio', 400);
                 }
 
                 const membership = membershipResult.rows[0];
                 membershipId = membership.id;
 
-                // Descontar servicio
+                // Obtener costo de uso del servicio (sellos)
+                const serviceInfo = await client.query('SELECT usage_cost FROM services WHERE id = $1', [serviceId]);
+                const usageCost = serviceInfo.rows[0]?.usage_cost || 1;
+
+                // Verificar si alcanzan los sellos
+                if ((membership.total_services - membership.used_services) < usageCost) {
+                    throw new AppError(`Membresía insuficiente. Se requieren ${usageCost} sellos, tienes ${membership.total_services - membership.used_services}`, 400);
+                }
+
+                // Descontar servicio(s)
                 await client.query(`
           UPDATE client_memberships 
-          SET used_services = used_services + 1,
+          SET used_services = used_services + $2,
               updated_at = CURRENT_TIMESTAMP
           WHERE id = $1
-        `, [membershipId]);
+        `, [membershipId, usageCost]);
 
-                // Registrar uso en bitácora
+                // Registrar uso en bitácora con valor del servicio
                 await client.query(`
-          INSERT INTO membership_usage (membership_id, appointment_id, service_id, service_name)
-          SELECT $1, $2, s.id, s.name
+          INSERT INTO membership_usage (
+            membership_id, appointment_id, service_id, service_name,
+            service_value, stamps_used
+          )
+          SELECT $1, $2, s.id, s.name, s.price, $4
           FROM services s WHERE s.id = $3
-        `, [membershipId, appointment_id, serviceId]);
+        `, [membershipId, appointment_id, serviceId, usageCost]);
             }
 
-            // 3. Crear registro de checkout
+            // 4. Verificar si hay depósito pagado para aplicar como descuento
+            let depositApplied = 0;
+
+            if (appointmentData && appointmentData.deposit_paid && appointmentData.deposit_amount > 0) {
+                depositApplied = Number(appointmentData.deposit_amount);
+                console.log(`Aplicando depósito de $${depositApplied} como descuento`);
+            }
+
+            // Calcular total final con depósito aplicado
+            const finalDiscount = Number(discount) + depositApplied;
+            const finalTotal = Math.max(0, Number(total) - depositApplied);
+
+            // Calcular subtotal (Requerido por DB producción)
+            const subtotal = Number(service_cost) + Number(products_cost);
+
+            // 5. Crear registro de checkout
             const checkoutResult = await client.query(`
         INSERT INTO checkouts (
-          appointment_id, service_cost, products_cost, 
+          appointment_id, client_id, client_name, client_phone,
+          service_cost, products_cost, subtotal, 
           discount, total, payment_method, used_membership, 
-          membership_id, notes
+          membership_id, notes, deposit_applied
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id, uuid
       `, [
-                appointment_id, service_cost, products_cost,
-                discount, total, payment_method, use_membership,
-                membershipId, notes
+                appointment_id, client_id, clientName, clientPhone,
+                service_cost, products_cost, subtotal,
+                finalDiscount, finalTotal, payment_method, use_membership,
+                membershipId, notes, depositApplied
             ]);
 
             const checkoutId = checkoutResult.rows[0].id;
@@ -137,11 +187,13 @@ export const Checkout = {
                 }
             }
 
-            // 5. Actualizar estado de la cita
-            await client.query(
-                "UPDATE appointments SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
-                [appointment_id]
-            );
+            // 5. Actualizar estado de la cita (Si existe)
+            if (appointment_id) {
+                await client.query(
+                    "UPDATE appointments SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+                    [appointment_id]
+                );
+            }
 
             // 6. Crear transacción financiera
             // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
@@ -159,22 +211,26 @@ export const Checkout = {
           VALUES ($1, $2, 'service', $3, $4, $5, CURRENT_DATE)
         `, [
                     checkoutId,
-                    client_id,
-                    `Pago de servicio/productos (Cita #${appointmentCheck.rows[0].checkout_code})`,
+                    client_id, // Can be null
+                    appointmentData
+                        ? `Pago de servicio/productos (Cita #${appointmentData.checkout_code})`
+                        : `Venta de mostrador${clientName ? ' - ' + clientName : ''}`,
                     total,
                     payment_method
                 ]);
             }
 
-            // 7. Actualizar estadísticas del cliente
-            await client.query(`
-        UPDATE clients 
-        SET total_visits = total_visits + 1,
-            total_spent = total_spent + $1,
-            last_visit_date = CURRENT_DATE,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-      `, [total, client_id]);
+            // 7. Actualizar estadísticas del cliente (Si existe)
+            if (client_id) {
+                await client.query(`
+                    UPDATE clients 
+                    SET total_visits = total_visits + 1,
+                        total_spent = total_spent + $1,
+                        last_visit_date = CURRENT_DATE,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $2
+                `, [total, client_id]);
+            }
 
             return {
                 success: true,

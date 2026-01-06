@@ -21,10 +21,12 @@ const api = {
         try {
             const response = await fetch(`${API_BASE}${endpoint}`, options);
 
-            if (response.status === 401) {
+            // Si el token es inválido o expiró, redirigir a login
+            if (response.status === 401 || response.status === 403) {
                 localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_user');
                 window.location.href = '/admin/login.html';
-                return;
+                throw new Error('Sesión expirada. Redirigiendo a login...');
             }
 
             const result = await response.json();
@@ -35,6 +37,15 @@ const api = {
 
             return result;
         } catch (error) {
+            // Si es error de aborto (usuario navegó a otra página)
+            if (error.name === 'AbortError') {
+                throw error; // Re-throw para que el caller lo maneje
+            }
+            // Si es error de red o el servidor no responde
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
+                console.error('Error de conexión:', error);
+                throw new Error('No se pudo conectar con el servidor');
+            }
             console.error('API request failed:', error);
             throw error;
         }
@@ -56,6 +67,10 @@ const api = {
         return this.request('DELETE', endpoint);
     }
 };
+
+// Expose globally
+window.api = api;
+window.API = api; // Alias for backward compatibility
 
 // ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
 document.addEventListener('DOMContentLoaded', () => {

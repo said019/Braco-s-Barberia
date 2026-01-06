@@ -22,6 +22,16 @@ dotenv.config();
 // Crear aplicación Express
 const app = express();
 
+// Health check ultra-simple (antes de cualquier middleware pesado)
+// Railway/Proxies pueden validar este endpoint para determinar si la app está viva.
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: "Braco's Barbería API está funcionando",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ============================================
 // MIDDLEWARE GLOBAL
 // ============================================
@@ -49,6 +59,9 @@ if (config.env === 'development') {
   app.use(morgan('combined'));
 }
 
+// Trust proxy (necesario para Railway y otros proxies reversos)
+app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
@@ -58,7 +71,11 @@ const limiter = rateLimit({
     message: 'Demasiadas solicitudes, por favor intenta de nuevo más tarde.'
   }
 });
-app.use('/api/', limiter);
+// IMPORTANT: No aplicar rate-limit a webhooks (Twilio puede reintentar y usa proxy)
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/webhooks')) return next();
+  return limiter(req, res, next);
+});
 
 // ============================================
 // RUTAS
@@ -168,6 +185,10 @@ process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   process.exit(1);
 });
+
+// Iniciar Cron Job de Recordatorios
+import initReminderJob from './cron/reminderJob.js';
+initReminderJob();
 
 // Iniciar servidor
 startServer();

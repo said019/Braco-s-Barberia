@@ -147,6 +147,18 @@ const AdminAPI = {
         method: 'PUT'
     }),
 
+    exportMembershipsData: async (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        const result = await fetchWithAuth(`/admin/memberships/export/data${query ? '?' + query : ''}`);
+        // The endpoint may return either { data: [...] } or the array directly.
+        return result?.data || result;
+    },
+
+    exportMembershipsDetailed: async () => {
+        const result = await fetchWithAuth('/admin/memberships/export/detailed');
+        return result?.data || result;
+    },
+
     // Reports
     getSalesReport: (params) => {
         const query = new URLSearchParams(params).toString();
@@ -175,7 +187,15 @@ function formatCurrency(amount) {
 }
 
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('es-MX', {
+    // Evitar conversión de timezone - si es solo fecha (YYYY-MM-DD), agregarle T12:00:00
+    let dateStr = date;
+    if (typeof date === 'string' && date.length === 10) {
+        dateStr = date + 'T12:00:00';
+    } else if (typeof date === 'string' && date.includes('T')) {
+        // Si ya tiene T, extraer solo la fecha y agregar T12:00:00
+        dateStr = date.split('T')[0] + 'T12:00:00';
+    }
+    return new Date(dateStr).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
@@ -183,7 +203,12 @@ function formatDate(date) {
 }
 
 function formatDateTime(datetime) {
-    return new Date(datetime).toLocaleDateString('es-MX', {
+    // Evitar conversión de timezone
+    let dateStr = datetime;
+    if (typeof datetime === 'string' && datetime.length === 10) {
+        dateStr = datetime + 'T12:00:00';
+    }
+    return new Date(dateStr).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -503,7 +528,9 @@ function createTable(data, columns) {
                 value = col.format(value, row);
             }
 
-            html += `<td>${value !== null && value !== undefined ? value : '-'}</td>`;
+            // Add data-label for responsive mobile view
+            const dataLabel = col.label !== 'Acciones' ? col.label : '';
+            html += `<td data-label="${dataLabel}">${value !== null && value !== undefined ? value : '-'}</td>`;
         });
         html += '</tr>';
     });
@@ -585,48 +612,17 @@ function setActiveNavItem() {
 // Set active nav on page load
 document.addEventListener('DOMContentLoaded', setActiveNavItem);
 
-// ==================== LAYOUT & RESPONSIVENESS (Injected) ====================
+// ==================== LAYOUT & RESPONSIVENESS ====================
+// Mobile menu logic is handled by sidebar.js to avoid duplicate event listeners
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile Menu Injection
-    if (!document.querySelector('.mobile-menu-toggle')) {
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'mobile-menu-toggle';
-        toggleBtn.id = 'mobile-menu-toggle';
-        toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(toggleBtn);
-    }
-    if (!document.querySelector('.mobile-overlay')) {
-        const overlay = document.createElement('div');
-        overlay.className = 'mobile-overlay';
-        overlay.id = 'mobile-overlay';
-        document.body.appendChild(overlay);
-    }
-    const toggleBtn = document.querySelector('.mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
-    const overlay = document.querySelector('.mobile-overlay');
-    if (toggleBtn && sidebar && overlay) {
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-        });
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        });
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('active');
-                }
-            });
-        });
-    }
     // Calendar Responsive Fix
+    // Wrap calendar grid in a responsive container if not already
     const calendarGrid = document.querySelector('.calendar-grid');
     if (calendarGrid && !calendarGrid.parentElement.classList.contains('calendar-container')) {
         const wrapper = document.createElement('div');
         wrapper.className = 'calendar-container';
+        wrapper.style.overflowX = 'auto'; // Force scroll
         calendarGrid.parentNode.insertBefore(wrapper, calendarGrid);
         wrapper.appendChild(calendarGrid);
     }

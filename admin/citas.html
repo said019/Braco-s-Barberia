@@ -4,12 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citas de Hoy | Braco's Admin</title>
-    <link rel="stylesheet" href="css/admin.css">
+    <title>Citas | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="css/admin.css?v=3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -31,7 +40,7 @@
                     </a>
                     <a href="citas.html" class="nav-item active">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -88,71 +97,193 @@
         <main class="main-content">
             <header class="top-header">
                 <div>
-                    <h1 class="page-title">Citas de Hoy</h1>
-                    <p class="text-muted" id="today-date"></p>
+                    <h1 class="page-title">Citas</h1>
+                    <p class="text-muted">Gestión completa de citas</p>
                 </div>
                 <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportAppointments()">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
                     <button class="btn btn-primary" onclick="window.location.href='calendario.html'">
-                        <i class="far fa-calendar-alt"></i> Ver Calendario Completo
+                        <i class="far fa-calendar-alt"></i> Calendario
                     </button>
                 </div>
             </header>
 
-            <div class="page-content">
-                <!-- Status Legend -->
-                <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
-                    <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);">Programada</span>
-                    <span class="badge"
-                        style="background: rgba(76,175,80,0.3); color: var(--success);">Confirmada</span>
-                    <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);">En Curso</span>
-                    <span class="badge"
-                        style="background: rgba(76,175,80,0.15); color: var(--success);">Completada</span>
+            <!-- Filters Section -->
+            <div class="content-section filters-container">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Desde</label>
+                        <input type="date" id="filter-start-date" class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Hasta</label>
+                        <input type="date" id="filter-end-date" class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Estado</label>
+                        <select id="filter-status" class="search-input">
+                            <option value="">Todos</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="scheduled">Programada</option>
+                            <option value="confirmed">Confirmada</option>
+                            <option value="in_progress">En Curso</option>
+                            <option value="completed">Completada</option>
+                            <option value="cancelled">Cancelada</option>
+                            <option value="no_show">No Asistió</option>
+                        </select>
+                    </div>
+                    <div class="filter-group search-group">
+                        <label class="filter-label">Buscar</label>
+                        <input type="text" id="filter-search" class="search-input"
+                            placeholder="Cliente, servicio o código...">
+                    </div>
                 </div>
 
-                <!-- Table -->
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Hora</th>
-                                <th>Cliente</th>
-                                <th>Servicio</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="appointments-table-body">
-                            <tr>
-                                <td colspan="5" class="text-center p-3">Cargando citas...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Quick Filters -->
+                <div class="quick-filters">
+                    <span class="filter-label" style="margin-right: 10px; align-self: center;">Rápido:</span>
+                    <button class="btn-filter" onclick="setQuickFilter('today')">Hoy</button>
+                    <button class="btn-filter" onclick="setQuickFilter('week')">Semana</button>
+                    <button class="btn-filter" onclick="setQuickFilter('month')">Mes</button>
+                    <button class="btn-filter" onclick="setQuickFilter('pending')">Pendientes</button>
                 </div>
             </div>
-        </main>
+
+            <!-- Status Legend -->
+            <div class="filters-bar" style="margin-bottom: 1rem; overflow-x: auto;">
+                <span class="badge" style="background: rgba(255,235,59,0.3); color: #FDD835;"><i
+                        class="fas fa-hourglass-half"></i> Pendiente</span>
+                <span class="badge" style="background: rgba(196,163,90,0.3); color: var(--cream);"><i
+                        class="far fa-calendar"></i> Programada</span>
+                <span class="badge" style="background: rgba(76,175,80,0.3); color: var(--success);"><i
+                        class="fas fa-check"></i>
+                    Confirmada</span>
+                <span class="badge" style="background: rgba(255,152,0,0.2); color: var(--warning);"><i
+                        class="fas fa-play"></i>
+                    En Curso</span>
+                <span class="badge" style="background: rgba(76,175,80,0.15); color: var(--success);"><i
+                        class="fas fa-check-double"></i> Completada</span>
+                <span class="badge" style="background: rgba(229,57,53,0.15); color: var(--error);"><i
+                        class="fas fa-times"></i>
+                    Cancelada</span>
+            </div>
+
+            <!-- Results Count -->
+            <div
+                style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; padding-left: 3.5rem;">
+                <p class="text-muted" id="results-count">Cargando...</p>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Cód.</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointments-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center p-3">Cargando citas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+    </div>
+    </main>
     </div>
 
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script src="../js/admin.js"></script>
     <script>
-        let todayAppointments = [];
+        let allAppointments = [];
+        let filteredAppointments = [];
 
         async function init() {
             checkAuth();
             updateUserInfo();
-            setupDate();
-            await loadData();
+            setupFilters();
+
+            // Check params
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+            const searchParam = urlParams.get('search');
+
+            if (statusParam) {
+                document.getElementById('filter-status').value = statusParam;
+                // For pending status, show pending quick filter range
+                if (statusParam === 'pending') {
+                    setQuickFilter('pending');
+                } else {
+                    setQuickFilter('month'); // Broad range for other statuses
+                }
+            } else if (searchParam) {
+                document.getElementById('filter-search').value = searchParam;
+                setQuickFilter('month'); // Broad range for searching
+            } else {
+                setQuickFilter('today'); // Default
+            }
         }
 
-        function setupDate() {
+        function setupFilters() {
+            // Event listeners
+            document.getElementById('filter-start-date').addEventListener('change', loadData);
+            document.getElementById('filter-end-date').addEventListener('change', loadData);
+            document.getElementById('filter-status').addEventListener('change', applyFilters);
+            document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
+        }
+
+        function setQuickFilter(type) {
             const today = new Date();
-            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('today-date').textContent = today.toLocaleDateString('es-MX', options);
+            let startDate, endDate;
+
+            // Update active button state
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.btn-filter[onclick*="${type}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            switch (type) {
+                case 'today':
+                    startDate = endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    startDate = weekStart.toISOString().split('T')[0];
+                    endDate = weekEnd.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+                    break;
+                case 'pending':
+                    // Broad range for pending
+                    startDate = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // last 60d
+                    endDate = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // next 60d
+                    document.getElementById('filter-status').value = 'pending';
+                    break;
+            }
+
+            document.getElementById('filter-start-date').value = startDate;
+            document.getElementById('filter-end-date').value = endDate;
+
+            // Trigger load
+            loadData();
         }
 
         function updateUserInfo() {
-            const admin = JSON.parse(localStorage.getItem('admin_user') || '{}');
+            const admin = JSON.parse(localStorage.getItem('admin_user') || '{ }');
             document.getElementById('admin-name').textContent = admin.name || 'Admin';
             document.getElementById('admin-role').textContent = admin.role || 'Administrador';
             document.getElementById('admin-avatar').textContent = (admin.name || 'A')[0].toUpperCase();
@@ -160,15 +291,105 @@
 
         async function loadData() {
             try {
-                // Get today's date in YYYY-MM-DD local
-                const today = new Date().toISOString().split('T')[0];
-                todayAppointments = await api.get(`/admin/appointments?date=${today}`);
-                renderTable(todayAppointments);
-                updateBadge(todayAppointments.length);
+                const startDate = document.getElementById('filter-start-date').value;
+                const endDate = document.getElementById('filter-end-date').value;
+
+                if (!startDate || !endDate) return;
+
+                document.getElementById('results-count').textContent = 'Cargando...';
+
+                allAppointments = await api.get(`/admin/appointments?start_date=${startDate}&end_date=${endDate}`);
+                lastAppointmentsSignature = computeAppointmentsSignature(allAppointments);
+                applyFilters();
+                updateBadge(allAppointments.filter(a => a.status === 'pending').length);
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="5" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+                document.getElementById('appointments-table-body').innerHTML = `<tr><td colspan="7" class="text-center p-3 text-error">Error al cargar citas</td></tr>`;
+                document.getElementById('results-count').textContent = 'Error al cargar';
             }
+        }
+
+        // Iniciar auto-refresh cuando la página esté lista
+        document.addEventListener('DOMContentLoaded', () => {
+            startAutoRefresh();
+        });
+
+        // ==========================
+        // Auto-refresh silencioso
+        // - No recarga la página
+        // - Preserva scroll
+        // - Evita re-render si no hubo cambios
+        // ==========================
+        let autoRefreshTimer = null;
+        let lastAppointmentsSignature = '';
+
+        function computeAppointmentsSignature(list) {
+            // Firma compacta para detectar cambios sin parpadeo
+            return (list || [])
+                .map(a => `${a.id}:${a.status}:${a.updated_at || ''}:${a.start_time || ''}`)
+                .join('|');
+        }
+
+        async function refreshDataSilently() {
+            try {
+                const startDate = document.getElementById('filter-start-date').value;
+                const endDate = document.getElementById('filter-end-date').value;
+                if (!startDate || !endDate) return;
+
+                const prevScrollY = window.scrollY;
+                const nextAppointments = await api.get(`/admin/appointments?start_date=${startDate}&end_date=${endDate}`);
+
+                const nextSig = computeAppointmentsSignature(nextAppointments);
+                if (nextSig === lastAppointmentsSignature) return; // nada cambió
+
+                allAppointments = nextAppointments;
+                lastAppointmentsSignature = nextSig;
+
+                // Reaplicar filtros + render
+                applyFilters();
+                updateBadge(allAppointments.filter(a => a.status === 'pending').length);
+
+                // Restaurar scroll (evita sensación de parpadeo/salto)
+                window.scrollTo({ top: prevScrollY, left: 0, behavior: 'instant' });
+            } catch (e) {
+                // Silencioso: no interrumpir al usuario si hay un fallo temporal
+                console.warn('[AUTOREFRESH] Falló refresh silencioso:', e?.message || e);
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            // 30s es suficiente para reflejar confirmaciones por WhatsApp sin saturar
+            autoRefreshTimer = setInterval(refreshDataSilently, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+
+            filteredAppointments = allAppointments.filter(app => {
+                if (statusFilter && app.status !== statusFilter) return false;
+                if (searchFilter) {
+                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone} ${app.checkout_code || ''}`.toLowerCase();
+                    if (!searchText.includes(searchFilter)) return false;
+                }
+                return true;
+            });
+
+            // Sort by date and time
+            filteredAppointments.sort((a, b) => {
+                const dateCompare = a.appointment_date.localeCompare(b.appointment_date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.start_time.localeCompare(b.start_time);
+            });
+
+            renderTable(filteredAppointments);
+            document.getElementById('results-count').textContent = `${filteredAppointments.length} cita(s) encontrada(s)`;
         }
 
         function updateBadge(count) {
@@ -180,7 +401,6 @@
         }
 
         function formatTime(timeStr) {
-            // HH:MM:SS -> HH:MM AM/PM
             if (!timeStr) return '';
             const [hours, minutes] = timeStr.split(':');
             const date = new Date();
@@ -189,8 +409,27 @@
             return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         }
 
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                // Extraer solo YYYY-MM-DD para evitar problemas de zona horaria
+                let datePart = dateStr;
+                if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                    datePart = dateStr.split('T')[0]; // Solo la parte de fecha
+                }
+                // Crear fecha con hora fija al mediodía para evitar cambio de día
+                const [year, month, day] = datePart.split('-').map(Number);
+                const date = new Date(year, month - 1, day, 12, 0, 0);
+                if (isNaN(date.getTime())) return '-';
+                return date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+            } catch (e) {
+                return '-';
+            }
+        }
+
         function getStatusBadge(status, appointmentId) {
             const styles = {
+                pending: 'background: rgba(255,235,59,0.3); color: #FDD835;',
                 scheduled: 'background: rgba(196,163,90,0.3); color: var(--cream);',
                 confirmed: 'background: rgba(76,175,80,0.3); color: var(--success);',
                 in_progress: 'background: rgba(255,152,0,0.2); color: var(--warning);',
@@ -198,72 +437,81 @@
                 cancelled: 'background: rgba(229,57,53,0.15); color: var(--error);',
                 no_show: 'background: rgba(158,158,158,0.2); color: #9E9E9E;'
             };
-            const labels = {
-                scheduled: 'Programada',
-                confirmed: 'Confirmada',
-                in_progress: 'En Curso',
-                completed: 'Completada',
-                cancelled: 'Cancelada',
-                no_show: 'No Asistió'
+            const icons = {
+                pending: '<i class="fas fa-hourglass-half"></i>',
+                scheduled: '<i class="far fa-calendar"></i>',
+                confirmed: '<i class="fas fa-check"></i>',
+                in_progress: '<i class="fas fa-play"></i>',
+                completed: '<i class="fas fa-check-double"></i>',
+                cancelled: '<i class="fas fa-times"></i>',
+                no_show: '<i class="fas fa-user-slash"></i>'
             };
-            return `<span class="badge" style="${styles[status]} cursor: pointer;" onclick="openStatusModal(${appointmentId}, '${status}')" title="Clic para cambiar estado">${labels[status]}</span>`;
+            const labels = {
+                pending: 'PENDIENTE',
+                scheduled: 'PROGRAMADA',
+                confirmed: 'CONFIRMADA',
+                in_progress: 'EN CURSO',
+                completed: 'COMPLETADA',
+                cancelled: 'CANCELADA',
+                no_show: 'NO ASISTIÓ'
+            };
+            return `<span class="badge" style="${styles[status] || styles.scheduled} cursor: pointer;" onclick="openStatusModal(${appointmentId}, '${status}')" title="Clic para cambiar estado">${icons[status] || ''} ${labels[status] || status}</span>`;
         }
 
         function renderTable(appointments) {
             const tbody = document.getElementById('appointments-table-body');
 
             if (appointments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-3">No hay citas para hoy</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-3">No se encontraron citas</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = appointments.map(app => `
-                <tr>
-                    <td class="font-medium text-gold">${formatTime(app.start_time)}</td>
-                    <td>
-                        <div class="font-medium">${app.client_name}</div>
-                        <div class="text-sm text-muted">${app.client_phone}</div>
-                    </td>
-                    <td>
-                        <div>${app.service_name}</div>
-                        <div class="text-sm text-muted">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(app.service_price)}</div>
-                    </td>
-                    <td>${getStatusBadge(app.status, app.id)}</td>
-                    <td>
-                        <div class="actions">
-                            ${getActionButtons(app)}
-                        </div>
-                    </td>
-                </tr>
+            <tr class="${app.status === 'pending' ? 'pending-row' : ''}">
+                <td data-label="Código" class="font-mono text-sm text-gold">${app.checkout_code || '-'}</td>
+                <td data-label="Fecha" class="text-muted">${formatDate(app.appointment_date)}</td>
+                <td data-label="Hora" class="font-medium text-gold">${formatTime(app.start_time)}</td>
+                <td data-label="Cliente">
+                    <div class="font-medium">${app.client_name}</div>
+                    <div class="text-sm text-muted">${app.client_phone}</div>
+                </td>
+                <td data-label="Servicio">
+                    <div>${app.service_name}</div>
+                    <div class="text-sm text-muted">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(app.service_price)}</div>
+                </td>
+                <td data-label="Estado">${getStatusBadge(app.status, app.id)}</td>
+                <td data-label="">
+                    <div class="actions">
+                        ${getActionButtons(app)}
+                    </div>
+                </td>
+            </tr>
             `).join('');
         }
 
         function getActionButtons(app) {
             const id = app.id;
-            // State transitions
-            /*
-            Scheduled -> Confirmed, In Progress, Cancelled
-            Confirmed -> In Progress, Cancelled, No Show
-            In Progress -> Completed
-            Completed -> (None or Payment?)
-            */
             let buttons = '';
 
-            if (['scheduled', 'confirmed'].includes(app.status)) {
-                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
-            }
-            if (app.status === 'in_progress') {
-                buttons += `<button class="btn-icon" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
-            }
-            if (['scheduled', 'confirmed'].includes(app.status)) {
-                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
+            if (app.status === 'pending') {
+                buttons += `<button class="btn-icon confirm" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check"></i></button>`;
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Rechazar/Cancelar"><i class="fas fa-times-circle"></i></button>`;
             }
 
-            return buttons || '-';
+            if (['scheduled', 'confirmed'].includes(app.status)) {
+                buttons += `<button class="btn-icon play" onclick="updateStatus(${id}, 'in_progress')" title="Iniciar Cita"><i class="fas fa-play"></i></button>`;
+                buttons += `<button class="btn-icon delete" onclick="updateStatus(${id}, 'cancelled')" title="Cancelar"><i class="fas fa-times-circle"></i></button>`;
+            }
+            if (app.status === 'in_progress') {
+                buttons += `<button class="btn-icon confirm" onclick="updateStatus(${id}, 'completed')" title="Completar"><i class="fas fa-check-circle"></i></button>`;
+            }
+
+            return buttons || '<span class="text-muted">-</span>';
         }
 
         function openStatusModal(appointmentId, currentStatus) {
             const allStatuses = [
+                { value: 'pending', label: 'Pendiente (Depósito)', icon: 'fas fa-hourglass-half', color: 'rgba(255,235,59,0.3)' },
                 { value: 'scheduled', label: 'Programada', icon: 'far fa-calendar', color: 'rgba(196,163,90,0.3)' },
                 { value: 'confirmed', label: 'Confirmada', icon: 'fas fa-check', color: 'rgba(76,175,80,0.3)' },
                 { value: 'in_progress', label: 'En Curso', icon: 'fas fa-play', color: 'rgba(255,152,0,0.3)' },
@@ -273,8 +521,8 @@
             ];
 
             const content = `
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    ${allStatuses.map(s => `
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${allStatuses.map(s => `
                         <button 
                             class="status-option-btn ${s.value === currentStatus ? 'current' : ''}"
                             onclick="selectNewStatus(${appointmentId}, '${s.value}')"
@@ -300,7 +548,7 @@
                             ${s.value === currentStatus ? '<span style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;">(Actual)</span>' : ''}
                         </button>
                     `).join('')}
-                </div>
+            </div>
             `;
 
             window.statusChangeModal = showModal('statusChangeModal', '<i class="fas fa-exchange-alt"></i> Cambiar Estado', content, '');
@@ -319,6 +567,7 @@
 
         async function updateStatus(id, newStatus) {
             const statusLabels = {
+                'confirmed': 'Confirmada',
                 'in_progress': 'En Curso',
                 'completed': 'Completada',
                 'cancelled': 'Cancelada'
@@ -341,6 +590,7 @@
 
         init();
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

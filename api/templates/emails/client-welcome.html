@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a Braco's Barbería</title>
+</head>
+
+<body
+    style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #1a1a1a; color: #f5f5f0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #1a1a1a;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+                    style="max-width: 600px; background-color: #2a2a2a; border: 1px solid rgba(196, 163, 90, 0.3);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 40px 40px 30px; border-bottom: 1px solid rgba(196, 163, 90, 0.2);">
+                            <img src="https://braco-s-barberia-production.up.railway.app/assets/logo.png"
+                                alt="Braco's Barbería" width="100" style="display: block; margin: 0 auto 20px;">
+                            <h2
+                                style="margin: 0; font-size: 24px; font-weight: 300; color: #C4A35A; letter-spacing: 2px;">
+                                ¡BIENVENIDO A LA FAMILIA!</h2>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 18px; color: #f5f5f0;">
+                                Hola <strong style="color: #C4A35A;">{{clientName}}</strong>,
+                            </p>
+                            <p
+                                style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: rgba(245, 245, 240, 0.8);">
+                                Ahora eres parte de nuestra familia de clientes recurrentes. Gracias por confiar en nosotros para tu cuidado personal.
+                            </p>
+
+                            <!-- Client Code Box -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                style="background: linear-gradient(135deg, rgba(196, 163, 90, 0.15), rgba(196, 163, 90, 0.05)); border: 2px solid rgba(196, 163, 90, 0.4); border-radius: 12px; margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 30px; text-align: center;">
+                                        <p style="margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: rgba(245, 245, 240, 0.6);">
+                                            Tu Número de Cliente
+                                        </p>
+                                        <p style="margin: 0; font-size: 42px; font-weight: bold; color: #C4A35A; letter-spacing: 8px;">
+                                            {{clientCode}}
+                                        </p>
+                                        <p style="margin: 15px 0 0; font-size: 13px; color: rgba(245, 245, 240, 0.5);">
+                                            Usa este código para agendar tus citas
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p
+                                style="margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: rgba(245, 245, 240, 0.7);">
+                                <strong style="color: #C4A35A;">¿Cómo usar tu código?</strong><br>
+                                Al agendar tu próxima cita, ingresa tu número de cliente para acceder a tu historial y beneficios exclusivos.
+                            </p>
+
+                            <!-- Benefits -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 25px 0;">
+                                <tr>
+                                    <td style="padding: 12px 0; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                                        <span style="color: #C4A35A; margin-right: 10px;">✓</span>
+                                        <span style="color: rgba(245, 245, 240, 0.8);">Historial de citas y servicios</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 0; border-bottom: 1px solid rgba(196, 163, 90, 0.1);">
+                                        <span style="color: #C4A35A; margin-right: 10px;">✓</span>
+                                        <span style="color: rgba(245, 245, 240, 0.8);">Agendado más rápido</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 0;">
+                                        <span style="color: #C4A35A; margin-right: 10px;">✓</span>
+                                        <span style="color: rgba(245, 245, 240, 0.8);">Acceso a promociones exclusivas</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <a href="https://bracosbarberia.com/agendar.html"
+                                            style="display: inline-block; padding: 15px 40px; background-color: #C4A35A; color: #1a1a1a; text-decoration: none; font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px;">
+                                            AGENDAR MI PRÓXIMA CITA
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 30px 40px; background-color: #1a1a1a; border-top: 1px solid rgba(196, 163, 90, 0.2);">
+                            <p style="margin: 0 0 10px; font-size: 12px; color: rgba(245, 245, 240, 0.5);">
+                                Braco's Barbería | Experiencia Premium
+                            </p>
+                            <p style="margin: 0; font-size: 11px; color: rgba(245, 245, 240, 0.3);">
+                                © {{year}} Braco's Barbería. Todos los derechos reservados.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

@@ -5,11 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
 
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
@@ -32,7 +41,7 @@
                     </a>
                     <a href="citas.html" class="nav-item">
                         <span class="nav-icon"><i class="fas fa-scissors"></i></span>
-                        <span>Citas de Hoy</span>
+                        <span>Citas</span>
                         <span class="badge" id="nav-badge-citas">0</span>
                     </a>
                 </div>
@@ -100,15 +109,17 @@
                 <div class="filters-bar">
                     <div class="search-box">
                         <span class="search-icon"><i class="fas fa-search"></i></span>
-                        <input type="text" class="search-input" id="search-clients"
-                            placeholder="Buscar por nombre o teléfono...">
+                        <input type="text" id="search-client" class="search-input" placeholder="Buscar cliente..."
+                            oninput="filterClients()">
                     </div>
 
                     <select class="filter-select" id="filter-type">
                         <option value="">Todos los tipos</option>
-                        <option value="1">Normal</option>
-                        <option value="2">Premium</option>
-                        <option value="3">VIP</option>
+                        <option value="1">Nuevo</option>
+                        <option value="2">Recurrente</option>
+                        <option value="3">Golden Card</option>
+                        <option value="4">NeoCapilar</option>
+                        <option value="5">Black Card</option>
                     </select>
 
                     <select class="filter-select" id="filter-membership">
@@ -150,6 +161,7 @@
                         <table class="data-table" id="clients-table">
                             <thead>
                                 <tr>
+                                    <th>Código</th>
                                     <th>Cliente</th>
                                     <th>Teléfono</th>
                                     <th>Tipo</th>
@@ -202,13 +214,23 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Cliente</label>
-                        <select class="form-select" id="client-type">
-                            <option value="1">Normal</option>
-                            <option value="2">Premium</option>
-                            <option value="3">VIP</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-input" id="client-birthdate">
+                            <span class="form-hint" style="font-size: 0.85rem; color: #888;">Para recordatorios de
+                                cumpleaños</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Cliente</label>
+                            <select class="form-select" id="client-type">
+                                <option value="1">Nuevo</option>
+                                <option value="2">Recurrente</option>
+                                <option value="3">Golden Card</option>
+                                <option value="4">NeoCapilar</option>
+                                <option value="5">Black Card</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -267,7 +289,8 @@
         }
 
         function renderClients() {
-            const search = document.getElementById('search-clients').value.toLowerCase();
+            const searchEl = document.getElementById('search-client');
+            const search = searchEl ? searchEl.value.toLowerCase() : '';
             const typeFilter = document.getElementById('filter-type').value;
             const membershipFilter = document.getElementById('filter-membership').value;
 
@@ -296,7 +319,7 @@
             if (paginated.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-muted" style="text-align: center; padding: 3rem;">
+                        <td colspan="9" class="text-muted" style="text-align: center; padding: 3rem;">
                             No se encontraron clientes
                         </td>
                     </tr>
@@ -304,29 +327,30 @@
             } else {
                 tbody.innerHTML = paginated.map(c => `
                     <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span class="client-type-dot" style="background: ${c.client_color || '#C4A35A'}"></span>
-                                <div>
-                                    <strong>${c.name}</strong>
-                                    ${c.email ? `<br><small class="text-muted">${c.email}</small>` : ''}
-                                </div>
+                        <td data-label="Código"><code style="background: rgba(196,163,90,0.15); padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--gold);">${c.client_code || '-'}</code></td>
+                        <td data-label="Cliente">
+                            <div>
+                                <strong style="display: block;">${c.name}</strong>
+                                ${c.email ? `<small class="text-muted" style="display: block; margin-top: 0.25rem;">${c.email}</small>` : ''}
                             </div>
                         </td>
-                        <td>${formatPhone(c.phone)}</td>
-                        <td><span class="badge badge-gold">${c.client_type_name || 'Normal'}</span></td>
-                        <td>${c.total_visits || 0}</td>
-                        <td class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
-                        <td>
+                        <td data-label="Teléfono">${formatPhone(c.phone)}</td>
+                        <td data-label="Tipo">${getTypeBadge(c)}</td>
+                        <td data-label="Visitas">${c.total_visits || 0}</td>
+                        <td data-label="Total" class="text-gold">$${(c.total_spent || 0).toLocaleString()}</td>
+                        <td data-label="Membresía">
                             ${c.has_active_membership
                         ? `<span class="badge badge-success">${c.membership_type || 'Activa'}</span>`
                         : '<span class="text-muted">-</span>'}
                         </td>
-                        <td>${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
-                        <td class="actions">
-                            <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
-                            <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <td data-label="Última Visita">${c.last_visit ? formatDate(c.last_visit) : '-'}</td>
+                        <td data-label="">
+                            <div class="actions">
+                                <button class="btn-icon" onclick="resendCode(${c.id}, '${(c.name || '').replace(/'/g, "\\'")}', event)" title="Reenviar código"><i class="fab fa-whatsapp"></i></button>
+                                <button class="btn-icon" onclick="viewClient(${c.id})" title="Ver detalle"><i class="fas fa-eye"></i></button>
+                                <button class="btn-icon" onclick="editClient(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon" onclick="deleteClient(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
@@ -376,7 +400,7 @@
         }
 
         // Eventos de filtros
-        document.getElementById('search-clients').addEventListener('input', () => {
+        document.getElementById('search-client').addEventListener('input', () => {
             currentPage = 1;
             renderClients();
         });
@@ -408,6 +432,7 @@
                 name: document.getElementById('client-name').value,
                 phone: document.getElementById('client-phone').value,
                 email: document.getElementById('client-email').value,
+                birthdate: document.getElementById('client-birthdate').value || null,
                 client_type_id: document.getElementById('client-type').value,
                 notes: document.getElementById('client-notes').value
             };
@@ -434,6 +459,19 @@
             document.getElementById('client-name').value = client.name;
             document.getElementById('client-phone').value = client.phone;
             document.getElementById('client-email').value = client.email || '';
+
+            // Format birthdate to YYYY-MM-DD for date input
+            let birthdate = '';
+            if (client.birthdate) {
+                // If it's an ISO string with T, extract just the date part
+                if (typeof client.birthdate === 'string' && client.birthdate.includes('T')) {
+                    birthdate = client.birthdate.split('T')[0];
+                } else {
+                    birthdate = client.birthdate;
+                }
+            }
+            document.getElementById('client-birthdate').value = birthdate;
+
             document.getElementById('client-type').value = client.client_type_id;
             document.getElementById('client-notes').value = client.notes || '';
 
@@ -459,6 +497,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <div>
                         <h4 style="color: var(--gold); margin-bottom: 1rem;">Información</h4>
+                        <p><strong>Código de Cliente:</strong> <code style="background: rgba(196,163,90,0.2); padding: 4px 10px; border-radius: 4px; font-size: 1.2rem; font-weight: 700; color: var(--gold);">${c.client_code || '-'}</code></p>
                         <p><strong>Nombre:</strong> ${c.name}</p>
                         <p><strong>Teléfono:</strong> ${formatPhone(c.phone)}</p>
                         <p><strong>Email:</strong> ${c.email || '-'}</p>
@@ -504,11 +543,82 @@
 
         function formatDate(date) {
             if (!date) return '-';
-            return new Date(date).toLocaleDateString('es-MX', {
+            // Evitar conversión de timezone
+            let dateStr = date;
+            if (typeof date === 'string' && date.length === 10) {
+                dateStr = date + 'T12:00:00';
+            } else if (typeof date === 'string' && date.includes('T')) {
+                dateStr = date.split('T')[0] + 'T12:00:00';
+            }
+            return new Date(dateStr).toLocaleDateString('es-MX', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'
             });
+        }
+
+        // Generar badge de tipo de cliente
+        function getTypeBadge(c) {
+            const isNew = c.client_type_id === 1;
+            if (isNew) {
+                return `<span class="badge badge-gold" style="cursor: pointer;" onclick="promoteClient(${c.id}, '${(c.name || '').replace(/'/g, "\\'")}', event)" title="Clic para promover a Recurrente">${c.client_type_name || 'Nuevo'} <i class="fas fa-arrow-up" style="font-size: 0.7rem; margin-left: 4px;"></i></span>`;
+            }
+            return `<span class="badge badge-gold">${c.client_type_name || 'Normal'}</span>`;
+        }
+
+        // Promover cliente de Nuevo a Recurrente
+        async function promoteClient(id, name, event) {
+            event.stopPropagation();
+            
+            if (!confirm(`¿Promover a "${name}" a cliente Recurrente?\n\nSe le enviará un email y WhatsApp con su código de cliente.`)) {
+                return;
+            }
+            
+            try {
+                const result = await api.post(`/admin/clients/${id}/promote`);
+                
+                let message = `✅ ${name} ahora es cliente Recurrente\n\nCódigo: ${result.client_code}`;
+                
+                if (result.notifications.email) {
+                    message += '\n📧 Email enviado';
+                }
+                if (result.notifications.whatsapp) {
+                    message += '\n📱 WhatsApp enviado';
+                }
+                
+                alert(message);
+                loadClients(); // Recargar lista
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Reenviar código de cliente por WhatsApp
+        async function resendCode(id, name, event) {
+            event.stopPropagation();
+            
+            if (!confirm(`¿Reenviar código de cliente a "${name}" por WhatsApp?`)) {
+                return;
+            }
+            
+            try {
+                const result = await api.post(`/admin/clients/${id}/resend-code`);
+                
+                let message = `✅ Código reenviado a ${name}\n\nCódigo: ${result.client_code}`;
+                
+                if (result.notifications.whatsapp) {
+                    message += '\n📱 WhatsApp enviado';
+                }
+                if (result.notifications.email) {
+                    message += '\n📧 Email enviado';
+                }
+                
+                alert(message);
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
 
         // Demo data
@@ -537,6 +647,8 @@
         // Inicializar
         loadClients();
     </script>
+    <script src="js/sidebar.js"></script>
+    <script src="../js/admin.js"></script>
 </body>
 
 </html>

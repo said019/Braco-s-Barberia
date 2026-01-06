@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membresía Digital | Braco's</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --gold: #C4A35A;
+            --black: #1A1A1A;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        /* --- LOYALTY CARD STYLES --- */
+        .card-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .card-flipper {
+            position: relative;
+            /* Robust sizing using Viewport Units - No calc/aspect-ratio dependency */
+            width: 90vw;
+            height: 57vw;
+            max-width: 380px;
+            max-height: 240px;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        /* Flip Action */
+        .card-wrapper.flipped .card-flipper {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 50px rgba(196, 163, 90, 0.05);
+            background-color: #1a1a1a;
+            /* Solid background backup */
+            transform: rotateX(0deg);
+            /* Hardware acceleration hint */
+        }
+
+        /* Front Generic */
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            padding: 6%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Card Types Backgrounds */
+        .card-golden {
+            background: linear-gradient(135deg, #2D2D2D 0%, #3D3D3D 30%, #2D2D2D 50%, #3D3D3D 70%, #2D2D2D 100%);
+        }
+
+        .card-golden::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 45%;
+            background: linear-gradient(135deg, #8B7335 0%, #C4A35A 20%, #E8D5A3 40%, #C4A35A 60%, #8B7335 80%, #C4A35A 100%);
+            clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0% 100%);
+            z-index: 1;
+        }
+
+        .card-neocapilar {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 50%, #2a2a2a 70%, #1a1a1a 100%);
+        }
+
+        .card-neocapilar::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(135deg, #6B5B35 0%, #9C8A4A 20%, #C4A35A 40%, #D4B76A 50%, #C4A35A 60%, #9C8A4A 80%, #6B5B35 100%);
+            clip-path: polygon(0 50%, 30% 20%, 100% 35%, 100% 100%, 0% 100%);
+            z-index: 1;
+        }
+
+        .card-black {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #252525 50%, #1a1a1a 75%, #0a0a0a 100%);
+            border: 1px solid rgba(196, 163, 90, 0.3);
+        }
+
+        .card-black::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #C4A35A, transparent);
+            z-index: 3;
+        }
+
+        /* Header */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: auto;
+        }
+
+        .card-logo {
+            display: block;
+        }
+
+        .card-type-wrapper {
+            text-align: right;
+        }
+
+        .card-type {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-size: clamp(1rem, 4vw, 1.4rem);
+        }
+
+        .card-type-sub {
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+
+        .card-golden .card-type {
+            font-size: 1.4rem;
+            color: #C4A35A;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-neocapilar .card-type {
+            font-size: 1.2rem;
+            color: #D4B76A;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-black .card-type {
+            font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+            background: linear-gradient(135deg, #C4A35A, #E8D5A3, #C4A35A);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Diamonds */
+        .diamonds-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+            position: relative;
+            z-index: 5;
+            max-width: 90%;
+            /* Ensure it wraps if needed, but flex handles it usually */
+        }
+
+        /* Special Grid for 12 items (Black Card) to force 6 and 6 */
+        .diamonds-grid-12 {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.6rem;
+            /* Slightly larger gap */
+            margin: 1.5rem auto;
+            position: relative;
+            z-index: 5;
+            width: fit-content;
+        }
+
+        .diamond {
+            width: clamp(16px, 5vw, 24px);
+            height: clamp(16px, 5vw, 24px);
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .diamond svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .diamond.empty svg {
+            /* User requested more visible grey for empty state */
+            opacity: 0.7;
+        }
+
+        .diamond.filled svg {
+            filter: drop-shadow(0 0 8px rgba(196, 163, 90, 0.5));
+        }
+
+        /* Footer */
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        .card-number {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-black .card-number {
+            background: linear-gradient(135deg, #C4A35A, #E8D5A3);
+            color: #1a1a1a;
+        }
+
+        .contact-info {
+            text-align: right;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .contact-info .phone {
+            color: #C4A35A;
+            font-weight: 500;
+            font-size: 0.7rem;
+        }
+
+        .contact-info .social {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 2px;
+        }
+
+        /* BACK */
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #2D2D2D, #3D3D3D);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(196, 163, 90, 0.1);
+        }
+
+        .card-back .address {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            text-align: right;
+        }
+
+        .card-back .address strong {
+            color: #C4A35A;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        .card-back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .qr-placeholder {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-placeholder img {
+            width: 100%;
+            height: 100%;
+            padding: 4px;
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #C4A35A;
+            border-radius: 50%;
+            z-index: 3;
+            animation: sparkle 2s ease-in-out infinite;
+            box-shadow: 0 0 6px #C4A35A;
+        }
+
+        @keyframes sparkle {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .btn-download {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+
+        .btn-download:hover {
+            background: var(--gold);
+            color: var(--black);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SVG Defs for Gradients/Diamonds -->
+    <svg style="width:1px;height:1px;position:absolute;top:-1px;left:-1px;overflow:hidden;opacity:0.01;pointer-events:none;"
+        aria-hidden="true" focusable="false">
+        <defs>
+            <!-- GOLD GRADIENTS -->
+            <linearGradient id="goldGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFD700" />
+                <stop offset="100%" style="stop-color:#FDB931" />
+            </linearGradient>
+            <linearGradient id="goldGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#FDB931" />
+                <stop offset="100%" style="stop-color:#FFD700" />
+            </linearGradient>
+            <linearGradient id="goldGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFD700" />
+                <stop offset="100%" style="stop-color:#8B7335" />
+            </linearGradient>
+
+            <!-- SILVER GRADIENTS (for Black Card) -->
+            <linearGradient id="silverGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#E0E0E0" />
+                <stop offset="100%" style="stop-color:#BDBDBD" />
+            </linearGradient>
+            <linearGradient id="silverGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#BDBDBD" />
+                <stop offset="100%" style="stop-color:#E0E0E0" />
+            </linearGradient>
+            <linearGradient id="silverGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#E0E0E0" />
+                <stop offset="100%" style="stop-color:#9E9E9E" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div id="card-container">
+        <!-- Rendered by JS -->
+        <div style="text-align: center; color: #888;">
+            <div id="status-text">Cargando tarjeta...</div>
+            <div id="debug-log"
+                style="font-size: 0.7em; margin-top:10px; color: #444; font-family: monospace; text-align: left; max-width: 300px; margin: 10px auto;">
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="downloadCard()" class="btn-download">
+            <i class="fas fa-download"></i> Guardar Imagen
+        </button>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Haz clic en la tarjeta para ver el reverso</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        const API_URL = '/api';
+
+        // FORCE ALERT TO CONFIRM UPDATE
+        // window.alert('DEBUG: Página actualizada v4 (RESTORED)');
+
+        function log(msg) {
+            console.log(msg);
+            const el = document.getElementById('debug-log');
+            if (el) el.innerHTML += `> ${msg}<br>`;
+        }
+
+        async function loadCard() {
+            log('Iniciando carga de tarjeta...');
+
+            // Validate dependencies
+            if (typeof QRCode === 'undefined') log('WARN: QRCode lib not loaded');
+            if (typeof html2canvas === 'undefined') log('WARN: html2canvas lib not loaded');
+
+            const params = new URLSearchParams(window.location.search);
+            const uuid = params.get('id');
+            log(`UUID detectado: ${uuid}`);
+
+            if (!uuid) return showError('ID de tarjeta no válido');
+
+            try {
+                log(`Haciendo fetch a ${API_URL}/public/membership/${uuid}`);
+                const response = await fetch(`${API_URL}/public/membership/${uuid}`);
+                log(`Status respuesta: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+                }
+
+                log('Parseando JSON...');
+                const data = await response.json();
+                log('Datos recibidos. Renderizando...');
+                renderCard(data);
+                log('Render completo.');
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+                showError(error.message);
+            }
+        }
+
+
+        function showError(msg) {
+            document.getElementById('card-container').innerHTML = `<p style="color:#ef5350;">${msg}</p>`;
+        }
+
+        function renderCard(data) {
+            // Determine styles
+            const lowerPlan = (data.plan || '').toLowerCase();
+            let cardClass = 'card-golden';
+            let typeTitle = 'GOLDEN CARD';
+            let typeSubtitle = 'MEMBRESÍA EXCLUSIVA';
+
+            if (lowerPlan.includes('black')) {
+                cardClass = 'card-black';
+                typeTitle = 'BLACK CARD';
+                typeSubtitle = 'ACCESO TOTAL';
+            } else if (lowerPlan.includes('neocapilar')) {
+                cardClass = 'card-neocapilar';
+                typeTitle = 'NEOCAPILAR';
+                typeSubtitle = 'TRATAMIENTO';
+            }
+
+            // Diamond Logic in renderCard
+            const total = parseInt(data.services.total || 0);
+            const used = parseInt(data.services.used || 0);
+            // User Request: Diamonds start full and are removed as used.
+            const remaining = (data.services.remaining !== undefined) ? parseInt(data.services.remaining) : (total - used);
+            const filledCount = remaining;
+
+            // Logic for card theme affecting diamonds
+            const isSilver = cardClass === 'card-black';
+            const strokeColor = isSilver ? '#666' : '#8B7335';
+
+            // Solid Colors for robustness (html2canvas fails with gradients sometimes)
+            // GOLD Colors
+            const gBase = '#FFD700';
+            const gFacet1 = '#FDB931';
+            const gFacet2 = '#DAA520';
+
+            // SILVER Colors
+            const sBase = '#E0E0E0';
+            const sFacet1 = '#F5F5F5';
+            const sFacet2 = '#BDBDBD';
+
+            const cBase = isSilver ? sBase : gBase;
+            const cFacet1 = isSilver ? sFacet1 : gFacet1;
+            const cFacet2 = isSilver ? sFacet2 : gFacet2;
+
+            let diamondsHtml = '';
+            if (total > 0 && total <= 12) {
+                // If 12 items (Black Card), use the 6x6 grid. Else use flex.
+                const containerClass = (total === 12) ? 'diamonds-grid-12' : 'diamonds-container';
+
+                diamondsHtml = `<div class="${containerClass}">`;
+                for (let i = 0; i < total; i++) {
+                    const isFilled = i < filledCount;
+                    const diamondClass = isFilled ? 'diamond filled' : 'diamond empty';
+
+                    // Detailed 3-part diamond path for depth
+                    // USING SOLID FILLS to ensure they look "LLENO" (Full) in download
+                    diamondsHtml += `
+                        <div class="${diamondClass}">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <!-- Base outline/shape -->
+                               <path d="M12 2L2 9L12 22L22 9L12 2Z" fill="${cBase}" stroke="${strokeColor}" stroke-width="0.5" opacity="${isFilled ? 1 : 0.5}"/>
+                               ${isFilled ? `
+                               <!-- Inner facets for 3D look -->
+                               <path d="M12 2L7 9H17L12 2Z" fill="${cFacet1}" opacity="${isSilver ? 0.8 : 0.7}"/>
+                               <path d="M7 9L12 22L2 9H7Z" fill="${cFacet2}" opacity="${isSilver ? 0.6 : 0.5}"/>
+                               ` : ''}
+                            </svg>
+                        </div>
+                    `;
+                }
+                diamondsHtml += '</div>';
+            } else {
+                diamondsHtml = `
+                    <div style="text-align: center; margin: 1.5rem 0;">
+                        <div style="font-size: 0.8rem; color: #ccc;">SERVICIOS DISPONIBLES</div>
+                        <div style="font-size: 2.5rem; font-weight: 300; color: #C4A35A; letter-spacing: 2px;">
+                           ${data.services.remaining === undefined ? '∞' : data.services.remaining}
+                        </div>
+                    </div>
+                 `;
+            }
+
+            const html = `
+                <div class="card-wrapper" onclick="this.classList.toggle('flipped')">
+                    <div class="card-flipper">
+                        <!-- FRONT -->
+                        <div class="card-front ${cardClass}">
+                             <!-- INJECT DEFS HERE FOR CAPTURE -->
+                             <svg style="width:0;height:0;position:absolute;visibility:hidden;" aria-hidden="true" focusable="false">
+                                <defs>
+                                    <linearGradient id="goldGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#FFD700" />
+                                        <stop offset="100%" style="stop-color:#FDB931" />
+                                    </linearGradient>
+                                    <linearGradient id="goldGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#FDB931" />
+                                        <stop offset="100%" style="stop-color:#FFD700" />
+                                    </linearGradient>
+                                    <linearGradient id="goldGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#FFD700" />
+                                        <stop offset="100%" style="stop-color:#8B7335" />
+                                    </linearGradient>
+                                    <linearGradient id="silverGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#E0E0E0" />
+                                        <stop offset="100%" style="stop-color:#BDBDBD" />
+                                    </linearGradient>
+                                    <linearGradient id="silverGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#BDBDBD" />
+                                        <stop offset="100%" style="stop-color:#E0E0E0" />
+                                    </linearGradient>
+                                    <linearGradient id="silverGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#E0E0E0" />
+                                        <stop offset="100%" style="stop-color:#9E9E9E" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+
+                             <div class="card-inner">
+                                <div class="card-header">
+                                    <img src="assets/logo.png" alt="Braco's" class="card-logo" style="width: 80px !important; height: auto !important; max-width: 80px;">
+                                    <div class="card-type-wrapper">
+                                        <div class="card-type">${typeTitle}</div>
+                                        <div class="card-type-sub">${typeSubtitle}</div>
+                                    </div>
+                                </div>
+
+                                ${diamondsHtml}
+
+                                <!-- Sparkles (Decoration) -->
+                                <div class="sparkle" style="top:20%; left:15%;"></div>
+                                <div class="sparkle" style="top:70%; left:85%; animation-delay:1s;"></div>
+                                <div class="sparkle" style="top:40%; left:60%; animation-delay:0.5s;"></div>
+
+                                <div class="card-footer">
+                                    <div class="card-number">No. ${data.folio || '---'}</div>
+                                    <div class="contact-info">
+                                        <div class="client-name" style="font-family: 'Playfair Display', serif; color: ${cardClass === 'card-golden' ? '#2A1F0A' : '#C4A35A'}; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; text-align: right; ${cardClass === 'card-golden' ? 'text-shadow: 0 1px 2px rgba(255,255,255,0.3);' : ''}">
+                                            ${data.clientName || ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BACK -->
+                        <div class="card-back" ${cardClass === 'card-black' ? 'style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a); border: 1px solid rgba(196, 163, 90, 0.3);"' : ''}>
+                             <div class="address">
+                                <strong>UBICACIÓN</strong>
+                                Heroico Colegio Militar #46, Local J<br>
+                                Planta Baja, Plaza Comercial Hacienda<br>
+                                El Pedregal, Tequisquiapan, Qro.
+                            </div>
+                            <div class="card-back-footer">
+                                <img src="assets/logo.png" alt="Braco's" class="back-logo" style="width: 50px !important; height: auto !important;">
+                                <div id="qrcode-target" class="qr-placeholder"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('card-container').innerHTML = html;
+
+            // Generate QR
+            setTimeout(() => {
+                new QRCode(document.getElementById("qrcode-target"), {
+                    text: window.location.href,
+                    width: 64,
+                    height: 64,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }, 100);
+        }
+
+        function downloadCard() {
+            // We want to capture the Front face regardless of current rotation
+            const front = document.querySelector('.card-front');
+            if (!front) return;
+
+            html2canvas(front, {
+                scale: 3,
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Membresia_Bracos.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // Start loading
+        loadCard();
+    </script>
+</body>
+
+</html>
+```

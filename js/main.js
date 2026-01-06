@@ -194,7 +194,7 @@ const SERVICES_DATA = [
 -Productos Premium`
     },
     {
-        id: 4,
+        id: 11,
         name: "DÚO",
         price: 550,
         duration: 120,
@@ -205,48 +205,44 @@ const SERVICES_DATA = [
 -Ritual tradicional para rasurado o arreglo de barba y bigote`
     },
     {
-        id: 5,
+        id: 4,
         name: "INSTALACIÓN DE PRÓTESIS CAPILAR",
         price: 4800,
         duration: 180,
         image: "assets/instalacio_protesis.jpeg",
-        description: `Las prótesis o remplazo capilar es una solución inovadora y efectiva para aquellos que experimenta perida de cabello o calvicie severa
-Tiempo aproximado 180 minutos (3 horas)
--Diagnostico
--Prótesis capilar
--Visagismo
--Personalización`
+        description: `Las prótesis o reemplazo capilar representan una solución innovadora y efectiva para aquellos que experimentan pérdida de cabello.
+-Mejora instantánea en la apariencia y confianza.
+-Solución no quirúrgica y resultados naturales.
+-Personalización total y fácil mantenimiento.
+-No afecta el crecimiento del cabello natural.
+-Durabilidad a largo plazo.`
     },
     {
-        id: 6,
-        name: "MANTENIMIENTO DE PROTESIS CAPILAR",
+        id: 5,
+        name: "MANTENIMIENTO DE PRÓTESIS CAPILAR",
         price: 650,
         duration: 120,
         image: "assets/mant_protesis.jpeg",
-        description: `Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación
-Tiempo aproximado 120 minutos (2 horas)
--Retiro seguro
--Limpieza profesional
--Ajuste de adhesivos
--Colocación segura`
+        description: `Limpieza profesional de prótesis capilar en uso para limpieza profunda, restauración e hidratación.
+-Retiro seguro y limpieza profesional.
+-Ajuste de adhesivos y colocación segura.
+-Hidratación de la pieza.`
     },
     {
-        id: 7,
+        id: 6,
         name: "TERAPIA INTEGRAL CAPILAR (TIC)",
         price: 550,
         duration: 60,
         image: "assets/TIC.jpeg",
-        description: `Recomendado para las personas que inician con un problema de calvicie de leve a moderada 
-El TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo con el objetivo de lograr un cuero cabelludo sano y por lo tanto un cabello grueso y en ocasiones abundante
--Duración 60minutos
--Exfoliación capilar
--Alta Frecuencia
--Fotobiomodulación
--Ozonoterapia
--Aplicación de productos Premium`
+        description: `Braco’s NeoCapilar: Salud y prevención de la caída del cabello. Restaura, fortalece y estimula el crecimiento natural.
+-Ozonoterapia: Purifica y oxigena.
+-Alta Frecuencia: Estimula irrigación sanguínea.
+-Fotobiomodulación (Luz LED): Regeneración celular.
+-Productos dermatológicos premium.
+-Diagnóstico inicial requerido.`
     },
     {
-        id: 8,
+        id: 7,
         name: "MASCARILLA PLASTIFICADA NEGRA",
         price: 300,
         duration: 60,
@@ -259,7 +255,7 @@ El TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo
 -Masaje facial`
     },
     {
-        id: 9,
+        id: 8,
         name: "MASCARILLA DE ARCILLA",
         price: 300,
         duration: 60,
@@ -272,7 +268,7 @@ El TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo
 -Masaje facial`
     },
     {
-        id: 10,
+        id: 9,
         name: "MANICURA CABALLERO",
         price: 300,
         duration: 60,
@@ -286,7 +282,7 @@ El TIC es una terapia que se enfoca en el cuidado y limpieza del cuero cabelludo
 -Masaje de manos y dedos`
     },
     {
-        id: 11,
+        id: 10,
         name: "PEDICURA  CABALLERO",
         price: 300,
         duration: 60,
@@ -318,9 +314,61 @@ Duración 240minutos (4horas)
 // ============================================================================
 // CARGAR SERVICIOS
 // ============================================================================
-function loadServices() {
-    // Usamos los datos locales directamente
+// ============================================================================
+// CARGAR SERVICIOS
+// ============================================================================
+async function loadServices() {
+    try {
+        if (typeof API !== 'undefined') {
+            const apiServices = await API.getServices();
+            if (apiServices && apiServices.length > 0) {
+                // Mapear servicios de API al formato de visualización
+                const mappedServices = apiServices.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    price: s.price,
+                    duration: s.duration_minutes,
+                    image: getServiceImage(s.name),
+                    description: s.description || ''
+                }));
+                console.log('Servicios cargados desde API (Landing):', mappedServices);
+                renderServices(mappedServices);
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Error cargando servicios API en landing:', e);
+    }
+
+    // Fallback a datos locales
+    console.log('Usando servicios locales (Fallback)');
     renderServices(SERVICES_DATA);
+}
+
+// Helper para obtener imagen (copiado de agendar.js para consistencia visual)
+function getServiceImage(name) {
+    const imageMap = {
+        'corte de cabello para caballero': 'assets/corte_caballero.jpeg',
+        'corte de cabello niño': 'assets/corte_nino.jpeg',
+        'ritual tradicional de barba': 'assets/ritual_barba.jpeg',
+        'dúo': 'assets/duo.png',
+        'instalación de prótesis capilar': 'assets/instalacio_protesis.jpeg',
+        'mantenimiento de prótesis capilar': 'assets/mant_protesis.jpeg',
+        'terapia integral capilar': 'assets/TIC.jpeg',
+        'mascarilla plastificada negra': 'assets/mascarilla_negra.jpeg',
+        'mascarilla de arcilla': 'assets/arcilla.jpeg',
+        'manicura caballero': 'assets/manicura_caballero.jpeg',
+        'pedicura caballero': 'assets/pedicura.jpeg',
+        'paquete nupcial': 'assets/pqte_dlux.jpeg'
+    };
+
+    const nameLower = name.toLowerCase();
+    for (const [key, value] of Object.entries(imageMap)) {
+        if (nameLower.includes(key)) {
+            return value;
+        }
+    }
+    return 'assets/logo.png';
 }
 
 /**
@@ -378,6 +426,86 @@ function renderServices(services) {
 // Cargar servicios al cargar la página
 if (document.querySelector('.services-featured')) {
     loadServices();
+}
+
+// ============================================================================
+// CARGAR PRODUCTOS
+// ============================================================================
+async function loadProducts() {
+    try {
+        if (typeof API !== 'undefined') {
+            const apiProducts = await API.getProducts();
+            if (apiProducts && apiProducts.length > 0) {
+                console.log('Productos cargados desde API (Landing):', apiProducts);
+                renderProducts(apiProducts);
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Error cargando productos API en landing:', e);
+    }
+}
+
+function renderProducts(products) {
+    const productsContainer = document.querySelector('.products-grid');
+    if (!productsContainer) return;
+
+    productsContainer.innerHTML = '';
+
+    const formatPrice = (price) => new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 0
+    }).format(price);
+
+    products.forEach(product => {
+        if (!product.is_active) return;
+
+        const card = document.createElement('article');
+        card.className = 'product-card';
+
+        // Use uploaded image or fallback loop
+        let imageSrc = product.image_url;
+        if (!imageSrc) {
+            imageSrc = getProductImageFallback(product.name);
+        }
+
+        const stockStatus = product.stock > 0 ? '✓ Disponible' : 'Agotado';
+        const stockClass = product.stock > 0 ? 'product-stock' : 'product-stock out-of-stock'; // Add css for out-of-stock if needed
+
+        card.innerHTML = `
+            <div class="product-image">
+                <img src="${imageSrc}" alt="${product.name}" style="object-fit: cover; width: 100%; height: 100%;">
+            </div>
+            <div class="product-content">
+                <h3 class="product-name">${product.name} <img src="assets/logo.png" alt="Braco's" style="height: 1.2em; vertical-align: middle; display: inline-block;"></h3>
+                <p class="product-description">
+                    ${product.description || ''}
+                </p>
+                <div class="product-meta">
+                    <span class="${stockClass}">${stockStatus}</span>
+                </div>
+                <div class="product-footer">
+                    <span class="product-price">${formatPrice(product.price)}</span>
+                    <a href="checkout.html" class="btn-outline btn-small">Comprar</a>
+                </div>
+            </div>
+        `;
+
+        productsContainer.appendChild(card);
+    });
+}
+
+function getProductImageFallback(name) {
+    const n = name.toLowerCase();
+    if (n.includes('shampoo')) return 'assets/shampoo.jpeg';
+    if (n.includes('aceite')) return 'assets/aceite.jpeg';
+    return 'assets/logo.png';
+}
+
+// Cargar productos al cargar la página
+if (document.querySelector('.products-grid')) {
+    loadProducts();
 }
 
 /**

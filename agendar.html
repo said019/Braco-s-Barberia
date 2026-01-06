@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendar Cita | Barbería</title>
-
+    <title>Agendar Cita - Braco's Barbería</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +35,7 @@
                 <li><a href="membresias.html">Membresías</a></li>
             </ul>
 
-            <a href="tel:5573432027" class="btn-primary nav-cta">Reservar Cita</a>
+            <a href="agendar.html" class="btn-primary nav-cta">Reservar Cita</a>
 
             <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
                 <span></span>
@@ -52,7 +53,7 @@
             <li><a href="agendar.html">Agendar</a></li>
             <li><a href="checkout.html">Checkout</a></li>
             <li><a href="membresias.html">Membresías</a></li>
-            <li><a href="tel:5573432027" class="btn-primary btn-block">Reservar Cita</a></li>
+            <li><a href="agendar.html" class="btn-primary btn-block">Reservar Cita</a></li>
         </ul>
     </div>
 
@@ -65,6 +66,32 @@
                 <h1 class="page-title">Agenda tu Cita</h1>
                 <div class="page-line"></div>
                 <p class="page-description">En 3 simples pasos tendrás tu cita confirmada</p>
+            </div>
+
+            <!-- Quick Login with 4-digit code -->
+            <div class="quick-login-section" id="quick-login-section">
+                <div class="quick-login-card">
+                    <h3><i class="fas fa-user-check"></i> ¿Ya tienes código de cliente?</h3>
+                    <p>Ingresa tu código de 4 dígitos para agendar más rápido</p>
+                    <div class="quick-login-form">
+                        <input type="text" id="client-code-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000"
+                            inputmode="numeric" autocomplete="off">
+                        <button type="button" class="btn-primary" id="btn-quick-login">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <p class="quick-login-hint" id="quick-login-hint"></p>
+                </div>
+                <div class="quick-login-welcome hidden" id="quick-login-welcome">
+                    <div class="welcome-message">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>¡Hola, <span id="welcome-client-name">Cliente</span>!</h3>
+                        <p>Bienvenido de nuevo a Braco's</p>
+                    </div>
+                    <button type="button" class="btn-outline btn-sm" id="btn-logout-code">
+                        <i class="fas fa-times"></i> Cambiar cliente
+                    </button>
+                </div>
             </div>
 
             <!-- Progress Steps -->
@@ -139,6 +166,7 @@
                         <div class="time-slots" id="time-slots">
                             <p class="no-selection">Selecciona una fecha para ver horarios disponibles</p>
                         </div>
+                        <p class="form-hint" id="time-hint">Selecciona una fecha y hora para habilitar “Continuar”.</p>
                     </div>
                 </div>
 
@@ -185,8 +213,18 @@
                     <div class="form-group">
                         <label for="client-phone">Teléfono (WhatsApp) *</label>
                         <input type="tel" id="client-phone" name="phone" required placeholder="Ej: 55 1234 5678"
-                            pattern="[0-9]{10}" maxlength="10">
+                            pattern="[0-9]{7,10}" maxlength="10">
                         <span class="form-hint">Te enviaremos confirmación y recordatorio por WhatsApp</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-email">Correo electrónico (opcional)</label>
+                        <input type="email" id="client-email" name="email" placeholder="Ej: correo@ejemplo.com">
+                        <span class="form-hint">Recibirás confirmación y recibo por correo</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-birthdate">Fecha de nacimiento (opcional)</label>
+                        <input type="date" id="client-birthdate" name="birthdate">
+                        <span class="form-hint">Nos ayuda a brindarte una atención personalizada</span>
                     </div>
                     <div class="form-group">
                         <label for="client-notes">Notas adicionales (opcional)</label>
@@ -196,11 +234,24 @@
 
                     <div class="form-notice">
                         <p>
-                            ✓ Al confirmar aceptas recibir notificaciones por WhatsApp<br>
+                            ✓ Al confirmar aceptas recibir notificaciones<br>
                             ✓ Recibirás un código de 4 dígitos para tu cita
                         </p>
                     </div>
                 </form>
+
+                <!-- Marketing Banner - Gold Card -->
+                <div class="gold-card-promo" id="gold-card-promo">
+                    <div class="promo-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="promo-content">
+                        <h4>¿Sabías que puedes ahorrar un <span class="promo-highlight">20%</span>?</h4>
+                        <a href="membresias.html" class="promo-link" target="_blank">
+                            <i class="fas fa-arrow-right"></i> Conocer membresías
+                        </a>
+                    </div>
+                </div>
 
                 <div class="step-actions">
                     <button class="btn-secondary" id="btn-back-to-step2">Atrás</button>
@@ -251,6 +302,221 @@
                     </div>
                 </div>
             </section>
+        </div>
+
+        <!-- Deposit Modal - Alert Style -->
+        <div id="deposit-modal" class="modal-overlay hidden">
+            <div class="modal-content deposit-modal-alert">
+                <button class="modal-close" onclick="closeDepositModal()">&times;</button>
+
+                <!-- Alert Header -->
+                <div class="deposit-alert-header">
+                    <h3 class="alert-title">¡Apartado Requerido!</h3>
+                    <p class="alert-subtitle">Cliente Nuevo Detectado</p>
+                </div>
+
+                <!-- Alert Body -->
+                <div class="deposit-alert-body">
+                    <div class="alert-message-box">
+                        <p>
+                            <strong>Hola, bienvenido a Braco's.</strong><br>
+                            Para confirmar tu reservación, necesitamos un <strong>depósito de $<span
+                                    id="deposit-amount">100</span>
+                                MXN</strong>.
+                        </p>
+                        <p class="alert-note">
+                            <i class="fas fa-info-circle"></i>
+                            Este monto se descuenta del total de tu servicio.
+                        </p>
+                    </div>
+
+                    <!-- Appointment Summary -->
+                    <div class="deposit-appointment-summary">
+                        <h4><i class="fas fa-calendar-check"></i> Tu Cita</h4>
+                        <div class="summary-row">
+                            <span>Servicio:</span>
+                            <strong id="deposit-service">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Fecha:</span>
+                            <strong id="deposit-date">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Hora:</span>
+                            <strong id="deposit-time">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Payment Options - Button & Card -->
+                    <div class="payment-section">
+                        <button id="btn-show-bank-details" class="btn-secondary btn-block"
+                            onclick="toggleBankDetails()">
+                            <i class="fas fa-credit-card"></i> Ver Datos Bancarios
+                        </button>
+
+                        <div id="bank-details-card" class="bank-details-card hidden">
+                            <div class="card-header">
+                                <span><i class="fas fa-university"></i> Datos de Transferencia</span>
+                            </div>
+                            <div class="payment-options-list">
+                                <div class="payment-option-item" onclick="copyToClipboard('638180000176357788')">
+                                    <div class="option-icon"><img src="assets/nu_logo.png" alt="NU"
+                                            onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/f/f7/Nu_bank_logo.png'">
+                                    </div>
+                                    <div class="option-details">
+                                        <span class="bank-name">NU México (CLABE)</span>
+                                        <code class="bank-number">638180000176357788</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
+                                <div class="payment-option-item" onclick="copyToClipboard('722969010620447083')">
+                                    <div class="option-icon"><i class="fas fa-mobile-alt"></i></div>
+                                    <div class="option-details">
+                                        <span class="bank-name">Mercado Pago</span>
+                                        <code class="bank-number">722969010620447083</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
+                                <div class="payment-option-item" onclick="copyToClipboard('4217470097744441')">
+                                    <div class="option-icon"><i class="fas fa-store"></i></div>
+                                    <div class="option-details">
+                                        <span class="bank-name">OXXO (Tarjeta)</span>
+                                        <code class="bank-number">4217 4700 9774 4441</code>
+                                    </div>
+                                    <i class="fas fa-copy copy-icon"></i>
+                                </div>
+                            </div>
+                            <p class="beneficiary-name">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Actions -->
+                <div class="deposit-alert-actions">
+                    <button class="btn-whatsapp-lg" onclick="sendDepositWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        Enviar Comprobante por WhatsApp
+                    </button>
+                    <button class="btn-cancel-subtle" onclick="closeDepositModal()">
+                        <i class="fas fa-clock"></i> Lo haré después (ver datos en pantalla)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Options Modal (Recurring Clients) -->
+        <div id="payment-options-modal" class="modal-overlay hidden">
+            <div class="modal-content deposit-modal-alert">
+                <button class="modal-close" onclick="closePaymentOptionsModal()">&times;</button>
+
+                <!-- Header -->
+                <div class="deposit-alert-header">
+                    <h3 class="alert-title">¡Hola, <span id="po-client-name">Cliente</span>!</h3>
+                    <p class="alert-subtitle">Bienvenido de vuelta</p>
+                </div>
+
+                <!-- Body -->
+                <div class="deposit-alert-body">
+                    <div class="alert-message-box">
+                        <p>
+                            <strong>Tu cita está casi lista.</strong><br>
+                            ¿Deseas realizar alguna acción adicional?
+                        </p>
+                    </div>
+
+                    <!-- Appointment Summary -->
+                    <div class="deposit-appointment-summary">
+                        <h4><i class="fas fa-calendar-check"></i> Tu Cita</h4>
+                        <div class="summary-row">
+                            <span>Servicio:</span>
+                            <strong id="po-service">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Fecha:</span>
+                            <strong id="po-date">-</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Hora:</span>
+                            <strong id="po-time">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="payment-options-container">
+                        <!-- Option: Use Membership (conditional) -->
+                        <div id="po-membership-option" class="payment-option-card hidden"
+                            onclick="selectPaymentOption('membership')">
+                            <div class="option-icon-lg"><i class="fas fa-crown"></i></div>
+                            <div class="option-content">
+                                <strong>Usar Membresía</strong>
+                                <span id="po-membership-name">-</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <!-- Option: Pay Now -->
+                        <div class="payment-option-card" onclick="selectPaymentOption('prepay')">
+                            <div class="option-icon-lg"><i class="fas fa-credit-card"></i></div>
+                            <div class="option-content">
+                                <strong>Pagar Ahora</strong>
+                                <span>Transfiere por adelantado</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+
+                        <!-- Option: Continue Without Payment -->
+                        <div class="payment-option-card" onclick="selectPaymentOption('skip')">
+                            <div class="option-icon-lg"><i class="fas fa-arrow-right"></i></div>
+                            <div class="option-content">
+                                <strong>Continuar Sin Pago</strong>
+                                <span>Pagar al llegar</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details (shown when prepay selected) -->
+                    <div id="po-bank-details" class="bank-details-card hidden" style="margin-top: 1rem;">
+                        <div class="card-header">
+                            <span><i class="fas fa-university"></i> Datos de Transferencia</span>
+                        </div>
+                        <div class="payment-options-list">
+                            <div class="payment-option-item" onclick="copyToClipboard('638180000176357788')">
+                                <div class="option-icon"><i class="fas fa-building-columns"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">NU México (CLABE)</span>
+                                    <code class="bank-number">638180000176357788</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                            <div class="payment-option-item" onclick="copyToClipboard('722969010620447083')">
+                                <div class="option-icon"><i class="fas fa-mobile-alt"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">Mercado Pago</span>
+                                    <code class="bank-number">722969010620447083</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                            <div class="payment-option-item" onclick="copyToClipboard('4217470097744441')">
+                                <div class="option-icon"><i class="fas fa-store"></i></div>
+                                <div class="option-details">
+                                    <span class="bank-name">OXXO (Tarjeta)</span>
+                                    <code class="bank-number">4217 4700 9774 4441</code>
+                                </div>
+                                <i class="fas fa-copy copy-icon"></i>
+                            </div>
+                        </div>
+                        <p class="beneficiary-name">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
+                        <button class="btn-primary btn-block" style="margin-top: 1rem;" onclick="confirmPrepayOption()">
+                            <i class="fab fa-whatsapp"></i> Enviar Comprobante
+                        </button>
+                        <button class="btn-cancel-subtle" style="margin-top: 0.75rem; width: 100%;"
+                            onclick="confirmPrepayLater()">
+                            <i class="fas fa-clock"></i> Lo haré después (ver datos en pantalla)
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
