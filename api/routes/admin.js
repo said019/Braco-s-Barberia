@@ -261,7 +261,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              ORDER BY a.start_time ASC`
         );
 
-        // 3. Recordatorios 2h (Citas HOY próximas)
+        // 3. Recordatorios 2h (Citas HOY - todas las citas del día)
         // Mostrar etiqueta: Confirmada o Pendiente (usa campo status)
         const reminders2h = await db.query(
             `SELECT a.*, c.name as client_name, c.phone as client_phone,
@@ -272,8 +272,6 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN services s ON a.service_id = s.id
              WHERE a.appointment_date = $1
              AND a.status IN ('scheduled', 'confirmed')
-             AND a.start_time >= LOCALTIME  
-             AND a.start_time <= LOCALTIME + INTERVAL '4 hours'
              ORDER BY a.start_time ASC`,
             [today]
         );
