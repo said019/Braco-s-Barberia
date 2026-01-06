@@ -519,14 +519,21 @@
                 const dateStr = formatDateShort(apt.appointment_date);
                 const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, dateStr, (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
 
+                // Si está en esta lista es porque su status es 'scheduled' (según la query)
+                // Mostramos "Pendiente" en amarillo
+                const statusBadge = '<span class="badge badge-warning">Pendiente</span>';
+
                 return `
                     <tr>
-                        <td>${dateStr} ${apt.start_time.slice(0, 5)}</td>
+                        <td>${dateStr} <br> <small>${apt.start_time.slice(0, 5)}</small></td>
                         <td>${apt.client_name}</td>
-                        <td>${apt.service_name}</td>
+                        <td>
+                            ${apt.service_name}
+                            <div style="font-size:0.75rem; margin-top:2px;">${statusBadge}</div>
+                        </td>
                         <td>
                             <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Confirmación">
-                                <i class="fab fa-whatsapp"></i>
+                                <i class="fab fa-whatsapp"></i> Confirmar
                             </a>
                         </td>
                     </tr>
