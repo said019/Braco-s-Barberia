@@ -403,29 +403,45 @@
                 <!-- Barra de Emojis -->
                 <div class="form-group">
                     <label class="form-label" style="font-size: 0.85rem; color: #888;">Insertar Emoji</label>
-                    <div class="emoji-picker" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: rgba(196, 163, 90, 0.05); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2);">
+                    <div class="emoji-picker"
+                        style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: rgba(196, 163, 90, 0.05); border-radius: 8px; border: 1px solid rgba(196, 163, 90, 0.2);">
                         <!-- Usamos codepoints numéricos para evitar problemas de encoding al guardar/servir HTML -->
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F382)" title="Pastel">🎂</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F389)" title="Fiesta">🎉</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F388)" title="Globo">🎈</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F381)" title="Regalo">🎁</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F973)" title="Celebración">🥳</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F38A)" title="Confeti">🎊</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2728)" title="Brillos">✨</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F488)" title="Barbería">💈</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AA)" title="Fuerza">💪</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F64C)" title="Manos arriba">🙌</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F451)" title="Corona">👑</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2764, 0xFE0F)" title="Corazón">❤️</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F525)" title="Fuego">🔥</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2B50)" title="Estrella">⭐</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F382)"
+                            title="Pastel">🎂</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F389)"
+                            title="Fiesta">🎉</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F388)"
+                            title="Globo">🎈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F381)"
+                            title="Regalo">🎁</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F973)"
+                            title="Celebración">🥳</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F38A)"
+                            title="Confeti">🎊</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2728)"
+                            title="Brillos">✨</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F488)"
+                            title="Barbería">💈</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AA)"
+                            title="Fuerza">💪</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F64C)"
+                            title="Manos arriba">🙌</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F451)"
+                            title="Corona">👑</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2764, 0xFE0F)"
+                            title="Corazón">❤️</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F525)"
+                            title="Fuego">🔥</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x2B50)"
+                            title="Estrella">⭐</button>
                         <button type="button" class="emoji-btn" onclick="insertEmojiCp(0x1F4AF)" title="100">💯</button>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeBirthdayModal()">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="confirmSendBirthday()" style="background: #25D366; border-color: #25D366;">
+                <button type="button" class="btn btn-primary" onclick="confirmSendBirthday()"
+                    style="background: #25D366; border-color: #25D366;">
                     <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
                 </button>
             </div>
@@ -442,6 +458,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
+
         .emoji-btn:hover {
             background: rgba(196, 163, 90, 0.2);
             transform: scale(1.1);
@@ -469,7 +486,7 @@
             year: 'numeric'
         });
 
-        // Número de WhatsApp del negocio (sin el 52)
+        // Número de WhatsApp del negocio
         const BUSINESS_PHONE = '5573432027';
 
         // Cargar dashboard
@@ -477,111 +494,132 @@
             try {
                 const data = await api.get('/admin/dashboard');
 
-                // Stats
-                document.getElementById('stat-citas-hoy').textContent = data.stats.appointments_today;
-                document.getElementById('stat-ventas-hoy').textContent = `$${data.stats.sales_today.toLocaleString()}`;
-                document.getElementById('stat-membresias').textContent = data.stats.active_memberships;
-                document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
+                // Stats superiores
+                if (data.stats) {
+                    document.getElementById('stat-citas-hoy').textContent = data.stats.appointments_today || 0;
+                    document.getElementById('stat-ventas-hoy').textContent = `$${(data.stats.sales_today || 0).toLocaleString()}`;
+                    document.getElementById('stat-membresias').textContent = data.stats.active_memberships || 0;
+                    document.getElementById('stat-clientes').textContent = data.stats.total_clients || 0;
+                    document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today || 0;
+                }
 
-                // Call loadBirthdays after stats are set
+                // Cargar cumpleaños (sección lateral)
                 loadBirthdays();
-                document.getElementById('nav-badge-citas').textContent = data.stats.appointments_today;
 
-                // Próximas citas (confirmadas)
-                renderUpcomingAppointments(data.upcoming_appointments);
-
-                // Citas por confirmar
+                // Fila 1: Próximas Citas (Confirmadas) | Citas por Confirmar (Pendientes 48h)
+                renderUpcomingAppointments(data.upcoming_appointments || []);
                 renderPendingConfirmation(data.pending_confirmation || []);
 
-                // Recordatorios 2h
+                // Fila 2: Recordatorios 2h | Recordatorios 24h
                 renderReminders2h(data.reminders_2h || []);
-
-                // Recordatorios 24h
                 renderReminders24h(data.reminders_24h || []);
 
-                // Membresías por vencer
+                // Fila 3: Membresías por Vencer | Últimas Transacciones
                 renderExpiringMemberships(data.expiring_memberships || []);
-
-                // Transacciones
                 renderRecentTransactions(data.recent_transactions || []);
 
             } catch (error) {
-                console.error('Error:', error);
-                // Demo data fallback handled if needed, usually just show empty
-                document.querySelector('#pending-appointments tbody').innerHTML = `<tr><td colspan="4" class="text-center p-3 text-error">Error cargando datos</td></tr>`;
+                console.error('Error loading dashboard:', error);
+                // Fallback a datos demo para visualización si la API falla
+                // loadDemoData(); 
             }
         }
 
-        // Función para generar enlace de WhatsApp
-        function getWhatsAppLink(phone, clientName, date, time, serviceName, type = 'confirm') {
-            const cleanPhone = phone.replace(/\D/g, '');
-            const phoneWithCode = cleanPhone.startsWith('52') ? cleanPhone : `52${cleanPhone}`;
+        // Función para cargar cumpleaños con corrección de timezone (Fix para el bug de "1 día antes")
+        async function loadBirthdays() {
+            const container = document.getElementById('birthday-list');
+            if (!container) return;
 
-            let message = '';
-            if (type === 'confirm') {
-                message = `Hola ${clientName}, te recordamos tu cita en Braco's Barbería:\n\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¿Confirmas tu asistencia?\n\nResponde:\n✅ SÍ para confirmar\n❌ NO para cancelar`;
-            } else if (type === 'reminder') {
-                message = `Hola ${clientName}, este es un recordatorio de tu cita en Braco's:\n\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¡Te esperamos!`;
+            try {
+                const birthdays = await api.get('/admin/birthdays?days=30');
+
+                if (!birthdays || birthdays.length === 0) {
+                    container.innerHTML = '<p class="text-muted" style="text-align: center; padding: 1rem;">No hay cumpleaños próximos</p>';
+                    return;
+                }
+
+                container.innerHTML = birthdays.map(b => {
+                    const phone = (b.phone || '').replace(/\D/g, '');
+                    const phoneWithCode = phone.startsWith('52') ? phone : `52${phone}`;
+
+                    // Formateo de fecha con fix de timezone (T12:00:00)
+                    let birthdayDateDisplay = '';
+                    let daysLeft = 0;
+
+                    if (b.next_birthday) {
+                        const dateStr = typeof b.next_birthday === 'string' && b.next_birthday.includes('T')
+                            ? b.next_birthday.split('T')[0]
+                            : b.next_birthday;
+
+                        const nextDate = new Date(dateStr + 'T12:00:00');
+                        birthdayDateDisplay = nextDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+
+                        const today = new Date();
+                        today.setHours(12, 0, 0, 0);
+                        daysLeft = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                    }
+
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
+                            <div>
+                                <strong style="display: block;">${b.name}</strong>
+                                <div class="text-muted" style="font-size: 0.85rem;">
+                                    🎂 ${birthdayDateDisplay} ${daysLeft === 0 ? '<span class="badge badge-gold">¡Hoy!</span>' : daysLeft === 1 ? '<span class="badge badge-warning">Mañana</span>' : `(${daysLeft} días)`}
+                                </div>
+                            </div>
+                            <button class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" onclick="openBirthdayModal('${b.name.replace(/'/g, "\\'")}', '${phoneWithCode}')">
+                                <i class="fab fa-whatsapp"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading birthdays:', error);
+                container.innerHTML = '<p class="text-muted" style="text-align: center;">Error al cargar</p>';
             }
-
-            return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
         }
+
+        // --- Renderizadores del Dashboard (6 secciones) ---
 
         function renderUpcomingAppointments(appointments) {
             const tbody = document.querySelector('#upcoming-appointments tbody');
+            if (!tbody) return;
 
-            if (!appointments || appointments.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas confirmadas para hoy
-                        </td>
-                    </tr>
-                `;
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas confirmadas hoy</td></tr>';
                 return;
             }
+
             tbody.innerHTML = appointments.map(apt => `
                 <tr>
-                    <td>${formatDateShort(apt.appointment_date)}</td>
-                    <td>${apt.client_name}<br><small class="text-muted">${apt.client_phone}</small></td>
+                    <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
+                    <td>${apt.client_name}</td>
                     <td>${apt.service_name}</td>
-                    <td><a href="citas.html?search=${apt.client_phone}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Revisar</a></td>
+                    <td><a href="citas.html?search=${apt.client_phone}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem;">Ver</a></td>
                 </tr>
             `).join('');
         }
 
         function renderPendingConfirmation(appointments) {
             const tbody = document.querySelector('#pending-confirmation tbody');
+            if (!tbody) return;
 
-            if (!appointments || appointments.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas pendientes de confirmar
-                        </td>
-                    </tr>
-                `;
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas por confirmar</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
-                const aptDate = new Date(apt.appointment_date);
-                const dateStr = aptDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, dateStr, apt.start_time.slice(0, 5), apt.service_name, 'confirm');
+            tbody.innerHTML = appointments.map(apt => {
+                const dateStr = formatDateShort(apt.appointment_date);
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, dateStr, (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
 
                 return `
                     <tr>
-                        <td>
-                            <strong>${dateStr}</strong><br>
-                            <span class="text-muted">${apt.start_time.slice(0, 5)}</span>
-                        </td>
-                        <td>
-                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
-                            ${apt.client_name}
-                        </td>
+                        <td>${dateStr} ${apt.start_time.slice(0, 5)}</td>
+                        <td>${apt.client_name}</td>
                         <td>${apt.service_name}</td>
                         <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar WhatsApp para confirmar">
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Confirmación">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         </td>
@@ -592,31 +630,23 @@
 
         function renderReminders2h(appointments) {
             const tbody = document.querySelector('#reminders-2h tbody');
+            if (!tbody) return;
 
-            if (!appointments || appointments.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas próximas en 2 horas
-                        </td>
-                    </tr>
-                `;
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas próximas (2h)</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Hoy', apt.start_time.slice(0, 5), apt.service_name, 'reminder');
+            tbody.innerHTML = appointments.map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Hoy', (apt.start_time || '').slice(0, 5), apt.service_name, 'reminder');
 
                 return `
                     <tr>
                         <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
-                        <td>
-                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
-                            ${apt.client_name}
-                        </td>
+                        <td>${apt.client_name}</td>
                         <td>${apt.service_name}</td>
                         <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar recordatorio WhatsApp">
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Recordatorio">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         </td>
@@ -627,31 +657,23 @@
 
         function renderReminders24h(appointments) {
             const tbody = document.querySelector('#reminders-24h tbody');
+            if (!tbody) return;
 
-            if (!appointments || appointments.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay citas para mañana
-                        </td>
-                    </tr>
-                `;
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas para mañana</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = appointments.slice(0, 5).map(apt => {
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Mañana', apt.start_time.slice(0, 5), apt.service_name, 'confirm');
+            tbody.innerHTML = appointments.map(apt => {
+                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Mañana', (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
 
                 return `
                     <tr>
                         <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
-                        <td>
-                            <span class="client-type-dot" style="background: ${apt.client_color}"></span>
-                            ${apt.client_name}
-                        </td>
+                        <td>${apt.client_name}</td>
                         <td>${apt.service_name}</td>
                         <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 0.3rem 0.6rem; border-radius: 4px;" title="Enviar recordatorio WhatsApp">
+                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Recordatorio">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         </td>
@@ -662,202 +684,84 @@
 
         function renderExpiringMemberships(memberships) {
             const tbody = document.querySelector('#expiring-memberships tbody');
-
-        function renderReminders24h(appointments) {
-            const tbody = document.querySelector('#reminders-24h tbody');
             if (!tbody) return;
 
-            if (!appointments.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted p-3">No hay recordatorios en las próximas 24h</td></tr>`;
+            if (memberships.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted p-3">No hay membresías por vencer</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = appointments.map(apt => {
-                const phone = (apt.client_phone || '').replace(/\D/g, '');
-                const time = (apt.start_time || '').slice(0, 5);
-                const reminderBadge = apt.reminder_sent ? `<span class="badge badge-success">Enviado</span>` : `<span class="badge badge-warning">Pendiente</span>`;
-                const waDisabled = apt.whatsapp_enabled === false;
-                const resendBtn = waDisabled
-                    ? `<button class="btn btn-secondary btn-sm" disabled title="WhatsApp deshabilitado" style="padding: 2px 8px; font-size: 0.7rem; opacity: 0.6;">WhatsApp</button>`
-                    : `<button class="btn btn-success btn-sm" onclick="resendReminder24h(${apt.id})" style="padding: 2px 8px; font-size: 0.7rem; background:#25D366; border-color:#25D366;">WhatsApp</button>`;
-
-                const dateValue = (apt.appointment_date || '').split('T')[0] || apt.appointment_date;
-
-                return `
-                    <tr>
-                        <td>${formatDateShort(apt.appointment_date)}<br><strong>${time}</strong><br>${reminderBadge}</td>
-                        <td>${apt.client_name}<br><small class="text-muted">${phone}</small></td>
-                        <td>${apt.service_name}</td>
-                        <td style="display:flex; gap:6px; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${apt.id}, '${dateValue}', '${time}')" style="padding: 2px 8px; font-size: 0.7rem;">Cambiar hora</button>
-                            ${resendBtn}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderReminders2h(appointments) {
-            const tbody = document.querySelector('#reminders-2h tbody');
-            if (!tbody) return;
-
-            if (!transactions || transactions.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-muted" style="text-align: center; padding: 2rem;">
-                            No hay transacciones hoy
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = appointments.map(apt => {
-                const time = (apt.start_time || '').slice(0, 5);
-                const reminderBadge = apt.reminder_2h_sent 
-                    ? `<span class="badge badge-success">Enviado</span>` 
-                    : `<span class="badge badge-warning">Pendiente</span>`;
-
-                return `
-                    <tr>
-                        <td><strong>${time}</strong></td>
-                        <td>${apt.client_name}</td>
-                        <td>${apt.service_name}</td>
-                        <td>${reminderBadge}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function openRescheduleModal(appointmentId, currentDate, currentTime) {
-            const date = prompt('Nueva fecha (YYYY-MM-DD):', currentDate);
-            if (!date) return;
-            const time = prompt('Nueva hora (HH:MM):', currentTime);
-            if (!time) return;
-            rescheduleAppointment(appointmentId, date, time);
-        }
-
-        async function rescheduleAppointment(appointmentId, appointment_date, start_time) {
-            try {
-                const data = await api.put(`/admin/appointments/${appointmentId}/reschedule`, {
-                    appointment_date,
-                    start_time
-                });
-                alert(data.message || 'Cita reprogramada');
-                loadDashboard();
-            } catch (e) {
-                console.error('Error reprogramando cita:', e);
-                alert(e.message || 'Error reprogramando cita');
-            }
-        }
-
-        async function resendReminder24h(appointmentId) {
-            try {
-                // Usamos el endpoint específico de recordatorio 24h (usa plantilla reminder24h)
-                const data = await api.post(`/admin/appointments/${appointmentId}/send-reminder`, {});
-                alert(data.message || 'Recordatorio 24h enviado');
-                loadDashboard();
-            } catch (e) {
-                console.error('Error enviando recordatorio 24h:', e);
-                alert('Error enviando recordatorio 24h');
-            }
+            tbody.innerHTML = memberships.map(m => `
+                <tr>
+                    <td>${m.client_name}</td>
+                    <td>${m.membership_type}</td>
+                    <td>${m.remaining_services}/${m.total_services}</td>
+                </tr>
+            `).join('');
         }
 
         function renderRecentTransactions(transactions) {
             const tbody = document.querySelector('#recent-transactions tbody');
-            if (!transactions.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted p-3">No hay movimientos recientes</td></tr>`;
+            if (!tbody) return;
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay transacciones recientes</td></tr>';
                 return;
             }
+
             tbody.innerHTML = transactions.map(t => `
                 <tr>
-                    <td>${formatDateShort(t.created_at)} ${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td>${new Date(t.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>${t.client_name}</td>
-                    <td>${t.description}</td>
+                    <td>${t.description || (t.type === 'membership' ? 'Membresía' : 'Servicio')}</td>
                     <td class="text-gold"><strong>$${parseFloat(t.amount).toLocaleString()}</strong></td>
                 </tr>
             `).join('');
         }
 
+        // --- Utilidades ---
+
         function formatDateShort(dateStr) {
-            // Evitar conversión de timezone al agregar T12:00:00
             if (!dateStr) return '-';
-            // Si dateStr es solo fecha (YYYY-MM-DD), parsearlo sin timezone
-            if (dateStr.length === 10) {
-                const date = new Date(dateStr + 'T12:00:00');
-                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-            }
-            // Si tiene T, extraer solo la fecha y agregar T12:00:00
-            if (typeof dateStr === 'string' && dateStr.includes('T')) {
-                const date = new Date(dateStr.split('T')[0] + 'T12:00:00');
-                return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-            }
-            const date = new Date(dateStr);
+            // Fix timezone: forzar mediodía para evitar saltos de día por conversión UTC
+            const cleanDate = typeof dateStr === 'string' && dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            const date = new Date(cleanDate + 'T12:00:00');
             return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         }
 
-        function getStatusBadge(status) {
-            const badges = { 'scheduled': 'info', 'confirmed': 'success', 'in_progress': 'warning', 'completed': 'gold', 'cancelled': 'error', 'no_show': 'error', 'pending': 'warning' };
-            return badges[status] || 'info';
+        function getWhatsAppLink(phone, clientName, date, time, serviceName, type = 'confirm') {
+            const phoneClean = (phone || '').replace(/\D/g, '');
+            const phoneWithCode = phoneClean.startsWith('52') ? phoneClean : `52${phoneClean}`;
+
+            let message = '';
+            if (type === 'confirm') {
+                message = `Hola ${clientName}, te recordamos tu cita en Braco's Barbería:\n\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¿Confirmas tu asistencia?\n\nResponde:\n✅ SÍ para confirmar\n❌ NO para cancelar`;
+            } else if (type === 'reminder') {
+                message = `Hola ${clientName}, recordatorio de tu cita hoy en Braco's:\n\n⏰ Hora: ${time}\n💈 Servicio: ${serviceName}\n\n¡Te esperamos!`;
+            }
+
+            return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
         }
 
-        function getStatusText(status) {
-            const texts = { 'scheduled': 'Programada', 'confirmed': 'Confirmada', 'in_progress': 'En Curso', 'completed': 'Completada', 'cancelled': 'Cancelada', 'no_show': 'No Asistió', 'pending': 'Por Confirmar' };
-            return texts[status] || status;
+        // Modal de cumpleaños
+        function openBirthdayModal(name, phone) {
+            document.getElementById('birthday-client-name').textContent = name;
+            const message = `¡Hola ${name}! 🥳\n\nDe parte de todo el equipo de Braco's Barbería, te deseamos un muy feliz cumpleaños. 🎂💈\n\n¡Esperamos verte pronto para celebrar!`;
+            document.getElementById('birthday-message').value = message;
+
+            // Adjuntar evento al botón de enviar del modal
+            const sendBtn = document.querySelector('#modal-birthday .btn-primary');
+            sendBtn.onclick = () => {
+                const msg = document.getElementById('birthday-message').value;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                closeBirthdayModal();
+            };
+
+            document.getElementById('modal-birthday').classList.add('active');
         }
 
-        function getPaymentMethodText(method) {
-            const methods = { 'cash': '💵 Efectivo', 'card': '💳 Tarjeta', 'transfer': '📱 Transferencia', 'membership': '👑 Membresía' };
-            return methods[method] || method;
-        }
-
-        function loadDemoData() {
-            document.getElementById('stat-citas-hoy').textContent = '8';
-            document.getElementById('stat-ventas-hoy').textContent = '$4,350';
-            document.getElementById('stat-membresias').textContent = '24';
-            document.getElementById('stat-clientes').textContent = '156';
-            document.getElementById('nav-badge-citas').textContent = '8';
-
-            // Demo citas confirmadas
-            const demoAppointments = [
-                { start_time: '10:00', client_name: 'Carlos Mendoza', client_color: '#C4A35A', service_name: 'Corte Caballero', status: 'confirmed' },
-                { start_time: '11:00', client_name: 'Roberto García', client_color: '#D4B76A', service_name: 'DÚO (Corte + Barba)', status: 'confirmed' }
-            ];
-            renderUpcomingAppointments(demoAppointments);
-
-            // Demo citas por confirmar
-            const demoPending = [
-                { appointment_date: new Date(), start_time: '14:00', client_name: 'Miguel Torres', client_phone: '5512345678', client_color: '#1A1A1A', service_name: 'Ritual de Barba' },
-                { appointment_date: new Date(Date.now() + 86400000), start_time: '11:00', client_name: 'Juan Pérez', client_phone: '5587654321', client_color: '#C4A35A', service_name: 'Corte Caballero' }
-            ];
-            renderPendingConfirmation(demoPending);
-
-            // Demo recordatorios 2h
-            const demoReminders2h = [
-                { start_time: '14:00', client_name: 'Luis Martínez', client_phone: '5511112222', client_color: '#D4B76A', service_name: 'Corte Niño' }
-            ];
-            renderReminders2h(demoReminders2h);
-
-            // Demo recordatorios 24h
-            const demoReminders24h = [
-                { start_time: '10:00', client_name: 'Fernando López', client_phone: '5533334444', client_color: '#C4A35A', service_name: 'DÚO' },
-                { start_time: '12:00', client_name: 'Andrés Ramírez', client_phone: '5555556666', client_color: '#1A1A1A', service_name: 'Paquete Nupcial' }
-            ];
-            renderReminders24h(demoReminders24h);
-
-            // Demo membresías
-            const demoMemberships = [
-                { client_name: 'Juan López', membership_type: 'Premium', remaining_services: 2, total_services: 6, expiration_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) },
-                { client_name: 'Pedro Sánchez', membership_type: 'VIP', remaining_services: 5, total_services: 12, expiration_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) }
-            ];
-            renderExpiringMemberships(demoMemberships);
-
-            // Demo transacciones
-            const demoTransactions = [
-                { created_at: new Date(), client_name: 'Carlos Mendoza', description: 'Corte Caballero', payment_method: 'card', amount: 300 },
-                { created_at: new Date(), client_name: 'Roberto García', description: 'DÚO + Productos', payment_method: 'cash', amount: 750 }
-            ];
-            renderRecentTransactions(demoTransactions);
+        function closeBirthdayModal() {
+            document.getElementById('modal-birthday').classList.remove('active');
         }
 
         // Inicializar

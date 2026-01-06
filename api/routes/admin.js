@@ -292,39 +292,6 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              ORDER BY t.created_at DESC LIMIT 10`
         );
 
-        // Appointments needing reminder attention: show all scheduled/confirmed within the next 48h
-        // This gives admins visibility to review, reschedule or send WhatsApp manually.
-        const remindersDue = await db.query(
-            `SELECT a.id, a.uuid, a.appointment_date, a.start_time, a.end_time, a.status,
-                    a.reminder_sent, a.checkout_code,
-                    c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
-                    s.name as service_name
-             FROM appointments a
-             JOIN clients c ON a.client_id = c.id
-             JOIN services s ON a.service_id = s.id
-             WHERE a.status IN ('scheduled', 'confirmed')
-               AND (a.appointment_date || ' ' || a.start_time)::timestamp
-                   BETWEEN NOW() AND NOW() + INTERVAL '48 hours'
-             ORDER BY a.appointment_date ASC, a.start_time ASC
-             LIMIT 30`
-        );
-
-        // Appointments needing 2h reminder: show all scheduled/confirmed within the next 2-3 hours
-        const reminders2h = await db.query(
-            `SELECT a.id, a.uuid, a.appointment_date, a.start_time, a.end_time, a.status,
-                    a.reminder_2h_sent, a.checkout_code,
-                    c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
-                    s.name as service_name
-             FROM appointments a
-             JOIN clients c ON a.client_id = c.id
-             JOIN services s ON a.service_id = s.id
-             WHERE a.status IN ('scheduled', 'confirmed')
-               AND (a.appointment_date || ' ' || a.start_time)::timestamp
-                   BETWEEN NOW() AND NOW() + INTERVAL '3 hours'
-             ORDER BY a.appointment_date ASC, a.start_time ASC
-             LIMIT 20`
-        );
-
         // Membership sales today
         const membershipSales = await db.query(
             `SELECT cm.*, c.name as client_name, c.phone as client_phone,
@@ -565,33 +532,33 @@ router.put('/clients/:id', authenticateToken, async (req, res, next) => {
 router.post('/clients/:id/promote', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        
+
         // Obtener datos del cliente
         const clientResult = await db.query(
             'SELECT id, name, phone, email, client_code, client_type_id FROM clients WHERE id = $1',
             [id]
         );
-        
+
         if (clientResult.rows.length === 0) {
             return res.status(404).json({ error: 'Cliente no encontrado' });
         }
-        
+
         const client = clientResult.rows[0];
-        
+
         // Verificar que sea cliente "Nuevo" (type_id = 1)
         if (client.client_type_id !== 1) {
             return res.status(400).json({ error: 'Solo se pueden promover clientes con tipo "Nuevo"' });
         }
-        
+
         // Actualizar a Recurrente (type_id = 2)
         await db.query(
             'UPDATE clients SET client_type_id = 2, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
             [id]
         );
-        
+
         // Enviar notificaciones
         const notifications = { email: false, whatsapp: false };
-        
+
         // Enviar Email si tiene email
         if (client.email) {
             try {
@@ -607,7 +574,7 @@ router.post('/clients/:id/promote', authenticateToken, async (req, res, next) =>
                 console.error('[PROMOTE] Error enviando email:', emailError.message);
             }
         }
-        
+
         // Enviar WhatsApp con plantilla copy_recurrente
         if (client.phone) {
             try {
@@ -623,14 +590,14 @@ router.post('/clients/:id/promote', authenticateToken, async (req, res, next) =>
                 console.error('[PROMOTE] Error enviando WhatsApp:', whatsappError.message);
             }
         }
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Cliente promovido a Recurrente',
             client_code: client.client_code,
             notifications
         });
-        
+
     } catch (error) {
         next(error);
     }
@@ -640,33 +607,33 @@ router.post('/clients/:id/promote', authenticateToken, async (req, res, next) =>
 router.post('/clients/:id/resend-code', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        
+
         // Obtener datos del cliente
         const clientResult = await db.query(
             'SELECT id, name, phone, email, client_code FROM clients WHERE id = $1',
             [id]
         );
-        
+
         if (clientResult.rows.length === 0) {
             return res.status(404).json({ error: 'Cliente no encontrado' });
         }
-        
+
         const client = clientResult.rows[0];
-        
+
         // Si no tiene código, generarlo
         if (!client.client_code) {
             const codeResult = await db.query('SELECT generate_unique_client_code() as code');
             client.client_code = codeResult.rows[0].code;
             await db.query('UPDATE clients SET client_code = $1 WHERE id = $2', [client.client_code, id]);
         }
-        
+
         const notifications = { whatsapp: false, email: false };
-        
+
         // Enviar WhatsApp
         if (client.phone) {
             try {
                 const message = `Hola ${client.name}, tu código de cliente en Braco's Barbería es: *${client.client_code}*\n\nÚsalo para agendar tus citas más rápido en:\nhttps://braco-s-barberia-production.up.railway.app/agendar.html`;
-                
+
                 const whatsappService = (await import('../services/whatsappService.js')).default;
                 const result = await whatsappService.sendTextMessage(client.phone, message);
                 notifications.whatsapp = result.success;
@@ -675,7 +642,7 @@ router.post('/clients/:id/resend-code', authenticateToken, async (req, res, next
                 console.error('[RESEND CODE] Error enviando WhatsApp:', whatsappError.message);
             }
         }
-        
+
         // Enviar Email si tiene
         if (client.email) {
             try {
@@ -691,14 +658,14 @@ router.post('/clients/:id/resend-code', authenticateToken, async (req, res, next
                 console.error('[RESEND CODE] Error enviando email:', emailError.message);
             }
         }
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: `Código ${client.client_code} reenviado`,
             client_code: client.client_code,
             notifications
         });
-        
+
     } catch (error) {
         next(error);
     }
@@ -1009,7 +976,7 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
 
                 if (whatsappRes.success) {
                     console.log(`[ADMIN] WhatsApp sent to ${client.name}: ${whatsappRes.id}`);
-                    
+
                     // Enviar políticas después de la confirmación
                     setTimeout(async () => {
                         try {
@@ -1142,7 +1109,7 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
                         code: prevAppointment.checkout_code || '----'
                     });
                     console.log(`[APPROVE APPT] WhatsApp confirmación enviado: ${whatsappRes.success}`);
-                    
+
                     // Enviar políticas después de la confirmación
                     if (whatsappRes.success) {
                         setTimeout(async () => {
@@ -1283,7 +1250,7 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
                     code: prevAppointment.checkout_code || '----'
                 });
                 whatsappSent = !!whatsappRes.success;
-                
+
                 // Enviar políticas después de la confirmación
                 if (whatsappRes.success) {
                     setTimeout(async () => {
@@ -1358,7 +1325,7 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
 
         if (whatsappRes.success) {
             console.log(`[ADMIN] WhatsApp reenviado a ${appointment.client_name}: ${whatsappRes.id}`);
-            
+
             // Enviar políticas después de la confirmación
             setTimeout(async () => {
                 try {
@@ -1367,7 +1334,7 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
                     console.error('[ADMIN] Error sending policies:', e.message);
                 }
             }, 2000);
-            
+
             res.json({
                 success: true,
                 message: `WhatsApp enviado a ${appointment.client_name}`,
@@ -2099,8 +2066,8 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
-        // Membership sales
-        const membershipSales = await db.query(
+        // Membership sales summary
+        const membershipSummary = await db.query(
             `SELECT 'Membresía ' || mt.name as name, 
                     COUNT(*) as count, 
                     SUM(cm.payment_amount) as total,
@@ -2114,7 +2081,7 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
         );
 
         // Combine and sort
-        const combinedSales = [...servicesSales.rows, ...membershipSales.rows].sort((a, b) => parseFloat(b.total) - parseFloat(a.total));
+        const combinedSales = [...servicesSales.rows, ...membershipSummary.rows].sort((a, b) => parseFloat(b.total) - parseFloat(a.total));
 
         // Totals
         const totals = await db.query(
@@ -2127,7 +2094,7 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 
-        // Membership sales in date range
+        // Membership sales in date range (detailed list for table)
         const membershipSales = await db.query(
             `SELECT cm.*, c.name as client_name, c.phone as client_phone,
                     mt.name as membership_type, mt.price as membership_price
