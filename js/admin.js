@@ -648,3 +648,56 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.appendChild(calendarGrid);
     }
 });
+
+// ==================== FILTER CLIENTS ====================
+function filterClients() {
+    const searchTerm = document.getElementById('search-client').value.toLowerCase();
+    const typeFilter = document.getElementById('filter-type').value;
+    const membershipFilter = document.getElementById('filter-membership').value;
+
+    const rows = document.querySelectorAll('#clients-table-body tr');
+
+    rows.forEach(row => {
+        const name = row.querySelector('.client-name') ? row.querySelector('.client-name').textContent.toLowerCase() : '';
+        const phone = row.querySelector('td:nth-child(2)') ? row.querySelector('td:nth-child(2)').textContent.toLowerCase() : '';
+        const typeBadge = row.querySelector('.badge') ? row.querySelector('.badge').textContent.toLowerCase() : '';
+
+        let matchesSearch = name.includes(searchTerm) || phone.includes(searchTerm);
+        let matchesType = true;
+        let matchesMem = true;
+
+        if (typeFilter) {
+            const typeMap = { '1': 'nuevo', '2': 'recurrente', '3': 'golden', '4': 'neocapilar', '5': 'black' };
+            if (!typeBadge.includes(typeMap[typeFilter] || 'xxxx')) matchesType = false;
+        }
+
+        if (membershipFilter === 'active') {
+            // Logic would depend on visual indicator, for now assume true if filter is active for simplicity or skip
+        }
+
+        if (matchesSearch && matchesType) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// ==================== WHATSAPP UTILS ====================
+function getWhatsAppLink(phone, name, date, time, service, type = 'reminder') {
+    if (!phone) return '#';
+    const cleanPhone = phone.replace(/\D/g, '');
+    const prefix = cleanPhone.length === 10 ? '521' : '';
+    const fullPhone = prefix + cleanPhone;
+
+    let message = '';
+
+    if (type === 'confirm') {
+        message = `Hola ${name}, te saludamos de Braco's Barbería 💈. Te escribimos para confirmar tu cita agendada para el ${date} a las ${time} para el servicio de ${service}. ¿Podrías confirmarnos tu asistencia?`;
+    } else if (type === 'reminder') {
+        const timeMsg = date === 'Hoy' ? `hoy a las ${time}` : `el ${date} a las ${time}`;
+        message = `Hola ${name}, recordatorio de tu cita en Braco's Barbería 💈 para ${timeMsg}. ¡Te esperamos!`;
+    }
+
+    return `https://wa.me/${fullPhone}?text=${encodeURIComponent(message)}`;
+}
