@@ -250,7 +250,7 @@ export const sendWelcomeWithClientCode = async ({ phone, name, clientCode }) => 
         "1": name,
         "2": clientCode
     };
-    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID;
+    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID || 'HXe5f05d64d67eaa6c336594ca879c9139';
 
     if (!sid) {
         console.warn('Recurring Template SID missing, falling back to text (might fail)');
@@ -297,7 +297,7 @@ export const sendRecurringClientWelcome = async ({ phone, name, clientCode }) =>
         "1": name,
         "2": clientCode
     };
-    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID;
+    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID || 'HXe5f05d64d67eaa6c336594ca879c9139';
     if (!sid) return { success: false, error: 'Recurring Template SID missing' };
     return await sendTemplate(phone, sid, variables);
 };

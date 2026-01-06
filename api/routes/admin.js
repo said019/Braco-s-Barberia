@@ -1446,7 +1446,7 @@ router.get('/memberships', authenticateToken, async (req, res, next) => {
             SELECT cm.*, c.name as client_name, c.phone as client_phone,
                    mt.name as membership_type, mt.price,
                    cm.total_services - cm.used_services as remaining_services,
-                   cm.folio_number
+                   cm.folio_number, cm.uuid
             FROM client_memberships cm
             JOIN clients c ON cm.client_id = c.id
             JOIN membership_types mt ON cm.membership_type_id = mt.id
