@@ -763,7 +763,8 @@
         async function loadBirthdays() {
             try {
                 const birthdayList = document.getElementById('birthday-list');
-                const clients = await api.get('/admin/clients');
+                const response = await api.get('/admin/clients');
+                const clients = response.clients || [];
 
                 const today = new Date();
                 const upcomingBirthdays = [];
