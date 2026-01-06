@@ -784,41 +784,8 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
             });
         }
 
-        // ============================================
-        // VALIDACIÓN: Colisión de horarios (cualquier cliente)
-        // Verifica que no haya otra cita que se solape en el mismo horario
-        // ============================================
-        const collisionCheck = await db.query(`
-            SELECT a.id, c.name as client_name, a.start_time, a.end_time
-            FROM appointments a
-            JOIN clients c ON a.client_id = c.id
-            WHERE a.appointment_date = $1
-              AND a.status NOT IN ('cancelled', 'no_show')
-              AND (
-                  -- Nueva cita empieza durante una existente
-                  ($2::time >= a.start_time AND $2::time < a.end_time)
-                  OR
-                  -- Nueva cita termina durante una existente
-                  ($3::time > a.start_time AND $3::time <= a.end_time)
-                  OR
-                  -- Nueva cita envuelve completamente una existente
-                  ($2::time <= a.start_time AND $3::time >= a.end_time)
-              )
-        `, [appointment_date, start_time, end_time]);
-
-        if (collisionCheck.rows.length > 0) {
-            const conflicting = collisionCheck.rows[0];
-            console.warn(`[ADMIN] Time slot collision blocked: ${start_time}-${end_time} conflicts with ${conflicting.client_name}'s appointment ${conflicting.start_time}-${conflicting.end_time}`);
-            return res.status(409).json({
-                error: `Horario no disponible. Ya hay una cita de ${conflicting.client_name} de ${conflicting.start_time.slice(0, 5)} a ${conflicting.end_time.slice(0, 5)}`,
-                conflicting_appointment: {
-                    id: conflicting.id,
-                    client_name: conflicting.client_name,
-                    start_time: conflicting.start_time,
-                    end_time: conflicting.end_time
-                }
-            });
-        }
+        // NOTA: Se quitó la validación de colisión de horarios porque hay 2 estilistas
+        // (Miguel y Bárbara) que pueden atender simultáneamente diferentes servicios
 
         // Generar código de checkout
         let checkout_code;
