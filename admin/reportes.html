@@ -346,18 +346,33 @@
             // 3. Update Chart
             updateChart(daily_sales);
 
-            // 4. Update Top Services (only paid services)
+            // 4. Update Top Services (all services, showing membership usage)
             const tbody = document.getElementById('top-services-body');
-            const paidServices = (services_sales || []).filter(s => parseFloat(s.total) > 0);
-            tbody.innerHTML = paidServices.map(s => `
+            const allServices = (services_sales || []).filter(s => parseInt(s.count) > 0);
+            tbody.innerHTML = allServices.map(s => {
+                const membershipCount = parseInt(s.membership_usage_count) || 0;
+                const paidCount = parseInt(s.count) - membershipCount;
+                const total = parseFloat(s.total) || 0;
+                
+                let subtitle = `${s.count} servicios`;
+                if (membershipCount > 0) {
+                    subtitle += ` (${membershipCount} con membresía)`;
+                }
+                
+                return `
                 <tr>
                     <td>
                         <div class="font-medium">${s.name}</div>
-                        <div class="text-sm text-muted">${s.count} ventas</div>
+                        <div class="text-sm text-muted">${subtitle}</div>
                     </td>
-                    <td class="text-right font-medium">${formatCurrency(s.total)}</td>
+                    <td class="text-right font-medium">${total > 0 ? formatCurrency(total) : '<span class="text-muted">$0</span>'}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
+
+            if (allServices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No hay servicios en este período</td></tr>';
+            }
 
             // 4. Update Membership Sales
             renderMembershipSales(membership_sales || []);
