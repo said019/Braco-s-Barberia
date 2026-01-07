@@ -513,6 +513,34 @@ a {
     font-weight: 500;
 }
 
+/* Sortable headers */
+.data-table th.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.data-table th.sortable-header:hover {
+    background: rgba(196, 163, 90, 0.1);
+}
+
+.data-table th .sort-arrows {
+    margin-left: 6px;
+    opacity: 0.5;
+    font-size: 0.65rem;
+    vertical-align: middle;
+}
+
+.data-table th.sortable-header:hover .sort-arrows {
+    opacity: 1;
+}
+
+.data-table th .sort-arrows .fa-sort-up,
+.data-table th .sort-arrows .fa-sort-down {
+    opacity: 1;
+    color: var(--gold);
+}
+
 .data-table td {
     padding: 1rem;
     border-bottom: 1px solid rgba(196, 163, 90, 0.08);

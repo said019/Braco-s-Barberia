@@ -525,16 +525,115 @@ function exportToExcel(data, filename) {
 
 // ==================== TABLE UTILITIES ====================
 
-function createTable(data, columns) {
+// Global sort state
+let tableSortState = {};
+
+function sortTable(tableId, field, columnIndex) {
+    // Toggle sort direction
+    if (!tableSortState[tableId]) {
+        tableSortState[tableId] = { field: null, direction: 'asc' };
+    }
+    
+    const state = tableSortState[tableId];
+    if (state.field === field) {
+        state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        state.field = field;
+        state.direction = 'asc';
+    }
+
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Sort rows
+    rows.sort((a, b) => {
+        const cellA = a.cells[columnIndex]?.textContent?.trim() || '';
+        const cellB = b.cells[columnIndex]?.textContent?.trim() || '';
+
+        // Try to parse as number
+        const numA = parseFloat(cellA.replace(/[^0-9.-]/g, ''));
+        const numB = parseFloat(cellB.replace(/[^0-9.-]/g, ''));
+
+        // Try to parse as date
+        const dateA = parseSpanishDate(cellA);
+        const dateB = parseSpanishDate(cellB);
+
+        let comparison = 0;
+        if (dateA && dateB) {
+            comparison = dateA - dateB;
+        } else if (!isNaN(numA) && !isNaN(numB)) {
+            comparison = numA - numB;
+        } else {
+            comparison = cellA.localeCompare(cellB, 'es');
+        }
+
+        return state.direction === 'asc' ? comparison : -comparison;
+    });
+
+    // Re-append sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Update sort icons
+    table.querySelectorAll('.sortable-header').forEach(th => {
+        const arrows = th.querySelector('.sort-arrows');
+        if (arrows) {
+            if (th.dataset.field === field) {
+                arrows.innerHTML = state.direction === 'asc' 
+                    ? '<i class="fas fa-sort-up"></i>' 
+                    : '<i class="fas fa-sort-down"></i>';
+            } else {
+                arrows.innerHTML = '<i class="fas fa-sort"></i>';
+            }
+        }
+    });
+}
+
+function parseSpanishDate(str) {
+    // Parse dates like "6 ene 2026", "6 de enero de 2026"
+    const months = {
+        'ene': 0, 'enero': 0, 'feb': 1, 'febrero': 1, 'mar': 2, 'marzo': 2,
+        'abr': 3, 'abril': 3, 'may': 4, 'mayo': 4, 'jun': 5, 'junio': 5,
+        'jul': 6, 'julio': 6, 'ago': 7, 'agosto': 7, 'sep': 8, 'sept': 8, 'septiembre': 8,
+        'oct': 9, 'octubre': 9, 'nov': 10, 'noviembre': 10, 'dic': 11, 'diciembre': 11
+    };
+    
+    const match = str.match(/(\d{1,2})\s*(?:de\s*)?(\w+)(?:\s*(?:de\s*)?(\d{4}))?/i);
+    if (match) {
+        const day = parseInt(match[1]);
+        const monthStr = match[2].toLowerCase();
+        const year = match[3] ? parseInt(match[3]) : new Date().getFullYear();
+        const month = months[monthStr];
+        if (month !== undefined) {
+            return new Date(year, month, day);
+        }
+    }
+    return null;
+}
+
+function createTable(data, columns, options = {}) {
     if (!data || data.length === 0) {
         return '<p class="empty-message">No hay datos para mostrar</p>';
     }
 
-    let html = '<table class="data-table"><thead><tr>';
+    const tableId = options.tableId || 'data-table-' + Math.random().toString(36).substr(2, 9);
+    let html = `<table class="data-table" id="${tableId}"><thead><tr>`;
 
-    // Headers
-    columns.forEach(col => {
-        html += `<th>${col.label}</th>`;
+    // Headers with sort arrows
+    columns.forEach((col, index) => {
+        const sortable = col.sortable !== false && col.label !== 'Acciones';
+        if (sortable) {
+            html += `<th class="sortable-header" data-field="${col.field}" data-index="${index}" onclick="sortTable('${tableId}', '${col.field}', ${index})">
+                ${col.label}
+                <span class="sort-arrows">
+                    <i class="fas fa-sort"></i>
+                </span>
+            </th>`;
+        } else {
+            html += `<th>${col.label}</th>`;
+        }
     });
     html += '</tr></thead><tbody>';
 
