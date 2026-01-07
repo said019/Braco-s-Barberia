@@ -220,7 +220,7 @@
                         <div class="card-header">
                             <div>
                                 <h3 class="card-title" style="color: #25D366;">Recordatorios 24h</h3>
-                                <p class="card-subtitle">Citas para Mañana</p>
+                                <p class="card-subtitle">Citas en las próximas 24 horas</p>
                             </div>
                         </div>
                         <div class="table-container">
@@ -399,6 +399,38 @@
             transform: scale(1.1);
             border-color: var(--gold);
         }
+        
+        /* Botones WhatsApp para recordatorios */
+        .btn-whatsapp {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #25D366;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+        }
+        .btn-whatsapp.disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+        .btn-whatsapp.disabled:hover {
+            transform: none;
+            background: #666;
+        }
     </style>
 
     <script src="js/auth.js"></script>
@@ -424,6 +456,135 @@
 
         // Número de WhatsApp del negocio
         const BUSINESS_PHONE = '5573432027';
+
+        // =====================================================
+        // FUNCIONES GLOBALES PARA CUMPLEAÑOS (fuera de loadDashboard)
+        // =====================================================
+        let currentBirthdayClient = { name: '', phone: '' };
+
+        function sendBirthdayMessage(name, phone) {
+            console.log('[BIRTHDAY] sendBirthdayMessage called:', name, phone);
+            currentBirthdayClient = { name, phone };
+            const firstName = name.split(' ')[0];
+            console.log('[BIRTHDAY] Opening modal for:', firstName);
+
+            // Mensaje predeterminado (sin emojis - el usuario puede agregarlos con los botones)
+            const defaultMessage = `¡Feliz cumpleaños, ${firstName}!
+
+En Braco's Barbería te deseamos un día increíble lleno de alegría.
+
+¡Te esperamos pronto para consentirte!`;
+
+            document.getElementById('birthday-client-name').textContent = firstName;
+            document.getElementById('birthday-message').value = defaultMessage;
+            // Usar classList.add('active') en lugar de style.display porque el CSS usa visibility/opacity
+            document.getElementById('modal-birthday').classList.add('active');
+        }
+
+        function closeBirthdayModal() {
+            document.getElementById('modal-birthday').classList.remove('active');
+        }
+
+        function confirmSendBirthday() {
+            // Nota: si el texto contiene emojis y se ve como "��" en WhatsApp,
+            // normalmente es un problema de encoding/doble-encoding.
+            // Construimos el URL con encodeURIComponent (UTF-8) y evitamos encodificar 2 veces.
+            const message = document.getElementById('birthday-message').value;
+            let phone = currentBirthdayClient.phone || '';
+
+            // Limpiar teléfono
+            phone = phone.replace(/\D/g, '');
+            if (phone.startsWith('52') && phone.length > 10) {
+                phone = phone.substring(2);
+            }
+
+            if (!phone || phone.length < 10) {
+                alert('Teléfono no válido');
+                return;
+            }
+
+            const whatsappUrl = buildWhatsAppUrl({ countryCode: '52', phone, text: message });
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            closeBirthdayModal();
+        }
+
+        function buildWhatsAppUrl({ countryCode = '52', phone, text }) {
+            // Normalizar unicode ayuda con algunos caracteres combinados (y evita bugs raros)
+            const normalized = (text ?? '').normalize('NFC');
+
+            // Si por alguna razón llega un texto ya codificado, intentamos decodificarlo
+            // para evitar doble encode ("%F0%9F..." -> "%25F0%259F...", que puede verse como caracteres raros).
+            let decoded = normalized;
+            if (/%[0-9A-Fa-f]{2}/.test(decoded)) {
+                try {
+                    decoded = decodeURIComponent(decoded);
+                } catch (_) {
+                    // Si no era realmente un URI-encoded válido, lo dejamos tal cual
+                }
+            }
+
+            const encodedMessage = encodeURIComponent(decoded);
+            const cleanPhone = String(phone || '').replace(/\D/g, '');
+            return `https://wa.me/${countryCode}${cleanPhone}?text=${encodedMessage}`;
+        }
+
+        function emojiFromCodepoints(...codepoints) {
+            return String.fromCodePoint(...codepoints);
+        }
+
+        function insertEmojiCp(...codepoints) {
+            const emoji = emojiFromCodepoints(...codepoints);
+            insertEmoji(emoji);
+        }
+
+        function insertEmoji(emoji) {
+            const textarea = document.getElementById('birthday-message');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + emoji + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+            textarea.focus();
+        }
+
+        // Exponer funciones de cumpleaños globalmente
+        window.sendBirthdayMessage = sendBirthdayMessage;
+        window.closeBirthdayModal = closeBirthdayModal;
+        window.confirmSendBirthday = confirmSendBirthday;
+        window.insertEmoji = insertEmoji;
+        window.insertEmojiCp = insertEmojiCp;
+
+        // Load birthdays function
+        async function loadBirthdays() {
+            try {
+                const data = await api.get('/admin/birthdays?days=30');
+                const container = document.getElementById('birthday-list');
+                if (!data || !data.length) {
+                    container.innerHTML = '<p class="text-muted">No hay cumpleaños próximos.</p>';
+                    return;
+                }
+                container.innerHTML = data.map(c => {
+                    // Escapar comillas en nombre para evitar problemas con onclick
+                    const safeName = (c.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    const safePhone = (c.phone || '').replace(/\D/g, '');
+                    // Corregir zona horaria: agregar T12:00:00 para evitar problemas de UTC
+                    const birthdayDate = new Date(c.next_birthday + 'T12:00:00');
+                    return `
+            <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
+                <div>
+                    <span class="name" style="font-weight: 500;">${c.name}</span>
+                    <span class="date" style="color: #888; margin-left: 0.5rem;">${birthdayDate.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                </div>
+                <button class="btn-icon" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="font-size: 1.2rem;">
+                    🎂
+                </button>
+            </div>
+        `;}).join('');
+            } catch (e) {
+                console.error('Error loading birthdays', e);
+                document.getElementById('birthday-list').innerHTML = '<p class="text-muted">Error al cargar cumpleaños.</p>';
+            }
+        }
 
         // Cargar dashboard
         async function loadDashboard() {
@@ -547,25 +708,37 @@
             }
 
             tbody.innerHTML = appointments.map(apt => {
-                const dateStr = formatDateShort(apt.appointment_date);
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, dateStr, (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
-
-                // Si está en esta lista es porque su status es 'scheduled' (según la query)
-                // Mostramos "Pendiente" en amarillo
-                const statusBadge = '<span class="badge badge-warning">Pendiente</span>';
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_sent 
+                    ? `<span class="badge badge-success" style="font-size: 0.65rem;">✓ Enviado</span>` 
+                    : `<span class="badge badge-warning" style="font-size: 0.65rem;">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                
+                const whatsappBtn = waDisabled
+                    ? `<button class="btn-whatsapp disabled" disabled title="WhatsApp deshabilitado">
+                         <i class="fab fa-whatsapp"></i>
+                       </button>`
+                    : `<button class="btn-whatsapp" onclick="resendReminder24h(${apt.id})" title="Enviar recordatorio 24h">
+                         <i class="fab fa-whatsapp"></i>
+                       </button>`;
 
                 return `
                     <tr>
-                        <td>${dateStr} <br> <small>${apt.start_time.slice(0, 5)}</small></td>
-                        <td>${apt.client_name}</td>
                         <td>
-                            ${apt.service_name}
-                            <div style="font-size:0.75rem; margin-top:2px;">${statusBadge}</div>
+                            <div style="font-size: 0.85rem;">${formatDateShort(apt.appointment_date)}</div>
+                            <div style="font-weight: 600; color: var(--gold);">${time}</div>
+                            ${reminderBadge}
                         </td>
                         <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Confirmación">
-                                <i class="fab fa-whatsapp"></i> Confirmar
-                            </a>
+                            <div style="font-weight: 500;">${apt.client_name}</div>
+                            <small class="text-muted">${phone || 'Sin teléfono'}</small>
+                        </td>
+                        <td>${apt.service_name}</td>
+                        <td>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                ${whatsappBtn}
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -582,17 +755,34 @@
             }
 
             tbody.innerHTML = appointments.map(apt => {
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Hoy', (apt.start_time || '').slice(0, 5), apt.service_name, 'reminder');
+                const phone = (apt.client_phone || '').replace(/\D/g, '');
+                const time = (apt.start_time || '').slice(0, 5);
+                const reminderBadge = apt.reminder_2h_sent 
+                    ? `<span class="badge badge-success" style="font-size: 0.65rem;">✓ Enviado</span>` 
+                    : `<span class="badge badge-warning" style="font-size: 0.65rem;">Pendiente</span>`;
+                const waDisabled = apt.whatsapp_enabled === false;
+                
+                const whatsappBtn = waDisabled
+                    ? `<button class="btn-whatsapp disabled" disabled title="WhatsApp deshabilitado">
+                         <i class="fab fa-whatsapp"></i>
+                       </button>`
+                    : `<button class="btn-whatsapp" onclick="resendReminder2h(${apt.id})" title="Enviar recordatorio 2h">
+                         <i class="fab fa-whatsapp"></i>
+                       </button>`;
 
                 return `
                     <tr>
-                        <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
-                        <td>${apt.client_name}</td>
+                        <td style="font-weight: 600; color: var(--gold);">${time}</td>
+                        <td>
+                            <div style="font-weight: 500;">${apt.client_name}</div>
+                            <small class="text-muted">${phone || 'Sin teléfono'}</small>
+                        </td>
                         <td>${apt.service_name}</td>
                         <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Recordatorio">
-                                <i class="fab fa-whatsapp"></i>
-                            </a>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                ${reminderBadge}
+                                ${whatsappBtn}
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -708,6 +898,17 @@
                     <td>${m.remaining_services}/${m.total_services}</td>
                 </tr>
             `).join('');
+        }
+
+        async function resendReminder2h(appointmentId) {
+            try {
+                const data = await api.post(`/admin/appointments/${appointmentId}/send-reminder-2h`, {});
+                alert(data.message || 'Recordatorio 2h enviado');
+                loadDashboard();
+            } catch (e) {
+                console.error('Error enviando recordatorio 2h:', e);
+                alert('Error enviando recordatorio 2h');
+            }
         }
 
         function renderRecentTransactions(transactions) {

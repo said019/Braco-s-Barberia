@@ -187,6 +187,62 @@ router.post('/reset-password', async (req, res, next) => {
     }
 });
 
+// POST /api/admin/change-password - Cambiar contraseña (autenticado)
+router.post('/change-password', authenticateToken, async (req, res, next) => {
+    try {
+        const { current_password, new_password } = req.body;
+        const adminId = req.user.id;
+
+        if (!current_password || !new_password) {
+            return res.status(400).json({ error: 'Contraseña actual y nueva requeridas' });
+        }
+
+        if (new_password.length < 6) {
+            return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres' });
+        }
+
+        // Obtener admin actual
+        const result = await db.query(
+            'SELECT * FROM admin_users WHERE id = $1',
+            [adminId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const admin = result.rows[0];
+
+        // Verificar contraseña actual
+        const validPassword = await bcrypt.compare(current_password, admin.password_hash);
+
+        if (!validPassword) {
+            return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+        }
+
+        // Hashear nueva contraseña
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(new_password, saltRounds);
+
+        // Actualizar contraseña
+        await db.query(
+            'UPDATE admin_users SET password_hash = $1 WHERE id = $2',
+            [passwordHash, adminId]
+        );
+
+        console.log(`[CHANGE PW] Contraseña actualizada para admin: ${admin.username}`);
+
+        res.json({
+            success: true,
+            message: 'Contraseña actualizada correctamente'
+        });
+
+    } catch (error) {
+        console.error('[CHANGE PW] Error:', error);
+        next(error);
+    }
+});
+
 // ============================
 // DASHBOARD
 // ============================
@@ -1421,6 +1477,69 @@ router.post('/appointments/:id/send-reminder', authenticateToken, async (req, re
 
     } catch (error) {
         console.error('[ADMIN] Error en send-reminder:', error);
+        next(error);
+    }
+});
+
+// POST /api/admin/appointments/:id/send-reminder-2h - Enviar recordatorio 2h manualmente
+router.post('/appointments/:id/send-reminder-2h', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Obtener cita con datos del cliente y servicio
+        const result = await db.query(`
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+                   s.name as service_name
+            FROM appointments a
+            JOIN clients c ON a.client_id = c.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Cita no encontrada' });
+        }
+
+        const appointment = result.rows[0];
+
+        // Verificar que el cliente tenga teléfono y WhatsApp habilitado
+        if (!appointment.client_phone) {
+            return res.status(400).json({ success: false, error: 'El cliente no tiene número de teléfono registrado' });
+        }
+
+        if (appointment.whatsapp_enabled === false) {
+            return res.status(400).json({ success: false, error: 'El cliente tiene WhatsApp deshabilitado' });
+        }
+
+        // Enviar recordatorio 2h
+        const whatsappRes = await whatsappService.sendReminder2h({
+            phone: appointment.client_phone,
+            name: appointment.client_name,
+            service: appointment.service_name,
+            time: appointment.start_time.slice(0, 5),
+            code: appointment.checkout_code || '----'
+        });
+
+        if (whatsappRes.success) {
+            // Marcar como enviado
+            await db.query('UPDATE appointments SET reminder_2h_sent = TRUE WHERE id = $1', [id]);
+
+            console.log(`[ADMIN] Recordatorio 2h enviado a ${appointment.client_name}: ${whatsappRes.id}`);
+            res.json({
+                success: true,
+                message: `Recordatorio 2h enviado a ${appointment.client_name}`,
+                sid: whatsappRes.id
+            });
+        } else {
+            console.error(`[ADMIN] Error enviando recordatorio 2h:`, whatsappRes.error);
+            res.status(500).json({
+                success: false,
+                error: whatsappRes.error || 'Error al enviar recordatorio'
+            });
+        }
+
+    } catch (error) {
+        console.error('[ADMIN] Error en send-reminder-2h:', error);
         next(error);
     }
 });

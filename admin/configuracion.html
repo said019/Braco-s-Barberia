@@ -718,20 +718,19 @@
                                 style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: rgba(229, 57, 53, 0.05); border-radius: 8px; border: 1px solid rgba(229, 57, 53, 0.3);">
                                 <div>
                                     <h4
-                                        style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--error); margin-bottom: 0.5rem;">
-                                        <i class="fas fa-exclamation-triangle"
-                                            style="color: var(--error); margin-right: 0.5rem;"></i>
-                                        Zona de Peligro
+                                        style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.5rem;">
+                                        <i class="fas fa-key"
+                                            style="color: var(--gold); margin-right: 0.5rem;"></i>
+                                        Cambiar Contraseña
                                     </h4>
                                     <p
                                         style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.6); margin: 0; max-width: 400px;">
-                                        Acciones destructivas e irreversibles. Ten cuidado.
+                                        Actualiza tu contraseña de acceso al panel de administración.
                                     </p>
                                 </div>
                                 <div>
-                                    <button class="btn" onclick="startFactoryReset()"
-                                        style="background: rgba(229, 57, 53, 0.1); border: 1px solid var(--error); color: var(--error);">
-                                        <i class="fas fa-trash-alt"></i> ELIMINAR TODA LA BASE DE DATOS
+                                    <button class="btn btn-primary" onclick="openChangePasswordModal()">
+                                        <i class="fas fa-lock"></i> Cambiar Contraseña
                                     </button>
                                 </div>
                             </div>
@@ -985,71 +984,92 @@
             6: 'fa-cocktail'      // Sábado - cocktail
         };
 
-        function startFactoryReset() {
-            const title = '⚠️ ZONA DE PELIGRO';
+        function openChangePasswordModal() {
+            const title = '🔐 Cambiar Contraseña';
             const content = `
-                <div style="text-align: center;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #E53935; margin-bottom: 1rem;"></i>
-                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">¿Estás seguro de que quieres eliminar <strong>TODO</strong>?</p>
-                    <div style="background: rgba(229, 57, 53, 0.05); padding: 1rem; border-radius: 8px; text-align: left; margin-bottom: 1rem;">
-                        <p style="margin-bottom: 0.5rem; color: #E53935; font-weight: 600;">Se eliminarán permanentemente:</p>
-                        <ul style="margin-left: 1.5rem; color: #E53935;">
-                            <li>Todos los clientes</li>
-                            <li>Todas las citas</li>
-                            <li>Todas las membresías</li>
-                            <li>Todos los pagos</li>
-                        </ul>
+                <div style="padding: 0.5rem 0;">
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--gold); margin-bottom: 0.5rem;">
+                            Contraseña Actual
+                        </label>
+                        <input type="password" id="current-password" 
+                               style="width: 100%; padding: 0.75rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 6px; color: var(--cream); font-size: 0.9rem;"
+                               placeholder="Ingresa tu contraseña actual">
                     </div>
-                    <p style="font-size: 0.9rem; color: #666;">Esta acción no se puede deshacer.</p>
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--gold); margin-bottom: 0.5rem;">
+                            Nueva Contraseña
+                        </label>
+                        <input type="password" id="new-password" 
+                               style="width: 100%; padding: 0.75rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 6px; color: var(--cream); font-size: 0.9rem;"
+                               placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--gold); margin-bottom: 0.5rem;">
+                            Confirmar Nueva Contraseña
+                        </label>
+                        <input type="password" id="confirm-password" 
+                               style="width: 100%; padding: 0.75rem; background: var(--charcoal-dark); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 6px; color: var(--cream); font-size: 0.9rem;"
+                               placeholder="Repite la nueva contraseña">
+                    </div>
                 </div>
             `;
 
             const footer = `
-                <button class="btn btn-secondary" onclick="document.getElementById('resetModal').remove()">Cancelar</button>
-                <button class="btn btn-primary" onclick="executeFactoryReset()" style="background: #E53935; border-color: #E53935;">
-                    <i class="fas fa-trash-alt"></i> SÍ, ELIMINAR TODO
+                <button class="btn btn-secondary" onclick="document.getElementById('passwordModal').remove()">Cancelar</button>
+                <button class="btn btn-primary" onclick="changePassword()">
+                    <i class="fas fa-save"></i> Guardar
                 </button>
             `;
 
-            showCustomModal('resetModal', title, content, footer);
+            showCustomModal('passwordModal', title, content, footer);
         }
 
-        async function executeFactoryReset() {
-            const modal = document.getElementById('resetModal');
-            if (modal) modal.remove();
+        async function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
 
-            const btn = document.querySelector('button[onclick="startFactoryReset()"]');
-            const originalText = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ELIMINANDO...';
+            // Validaciones
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('Las contraseñas no coinciden', 'error');
+                return;
             }
 
             try {
-                const response = await fetch('/api/system/wipe-database-danger', {
+                const response = await fetch('/api/admin/change-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-                    }
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('✅ BASE DE DATOS LIMPIADA CORRECTAMENTE', 'success');
-                    // Reload to reflect changes
-                    setTimeout(() => window.location.reload(), 2000);
+                    document.getElementById('passwordModal').remove();
+                    showToast('✅ Contraseña actualizada correctamente', 'success');
                 } else {
-                    throw new Error(result.error || 'Error desconocido');
+                    throw new Error(result.error || 'Error al cambiar contraseña');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('❌ Error: ' + error.message, 'error');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }
+                showToast('❌ ' + error.message, 'error');
             }
         }
 

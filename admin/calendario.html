@@ -384,13 +384,14 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            const startingDayOfWeek = firstDay.getDay();
+            // Ajustar para que lunes sea 0, domingo sea 6
+            const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
 
             // Build calendar HTML
             let html = '';
 
-            // Day headers
-            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            // Day headers - Empezando por Lunes
+            const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
             dayNames.forEach(day => {
                 html += `<div class="calendar-day-header">${day}</div>`;
             });
@@ -448,14 +449,17 @@
         // Vista Semanal - Google Calendar Style
         function renderWeekView() {
             const startOfWeek = new Date(currentDate);
-            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+            // Ajustar para que la semana empiece en lunes
+            const dayOfWeek = currentDate.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si es domingo, retroceder 6 días
+            startOfWeek.setDate(currentDate.getDate() + diff);
 
             document.getElementById('calendar-title').textContent =
                 `Semana del ${startOfWeek.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`;
 
             // Generate week header
             let headerHTML = '<div class="gcal-week-header-cell"></div>'; // Empty cell for time column
-            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
             for (let i = 0; i < 7; i++) {
                 const date = addDays(startOfWeek, i);
