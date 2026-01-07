@@ -324,14 +324,14 @@
             // Unpack Data from salesData
             const { daily_sales, services_sales, totals, membership_sales } = salesData;
             
-            // Revenue totals from revenueData
-            const revenueTotals = revenueData || {};
+            // Revenue totals from revenueData.totals (not revenueData directly)
+            const revenueTotals = revenueData?.totals || {};
 
-            // 1. Update Main Cards
-            const revenue = totals?.total_revenue || 0;
-            const transactions = totals?.total_transactions || 0;
-            const avg = totals?.avg_ticket || 0;
-            const membershipSales = revenueTotals.total_memberships || 0;
+            // 1. Update Main Cards - use revenueTotals for consistency
+            const revenue = revenueTotals?.total_revenue || totals?.total_revenue || 0;
+            const transactions = revenueTotals?.total_transactions || totals?.total_transactions || 0;
+            const avg = revenueTotals?.avg_transaction || totals?.avg_ticket || 0;
+            const membershipSales = revenueTotals?.total_memberships || 0;
 
             document.getElementById('total-revenue').textContent = formatCurrency(revenue);
             document.getElementById('total-transactions').textContent = transactions;
@@ -339,9 +339,9 @@
             document.getElementById('membership-sales').textContent = formatCurrency(membershipSales);
 
             // 2. Update Revenue Breakdown
-            document.getElementById('services-revenue').textContent = formatCurrency(revenueTotals.total_services || 0);
-            document.getElementById('memberships-revenue').textContent = formatCurrency(revenueTotals.total_memberships || 0);
-            document.getElementById('products-revenue').textContent = formatCurrency(revenueTotals.total_products || 0);
+            document.getElementById('services-revenue').textContent = formatCurrency(revenueTotals?.total_services || 0);
+            document.getElementById('memberships-revenue').textContent = formatCurrency(revenueTotals?.total_memberships || 0);
+            document.getElementById('products-revenue').textContent = formatCurrency(revenueTotals?.total_products || 0);
 
             // 3. Update Chart
             updateChart(daily_sales);
@@ -383,10 +383,23 @@
                 'transfer': 'Transferencia'
             };
 
-            tbody.innerHTML = sales.map(m => `
+            tbody.innerHTML = sales.map(m => {
+                // Handle date - could be string or Date object
+                let dateStr = '-';
+                if (m.purchase_date) {
+                    const dateVal = typeof m.purchase_date === 'string' 
+                        ? m.purchase_date.split('T')[0] 
+                        : m.purchase_date;
+                    const date = new Date(dateVal + 'T12:00:00');
+                    if (!isNaN(date.getTime())) {
+                        dateStr = date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+                    }
+                }
+                
+                return `
                 <tr>
                     <td>
-                        <strong>${new Date(m.purchase_date + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+                        <strong>${dateStr}</strong>
                     </td>
                     <td>${m.client_name}</td>
                     <td>
@@ -395,7 +408,8 @@
                     <td>${paymentMethods[m.payment_method] || m.payment_method || 'N/A'}</td>
                     <td class="text-right text-gold"><strong>${formatCurrency(m.payment_amount || m.membership_price)}</strong></td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function updateChart(dailyData) {
