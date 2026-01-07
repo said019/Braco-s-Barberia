@@ -227,7 +227,7 @@
                             <table class="data-table" id="reminders-24h">
                                 <thead>
                                     <tr>
-                                        <th>Hora</th>
+                                        <th>Fecha/Hora</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
                                         <th>WhatsApp</th>
@@ -250,7 +250,7 @@
                             <table class="data-table" id="reminders-2h">
                                 <thead>
                                     <tr>
-                                        <th>Hora</th>
+                                        <th>Fecha/Hora</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
                                         <th>WhatsApp</th>
@@ -746,77 +746,6 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             }).join('');
         }
 
-        function renderReminders2h(appointments) {
-            const tbody = document.querySelector('#reminders-2h tbody');
-            if (!tbody) return;
-
-            if (appointments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas próximas (2h)</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = appointments.map(apt => {
-                const phone = (apt.client_phone || '').replace(/\D/g, '');
-                const time = (apt.start_time || '').slice(0, 5);
-                const reminderBadge = apt.reminder_2h_sent 
-                    ? `<span class="badge badge-success" style="font-size: 0.65rem;">✓ Enviado</span>` 
-                    : `<span class="badge badge-warning" style="font-size: 0.65rem;">Pendiente</span>`;
-                const waDisabled = apt.whatsapp_enabled === false;
-                
-                const whatsappBtn = waDisabled
-                    ? `<button class="btn-whatsapp disabled" disabled title="WhatsApp deshabilitado">
-                         <i class="fab fa-whatsapp"></i>
-                       </button>`
-                    : `<button class="btn-whatsapp" onclick="resendReminder2h(${apt.id})" title="Enviar recordatorio 2h">
-                         <i class="fab fa-whatsapp"></i>
-                       </button>`;
-
-                return `
-                    <tr>
-                        <td style="font-weight: 600; color: var(--gold);">${time}</td>
-                        <td>
-                            <div style="font-weight: 500;">${apt.client_name}</div>
-                            <small class="text-muted">${phone || 'Sin teléfono'}</small>
-                        </td>
-                        <td>${apt.service_name}</td>
-                        <td>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                ${reminderBadge}
-                                ${whatsappBtn}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderReminders24h(appointments) {
-            const tbody = document.querySelector('#reminders-24h tbody');
-            if (!tbody) return;
-
-            if (appointments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas para mañana</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = appointments.map(apt => {
-                const whatsappLink = getWhatsAppLink(apt.client_phone, apt.client_name, 'Mañana', (apt.start_time || '').slice(0, 5), apt.service_name, 'confirm');
-
-                return `
-                    <tr>
-                        <td><strong>${apt.start_time.slice(0, 5)}</strong></td>
-                        <td>${apt.client_name}</td>
-                        <td>${apt.service_name}</td>
-                        <td>
-                            <a href="${whatsappLink}" target="_blank" class="btn btn-sm" style="background: #25D366; color: white; padding: 4px 10px;" title="WhatsApp Recordatorio">
-                                <i class="fab fa-whatsapp"></i>
-                            </a>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
         function renderReminders24h(appointments) {
             const tbody = document.querySelector('#reminders-24h tbody');
             if (!tbody) return;
@@ -832,7 +761,10 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
                 return `
                     <tr>
-                        <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
+                        <td>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${formatDateShort(apt.appointment_date)}</div>
+                            <strong style="color: var(--gold);">${(apt.start_time || '').slice(0, 5)}</strong>
+                        </td>
                         <td>${apt.client_name}</td>
                         <td>
                             ${apt.service_name}
@@ -867,7 +799,10 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
                 return `
                     <tr>
-                        <td><strong>${(apt.start_time || '').slice(0, 5)}</strong></td>
+                        <td>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${formatDateShort(apt.appointment_date)}</div>
+                            <strong style="color: var(--gold);">${(apt.start_time || '').slice(0, 5)}</strong>
+                        </td>
                         <td>
                             ${apt.client_name}
                             <div style="font-size:0.75rem;">${statusBadge}</div>
