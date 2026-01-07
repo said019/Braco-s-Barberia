@@ -567,16 +567,18 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     // Escapar comillas en nombre para evitar problemas con onclick
                     const safeName = (c.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
                     const safePhone = (c.phone || '').replace(/\D/g, '');
-                    // Corregir zona horaria: agregar T12:00:00 para evitar problemas de UTC
-                    const birthdayDate = new Date(c.next_birthday + 'T12:00:00');
+                    // Parsear fecha sin problemas de zona horaria
+                    const dateStr = (c.next_birthday || '').split('T')[0];
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    const birthdayDate = new Date(year, month - 1, day);
                     return `
             <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
                 <div>
                     <span class="name" style="font-weight: 500;">${c.name}</span>
-                    <span class="date" style="color: #888; margin-left: 0.5rem;">${birthdayDate.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                    <span class="date" style="color: #888; margin-left: 0.5rem;">${birthdayDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
                 </div>
-                <button class="btn-icon" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="font-size: 1.2rem;">
-                    🎂
+                <button class="btn-whatsapp" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación">
+                    <i class="fas fa-birthday-cake"></i>
                 </button>
             </div>
         `;}).join('');
