@@ -384,13 +384,17 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            const startingDayOfWeek = firstDay.getDay();
+            
+            // Convertir día de semana: JS usa 0=Dom, queremos 0=Lun
+            // Lunes=0, Martes=1, ..., Domingo=6
+            const jsDay = firstDay.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+            const startingDayOfWeek = jsDay === 0 ? 6 : jsDay - 1;
 
             // Build calendar HTML
             let html = '';
 
-            // Day headers
-            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            // Day headers - Semana empieza en Lunes
+            const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
             dayNames.forEach(day => {
                 html += `<div class="calendar-day-header">${day}</div>`;
             });
@@ -448,14 +452,17 @@
         // Vista Semanal - Google Calendar Style
         function renderWeekView() {
             const startOfWeek = new Date(currentDate);
-            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+            // Calcular el lunes de esta semana
+            const jsDay = currentDate.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
+            const daysToMonday = jsDay === 0 ? -6 : 1 - jsDay;
+            startOfWeek.setDate(currentDate.getDate() + daysToMonday);
 
             document.getElementById('calendar-title').textContent =
                 `Semana del ${startOfWeek.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`;
 
-            // Generate week header
+            // Generate week header - Lun a Dom
             let headerHTML = '<div class="gcal-week-header-cell"></div>'; // Empty cell for time column
-            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
             for (let i = 0; i < 7; i++) {
                 const date = addDays(startOfWeek, i);
