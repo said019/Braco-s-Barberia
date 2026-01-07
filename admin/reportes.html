@@ -320,9 +320,12 @@
             }
         }
 
-        function updateDashboard(data) {
-            // Unpack Data
-            const { daily_sales, services_sales, totals, membership_sales } = data;
+        function updateDashboard(salesData, revenueData, servicesData) {
+            // Unpack Data from salesData
+            const { daily_sales, services_sales, totals, membership_sales } = salesData;
+            
+            // Revenue totals from revenueData
+            const revenueTotals = revenueData || {};
 
             // 1. Update Main Cards
             const revenue = totals?.total_revenue || 0;
