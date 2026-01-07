@@ -2240,8 +2240,8 @@ router.get('/reports/sales', authenticateToken, async (req, res, next) => {
              FROM client_memberships cm
              JOIN clients c ON cm.client_id = c.id
              JOIN membership_types mt ON cm.membership_type_id = mt.id
-             WHERE DATE(cm.created_at) BETWEEN $1 AND $2
-             ORDER BY cm.created_at DESC`,
+             WHERE cm.purchase_date BETWEEN $1 AND $2
+             ORDER BY cm.purchase_date DESC`,
             [start_date || '2024-01-01', end_date || new Date().toISOString().split('T')[0]]
         );
 

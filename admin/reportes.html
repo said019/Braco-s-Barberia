@@ -386,7 +386,7 @@
             tbody.innerHTML = sales.map(m => `
                 <tr>
                     <td>
-                        <strong>${new Date(m.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+                        <strong>${new Date(m.purchase_date + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
                     </td>
                     <td>${m.client_name}</td>
                     <td>
