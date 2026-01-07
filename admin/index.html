@@ -159,12 +159,12 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
 
-                    <!-- Solicitudes Pendientes (Nuevas) -->
-                    <div class="card" id="pending-requests-card" style="display: none;">
+                    <!-- Citas Pendientes (Nuevas) -->
+                    <div class="card" id="pending-requests-card" >
                         <div class="card-header" style="border-bottom: 2px solid var(--warning);">
                             <div>
-                                <h3 class="card-title">Solicitudes Pendientes</h3>
-                                <p class="card-subtitle">Nuevos clientes / Por aprobar</p>
+                                <h3 class="card-title">Citas Pendientes</h3>
+                                <p class="card-subtitle">Nuevos usuarios que depositaron</p>
                             </div>
                             <span class="badge badge-warning" id="pending-requests-count">0</span>
                         </div>
@@ -605,7 +605,7 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                 // Cargar cumpleaños (sección lateral)
                 loadBirthdays();
 
-                // Fila 1: Solicitudes Pendientes | Citas por Confirmar
+                // Fila 1: Citas Pendientes | Citas por Confirmar
                 renderPendingRequests(data.pending_requests || []);
                 renderPendingConfirmation(data.pending_confirmation || []);
 
@@ -659,11 +659,10 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             if (countBadge) countBadge.textContent = appointments.length;
 
             if (appointments.length === 0) {
-                card.style.display = 'none';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas pendientes</td></tr>';
                 return;
             }
 
-            card.style.display = 'block';
 
             tbody.innerHTML = appointments.map(apt => {
                 const dateStr = formatDateShort(apt.appointment_date);

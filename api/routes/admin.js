@@ -251,7 +251,16 @@ router.post('/change-password', authenticateToken, async (req, res, next) => {
 // GET /api/admin/dashboard
 router.get('/dashboard', authenticateToken, async (req, res, next) => {
     try {
-        const today = new Date().toISOString().split('T')[0];
+        // Usar zona horaria de México para calcular "hoy"
+        const mexicoDate = new Date().toLocaleString('en-CA', { timeZone: 'America/Mexico_City' }).split(',')[0];
+        const today = mexicoDate; // Formato YYYY-MM-DD
+        
+        // Calcular mañana
+        const tomorrowDate = new Date();
+        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+        const tomorrow = tomorrowDate.toLocaleString('en-CA', { timeZone: 'America/Mexico_City' }).split(',')[0];
+
+        console.log('[DASHBOARD] Fecha México - Hoy:', today, 'Mañana:', tomorrow);
 
         // Stats
         const appointmentsToday = await db.query(
@@ -299,8 +308,9 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN client_types ct ON c.client_type_id = ct.id
              JOIN services s ON a.service_id = s.id
              WHERE a.status = 'scheduled'
-             AND a.appointment_date > CURRENT_DATE + INTERVAL '1 day'
-             ORDER BY a.appointment_date, a.start_time LIMIT 10`
+             AND a.appointment_date > $1
+             ORDER BY a.appointment_date, a.start_time LIMIT 10`,
+            [tomorrow]
         );
 
         // 2. Recordatorios 24h (Citas para MAÑANA)
@@ -312,9 +322,10 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
              JOIN clients c ON a.client_id = c.id
              JOIN client_types ct ON c.client_type_id = ct.id
              JOIN services s ON a.service_id = s.id
-             WHERE a.appointment_date = CURRENT_DATE + INTERVAL '1 day'
+             WHERE a.appointment_date = $1
              AND a.status IN ('scheduled', 'confirmed')
-             ORDER BY a.start_time ASC`
+             ORDER BY a.start_time ASC`,
+            [tomorrow]
         );
 
         // 3. Recordatorios 2h (Citas HOY - todas las citas del día)
