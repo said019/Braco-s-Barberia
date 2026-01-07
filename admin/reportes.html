@@ -349,12 +349,19 @@
             // 4. Update Top Services (all services, showing membership usage)
             const tbody = document.getElementById('top-services-body');
             const allServices = (services_sales || []).filter(s => parseInt(s.count) > 0);
-            tbody.innerHTML = allServices.map(s => {
+            
+            let totalServices = 0;
+            let totalAmount = 0;
+            
+            let servicesHtml = allServices.map(s => {
                 const membershipCount = parseInt(s.membership_usage_count) || 0;
-                const paidCount = parseInt(s.count) - membershipCount;
+                const count = parseInt(s.count) || 0;
                 const total = parseFloat(s.total) || 0;
                 
-                let subtitle = `${s.count} servicios`;
+                totalServices += count;
+                totalAmount += total;
+                
+                let subtitle = `${count} servicios`;
                 if (membershipCount > 0) {
                     subtitle += ` (${membershipCount} con membresía)`;
                 }
@@ -370,9 +377,20 @@
                 `;
             }).join('');
 
-            if (allServices.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No hay servicios en este período</td></tr>';
+            // Add total row
+            if (allServices.length > 0) {
+                servicesHtml += `
+                <tr style="border-top: 2px solid var(--gold); background: rgba(196, 163, 90, 0.1);">
+                    <td>
+                        <div class="font-medium" style="color: var(--gold);">TOTAL</div>
+                        <div class="text-sm text-muted">${totalServices} servicios realizados</div>
+                    </td>
+                    <td class="text-right font-medium" style="color: var(--gold); font-size: 1.1rem;">${formatCurrency(totalAmount)}</td>
+                </tr>
+                `;
             }
+
+            tbody.innerHTML = servicesHtml || '<tr><td colspan="2" class="text-center text-muted p-3">No hay servicios en este período</td></tr>';
 
             // 4. Update Membership Sales
             renderMembershipSales(membership_sales || []);
