@@ -5641,14 +5641,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     td > .actions {
         display: flex !important;
         flex-wrap: wrap !important;
-        justify-content: flex-start !important;
+        justify-content: flex-end !important;
         align-items: center !important;
         gap: 0.5rem !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow: visible !important;
         padding: 0 !important;
         margin: 0 !important;
     }
@@ -5821,7 +5821,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
 
     /* 3. TD - flex con wrap para ajuste */
@@ -5832,7 +5832,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         align-items: flex-start !important;
         width: 100% !important;
         max-width: 100% !important;
-        overflow: hidden !important;
+        overflow: visible !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
     }
@@ -5856,8 +5856,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         white-space: normal !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
         line-height: 1.3 !important;
     }
 
@@ -5871,7 +5871,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         max-width: 100% !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
 
     /* 6. Códigos y textos largos (FOLIO, IDs) */
@@ -5891,5 +5891,76 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     table * {
         max-width: 100% !important;
         box-sizing: border-box !important;
+    }
+
+    /* =====================================================
+       FIX SERVICIOS MÓVIL - Descripciones y Botones
+       ===================================================== */
+    
+    /* Descripción del servicio - mostrar completa */
+    #services-table-body td:first-child .text-sm,
+    #services-table-body td:first-child .text-muted,
+    .data-table td:first-child .text-sm,
+    .data-table td:first-child .text-muted {
+        display: block !important;
+        width: 100% !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        line-height: 1.5 !important;
+        margin-top: 0.5rem !important;
+        color: rgba(245, 243, 238, 0.7) !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Acciones de servicios - botones visibles */
+    #services-table-body td:last-child,
+    #services-table-body td[data-label=""] {
+        display: block !important;
+        overflow: visible !important;
+        padding-top: 1rem !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
+    }
+
+    #services-table-body .actions,
+    #services-table-body td .actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        overflow: visible !important;
+        justify-content: flex-end !important;
+    }
+
+    #services-table-body .actions .btn-icon {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex: 0 0 auto !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(196, 163, 90, 0.15) !important;
+        border: 1px solid rgba(196, 163, 90, 0.4) !important;
+        border-radius: 10px !important;
+        color: #c4a35a !important;
+    }
+
+    #services-table-body .actions .btn-icon i {
+        font-size: 1.1rem !important;
+        color: #c4a35a !important;
+    }
+
+    #services-table-body .actions .btn-icon.delete {
+        background: rgba(229, 57, 53, 0.15) !important;
+        border-color: rgba(229, 57, 53, 0.4) !important;
+        color: #e53935 !important;
+    }
+
+    #services-table-body .actions .btn-icon.delete i {
+        color: #e53935 !important;
     }
 }
