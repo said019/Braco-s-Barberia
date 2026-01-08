@@ -5964,3 +5964,106 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         color: #e53935 !important;
     }
 }
+
+/* =====================================================
+   FIX URGENTE: BOTONES DE SERVICIOS EN MÓVIL
+   Máxima prioridad - sobreescribir todo
+   ===================================================== */
+@media screen and (max-width: 768px) {
+    /* Forzar que la fila de acciones sea visible */
+    #services-table-body tr td:last-child {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 100% !important;
+        padding: 1rem 0 !important;
+        margin-top: 0.75rem !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.25) !important;
+        border-bottom: none !important;
+        overflow: visible !important;
+    }
+
+    /* Container de acciones */
+    #services-table-body tr td:last-child .actions,
+    #services-table-body tr td:last-child > .actions,
+    #services-table-body .actions {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* Cada botón individual */
+    #services-table-body .actions button,
+    #services-table-body .actions .btn-icon,
+    #services-table-body .actions button.btn-icon,
+    #services-table-body td .actions button,
+    #services-table-body td .actions .btn-icon {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex: 0 0 auto !important;
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        min-height: 52px !important;
+        max-width: 52px !important;
+        max-height: 52px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(196, 163, 90, 0.2) !important;
+        border: 2px solid rgba(196, 163, 90, 0.5) !important;
+        border-radius: 12px !important;
+        color: #c4a35a !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+
+    /* Iconos dentro de botones */
+    #services-table-body .actions button i,
+    #services-table-body .actions .btn-icon i {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 1.2rem !important;
+        color: #c4a35a !important;
+        pointer-events: none !important;
+    }
+
+    /* Botón eliminar - estilo rojo */
+    #services-table-body .actions button.delete,
+    #services-table-body .actions .btn-icon.delete {
+        background: rgba(229, 57, 53, 0.2) !important;
+        border-color: rgba(229, 57, 53, 0.5) !important;
+    }
+
+    #services-table-body .actions button.delete i,
+    #services-table-body .actions .btn-icon.delete i {
+        color: #e53935 !important;
+    }
+
+    /* Hover states */
+    #services-table-body .actions button:hover,
+    #services-table-body .actions .btn-icon:hover {
+        background: rgba(196, 163, 90, 0.35) !important;
+        border-color: #c4a35a !important;
+        transform: scale(1.05) !important;
+    }
+
+    #services-table-body .actions button.delete:hover {
+        background: rgba(229, 57, 53, 0.35) !important;
+        border-color: #e53935 !important;
+    }
+}
