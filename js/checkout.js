@@ -283,10 +283,15 @@ function renderProducts() {
         const isDisabled = product.stock <= 0;
         const currentQty = state.cart[product.id] || 0;
 
+        // Mostrar imagen si existe, sino mostrar icono
+        const imageHtml = product.image_url
+            ? `<img src="${product.image_url}" alt="${product.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'fas fa-pump-soap\\'></i>';">`
+            : `<i class="fas fa-pump-soap"></i>`;
+
         return `
             <div class="product-checkout-card ${stockClass}" data-id="${product.id}">
                 <div class="product-checkout-image">
-                    <i class="fas fa-pump-soap"></i>
+                    ${imageHtml}
                 </div>
                 <div class="product-checkout-info">
                     <h4>${product.name}</h4>

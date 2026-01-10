@@ -21,30 +21,31 @@ export const Product = {
 
   // Crear producto (admin)
   async create(productData) {
-    const { name, description, price, stock } = productData;
+    const { name, description, price, stock, image_url } = productData;
     const sql = `
-      INSERT INTO products (name, description, price, stock)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO products (name, description, price, stock, image_url)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const result = await query(sql, [name, description, price, stock || 0]);
+    const result = await query(sql, [name, description, price, stock || 0, image_url || null]);
     return result.rows[0];
   },
 
   // Actualizar producto
   async update(id, productData) {
-    const { name, description, price, stock, is_active } = productData;
+    const { name, description, price, stock, is_active, image_url } = productData;
     const sql = `
       UPDATE products
       SET name = COALESCE($2, name),
           description = COALESCE($3, description),
           price = COALESCE($4, price),
           stock = COALESCE($5, stock),
-          is_active = COALESCE($6, is_active)
+          is_active = COALESCE($6, is_active),
+          image_url = COALESCE($7, image_url)
       WHERE id = $1
       RETURNING *
     `;
-    const result = await query(sql, [id, name, description, price, stock, is_active]);
+    const result = await query(sql, [id, name, description, price, stock, is_active, image_url]);
     return result.rows[0];
   },
 
