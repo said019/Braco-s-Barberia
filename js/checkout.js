@@ -266,20 +266,44 @@ function showCheckoutScreen() {
 // RENDERIZAR PRODUCTOS
 // ============================================================================
 function renderProducts() {
-    elements.productsGrid.innerHTML = state.products.map(product => `
-        <div class="product-checkout-card" data-id="${product.id}">
-            <div class="product-checkout-info">
-                <h4>${product.name}</h4>
-                <p>${product.description}</p>
-                <span class="product-price">$${product.price}</span>
+    // Si no hay productos, mostrar mensaje
+    if (!state.products || state.products.length === 0) {
+        elements.productsGrid.innerHTML = `
+            <div class="no-products-message">
+                <i class="fas fa-box-open"></i>
+                <p>No hay productos disponibles en este momento</p>
             </div>
-            <div class="product-quantity">
-                <button class="qty-btn qty-minus" data-id="${product.id}">−</button>
-                <span class="qty-display" id="qty-${product.id}">0</span>
-                <button class="qty-btn qty-plus" data-id="${product.id}">+</button>
+        `;
+        return;
+    }
+
+    elements.productsGrid.innerHTML = state.products.map(product => {
+        const stockClass = product.stock <= 0 ? 'out-of-stock' : product.stock <= 3 ? 'low-stock' : '';
+        const stockText = product.stock <= 0 ? 'Agotado' : product.stock <= 3 ? `¡Solo ${product.stock}!` : `${product.stock} disponibles`;
+        const isDisabled = product.stock <= 0;
+        const currentQty = state.cart[product.id] || 0;
+
+        return `
+            <div class="product-checkout-card ${stockClass}" data-id="${product.id}">
+                <div class="product-checkout-image">
+                    <i class="fas fa-pump-soap"></i>
+                </div>
+                <div class="product-checkout-info">
+                    <h4>${product.name}</h4>
+                    <p>${product.description || 'Producto profesional'}</p>
+                    <div class="product-meta">
+                        <span class="product-price">$${product.price}</span>
+                        <span class="product-stock ${stockClass}">${stockText}</span>
+                    </div>
+                </div>
+                <div class="product-quantity">
+                    <button class="qty-btn qty-minus" data-id="${product.id}" ${currentQty <= 0 ? 'disabled' : ''}>−</button>
+                    <span class="qty-display" id="qty-${product.id}">${currentQty}</span>
+                    <button class="qty-btn qty-plus" data-id="${product.id}" ${isDisabled || currentQty >= product.stock ? 'disabled' : ''}>+</button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Event listeners
     document.querySelectorAll('.qty-minus').forEach(btn => {
