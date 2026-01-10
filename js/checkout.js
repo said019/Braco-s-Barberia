@@ -8,7 +8,8 @@ const state = {
     checkoutData: null,
     clientMemberships: [],
     products: [],
-    cart: {},
+    cart: {},           // Carrito para checkout con cita
+    shopCart: {},       // Carrito para compra directa de productos
     useMembership: false,
     paymentMethod: 'efectivo'
 };
@@ -19,8 +20,12 @@ const elements = {
     codeForm: document.getElementById('code-form'),
     codeDigits: document.querySelectorAll('.code-digit'),
     productsGrid: document.getElementById('products-grid'),
+    shopProductsGrid: document.getElementById('shop-products-grid'),
+    shopCartSummary: document.getElementById('shop-cart-summary'),
     useMembershipCheckbox: document.getElementById('use-membership'),
-    btnCompleteCheckout: document.getElementById('btn-complete-checkout')
+    btnCompleteCheckout: document.getElementById('btn-complete-checkout'),
+    btnClearCart: document.getElementById('btn-clear-cart'),
+    btnCheckoutProducts: document.getElementById('btn-checkout-products')
 };
 
 // ============================================================================
@@ -29,8 +34,186 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     setupCodeInputs();
     setupEventListeners();
-    loadProducts();
+    loadAndDisplayShopProducts();
 });
+
+// ============================================================================
+// CARGAR Y MOSTRAR PRODUCTOS EN LA TIENDA
+// ============================================================================
+async function loadAndDisplayShopProducts() {
+    try {
+        state.products = await API.getProducts();
+        renderShopProducts();
+    } catch (error) {
+        console.error('Error loading products:', error);
+        // Productos mock en caso de error
+        state.products = [
+            { id: 1, name: 'Aceite para Barba Premium', description: 'Aceite natural para el cuidado y brillo de tu barba. 30ml', price: 450, stock: 10 },
+            { id: 2, name: 'Cera Moldeadora Ultra-Hold', description: 'Máxima fijación sin residuos. 85g', price: 380, stock: 15 },
+            { id: 3, name: 'Shampoo para Barba', description: 'Limpieza profunda y suavidad. 250ml', price: 320, stock: 8 },
+            { id: 4, name: 'Bálsamo Acondicionador', description: 'Hidratación y control del frizz. 100ml', price: 280, stock: 12 }
+        ];
+        renderShopProducts();
+    }
+}
+
+// ============================================================================
+// RENDERIZAR PRODUCTOS DE LA TIENDA
+// ============================================================================
+function renderShopProducts() {
+    if (!elements.shopProductsGrid) return;
+
+    if (state.products.length === 0) {
+        elements.shopProductsGrid.innerHTML = `
+            <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <p>No hay productos disponibles en este momento</p>
+            </div>
+        `;
+        return;
+    }
+
+    elements.shopProductsGrid.innerHTML = state.products.map(product => {
+        const stockClass = product.stock <= 0 ? 'out' : product.stock <= 3 ? 'low' : '';
+        const stockText = product.stock <= 0 ? 'Agotado' : product.stock <= 3 ? `¡Solo ${product.stock} disponibles!` : `${product.stock} disponibles`;
+        const isDisabled = product.stock <= 0;
+        const currentQty = state.shopCart[product.id] || 0;
+
+        return `
+            <div class="shop-product-card" data-id="${product.id}">
+                <div class="shop-product-image">
+                    <i class="fas fa-pump-soap"></i>
+                </div>
+                <div class="shop-product-info">
+                    <h4>${product.name}</h4>
+                    <p>${product.description || ''}</p>
+                    <div class="shop-product-footer">
+                        <span class="shop-product-price">$${product.price}</span>
+                        <span class="shop-product-stock ${stockClass}">${stockText}</span>
+                    </div>
+                </div>
+                <div class="shop-product-actions">
+                    <div class="shop-qty-controls">
+                        <button class="shop-qty-btn shop-qty-minus" data-id="${product.id}" ${currentQty <= 0 ? 'disabled' : ''}>−</button>
+                        <span class="shop-qty-display" id="shop-qty-${product.id}">${currentQty}</span>
+                        <button class="shop-qty-btn shop-qty-plus" data-id="${product.id}" ${isDisabled || currentQty >= product.stock ? 'disabled' : ''}>+</button>
+                    </div>
+                    <button class="btn-add-cart" data-id="${product.id}" ${isDisabled ? 'disabled' : ''}>
+                        ${currentQty > 0 ? 'En carrito' : 'Agregar'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Event listeners para controles de cantidad
+    document.querySelectorAll('.shop-qty-minus').forEach(btn => {
+        btn.addEventListener('click', () => updateShopCartQuantity(parseInt(btn.dataset.id), -1));
+    });
+
+    document.querySelectorAll('.shop-qty-plus').forEach(btn => {
+        btn.addEventListener('click', () => updateShopCartQuantity(parseInt(btn.dataset.id), 1));
+    });
+
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const productId = parseInt(btn.dataset.id);
+            if (!state.shopCart[productId]) {
+                updateShopCartQuantity(productId, 1);
+            }
+        });
+    });
+}
+
+// ============================================================================
+// ACTUALIZAR CANTIDAD EN CARRITO DE TIENDA
+// ============================================================================
+function updateShopCartQuantity(productId, change) {
+    const product = state.products.find(p => p.id === productId);
+    if (!product) return;
+
+    const currentQty = state.shopCart[productId] || 0;
+    const newQty = Math.max(0, Math.min(product.stock, currentQty + change));
+
+    if (newQty === 0) {
+        delete state.shopCart[productId];
+    } else {
+        state.shopCart[productId] = newQty;
+    }
+
+    // Actualizar display
+    const qtyDisplay = document.getElementById(`shop-qty-${productId}`);
+    if (qtyDisplay) qtyDisplay.textContent = newQty;
+
+    // Actualizar botones
+    const minusBtn = document.querySelector(`.shop-qty-minus[data-id="${productId}"]`);
+    const plusBtn = document.querySelector(`.shop-qty-plus[data-id="${productId}"]`);
+    const addBtn = document.querySelector(`.btn-add-cart[data-id="${productId}"]`);
+
+    if (minusBtn) minusBtn.disabled = newQty <= 0;
+    if (plusBtn) plusBtn.disabled = newQty >= product.stock;
+    if (addBtn) addBtn.textContent = newQty > 0 ? 'En carrito' : 'Agregar';
+
+    // Actualizar resumen del carrito
+    updateShopCartSummary();
+}
+
+// ============================================================================
+// ACTUALIZAR RESUMEN DEL CARRITO DE TIENDA
+// ============================================================================
+function updateShopCartSummary() {
+    const cartSummary = elements.shopCartSummary;
+    if (!cartSummary) return;
+
+    const cartItems = Object.entries(state.shopCart);
+
+    if (cartItems.length === 0) {
+        cartSummary.style.display = 'none';
+        return;
+    }
+
+    cartSummary.style.display = 'block';
+
+    // Calcular totales
+    const totalItems = cartItems.reduce((sum, [, qty]) => sum + qty, 0);
+    const totalAmount = cartItems.reduce((sum, [id, qty]) => {
+        const product = state.products.find(p => p.id == id);
+        return sum + (product ? product.price * qty : 0);
+    }, 0);
+
+    // Actualizar conteo
+    document.getElementById('cart-items-count').textContent = `${totalItems} producto${totalItems > 1 ? 's' : ''}`;
+    document.getElementById('cart-total-amount').textContent = `$${totalAmount}`;
+
+    // Renderizar lista de productos
+    const cartItemsList = document.getElementById('cart-items-list');
+    cartItemsList.innerHTML = cartItems.map(([id, qty]) => {
+        const product = state.products.find(p => p.id == id);
+        if (!product) return '';
+        return `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <span class="cart-item-name">${product.name}</span>
+                    <span class="cart-item-qty">x${qty}</span>
+                </div>
+                <span class="cart-item-price">$${product.price * qty}</span>
+                <button class="cart-item-remove" data-id="${id}" title="Eliminar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    // Event listeners para eliminar productos
+    document.querySelectorAll('.cart-item-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const productId = parseInt(btn.dataset.id);
+            delete state.shopCart[productId];
+            renderShopProducts();
+            updateShopCartSummary();
+        });
+    });
+}
 
 // ============================================================================
 // CONFIGURAR INPUTS DE CÓDIGO
@@ -101,6 +284,75 @@ function setupEventListeners() {
             await completeCheckout();
         });
     }
+
+    // Botón vaciar carrito
+    if (elements.btnClearCart) {
+        elements.btnClearCart.addEventListener('click', () => {
+            state.shopCart = {};
+            renderShopProducts();
+            updateShopCartSummary();
+        });
+    }
+
+    // Botón comprar productos (sin cita)
+    if (elements.btnCheckoutProducts) {
+        elements.btnCheckoutProducts.addEventListener('click', () => {
+            showProductOnlyCheckout();
+        });
+    }
+}
+
+// ============================================================================
+// MOSTRAR CHECKOUT SOLO PRODUCTOS (SIN CITA)
+// ============================================================================
+function showProductOnlyCheckout() {
+    const totalItems = Object.values(state.shopCart).reduce((sum, qty) => sum + qty, 0);
+    if (totalItems === 0) {
+        showToast('Agrega productos al carrito primero', 'warning');
+        return;
+    }
+
+    // Transferir productos del carrito de tienda al carrito del checkout
+    state.cart = { ...state.shopCart };
+
+    // Crear datos de checkout sin cita
+    state.checkoutData = {
+        id: null,
+        checkout_code: 'VENTA',
+        client_id: null,
+        client_name: 'Venta Directa',
+        service_id: null,
+        service_name: 'Solo Productos',
+        service_price: 0,
+        appointment_date: new Date().toISOString().split('T')[0],
+        start_time: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+        status: 'products_only'
+    };
+
+    // Ocultar sección de tienda y código
+    document.getElementById('shop-products').style.display = 'none';
+    document.querySelector('.checkout-divider').style.display = 'none';
+    document.getElementById('step-code').classList.add('hidden');
+
+    // Mostrar checkout
+    document.getElementById('step-checkout').classList.remove('hidden');
+
+    // Ocultar sección de membresía
+    document.getElementById('membership-section').style.display = 'none';
+
+    // Llenar información
+    document.getElementById('display-code').textContent = 'VENTA';
+    document.getElementById('client-name').textContent = 'Venta Directa';
+    document.getElementById('service-name').textContent = 'Solo Productos';
+    document.getElementById('appointment-date').textContent = formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('appointment-time').textContent = state.checkoutData.start_time;
+
+    // Renderizar productos seleccionados
+    renderProducts();
+    updateSummary();
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============================================================================
@@ -238,9 +490,18 @@ async function loadProducts() {
 // MOSTRAR PANTALLA DE CHECKOUT
 // ============================================================================
 function showCheckoutScreen() {
-    // Ocultar código, mostrar checkout
+    // Ocultar sección de tienda, divisor y código
+    const shopSection = document.getElementById('shop-products');
+    const divider = document.querySelector('.checkout-divider');
+    if (shopSection) shopSection.style.display = 'none';
+    if (divider) divider.style.display = 'none';
     document.getElementById('step-code').classList.add('hidden');
     document.getElementById('step-checkout').classList.remove('hidden');
+
+    // Transferir productos del carrito de tienda al carrito del checkout
+    if (Object.keys(state.shopCart).length > 0) {
+        state.cart = { ...state.shopCart };
+    }
 
     // Llenar información
     document.getElementById('display-code').textContent = state.checkoutCode;
