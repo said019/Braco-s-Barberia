@@ -104,13 +104,13 @@ function setupEventListeners() {
 }
 
 // ============================================================================
-// BUSCAR CHECKOUT POR CÓDIGO
+// BUSCAR CITA POR CÓDIGO DE CLIENTE
 // ============================================================================
 async function searchCheckout() {
     const code = Array.from(elements.codeDigits).map(i => i.value).join('');
 
     if (code.length !== 4) {
-        showToast('Ingresa los 4 dígitos del código', 'error');
+        showToast('Ingresa los 4 dígitos de tu código de cliente', 'error');
         return;
     }
 
@@ -123,11 +123,11 @@ async function searchCheckout() {
     btn.textContent = 'Buscando...';
 
     try {
-        // Buscar checkout (simulación - ajustar cuando el endpoint esté listo)
+        // Buscar cita de hoy por código de cliente
         const checkoutData = await getCheckoutData(code);
 
         if (!checkoutData) {
-            throw new Error('Código no encontrado');
+            throw new Error('No se encontró ninguna cita pendiente con tu código de cliente');
         }
 
         state.checkoutData = checkoutData;

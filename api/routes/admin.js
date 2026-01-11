@@ -254,7 +254,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         // Usar zona horaria de México para calcular "hoy"
         const mexicoDate = new Date().toLocaleString('en-CA', { timeZone: 'America/Mexico_City' }).split(',')[0];
         const today = mexicoDate; // Formato YYYY-MM-DD
-        
+
         // Calcular mañana
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
@@ -1015,7 +1015,7 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
                     service: service.name,
                     date: formattedDate,
                     time: start_time,
-                    code: checkout_code
+                    code: client.client_code || '----'
                 });
 
                 if (emailRes.success) {
@@ -1046,7 +1046,7 @@ router.post('/appointments', authenticateToken, async (req, res, next) => {
                     service: service.name,
                     date: formattedDate,
                     time: start_time,
-                    code: checkout_code
+                    code: client.client_code || '----'
                 });
 
                 if (whatsappRes.success) {
@@ -1128,7 +1128,7 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
         // Obtener el status anterior y datos de la cita para posible envío de confirmación
         const prevResult = await db.query(`
             SELECT a.*, c.name as client_name, c.phone as client_phone, c.email as client_email,
-                   c.whatsapp_enabled, c.email_enabled, s.name as service_name
+                   c.whatsapp_enabled, c.email_enabled, c.client_code, s.name as service_name
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
             JOIN services s ON a.service_id = s.id
@@ -1181,7 +1181,7 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
                         service: prevAppointment.service_name,
                         date: formattedDate,
                         time: prevAppointment.start_time.slice(0, 5),
-                        code: prevAppointment.checkout_code || '----'
+                        code: prevAppointment.client_code || '----'
                     });
                     console.log(`[APPROVE APPT] WhatsApp confirmación enviado: ${whatsappRes.success}`);
 
@@ -1209,7 +1209,7 @@ router.put('/appointments/:id/status', authenticateToken, async (req, res, next)
                         service: prevAppointment.service_name,
                         date: formattedDate,
                         time: prevAppointment.start_time.slice(0, 5),
-                        code: prevAppointment.checkout_code || '----'
+                        code: prevAppointment.client_code || '----'
                     });
                     console.log(`[APPROVE APPT] Email confirmación enviado: ${emailRes.success}`);
                 } catch (emailError) {
@@ -1237,7 +1237,7 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
 
         // Obtener cita + datos de cliente/servicio
         const prevResult = await db.query(`
-            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled, c.client_code,
                    s.name as service_name, s.duration_minutes
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
@@ -1322,7 +1322,7 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
                     service: prevAppointment.service_name,
                     date: formattedDate,
                     time: String(start_time).slice(0, 5),
-                    code: prevAppointment.checkout_code || '----'
+                    code: prevAppointment.client_code || '----'
                 });
                 whatsappSent = !!whatsappRes.success;
 
@@ -1359,7 +1359,7 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
 
         // Obtener cita con datos del cliente y servicio
         const result = await db.query(`
-            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled, c.client_code,
                    s.name as service_name
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
@@ -1395,7 +1395,7 @@ router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, 
             service: appointment.service_name,
             date: formattedDate,
             time: appointment.start_time.slice(0, 5),
-            code: appointment.checkout_code || '----'
+            code: appointment.client_code || '----'
         });
 
         if (whatsappRes.success) {
@@ -1436,7 +1436,7 @@ router.post('/appointments/:id/send-reminder', authenticateToken, async (req, re
 
         // Obtener cita con datos del cliente y servicio
         const result = await db.query(`
-            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled, c.client_code,
                    s.name as service_name
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
@@ -1465,7 +1465,7 @@ router.post('/appointments/:id/send-reminder', authenticateToken, async (req, re
             name: appointment.client_name,
             service: appointment.service_name,
             time: appointment.start_time.slice(0, 5),
-            code: appointment.checkout_code || '----'
+            code: appointment.client_code || '----'
         });
 
         if (whatsappRes.success) {
@@ -1499,7 +1499,7 @@ router.post('/appointments/:id/send-reminder-2h', authenticateToken, async (req,
 
         // Obtener cita con datos del cliente y servicio
         const result = await db.query(`
-            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled,
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.whatsapp_enabled, c.client_code,
                    s.name as service_name
             FROM appointments a
             JOIN clients c ON a.client_id = c.id
@@ -1528,7 +1528,7 @@ router.post('/appointments/:id/send-reminder-2h', authenticateToken, async (req,
             name: appointment.client_name,
             service: appointment.service_name,
             time: appointment.start_time.slice(0, 5),
-            code: appointment.checkout_code || '----'
+            code: appointment.client_code || '----'
         });
 
         if (whatsappRes.success) {

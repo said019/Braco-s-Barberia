@@ -91,19 +91,25 @@ export const appointmentController = {
     }
   },
 
-  // GET /api/appointments/by-code/:code - Buscar cita por código de checkout
+  // GET /api/appointments/by-code/:code - Buscar cita por código de cliente o checkout
   async getByCheckoutCode(req, res, next) {
     try {
       const { code } = req.params;
 
       if (!code || code.length !== 4) {
-        throw new AppError('Código de checkout inválido', 400);
+        throw new AppError('Código inválido', 400);
       }
 
-      const appointment = await Appointment.getByCheckoutCode(code);
+      // Primero intentar buscar por código de cliente (cita de hoy)
+      let appointment = await Appointment.getByClientCode(code);
+
+      // Si no encuentra, intentar buscar por código de checkout legacy
+      if (!appointment) {
+        appointment = await Appointment.getByCheckoutCode(code);
+      }
 
       if (!appointment) {
-        throw new AppError('No se encontró ninguna cita con ese código', 404);
+        throw new AppError('No se encontró ninguna cita pendiente con ese código de cliente', 404);
       }
 
       res.json({
@@ -193,7 +199,7 @@ export const appointmentController = {
             service: service.name,
             date: formattedDate,
             time: start_time,
-            code: appointment.checkout_code || '----'
+            code: client.client_code || '----'
           });
 
           if (emailRes.success) console.log(`[CREATE APPT] Email SENT: ${emailRes.id}`);
@@ -221,12 +227,12 @@ export const appointmentController = {
             service: service.name,
             date: formattedDate,
             time: start_time,
-            code: appointment.checkout_code || '----'
+            code: client.client_code || '----'
           });
 
           if (whatsappRes.success) {
             console.log(`[CREATE APPT] WhatsApp SENT: ${whatsappRes.id}`);
-            
+
             // Enviar políticas después de la confirmación
             setTimeout(async () => {
               try {
@@ -473,7 +479,7 @@ export const appointmentController = {
             service: appointment.service_name,
             date: formattedDate,
             time: appointment.start_time,
-            code: appointment.checkout_code
+            code: clientData.client_code || '----'
           });
         } catch (emailError) {
           console.error('Error sending deposit accepted email:', emailError);
@@ -489,7 +495,7 @@ export const appointmentController = {
             service: appointment.service_name,
             date: formattedDate,
             time: appointment.start_time,
-            code: appointment.checkout_code
+            code: clientData.client_code || '----'
           });
           console.log('[CONFIRM APPT] WhatsApp deposit notification sent');
         } catch (whatsappError) {

@@ -13,8 +13,8 @@ const initReminderJob = () => {
             // Buscar citas entre 20h y 28h en el futuro
             // ============================================
             const reminder24hResult = await query(`
-                SELECT a.id, a.start_time, a.appointment_date, a.checkout_code,
-                       c.name, c.phone, c.whatsapp_enabled, s.name as service_name
+                SELECT a.id, a.start_time, a.appointment_date,
+                       c.name, c.phone, c.whatsapp_enabled, c.client_code, s.name as service_name
                 FROM appointments a
                 JOIN clients c ON a.client_id = c.id
                 JOIN services s ON a.service_id = s.id
@@ -38,7 +38,7 @@ const initReminderJob = () => {
                             name: appt.name,
                             service: appt.service_name,
                             time: timeStr,
-                            code: appt.checkout_code
+                            code: appt.client_code
                         });
 
                         if (res.success) {
@@ -58,8 +58,8 @@ const initReminderJob = () => {
             // Buscar citas entre 1.5h y 2.5h en el futuro
             // ============================================
             const reminder2hResult = await query(`
-                SELECT a.id, a.start_time, a.appointment_date, a.checkout_code,
-                       c.name, c.phone, c.whatsapp_enabled, s.name as service_name
+                SELECT a.id, a.start_time, a.appointment_date,
+                       c.name, c.phone, c.whatsapp_enabled, c.client_code, s.name as service_name
                 FROM appointments a
                 JOIN clients c ON a.client_id = c.id
                 JOIN services s ON a.service_id = s.id
@@ -83,7 +83,7 @@ const initReminderJob = () => {
                             name: appt.name,
                             service: appt.service_name,
                             time: timeStr,
-                            code: appt.checkout_code
+                            code: appt.client_code
                         });
 
                         if (res.success) {

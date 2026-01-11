@@ -162,7 +162,7 @@ export const createEvent = async (appointment) => {
             `💈 Servicio: ${appointment.service_name}`,
             `📝 Notas: ${appointment.notes || 'N/A'}`,
             ``,
-            `🔖 Código: ${appointment.checkout_code || 'N/A'}`
+            `🔖 Código Cliente: ${appointment.client_code || 'N/A'}`
         ].join('\n'),
         start: { dateTime: `${dateStr}T${startTime}`, timeZone: 'America/Mexico_City' },
         end: { dateTime: `${dateStr}T${endTime}`, timeZone: 'America/Mexico_City' },
@@ -244,7 +244,7 @@ export const updateEvent = async (appointmentId, appointment) => {
             `📊 Estado: ${appointment.status}`,
             `📝 Notas: ${appointment.notes || 'N/A'}`,
             ``,
-            `🔖 Código: ${appointment.checkout_code || 'N/A'}`
+            `🔖 Código Cliente: ${appointment.client_code || 'N/A'}`
         ].join('\n'),
         start: {
             dateTime: `${dateStr}T${startTime}`,

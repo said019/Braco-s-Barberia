@@ -75,7 +75,7 @@ export const Appointment = {
     return result.rows[0];
   },
 
-  // Obtener cita por código de checkout
+  // Obtener cita por código de checkout (legacy - busca por checkout_code de cita)
   async getByCheckoutCode(code) {
     const sql = `
       SELECT 
@@ -84,6 +84,7 @@ export const Appointment = {
         c.name as client_name,
         c.phone as client_phone,
         c.email as client_email,
+        c.client_code,
         s.name as service_name,
         s.duration_minutes,
         s.price as service_price
@@ -95,6 +96,32 @@ export const Appointment = {
       LIMIT 1
     `;
     const result = await query(sql, [code]);
+    return result.rows[0];
+  },
+
+  // Obtener cita de hoy o próxima por código de cliente (busca hoy o futuro)
+  async getByClientCode(clientCode) {
+    const sql = `
+      SELECT 
+        a.*,
+        c.id as client_id,
+        c.name as client_name,
+        c.phone as client_phone,
+        c.email as client_email,
+        c.client_code,
+        s.name as service_name,
+        s.duration_minutes,
+        s.price as service_price
+      FROM appointments a
+      JOIN clients c ON a.client_id = c.id
+      JOIN services s ON a.service_id = s.id
+      WHERE c.client_code = $1
+        AND a.status IN ('scheduled', 'confirmed', 'in_progress')
+        AND a.appointment_date >= CURRENT_DATE
+      ORDER BY a.appointment_date ASC, a.start_time ASC
+      LIMIT 1
+    `;
+    const result = await query(sql, [clientCode]);
     return result.rows[0];
   },
 

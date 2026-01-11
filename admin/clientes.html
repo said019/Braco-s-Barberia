@@ -482,16 +482,81 @@
             const client = clients.find(c => c.id === id);
             if (!client) return;
 
-            // Try to fetch detailed data first
+            // Fetch detailed data including history
             let detailData = { client, appointments: [] };
+            let historyData = { recent_appointments: [] };
+            
             try {
-                detailData = await api.get(`/admin/clients/${id}`);
+                const [clientRes, historyRes] = await Promise.all([
+                    api.get(`/admin/clients/${id}`),
+                    api.get(`/admin/clients/${id}/history`)
+                ]);
+                detailData = clientRes;
+                historyData = historyRes;
             } catch (e) {
-                console.warn("Could not fetch details, using filtering", e);
+                console.warn("Could not fetch details or history", e);
             }
 
             // Combine fetched detailed info or fallback to listed info
             const c = detailData.client || client;
+            const appointments = historyData.recent_appointments || [];
+
+            // Status badge helper
+            const getStatusBadge = (status) => {
+                const statusMap = {
+                    'scheduled': '<span class="badge" style="background:#3498db">Agendada</span>',
+                    'confirmed': '<span class="badge badge-success">Confirmada</span>',
+                    'in_progress': '<span class="badge" style="background:#f39c12">En progreso</span>',
+                    'completed': '<span class="badge" style="background:#27ae60">Completada</span>',
+                    'cancelled': '<span class="badge" style="background:#e74c3c">Cancelada</span>',
+                    'no_show': '<span class="badge" style="background:#7f8c8d">No asistió</span>',
+                    'pending': '<span class="badge" style="background:#e67e22">Pendiente</span>'
+                };
+                return statusMap[status] || `<span class="badge">${status}</span>`;
+            };
+
+            // Format appointment date
+            const formatApptDate = (dateStr) => {
+                if (!dateStr) return '-';
+                const d = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+                return new Date(d + 'T12:00:00').toLocaleDateString('es-MX', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                });
+            };
+
+            // Build appointments table
+            const appointmentsHtml = appointments.length > 0 ? `
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(196,163,90,0.1);">
+                    <h4 style="color: var(--gold); margin-bottom: 1rem;"><i class="fas fa-history"></i> Historial de Citas (${appointments.length})</h4>
+                    <div style="max-height: 250px; overflow-y: auto;">
+                        <table class="data-table" style="font-size: 0.9rem;">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Servicio</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${appointments.map(a => `
+                                    <tr>
+                                        <td>${formatApptDate(a.appointment_date)}</td>
+                                        <td>${a.start_time ? a.start_time.slice(0, 5) : '-'}</td>
+                                        <td>${a.service_name || '-'}</td>
+                                        <td>${getStatusBadge(a.status)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ` : `
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(196,163,90,0.1);">
+                    <h4 style="color: var(--gold); margin-bottom: 1rem;"><i class="fas fa-history"></i> Historial de Citas</h4>
+                    <p class="text-muted">Este cliente no tiene citas registradas.</p>
+                </div>
+            `;
 
             document.getElementById('client-detail-content').innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
@@ -520,6 +585,7 @@
                         <p><strong>Vence:</strong> ${c.membership_expiration ? formatDate(c.membership_expiration) : '-'}</p>
                     </div>
                 ` : ''}
+                ${appointmentsHtml}
             `;
             openModal('client-detail');
         }
