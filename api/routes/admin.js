@@ -288,7 +288,7 @@ router.get('/dashboard', authenticateToken, async (req, res, next) => {
         // 0. Solicitudes Pendientes (Nuevas citas que requieren aprobación/depósito)
         // Status 'pending'
         const pendingRequests = await db.query(
-            `SELECT a.*, c.name as client_name, c.phone as client_phone,
+            `SELECT a.*, a.deposit_expires_at, c.name as client_name, c.phone as client_phone,
                     ct.color as client_color, s.name as service_name
              FROM appointments a
              JOIN clients c ON a.client_id = c.id

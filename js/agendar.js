@@ -931,6 +931,13 @@ Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
                 <p style="color: #FFC107; margin-bottom: 1rem; font-size: 1.1rem;">
                     <i class="fas fa-exclamation-triangle"></i> <strong>DEPÓSITO REQUERIDO</strong>
                 </p>
+                
+                <div style="background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <p style="color: #e74c3c; font-weight: 600; margin: 0;">
+                        <i class="fas fa-clock"></i> ¡IMPORTANTE! Tienes <strong>1 HORA</strong> para realizar el depósito, de lo contrario tu horario será cancelado automáticamente.
+                    </p>
+                </div>
+                
                 <p style="margin-bottom: 1rem;">Como eres cliente nuevo, necesitamos un depósito de <strong>$100 MXN</strong> para confirmar tu cita. Este monto se descuenta del total.</p>
 
                 <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>

@@ -190,6 +190,10 @@ process.on('uncaughtException', (err) => {
 import initReminderJob from './cron/reminderJob.js';
 initReminderJob();
 
+// Iniciar Cron Job de Timeout de Depósitos (auto-cancelar después de 1 hora)
+import initDepositTimeoutJob from './cron/depositTimeoutJob.js';
+initDepositTimeoutJob();
+
 // Iniciar servidor
 startServer();
 

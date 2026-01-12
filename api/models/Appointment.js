@@ -260,10 +260,13 @@ export const Appointment = {
     // Use provided status or default to 'scheduled'
     const appointmentStatus = status || 'scheduled';
 
+    // Calculate deposit expiration (1 hour from now) for pending appointments
+    const depositExpiresAt = appointmentStatus === 'pending' ? new Date(Date.now() + 60 * 60 * 1000) : null;
+
     const sql = `
       INSERT INTO appointments 
-        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status, deposit_required, deposit_amount)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        (client_id, service_id, appointment_date, start_time, end_time, checkout_code, notes, created_by, status, deposit_required, deposit_amount, deposit_expires_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `;
     const result = await query(sql, [
@@ -277,7 +280,8 @@ export const Appointment = {
       created_by || 'client',
       appointmentStatus,
       deposit_required || false,
-      deposit_amount || 0
+      deposit_amount || 0,
+      depositExpiresAt
     ]);
     return result.rows[0];
   },

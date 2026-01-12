@@ -160,7 +160,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
 
                     <!-- Citas Pendientes (Nuevas) -->
-                    <div class="card" id="pending-requests-card" >
+                    <div class="card" id="pending-requests-card">
                         <div class="card-header" style="border-bottom: 2px solid var(--warning);">
                             <div>
                                 <h3 class="card-title">Citas Pendientes</h3>
@@ -176,6 +176,7 @@
                                             <th>Fecha</th>
                                             <th>Cliente</th>
                                             <th>Servicio</th>
+                                            <th>Timer</th>
                                             <th>Acción</th>
                                         </tr>
                                     </thead>
@@ -399,7 +400,7 @@
             transform: scale(1.1);
             border-color: var(--gold);
         }
-        
+
         /* Botones WhatsApp para recordatorios */
         .btn-whatsapp {
             width: 36px;
@@ -416,17 +417,20 @@
             transition: all 0.2s ease;
             box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
         }
+
         .btn-whatsapp:hover {
             background: #128C7E;
             transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
         }
+
         .btn-whatsapp.disabled {
             background: #666;
             cursor: not-allowed;
             opacity: 0.5;
             box-shadow: none;
         }
+
         .btn-whatsapp.disabled:hover {
             transform: none;
             background: #666;
@@ -581,7 +585,8 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     <i class="fas fa-birthday-cake"></i>
                 </button>
             </div>
-        `;}).join('');
+        `;
+                }).join('');
             } catch (e) {
                 console.error('Error loading birthdays', e);
                 document.getElementById('birthday-list').innerHTML = '<p class="text-muted">Error al cargar cumpleaños.</p>';
@@ -659,13 +664,36 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             if (countBadge) countBadge.textContent = appointments.length;
 
             if (appointments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-3">No hay citas pendientes</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-3">No hay citas pendientes</td></tr>';
                 return;
             }
 
+            // Helper function to calculate remaining time
+            function getTimeRemaining(expiresAt) {
+                if (!expiresAt) return { expired: false, text: '-', minutes: 60 };
+                const now = new Date();
+                const expiry = new Date(expiresAt);
+                const diff = expiry - now;
+
+                if (diff <= 0) {
+                    return { expired: true, text: '¡EXPIRADO!', minutes: 0 };
+                }
+
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                return {
+                    expired: false,
+                    text: `${minutes}:${String(seconds).padStart(2, '0')}`,
+                    minutes: minutes
+                };
+            }
 
             tbody.innerHTML = appointments.map(apt => {
                 const dateStr = formatDateShort(apt.appointment_date);
+                const timeInfo = getTimeRemaining(apt.deposit_expires_at);
+                const timerColor = timeInfo.expired ? '#e74c3c' : (timeInfo.minutes < 15 ? '#f39c12' : '#27ae60');
+                const timerBadge = `<span class="badge" style="background: ${timerColor}; font-size: 0.8rem; font-family: monospace;" id="timer-${apt.id}">${timeInfo.text}</span>`;
+
                 return `
                     <tr>
                         <td>${dateStr} <br> <small>${apt.start_time.slice(0, 5)}</small></td>
@@ -676,6 +704,12 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                         <td>
                             ${apt.service_name}
                             ${apt.deposit_amount ? `<br><small class="text-gold">Depósito: $${apt.deposit_amount}</small>` : ''}
+                        </td>
+                        <td>
+                            <div style="text-align: center;">
+                                <i class="fas fa-clock" style="color: ${timerColor}; margin-right: 4px;"></i>
+                                ${timerBadge}
+                            </div>
                         </td>
                         <td>
                             <div class="actions" style="display:flex; gap:5px;">
@@ -711,11 +745,11 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             tbody.innerHTML = appointments.map(apt => {
                 const phone = (apt.client_phone || '').replace(/\D/g, '');
                 const time = (apt.start_time || '').slice(0, 5);
-                const reminderBadge = apt.reminder_sent 
-                    ? `<span class="badge badge-success" style="font-size: 0.65rem;">✓ Enviado</span>` 
+                const reminderBadge = apt.reminder_sent
+                    ? `<span class="badge badge-success" style="font-size: 0.65rem;">✓ Enviado</span>`
                     : `<span class="badge badge-warning" style="font-size: 0.65rem;">Pendiente</span>`;
                 const waDisabled = apt.whatsapp_enabled === false;
-                
+
                 const whatsappBtn = waDisabled
                     ? `<button class="btn-whatsapp disabled" disabled title="WhatsApp deshabilitado">
                          <i class="fab fa-whatsapp"></i>
