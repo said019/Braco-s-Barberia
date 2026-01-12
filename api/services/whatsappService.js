@@ -346,6 +346,20 @@ export const sendTextMessage = async (phone, message) => {
     }
 };
 
+// ============================================================================
+// 15. Cancelación por Depósito no recibido (Auto-cancelación 1 hora)
+// Template: cancelacion_reserva - Variables: {{1}} Name, {{2}} Date, {{3}} BookingURL
+// ============================================================================
+export const sendDepositCancellation = async ({ phone, name, date, bookingUrl }) => {
+    const variables = {
+        "1": name,
+        "2": date,
+        "3": bookingUrl || process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app/agendar.html'
+    };
+    const sid = process.env.TWILIO_TEMPLATE_DEPOSIT_CANCEL_SID || 'HXf774c3cc08c4291a05aba9c173932279';
+    return await sendTemplate(phone, sid, variables);
+};
+
 // Alias para compatibilidad
 export const sendWhatsAppDepositAccepted = sendDepositConfirmed;
 
@@ -371,5 +385,6 @@ export default {
     sendWelcomeWithClientCode,
     sendTextMessage,
     sendPolicies,
-    sendAdminPolicies
+    sendAdminPolicies,
+    sendDepositCancellation
 };
