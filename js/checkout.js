@@ -92,6 +92,10 @@ function setupEventListeners() {
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             state.paymentMethod = e.target.value;
+            // Update summary to reflect cortesia selection
+            if (state.checkoutData) {
+                updateSummary();
+            }
         });
     });
 
@@ -347,6 +351,9 @@ function updateProductQuantity(productId, change) {
 function updateSummary() {
     const servicePrice = state.checkoutData.service_price;
 
+    // Check if cortesia is selected
+    const isCourtesy = state.paymentMethod === 'cortesia';
+
     // Calcular productos
     const productsTotal = Object.entries(state.cart).reduce((sum, [id, qty]) => {
         const product = state.products.find(p => p.id == id);
@@ -359,7 +366,11 @@ function updateSummary() {
     let discount = 0;
     let finalServicePrice = servicePrice;
 
-    if (state.useMembership && state.clientMemberships.length > 0) {
+    if (isCourtesy) {
+        // Cortesía: Service is free
+        discount = servicePrice;
+        finalServicePrice = 0;
+    } else if (state.useMembership && state.clientMemberships.length > 0) {
         discount = servicePrice;
         finalServicePrice = 0;
     }
@@ -367,7 +378,11 @@ function updateSummary() {
     const total = finalServicePrice + productsTotal;
 
     // Actualizar DOM
-    document.getElementById('summary-service-price').textContent = `$${servicePrice}`;
+    if (isCourtesy) {
+        document.getElementById('summary-service-price').innerHTML = '<span style="color: var(--gold); font-weight: 600;">CORTESÍA</span>';
+    } else {
+        document.getElementById('summary-service-price').textContent = `$${servicePrice}`;
+    }
     document.getElementById('products-count').textContent = productsCount;
     document.getElementById('summary-products-price').textContent = `$${productsTotal}`;
     document.getElementById('summary-total').textContent = `$${total}`;
@@ -376,7 +391,7 @@ function updateSummary() {
     const discountRow = document.getElementById('membership-discount');
     const productsRow = document.getElementById('products-summary');
 
-    if (discount > 0) {
+    if (discount > 0 && !isCourtesy) {
         discountRow.style.display = 'flex';
         document.getElementById('summary-discount').textContent = `- $${discount}`;
     } else {
@@ -419,28 +434,38 @@ async function completeCheckout() {
         const total = (servicePrice + productsTotal) - discount;
 
         // Mapear método de pago
+        // Map payment methods - cortesia has special handling
         const paymentMethodMap = {
             'efectivo': 'cash',
             'tarjeta': 'card',
-            'transferencia': 'transfer'
+            'transferencia': 'transfer',
+            'cortesia': 'courtesy'
         };
         const backendPaymentMethod = paymentMethodMap[state.paymentMethod] || 'cash';
+
+        // If courtesy, set service price to 0 (no charge for the service)
+        const isCourtesy = state.paymentMethod === 'cortesia';
+        const finalServiceCost = isCourtesy ? 0 : servicePrice;
+        const finalTotal = isCourtesy ? productsTotal : total; // Only products if there are any
 
         // Preparar datos del checkout
         const checkoutPayload = {
             appointment_id: state.checkoutData.id,
             client_id: state.checkoutData.client_id,
-            service_cost: servicePrice,
+            service_cost: finalServiceCost,
             products_cost: productsTotal,
-            discount: discount,
-            total: total,
+            discount: isCourtesy ? servicePrice : discount, // Mark original price as discount for courtesy
+            total: finalTotal,
             use_membership: state.useMembership,
             payment_method: backendPaymentMethod,
+            is_courtesy: isCourtesy, // Flag for backend to not generate transaction
             products: Object.entries(state.cart).map(([id, qty]) => ({
                 product_id: parseInt(id),
                 quantity: qty
             })),
-            notes: `Checkout desde web - Código: ${state.checkoutData.checkout_code}`
+            notes: isCourtesy
+                ? `SERVICIO DE CORTESÍA - Checkout desde web - Código: ${state.checkoutData.checkout_code}`
+                : `Checkout desde web - Código: ${state.checkoutData.checkout_code}`
         };
 
         // Enviar a API
@@ -481,7 +506,8 @@ function showSuccessScreen() {
     document.getElementById('final-total').textContent = `$${total}`;
     document.getElementById('final-method').textContent =
         state.paymentMethod === 'efectivo' ? 'Efectivo' :
-            state.paymentMethod === 'tarjeta' ? 'Tarjeta' : 'Transferencia';
+            state.paymentMethod === 'tarjeta' ? 'Tarjeta' :
+                state.paymentMethod === 'cortesia' ? 'Cortesía' : 'Transferencia';
     document.getElementById('final-date').textContent = formatDate(new Date(), {
         day: 'numeric',
         month: 'long',

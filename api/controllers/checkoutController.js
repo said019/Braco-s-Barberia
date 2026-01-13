@@ -18,7 +18,8 @@ export const checkoutController = {
                 payment_method,
                 use_membership,
                 products,
-                notes
+                notes,
+                is_courtesy // New flag for courtesy services
             } = req.body;
 
             // Validaciones básicas
@@ -40,7 +41,8 @@ export const checkoutController = {
                 payment_method,
                 use_membership,
                 products,
-                notes
+                notes,
+                is_courtesy // Pass to process method
             });
 
             // ENVIAR NOTIFICACIONES (EMAIL + WHATSAPP)

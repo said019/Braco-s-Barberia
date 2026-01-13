@@ -16,7 +16,8 @@ export const Checkout = {
                 payment_method = 'cash',
                 use_membership = false,
                 products = [],
-                notes = ''
+                notes = '',
+                is_courtesy = false // Courtesy services - no charge, no transaction
             } = data;
 
             // ... (rest of code)
@@ -195,13 +196,11 @@ export const Checkout = {
                 );
             }
 
-            // 6. Crear transacción financiera
+            // 6. Crear transacción financiera (SKIP for courtesy)
             // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
             // O si el total es > 0 (ej. propina o productos)
-            // 6. Crear transacción financiera
-            // Si se usó membresía para el servicio, el monto de la transacción solo incluye productos
-            // O si el total es > 0 (ej. propina o productos)
-            if (total > 0) {
+            // Skip transaction entirely if it's a courtesy service
+            if (total > 0 && !is_courtesy) {
                 console.log('Creating transaction for client:', client_id);
                 await client.query(`
           INSERT INTO transactions (
@@ -218,10 +217,14 @@ export const Checkout = {
                     total,
                     payment_method
                 ]);
+            } else if (is_courtesy) {
+                console.log('COURTESY SERVICE - Skipping transaction creation');
             }
 
             // 7. Actualizar estadísticas del cliente (Si existe)
+            // Don't add to total_spent for courtesy services
             if (client_id) {
+                const spentAmount = is_courtesy ? 0 : total;
                 await client.query(`
                     UPDATE clients 
                     SET total_visits = total_visits + 1,
@@ -229,7 +232,7 @@ export const Checkout = {
                         last_visit_date = CURRENT_DATE,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = $2
-                `, [total, client_id]);
+                `, [spentAmount, client_id]);
             }
 
             return {
