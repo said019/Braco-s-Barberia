@@ -117,7 +117,7 @@ router.get('/slots', async (req, res, next) => {
         `, [date]);
 
         // 8. Generar slots con el algoritmo inteligente
-        const slots = generateAvailableSlots({
+        let slots = generateAvailableSlots({
             serviceDuration,
             businessHours: {
                 open_time: businessHours.open_time,
@@ -130,6 +130,30 @@ router.get('/slots', async (req, res, next) => {
             blockedSlots: blockedSlotsResult.rows,
             slotInterval
         });
+
+        // 9. Filtrar slots pasados si es HOY (usando timezone Mexico City)
+        const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Mexico_City' });
+
+        if (date === todayStr) {
+            // Get current time in Mexico City
+            const nowInMexico = new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" });
+            const mexicoNow = new Date(nowInMexico);
+            const currentMinutes = mexicoNow.getHours() * 60 + mexicoNow.getMinutes();
+
+            console.log(`[AVAILABILITY] Today detected. Mexico time: ${mexicoNow.toTimeString()}, currentMinutes: ${currentMinutes}`);
+
+            // Filter out past slots - mark them as unavailable
+            slots = slots.map(slot => {
+                const slotMinutes = timeToMinutes(slot.time);
+                if (slotMinutes <= currentMinutes) {
+                    return { ...slot, available: false, past: true };
+                }
+                return slot;
+            });
+
+            // Only return available (future) slots
+            slots = slots.filter(slot => slot.available);
+        }
 
         res.json({
             date,
