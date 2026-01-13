@@ -491,7 +491,13 @@
 
         function getActionButtons(app) {
             const id = app.id;
+            const serviceId = app.service_id;
             let buttons = '';
+
+            // Change service button (always available except completed/cancelled)
+            if (!['completed', 'cancelled'].includes(app.status)) {
+                buttons += `<button class="btn-icon" onclick="openChangeServiceModal(${id}, ${serviceId})" title="Cambiar Servicio" style="background: rgba(196,163,90,0.2); color: var(--gold);"><i class="fas fa-exchange-alt"></i></button>`;
+            }
 
             if (app.status === 'pending') {
                 buttons += `<button class="btn-icon confirm" onclick="updateStatus(${id}, 'confirmed')" title="Confirmar (Depósito OK)"><i class="fas fa-check"></i></button>`;
@@ -586,6 +592,66 @@
                     }
                 }
             );
+        }
+
+        // Cargar servicios disponibles
+        let allServices = [];
+        async function loadServices() {
+            try {
+                const data = await api.get('/admin/services');
+                allServices = Array.isArray(data) ? data : (data.services || data.data || []);
+            } catch (e) {
+                console.error('Error loading services:', e);
+            }
+        }
+
+        // Modal para cambiar servicio
+        async function openChangeServiceModal(appointmentId, currentServiceId) {
+            // Cargar servicios si aún no se han cargado
+            if (allServices.length === 0) {
+                await loadServices();
+            }
+
+            const content = `
+                <div class="form-group">
+                    <label for="new-service-select" style="color: var(--cream); margin-bottom: 0.5rem; display: block;">Nuevo Servicio</label>
+                    <select id="new-service-select" class="search-input" style="width: 100%;">
+                        ${allServices.map(s => `
+                            <option value="${s.id}" ${s.id === currentServiceId ? 'selected' : ''}>
+                                ${s.name} - ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(s.price)} (${s.duration_minutes} min)
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem;">
+                    <i class="fas fa-info-circle"></i> La hora de fin se recalculará según la duración del nuevo servicio.
+                </p>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.changeServiceModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmServiceChange(${appointmentId})">Guardar</button>
+            `;
+
+            window.changeServiceModal = showModal('changeServiceModal', '<i class="fas fa-exchange-alt" style="color: var(--gold);"></i> Cambiar Servicio', content, footer);
+        }
+
+        async function confirmServiceChange(appointmentId) {
+            const newServiceId = parseInt(document.getElementById('new-service-select').value);
+
+            try {
+                const response = await api.put(`/admin/appointments/${appointmentId}/service`, { service_id: newServiceId });
+
+                if (response.success) {
+                    showToast(response.message || 'Servicio actualizado', 'success');
+                    window.changeServiceModal.close();
+                    loadData();
+                } else {
+                    throw new Error(response.message || 'Error al cambiar servicio');
+                }
+            } catch (error) {
+                showToast(error.message || 'Error al cambiar servicio', 'error');
+            }
         }
 
         init();
