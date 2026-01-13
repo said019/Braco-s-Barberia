@@ -181,11 +181,20 @@ export const Appointment = {
     );
     const blockedSlots = blockedResult.rows;
 
-    // Check if date is today - use Mexico City timezone
+    // Check if date is today - use Mexico City timezone properly
+    // Get current time in Mexico City
     const nowInMexico = new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" });
     const mexicoNow = new Date(nowInMexico);
-    const todayStr = mexicoNow.toISOString().split('T')[0];
-    const isToday = date === todayStr;
+
+    // Get today's date string in YYYY-MM-DD format using Mexico timezone
+    // Using 'sv-SE' locale gives us YYYY-MM-DD format directly
+    const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Mexico_City' });
+
+    // Normalize incoming date (might have 'T' or timestamp)
+    const normalizedDate = typeof date === 'string' && date.includes('T') ? date.split('T')[0] : date;
+    const isToday = normalizedDate === todayStr;
+
+    console.log(`[AVAILABILITY] Date: ${normalizedDate}, Today: ${todayStr}, IsToday: ${isToday}, MexicoTime: ${mexicoNow.toTimeString()}`);
 
     // Current time in minutes (for filtering past slots)
     const currentMinutesNow = isToday ? (mexicoNow.getHours() * 60 + mexicoNow.getMinutes()) : 0;
