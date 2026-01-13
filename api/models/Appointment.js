@@ -174,6 +174,22 @@ export const Appointment = {
 
     const bookedSlots = appointmentsResult.rows;
 
+    // Obtener bloqueos de horarios específicos
+    const blockedResult = await query(
+      `SELECT start_time, end_time FROM blocked_time_slots WHERE date = $1`,
+      [date]
+    );
+    const blockedSlots = blockedResult.rows;
+
+    // Check if date is today - use Mexico City timezone
+    const nowInMexico = new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" });
+    const mexicoNow = new Date(nowInMexico);
+    const todayStr = mexicoNow.toISOString().split('T')[0];
+    const isToday = date === todayStr;
+
+    // Current time in minutes (for filtering past slots)
+    const currentMinutesNow = isToday ? (mexicoNow.getHours() * 60 + mexicoNow.getMinutes()) : 0;
+
     // Generar slots disponibles
     const slots = [];
     const slotInterval = 30; // minutos
@@ -183,6 +199,12 @@ export const Appointment = {
     const breakEnd = businessHours.break_end ? this.timeToMinutes(businessHours.break_end) : null;
 
     while (currentTime + serviceDuration <= closeTime) {
+      // Skip past time slots if booking for today
+      if (isToday && currentTime <= currentMinutesNow) {
+        currentTime += slotInterval;
+        continue;
+      }
+
       // Saltar horario de descanso
       if (breakStart && breakEnd && currentTime >= breakStart && currentTime < breakEnd) {
         currentTime = breakEnd;
@@ -192,12 +214,21 @@ export const Appointment = {
       const slotStart = this.minutesToTime(currentTime);
       const slotEnd = this.minutesToTime(currentTime + serviceDuration);
 
-      // Verificar si el slot está disponible
-      const isAvailable = !bookedSlots.some(booked => {
+      // Verificar si el slot está disponible (no ocupado por citas)
+      const isBookedByAppointment = bookedSlots.some(booked => {
         const bookedStart = this.timeToMinutes(booked.start_time);
         const bookedEnd = this.timeToMinutes(booked.end_time);
         return (currentTime < bookedEnd && currentTime + serviceDuration > bookedStart);
       });
+
+      // Verificar si está bloqueado manualmente
+      const isBlocked = blockedSlots.some(blocked => {
+        const blockedStart = this.timeToMinutes(blocked.start_time);
+        const blockedEnd = this.timeToMinutes(blocked.end_time);
+        return (currentTime < blockedEnd && currentTime + serviceDuration > blockedStart);
+      });
+
+      const isAvailable = !isBookedByAppointment && !isBlocked;
 
       if (isAvailable) {
         slots.push({
