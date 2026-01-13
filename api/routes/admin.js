@@ -1352,6 +1352,84 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
     }
 });
 
+// PUT /api/admin/appointments/:id/service - Cambiar servicio de la cita
+router.put('/appointments/:id/service', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { service_id } = req.body;
+
+        if (!service_id) {
+            return res.status(400).json({ success: false, message: 'service_id es requerido' });
+        }
+
+        // Get current appointment
+        const currentAppt = await db.query(
+            `SELECT a.*, s.name as old_service_name 
+             FROM appointments a 
+             JOIN services s ON a.service_id = s.id 
+             WHERE a.id = $1`,
+            [id]
+        );
+
+        if (currentAppt.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Cita no encontrada' });
+        }
+
+        const appt = currentAppt.rows[0];
+
+        // Get new service details
+        const newService = await db.query(
+            'SELECT id, name, duration_minutes, price FROM services WHERE id = $1',
+            [service_id]
+        );
+
+        if (newService.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Servicio no encontrado' });
+        }
+
+        const service = newService.rows[0];
+
+        // Calculate new end_time based on new service duration
+        const startTime = appt.start_time;
+        const durationMinutes = service.duration_minutes;
+
+        // Parse start time and add duration
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const startMinutes = hours * 60 + minutes;
+        const endMinutes = startMinutes + durationMinutes;
+        const endHours = Math.floor(endMinutes / 60);
+        const endMins = endMinutes % 60;
+        const newEndTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+
+        // Update the appointment
+        const result = await db.query(
+            `UPDATE appointments 
+             SET service_id = $1, 
+                 end_time = $2,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3
+             RETURNING *`,
+            [service_id, newEndTime, id]
+        );
+
+        console.log(`[CHANGE SERVICE] Appointment ${id}: ${appt.old_service_name} -> ${service.name}`);
+
+        res.json({
+            success: true,
+            message: `Servicio cambiado a: ${service.name}`,
+            data: {
+                ...result.rows[0],
+                service_name: service.name,
+                service_price: service.price,
+                old_service_name: appt.old_service_name
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /api/admin/appointments/:id/resend-whatsapp - Reenviar WhatsApp de confirmación
 router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, res, next) => {
     try {

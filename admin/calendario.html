@@ -135,8 +135,7 @@
                             <i class="fas fa-plus"></i> <span class="btn-text">Nueva Cita</span>
                         </button>
                         <button class="btn btn-secondary"
-                            onclick="openBlockTimeModal(formatDateYMD(new Date()), '10:00')"
-                            title="Bloquear horario">
+                            onclick="openBlockTimeModal(formatDateYMD(new Date()), '10:00')" title="Bloquear horario">
                             <i class="fas fa-ban"></i> <span class="btn-text">Bloquear</span>
                         </button>
                     </div>
@@ -392,7 +391,7 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            
+
             // Convertir día de semana: JS usa 0=Dom, queremos 0=Lun
             // Lunes=0, Martes=1, ..., Domingo=6
             const jsDay = firstDay.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
@@ -733,6 +732,9 @@
                     <button class="btn btn-success" onclick="resendWhatsApp(${appointment.id})" title="Reenviar WhatsApp de confirmación" style="background: #25D366; border-color: #25D366;">
                         <i class="fab fa-whatsapp"></i> Reenviar WhatsApp
                     </button>
+                    <button class="btn btn-warning" onclick="changeService(${appointment.id}, ${appointment.service_id})" style="background: var(--gold); border-color: var(--gold); color: #1a1a1a;">
+                        <i class="fas fa-exchange-alt"></i> Cambiar Servicio
+                    </button>
                     <button class="btn btn-primary" onclick="changeStatus(${appointment.id})">
                         <i class="fas fa-edit"></i> Cambiar Estado
                     </button>
@@ -805,6 +807,56 @@
             } catch (error) {
                 console.error('Error updating status:', error);
                 showToast('Error al actualizar el estado', 'error');
+            }
+        }
+
+        // Cambiar servicio de la cita
+        function changeService(id, currentServiceId) {
+            const content = `
+                <div class="form-group">
+                    <label for="new-service">Nuevo Servicio</label>
+                    <select id="new-service" class="search-input">
+                        ${allServices.map(s => `
+                            <option value="${s.id}" ${s.id === currentServiceId ? 'selected' : ''}>
+                                ${s.name} - ${formatCurrency(s.price)} (${s.duration_minutes} min)
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle"></i> La hora de fin se recalculará según la duración del nuevo servicio.
+                </p>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="serviceModal.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="updateService(${id})">Guardar</button>
+            `;
+
+            window.serviceModal = showModal('serviceModal', 'Cambiar Servicio de Cita', content, footer);
+        }
+
+        async function updateService(id) {
+            const newServiceId = document.getElementById('new-service').value;
+
+            try {
+                const response = await fetchWithAuth(`/admin/appointments/${id}/service`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ service_id: parseInt(newServiceId) })
+                });
+
+                if (response.success) {
+                    showToast(response.message || 'Servicio actualizado correctamente', 'success');
+                    window.serviceModal.close();
+                    closeSidePanel();
+                    loadAppointments();
+                } else {
+                    throw new Error(response.message || 'Error al cambiar servicio');
+                }
+            } catch (error) {
+                console.error('Error updating service:', error);
+                showToast(error.message || 'Error al cambiar el servicio', 'error');
             }
         }
 
