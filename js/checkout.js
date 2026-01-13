@@ -250,8 +250,15 @@ function showCheckoutScreen() {
     document.getElementById('display-code').textContent = state.checkoutCode;
     document.getElementById('client-name').textContent = state.checkoutData.client_name;
     document.getElementById('service-name').textContent = state.checkoutData.service_name;
+
+    // Fix timezone: parse date string and create at noon to avoid day shift
+    const dateStr = state.checkoutData.appointment_date;
+    const datePart = typeof dateStr === 'string' && dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    const [year, month, day] = datePart.split('-').map(Number);
+    const appointmentDate = new Date(year, month - 1, day, 12, 0, 0); // Noon local time
+
     document.getElementById('appointment-date').textContent = formatDate(
-        new Date(state.checkoutData.appointment_date),
+        appointmentDate,
         { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
     );
     document.getElementById('appointment-time').textContent = state.checkoutData.start_time;
