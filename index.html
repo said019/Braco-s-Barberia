@@ -19,9 +19,78 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/index.css">
+
+    <!-- Google Translate Widget Styles -->
+    <style>
+        /* Language Toggle Button */
+        .lang-toggle {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 4px;
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid var(--gold);
+            border-radius: 25px;
+            padding: 6px 8px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .lang-toggle button {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle button:hover {
+            color: var(--gold);
+        }
+
+        .lang-toggle button.active {
+            background: var(--gold);
+            color: #1a1a1a;
+        }
+
+        /* Hide Google Translate default elements */
+        .goog-te-banner-frame,
+        .goog-te-gadget-icon,
+        .goog-te-gadget-simple {
+            display: none !important;
+        }
+
+        body {
+            top: 0 !important;
+        }
+
+        .skiptranslate {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 80px;
+                right: 10px;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+        <button onclick="setLanguage('es')" class="active" id="lang-es">ES</button>
+        <button onclick="setLanguage('en')" id="lang-en">EN</button>
+    </div>
+    <div id="google_translate_element" style="display:none;"></div>
+
     <!-- ========================================
          HEADER & NAVIGATION
          ======================================== -->
@@ -587,6 +656,51 @@
     <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- Google Translate -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es',
+                includedLanguages: 'en,es',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function setLanguage(lang) {
+            const select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = lang === 'en' ? 'en' : 'es';
+                select.dispatchEvent(new Event('change'));
+            } else if (lang === 'es') {
+                // Reset to original
+                const frame = document.querySelector('.goog-te-banner-frame');
+                if (frame) {
+                    const btn = frame.contentDocument.querySelector('.goog-close-link');
+                    if (btn) btn.click();
+                }
+                // Fallback: reload without translation
+                if (document.cookie.includes('googtrans')) {
+                    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + location.hostname;
+                    location.reload();
+                }
+            }
+            // Update active state
+            document.getElementById('lang-es').classList.toggle('active', lang === 'es');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            localStorage.setItem('preferredLang', lang);
+        }
+
+        // Check saved preference on load
+        document.addEventListener('DOMContentLoaded', function () {
+            const saved = localStorage.getItem('preferredLang');
+            if (saved === 'en') {
+                setTimeout(() => setLanguage('en'), 1000);
+            }
+        });
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 
 </html>

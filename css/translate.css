@@ -1,0 +1,72 @@
+/**
+ * Language Toggle Styles
+ * Used for Google Translate integration
+ */
+
+.lang-toggle {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    gap: 4px;
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid var(--gold, #c4a35a);
+    border-radius: 25px;
+    padding: 6px 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.lang-toggle button {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.lang-toggle button:hover {
+    color: var(--gold, #c4a35a);
+}
+
+.lang-toggle button.active {
+    background: var(--gold, #c4a35a);
+    color: #1a1a1a;
+}
+
+/* Hide Google Translate default elements */
+.goog-te-banner-frame,
+.goog-te-gadget-icon,
+.goog-te-gadget-simple,
+.VIpgJd-ZVi9od-l4eHX-hSRGPd,
+#goog-gt-tt {
+    display: none !important;
+}
+
+body {
+    top: 0 !important;
+}
+
+.skiptranslate {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lang-toggle {
+        top: 80px;
+        right: 10px;
+        padding: 4px 6px;
+    }
+
+    .lang-toggle button {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+}
