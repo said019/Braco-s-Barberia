@@ -653,8 +653,41 @@ function setupEventListeners() {
         btnBackToStep2.addEventListener('click', () => goToStep(2));
     }
 
-    // Botón continuar a paso 3
-    elements.btnToStep3.addEventListener('click', () => goToStep(3));
+    // Botón continuar a paso 3 (con validación de campos obligatorios)
+    elements.btnToStep3.addEventListener('click', () => {
+        const nameInput = document.getElementById('client-name');
+        const phoneInput = document.getElementById('client-phone');
+
+        const name = nameInput?.value?.trim();
+        const phone = phoneInput?.value?.trim();
+
+        // Validar campos obligatorios
+        const missingFields = [];
+        if (!name) missingFields.push('Nombre Completo');
+        if (!phone || phone.length < 10) missingFields.push('Teléfono (10 dígitos)');
+
+        if (missingFields.length > 0) {
+            // Mostrar alerta con los campos faltantes
+            showToast(`⚠️ Campos obligatorios: ${missingFields.join(', ')}`, 'error');
+
+            // Resaltar campos faltantes
+            if (!name && nameInput) {
+                nameInput.style.borderColor = '#e74c3c';
+                nameInput.focus();
+            }
+            if ((!phone || phone.length < 10) && phoneInput) {
+                phoneInput.style.borderColor = '#e74c3c';
+                if (name) phoneInput.focus();
+            }
+            return;
+        }
+
+        // Restaurar bordes normales
+        if (nameInput) nameInput.style.borderColor = '';
+        if (phoneInput) phoneInput.style.borderColor = '';
+
+        goToStep(3);
+    });
 
     // Tabs de categorías
     document.querySelectorAll('.category-tab').forEach(tab => {
