@@ -44,6 +44,42 @@ const sendTemplate = async (to, contentSid, variables = {}) => {
     }
 };
 
+/**
+ * Helper to send Twilio Template to ALL admin phones
+ * Supports TWILIO_ADMIN_PHONES (comma-separated) or falls back to TWILIO_ADMIN_PHONE
+ */
+const sendTemplateToAllAdmins = async (contentSid, variables = {}) => {
+    // Support multiple phones: TWILIO_ADMIN_PHONES=5512345678,5587654321
+    const adminPhonesStr = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
+
+    if (!adminPhonesStr) {
+        return { success: false, error: 'Admin Phone(s) missing' };
+    }
+
+    // Parse comma-separated phones
+    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(p => p);
+
+    if (adminPhones.length === 0) {
+        return { success: false, error: 'No valid admin phones' };
+    }
+
+    console.log(`[Twilio] Sending to ${adminPhones.length} admin(s): ${adminPhones.join(', ')}`);
+
+    const results = [];
+    for (const phone of adminPhones) {
+        const result = await sendTemplate(phone, contentSid, variables);
+        results.push({ phone, ...result });
+    }
+
+    // Return success if at least one succeeded
+    const anySuccess = results.some(r => r.success);
+    return {
+        success: anySuccess,
+        results,
+        id: results.find(r => r.success)?.id
+    };
+};
+
 // ============================================================================
 // 1. Cita Agendada (Confirmación inicial)
 // Template: cita_agendada3 - Variables: {{1}} Name, {{2}} Service, {{3}} Date, {{4}} Time, {{5}} Code
@@ -186,12 +222,10 @@ export const sendAdminNewAppointment = async ({ clientName, serviceName, date, t
         "4": time
     };
     const sid = process.env.TWILIO_TEMPLATE_ADMIN_APPT_SID;
-    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
 
     if (!sid) return { success: false, error: 'Admin Appt Template SID missing' };
-    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
 
-    return await sendTemplate(adminPhone, sid, variables);
+    return await sendTemplateToAllAdmins(sid, variables);
 };
 
 // ============================================================================
@@ -206,12 +240,10 @@ export const sendAdminFullPayment = async ({ clientName, serviceName, amount, da
         "4": date
     };
     const sid = process.env.TWILIO_TEMPLATE_ADMIN_PAY_SID;
-    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
 
     if (!sid) return { success: false, error: 'Admin Pay Template SID missing' };
-    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
 
-    return await sendTemplate(adminPhone, sid, variables);
+    return await sendTemplateToAllAdmins(sid, variables);
 };
 
 // ============================================================================
@@ -280,12 +312,10 @@ export const sendAdminCancellation = async ({ clientName, clientPhone, serviceNa
         "5": time
     };
     const sid = process.env.TWILIO_TEMPLATE_ADMIN_CANCEL_SID;
-    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
 
     if (!sid) return { success: false, error: 'Admin Cancel Template SID missing' };
-    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
 
-    return await sendTemplate(adminPhone, sid, variables);
+    return await sendTemplateToAllAdmins(sid, variables);
 };
 
 // ============================================================================
@@ -311,12 +341,10 @@ export const sendPolicies = async (phone) => {
     return await sendTemplate(phone, sid, {});
 };
 
-// Enviar también al admin
+// Enviar también a todos los admins
 export const sendAdminPolicies = async () => {
-    const adminPhone = process.env.TWILIO_ADMIN_PHONE;
-    if (!adminPhone) return { success: false, error: 'Admin Phone missing' };
     const sid = process.env.TWILIO_TEMPLATE_POLICIES_SID || 'HX8c65f1d6db173c8fcd816915228461d6';
-    return await sendTemplate(adminPhone, sid, {});
+    return await sendTemplateToAllAdmins(sid, {});
 };
 
 // ============================================================================
