@@ -847,7 +847,7 @@ router.get('/appointments', authenticateToken, async (req, res, next) => {
         const { date, start_date, end_date, status } = req.query;
 
         let query = `
-            SELECT a.*, c.name as client_name, c.phone as client_phone,
+            SELECT a.*, c.name as client_name, c.phone as client_phone, c.client_code,
                    ct.color as client_color, s.name as service_name, s.price as service_price,
                    s.duration_minutes as duration,
                    ch.payment_method, ch.total as checkout_total

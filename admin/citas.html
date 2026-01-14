@@ -375,7 +375,7 @@
             filteredAppointments = allAppointments.filter(app => {
                 if (statusFilter && app.status !== statusFilter) return false;
                 if (searchFilter) {
-                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone} ${app.checkout_code || ''}`.toLowerCase();
+                    const searchText = `${app.client_name} ${app.service_name} ${app.client_phone} ${app.client_code || ''}`.toLowerCase();
                     if (!searchText.includes(searchFilter)) return false;
                 }
                 return true;
@@ -468,7 +468,7 @@
 
             tbody.innerHTML = appointments.map(app => `
             <tr class="${app.status === 'pending' ? 'pending-row' : ''}">
-                <td data-label="Código" class="font-mono text-sm text-gold">${app.checkout_code || '-'}</td>
+                <td data-label="Código" class="font-mono text-sm text-gold">${app.client_code || '-'}</td>
                 <td data-label="Fecha" class="text-muted">${formatDate(app.appointment_date)}</td>
                 <td data-label="Hora" class="font-medium text-gold">${formatTime(app.start_time)}</td>
                 <td data-label="Cliente">
