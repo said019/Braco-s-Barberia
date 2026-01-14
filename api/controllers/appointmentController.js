@@ -100,13 +100,8 @@ export const appointmentController = {
         throw new AppError('Código inválido', 400);
       }
 
-      // Primero intentar buscar por código de cliente (cita de hoy)
-      let appointment = await Appointment.getByClientCode(code);
-
-      // Si no encuentra, intentar buscar por código de checkout legacy
-      if (!appointment) {
-        appointment = await Appointment.getByCheckoutCode(code);
-      }
+      // Solo buscar por código de cliente (ya no se acepta checkout_code)
+      const appointment = await Appointment.getByClientCode(code);
 
       if (!appointment) {
         throw new AppError('No se encontró ninguna cita pendiente con ese código de cliente', 404);
