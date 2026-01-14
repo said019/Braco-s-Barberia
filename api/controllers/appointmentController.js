@@ -308,19 +308,9 @@ export const appointmentController = {
             console.log(`[CREATE APPT] Skipping admin notification - recurring client ${client.name}`);
           }
 
-          // Enviar mensaje de bienvenida con código de cliente para NUEVOS clientes
-          if (isNewClient && client.phone && client.client_code) {
-            try {
-              await whatsappService.sendWelcomeWithClientCode({
-                phone: client.phone,
-                name: client.name,
-                clientCode: client.client_code
-              });
-              console.log(`[CREATE APPT] Welcome message with client code sent to ${client.name}`);
-            } catch (welcomeError) {
-              console.error('[CREATE APPT] Welcome message error:', welcomeError);
-            }
-          }
+          // NOTA: El mensaje de "cliente recurrente" NO se envía aquí.
+          // Solo se envía cuando el cliente es PROMOVIDO de Nuevo a Recurrente
+          // después de que confirman su depósito (ver POST /api/admin/clients/:id/promote)
         }
       } catch (adminError) {
         console.error('[CREATE APPT] Admin Notification Error:', adminError);
