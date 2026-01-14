@@ -961,9 +961,24 @@ Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
                     <i class="fas fa-exclamation-triangle"></i> <strong>DEPÓSITO REQUERIDO</strong>
                 </p>
                 
-                <div style="background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                    <p style="color: #e74c3c; font-weight: 600; margin: 0;">
-                        <i class="fas fa-clock"></i> ¡IMPORTANTE! Tienes <strong>1 HORA</strong> para realizar el depósito, de lo contrario tu horario será cancelado automáticamente.
+                <!-- CRONÓMETRO VISUAL -->
+                <div style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1)); border: 2px solid rgba(231, 76, 60, 0.5); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                    <p style="color: #e74c3c; font-weight: 600; margin-bottom: 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-hourglass-half" style="animation: pulse 1s infinite;"></i> TIEMPO RESTANTE PARA DEPOSITAR
+                    </p>
+                    <div id="deposit-countdown" style="display: flex; justify-content: center; gap: 0.5rem; align-items: center;">
+                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid var(--gold); border-radius: 10px; padding: 1rem 1.5rem; min-width: 80px; box-shadow: 0 4px 15px rgba(196, 163, 90, 0.3);">
+                            <span id="countdown-minutes" style="font-family: 'Courier New', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gold); text-shadow: 0 0 10px rgba(196, 163, 90, 0.5);">59</span>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.6); margin: 0.25rem 0 0 0; text-transform: uppercase;">Min</p>
+                        </div>
+                        <span style="font-size: 2rem; color: var(--gold); animation: blink 1s infinite;">:</span>
+                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid var(--gold); border-radius: 10px; padding: 1rem 1.5rem; min-width: 80px; box-shadow: 0 4px 15px rgba(196, 163, 90, 0.3);">
+                            <span id="countdown-seconds" style="font-family: 'Courier New', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gold); text-shadow: 0 0 10px rgba(196, 163, 90, 0.5);">59</span>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.6); margin: 0.25rem 0 0 0; text-transform: uppercase;">Seg</p>
+                        </div>
+                    </div>
+                    <p style="color: #e74c3c; font-size: 0.85rem; margin-top: 1rem; opacity: 0.9;">
+                        <i class="fas fa-exclamation-circle"></i> Tu horario se cancelará automáticamente si no depositas
                     </p>
                 </div>
                 
@@ -990,10 +1005,63 @@ Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
                     <i class="fab fa-whatsapp"></i> Enviar Comprobante por WhatsApp
                 </a>
             </div>
+            
+            <style>
+                @keyframes blink {
+                    0%, 50% { opacity: 1; }
+                    51%, 100% { opacity: 0.3; }
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+            </style>
         `;
+
+        // Iniciar cronómetro de 1 hora
+        startDepositCountdown();
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Función para iniciar el cronómetro de depósito
+function startDepositCountdown() {
+    let totalSeconds = 60 * 60; // 1 hora = 3600 segundos
+
+    const minutesEl = document.getElementById('countdown-minutes');
+    const secondsEl = document.getElementById('countdown-seconds');
+
+    if (!minutesEl || !secondsEl) return;
+
+    const updateCountdown = () => {
+        if (totalSeconds <= 0) {
+            minutesEl.textContent = '00';
+            secondsEl.textContent = '00';
+            minutesEl.style.color = '#e74c3c';
+            secondsEl.style.color = '#e74c3c';
+            return;
+        }
+
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        secondsEl.textContent = String(seconds).padStart(2, '0');
+
+        // Cambiar a rojo cuando queden menos de 10 minutos
+        if (totalSeconds < 600) {
+            minutesEl.style.color = '#e74c3c';
+            secondsEl.style.color = '#e74c3c';
+            minutesEl.style.textShadow = '0 0 10px rgba(231, 76, 60, 0.5)';
+            secondsEl.style.textShadow = '0 0 10px rgba(231, 76, 60, 0.5)';
+        }
+
+        totalSeconds--;
+    };
+
+    updateCountdown(); // Mostrar inmediatamente
+    setInterval(updateCountdown, 1000);
 }
 
 function sendDepositWhatsApp() {
