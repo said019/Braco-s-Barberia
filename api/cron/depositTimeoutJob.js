@@ -48,17 +48,33 @@ const initDepositTimeoutJob = () => {
 
                     // Send WhatsApp notification to client
                     if (apt.client_phone && apt.whatsapp_enabled !== false) {
-                        // Format date for message
-                        const dateStr = apt.appointment_date;
-                        let formattedDate = dateStr;
+                        // Format date for message - handle Date object or string
+                        const dateVal = apt.appointment_date;
+                        let formattedDate = 'fecha programada';
                         try {
-                            const d = typeof dateStr === 'string' ? dateStr.split('T')[0] : dateStr;
-                            formattedDate = new Date(d + 'T12:00:00').toLocaleDateString('es-MX', {
+                            // PostgreSQL can return Date object or string
+                            let dateToFormat;
+                            if (dateVal instanceof Date) {
+                                // Use the date parts directly to avoid timezone shift
+                                const year = dateVal.getFullYear();
+                                const month = dateVal.getMonth();
+                                const day = dateVal.getDate();
+                                dateToFormat = new Date(year, month, day, 12, 0, 0);
+                            } else if (typeof dateVal === 'string') {
+                                const datePart = dateVal.includes('T') ? dateVal.split('T')[0] : dateVal;
+                                const [y, m, d] = datePart.split('-').map(Number);
+                                dateToFormat = new Date(y, m - 1, d, 12, 0, 0);
+                            } else {
+                                dateToFormat = new Date();
+                            }
+                            formattedDate = dateToFormat.toLocaleDateString('es-MX', {
+                                weekday: 'long',
                                 day: 'numeric',
                                 month: 'long'
                             });
                         } catch (e) {
-                            formattedDate = String(dateStr);
+                            console.warn('[CRON] Error formatting date:', e);
+                            formattedDate = 'tu cita';
                         }
 
                         const whatsappRes = await sendDepositCancellation({
