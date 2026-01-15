@@ -240,6 +240,9 @@ async function loginWithCode(code) {
             prefillClientForm(data.client);
 
             console.log('Client logged in:', data.client);
+
+            // Check for pending appointments
+            await checkAndShowPendingAppointment(data.client.id);
         } else {
             hint.textContent = data.error || 'Código no encontrado';
             hint.classList.remove('success');
@@ -260,12 +263,18 @@ function logoutQuickLogin() {
     // Clear state
     state.loggedInClient = null;
     state.clientMemberships = [];
+    state.pendingAppointment = null;
 
     // Reset UI
     loginCard.style.display = 'block';
     welcomeCard.classList.add('hidden');
     codeInput.value = '';
     hint.textContent = '';
+
+    // Hide pending appointment section and show booking flow
+    document.getElementById('pending-appointment-section')?.classList.add('hidden');
+    document.querySelector('.booking-steps')?.classList.remove('hidden');
+    document.getElementById('step-1')?.classList.remove('hidden');
 
     // Clear form
     clearClientForm();
@@ -1356,3 +1365,286 @@ window.closePaymentOptionsModal = closePaymentOptionsModal;
 window.selectPaymentOption = selectPaymentOption;
 window.confirmPrepayOption = confirmPrepayOption;
 window.confirmPrepayLater = confirmPrepayLater;
+
+// ============================================================================
+// PENDING APPOINTMENTS MANAGEMENT
+// ============================================================================
+
+// Check and show pending appointment after login
+async function checkAndShowPendingAppointment(clientId) {
+    try {
+        const result = await API.getPendingAppointments(clientId);
+
+        if (result.success && result.hasPending && result.appointment) {
+            state.pendingAppointment = result.appointment;
+            renderPendingAppointment(result.appointment);
+
+            // Hide the booking steps when showing pending appointment
+            document.querySelector('.booking-steps')?.classList.add('hidden');
+            document.getElementById('step-1')?.classList.add('hidden');
+        } else {
+            state.pendingAppointment = null;
+            // Make sure booking flow is visible
+            document.querySelector('.booking-steps')?.classList.remove('hidden');
+            document.getElementById('step-1')?.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error checking pending appointments:', error);
+    }
+}
+
+// Render the pending appointment card
+function renderPendingAppointment(apt) {
+    const section = document.getElementById('pending-appointment-section');
+    if (!section) return;
+
+    // Format date
+    const dateFormatted = formatDateDisplay(apt.date);
+    const timeFormatted = formatTimeDisplay(apt.time);
+
+    // Update DOM elements
+    document.getElementById('pending-service-name').textContent = apt.service.name;
+    document.getElementById('pending-date').textContent = dateFormatted;
+    document.getElementById('pending-time').textContent = timeFormatted;
+    document.getElementById('pending-price').textContent = apt.service.price;
+    document.getElementById('pending-duration').textContent = apt.service.duration;
+
+    // Show/hide warning based on canModify
+    const warning = document.getElementById('pending-warning');
+    const actions = section.querySelector('.pending-actions');
+
+    if (!apt.canModify) {
+        warning?.classList.remove('hidden');
+        if (actions) {
+            actions.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            });
+        }
+    } else {
+        warning?.classList.add('hidden');
+        if (actions) {
+            actions.querySelectorAll('button').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+        }
+    }
+
+    // Show the section
+    section.classList.remove('hidden');
+}
+
+// Format date for display (YYYY-MM-DD -> "Lunes, 20 de Enero 2026")
+function formatDateDisplay(dateStr) {
+    const date = new Date(dateStr + 'T12:00:00');
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    let formatted = date.toLocaleDateString('es-MX', options);
+    // Capitalize first letter
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+// Format time for display (HH:MM -> "2:00 PM")
+function formatTimeDisplay(timeStr) {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+}
+
+// Open modify modal
+function openModifyModal() {
+    if (!state.pendingAppointment || !state.pendingAppointment.canModify) return;
+
+    const apt = state.pendingAppointment;
+    const modal = document.getElementById('modal-modify-appointment');
+
+    // Update modal content
+    document.getElementById('modify-current-service').textContent = apt.service.name;
+    document.getElementById('modify-current-date').textContent = formatDateDisplay(apt.date);
+    document.getElementById('modify-current-time').textContent = formatTimeDisplay(apt.time);
+
+    modal?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modify modal
+function closeModifyModal() {
+    const modal = document.getElementById('modal-modify-appointment');
+    modal?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Open cancel modal
+function openCancelModal() {
+    if (!state.pendingAppointment || !state.pendingAppointment.canModify) return;
+
+    const apt = state.pendingAppointment;
+    const modal = document.getElementById('modal-cancel-appointment');
+
+    // Update modal content
+    document.getElementById('cancel-service').textContent = apt.service.name;
+    document.getElementById('cancel-date').textContent = formatDateDisplay(apt.date);
+    document.getElementById('cancel-time').textContent = formatTimeDisplay(apt.time);
+
+    // Clear reason field
+    const reasonField = document.getElementById('cancel-reason');
+    if (reasonField) reasonField.value = '';
+
+    modal?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close cancel modal
+function closeCancelModal() {
+    const modal = document.getElementById('modal-cancel-appointment');
+    modal?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Confirm cancel appointment
+async function confirmCancelAppointment() {
+    if (!state.pendingAppointment || !state.loggedInClient) return;
+
+    const btn = document.getElementById('btn-confirm-cancel');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+
+    try {
+        const reason = document.getElementById('cancel-reason')?.value || '';
+
+        const result = await API.cancelAppointmentByClient(
+            state.pendingAppointment.id,
+            state.loggedInClient.id,
+            reason
+        );
+
+        if (result.success) {
+            closeCancelModal();
+
+            // Show success modal
+            document.getElementById('modal-cancel-success')?.classList.remove('hidden');
+
+            // Clear pending appointment state
+            state.pendingAppointment = null;
+        } else {
+            alert(result.error || 'Error al cancelar la cita');
+        }
+    } catch (error) {
+        console.error('Cancel error:', error);
+        alert('Error al cancelar la cita');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// Close success modal and start new booking
+function closeSuccessAndBookNew() {
+    document.getElementById('modal-cancel-success')?.classList.add('hidden');
+    document.body.style.overflow = '';
+
+    // Hide pending section and show booking flow
+    document.getElementById('pending-appointment-section')?.classList.add('hidden');
+    document.querySelector('.booking-steps')?.classList.remove('hidden');
+    document.getElementById('step-1')?.classList.remove('hidden');
+}
+
+// Start flow for changing service (modify with new service)
+function startChangeServiceFlow() {
+    if (!state.pendingAppointment) return;
+
+    state.modifyingAppointment = true;
+    state.modifyType = 'service';
+
+    closeModifyModal();
+
+    // Hide pending section and show service selection
+    document.getElementById('pending-appointment-section')?.classList.add('hidden');
+    document.querySelector('.booking-steps')?.classList.remove('hidden');
+    document.getElementById('step-1')?.classList.remove('hidden');
+
+    // Show message that user is modifying
+    const stepTitle = document.querySelector('#step-1 .step-title');
+    if (stepTitle) {
+        stepTitle.innerHTML = '¿Qué servicio deseas ahora? <small style="display:block;font-size:0.6em;color:var(--gold);margin-top:0.5rem;">(Modificando cita existente)</small>';
+    }
+}
+
+// Start flow for changing date/time only
+function startChangeDateTimeFlow() {
+    if (!state.pendingAppointment) return;
+
+    state.modifyingAppointment = true;
+    state.modifyType = 'datetime';
+
+    // Pre-select the current service
+    const currentServiceId = state.pendingAppointment.service.id;
+    const service = SERVICIOS_BRACOS.find(s => s.id === currentServiceId);
+
+    if (service) {
+        state.selectedService = service;
+        closeModifyModal();
+
+        // Go directly to date selection (step 2)
+        document.getElementById('pending-appointment-section')?.classList.add('hidden');
+        goToStep(2);
+    } else {
+        alert('Error: Servicio no encontrado');
+    }
+}
+
+// Book another appointment (keep existing one)
+function bookAnotherAppointment() {
+    // Just show the normal booking flow
+    document.getElementById('pending-appointment-section')?.classList.add('hidden');
+    document.querySelector('.booking-steps')?.classList.remove('hidden');
+    document.getElementById('step-1')?.classList.remove('hidden');
+}
+
+// Initialize pending appointment event listeners
+function initPendingAppointmentListeners() {
+    // Modify button
+    document.getElementById('btn-modify-appointment')?.addEventListener('click', openModifyModal);
+
+    // Cancel button
+    document.getElementById('btn-cancel-appointment')?.addEventListener('click', openCancelModal);
+
+    // Book another button
+    document.getElementById('btn-book-another')?.addEventListener('click', bookAnotherAppointment);
+
+    // Modal: Change service
+    document.getElementById('btn-change-service')?.addEventListener('click', startChangeServiceFlow);
+
+    // Modal: Change date/time
+    document.getElementById('btn-change-datetime')?.addEventListener('click', startChangeDateTimeFlow);
+
+    // Modal: Confirm cancel
+    document.getElementById('btn-confirm-cancel')?.addEventListener('click', confirmCancelAppointment);
+
+    // Modal: After cancel - book new
+    document.getElementById('btn-after-cancel')?.addEventListener('click', closeSuccessAndBookNew);
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+}
+
+// Export modal functions for inline onclick handlers
+window.closeModifyModal = closeModifyModal;
+window.closeCancelModal = closeCancelModal;
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initPendingAppointmentListeners();
+});

@@ -2071,3 +2071,528 @@
         word-break: break-all;
     }
 }
+
+/* ============================================================================
+   PENDING APPOINTMENT STYLES
+   ============================================================================ */
+
+.pending-appointment-section {
+    margin-top: 1.5rem;
+    animation: fadeIn 0.4s ease;
+}
+
+.pending-appointment-section.hidden {
+    display: none;
+}
+
+.pending-appointment-card {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.pending-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+}
+
+.pending-header i {
+    font-size: 1.5rem;
+    color: var(--gold);
+}
+
+.pending-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--cream);
+    margin: 0;
+}
+
+.pending-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pending-service {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    color: var(--cream);
+    font-weight: 500;
+}
+
+.pending-service i {
+    color: var(--gold);
+    width: 20px;
+}
+
+.pending-datetime {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.pending-date,
+.pending-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: rgba(245, 245, 240, 0.9);
+}
+
+.pending-date i,
+.pending-time i {
+    color: var(--gold);
+    width: 16px;
+}
+
+.pending-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.pending-price,
+.pending-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(245, 245, 240, 0.7);
+}
+
+.pending-price i,
+.pending-duration i {
+    color: var(--gold);
+    font-size: 0.8rem;
+}
+
+.pending-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(196, 163, 90, 0.15);
+}
+
+.btn-modify {
+    flex: 1;
+    padding: 0.875rem 1.25rem;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-modify:hover {
+    background: rgba(196, 163, 90, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-cancel-apt {
+    flex: 1;
+    padding: 0.875rem 1.25rem;
+    background: transparent;
+    border: 1px solid #f44336;
+    color: #f44336;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel-apt:hover {
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.pending-warning {
+    margin-top: 1rem;
+    padding: 0.875rem;
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #ff9800;
+}
+
+.pending-warning.hidden {
+    display: none;
+}
+
+.pending-warning i {
+    font-size: 1.1rem;
+}
+
+.pending-warning a {
+    color: var(--gold);
+    text-decoration: underline;
+}
+
+.pending-separator {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.pending-separator::before,
+.pending-separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 20px);
+    height: 1px;
+    background: rgba(196, 163, 90, 0.2);
+}
+
+.pending-separator::before {
+    left: 0;
+}
+
+.pending-separator::after {
+    right: 0;
+}
+
+.pending-separator span {
+    background: var(--charcoal-dark);
+    padding: 0 1rem;
+    color: rgba(245, 245, 240, 0.5);
+    font-size: 0.9rem;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--charcoal);
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+}
+
+.modal-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--cream);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-header h3 i {
+    color: var(--gold);
+}
+
+.modal-header-danger h3 i {
+    color: #f44336;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(245, 245, 240, 0.6);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--cream);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(196, 163, 90, 0.15);
+}
+
+.current-appointment-summary,
+.cancel-appointment-summary {
+    background: rgba(196, 163, 90, 0.1);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: rgba(245, 245, 240, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.summary-details,
+.cancel-appointment-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.summary-details span,
+.cancel-appointment-summary span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--cream);
+}
+
+.summary-details i,
+.cancel-appointment-summary i {
+    color: var(--gold);
+    font-size: 0.85rem;
+}
+
+.modify-question {
+    font-size: 1rem;
+    color: var(--cream);
+    margin-bottom: 1rem;
+}
+
+.modify-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.modify-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--charcoal-dark);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.modify-option:hover {
+    border-color: var(--gold);
+    background: rgba(196, 163, 90, 0.05);
+    transform: translateX(4px);
+}
+
+.modify-option i {
+    font-size: 1.4rem;
+    color: var(--gold);
+    width: 30px;
+}
+
+.modify-option strong {
+    display: block;
+    color: var(--cream);
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.modify-option small {
+    color: rgba(245, 245, 240, 0.6);
+    font-size: 0.8rem;
+}
+
+.cancel-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+}
+
+.cancel-warning i {
+    font-size: 1.5rem;
+    color: #ff9800;
+}
+
+.cancel-warning p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--cream);
+}
+
+.cancel-reason-field {
+    margin-top: 1rem;
+}
+
+.cancel-reason-field label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(245, 245, 240, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.cancel-reason-field textarea {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--charcoal-dark);
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    border-radius: 8px;
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+.cancel-reason-field textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.cancel-reason-field textarea::placeholder {
+    color: rgba(245, 245, 240, 0.4);
+}
+
+.btn-danger {
+    padding: 0.875rem 1.5rem;
+    background: #f44336;
+    border: none;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+}
+
+.modal-success {
+    text-align: center;
+    padding: 2.5rem;
+}
+
+.modal-success .success-icon {
+    width: 80px;
+    height: 80px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.modal-success .success-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.modal-success h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--cream);
+    margin-bottom: 0.75rem;
+}
+
+.modal-success p {
+    font-size: 0.95rem;
+    color: rgba(245, 245, 240, 0.7);
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .pending-actions {
+        flex-direction: column;
+    }
+
+    .pending-datetime {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+}

@@ -270,6 +270,80 @@ const API = {
     },
 
     // ========================================================================
+    // CITAS PENDIENTES (para clientes autenticados)
+    // ========================================================================
+
+    /**
+     * Obtiene citas pendientes del cliente
+     */
+    async getPendingAppointments(clientId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/public/client/${clientId}/pending-appointments`, {
+                method: 'GET',
+                headers: this.getHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching pending appointments:', error);
+            return { success: false, hasPending: false, appointment: null };
+        }
+    },
+
+    /**
+     * Modifica una cita (fecha, hora, servicio)
+     */
+    async modifyAppointment(appointmentId, clientId, changes) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/public/appointments/${appointmentId}`, {
+                method: 'PUT',
+                headers: this.getHeaders(),
+                body: JSON.stringify({
+                    clientId,
+                    ...changes
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al modificar la cita');
+            }
+
+            return data;
+        } catch (error) {
+            return this.handleError(error);
+        }
+    },
+
+    /**
+     * Cancela una cita como cliente
+     */
+    async cancelAppointmentByClient(appointmentId, clientId, reason = '') {
+        try {
+            const response = await fetch(`${API_BASE_URL}/public/appointments/${appointmentId}/cancel`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ clientId, reason })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al cancelar la cita');
+            }
+
+            return data;
+        } catch (error) {
+            return this.handleError(error);
+        }
+    },
+
+    // ========================================================================
     // PRODUCTOS
     // ========================================================================
 

@@ -93,6 +93,66 @@
                         <i class="fas fa-times"></i> Cambiar cliente
                     </button>
                 </div>
+
+                <!-- Pending Appointment Section (shown when client has pending appointment) -->
+                <div class="pending-appointment-section hidden" id="pending-appointment-section">
+                    <div class="pending-appointment-card">
+                        <div class="pending-header">
+                            <i class="fas fa-calendar-check"></i>
+                            <h3>Tienes una Cita Programada</h3>
+                        </div>
+
+                        <div class="pending-details">
+                            <div class="pending-service">
+                                <i class="fas fa-cut"></i>
+                                <span id="pending-service-name">Corte de cabello para CABALLERO</span>
+                            </div>
+                            <div class="pending-datetime">
+                                <div class="pending-date">
+                                    <i class="fas fa-calendar"></i>
+                                    <span id="pending-date">Lunes, 20 de Enero 2026</span>
+                                </div>
+                                <div class="pending-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span id="pending-time">2:00 PM</span>
+                                </div>
+                            </div>
+                            <div class="pending-meta">
+                                <span class="pending-price">
+                                    <i class="fas fa-tag"></i>
+                                    $<span id="pending-price">300</span> MXN
+                                </span>
+                                <span class="pending-duration">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    <span id="pending-duration">60</span> min
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="pending-actions">
+                            <button type="button" class="btn-modify" id="btn-modify-appointment">
+                                <i class="fas fa-edit"></i> Modificar
+                            </button>
+                            <button type="button" class="btn-cancel-apt" id="btn-cancel-appointment">
+                                <i class="fas fa-times-circle"></i> Cancelar
+                            </button>
+                        </div>
+
+                        <div class="pending-warning hidden" id="pending-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>No es posible modificar/cancelar. Faltan menos de 2 horas. Llama al <a
+                                    href="tel:5573432027">55 7343 2027</a></span>
+                        </div>
+                    </div>
+
+                    <div class="pending-separator">
+                        <span>o</span>
+                    </div>
+
+                    <button type="button" class="btn-primary btn-block" id="btn-book-another">
+                        <i class="fas fa-plus"></i> Agendar Otra Cita
+                    </button>
+                </div>
             </div>
 
             <!-- Progress Steps -->
@@ -541,6 +601,103 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modify Appointment Modal -->
+    <div class="modal-overlay hidden" id="modal-modify-appointment">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Modificar Cita</h3>
+                <button type="button" class="modal-close" onclick="closeModifyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="current-appointment-summary">
+                    <p class="summary-label">Cita actual:</p>
+                    <div class="summary-details">
+                        <span><i class="fas fa-cut"></i> <span id="modify-current-service">Corte</span></span>
+                        <span><i class="fas fa-calendar"></i> <span id="modify-current-date">20 Ene</span></span>
+                        <span><i class="fas fa-clock"></i> <span id="modify-current-time">2:00 PM</span></span>
+                    </div>
+                </div>
+
+                <p class="modify-question">¿Qué deseas modificar?</p>
+
+                <div class="modify-options">
+                    <button type="button" class="modify-option" id="btn-change-service">
+                        <i class="fas fa-list"></i>
+                        <div>
+                            <strong>Cambiar Servicio</strong>
+                            <small>Selecciona otro servicio y nuevo horario</small>
+                        </div>
+                    </button>
+                    <button type="button" class="modify-option" id="btn-change-datetime">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <strong>Cambiar Fecha / Hora</strong>
+                            <small>Mantener el mismo servicio</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeModifyModal()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Appointment Modal -->
+    <div class="modal-overlay hidden" id="modal-cancel-appointment">
+        <div class="modal-content">
+            <div class="modal-header modal-header-danger">
+                <h3><i class="fas fa-times-circle"></i> Cancelar Cita</h3>
+                <button type="button" class="modal-close" onclick="closeCancelModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="cancel-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>¿Estás seguro que deseas cancelar tu cita?</p>
+                </div>
+
+                <div class="cancel-appointment-summary">
+                    <span><i class="fas fa-cut"></i> <span id="cancel-service">Corte</span></span>
+                    <span><i class="fas fa-calendar"></i> <span id="cancel-date">20 Ene</span></span>
+                    <span><i class="fas fa-clock"></i> <span id="cancel-time">2:00 PM</span></span>
+                </div>
+
+                <div class="cancel-reason-field">
+                    <label for="cancel-reason">Motivo de cancelación (opcional):</label>
+                    <textarea id="cancel-reason" placeholder="Ej: Agenda de trabajo, viaje, etc." rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeCancelModal()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <button type="button" class="btn-danger" id="btn-confirm-cancel">
+                    <i class="fas fa-check"></i> Sí, Cancelar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Success Modal -->
+    <div class="modal-overlay hidden" id="modal-cancel-success">
+        <div class="modal-content modal-success">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Tu cita ha sido cancelada</h3>
+            <p>Te enviamos un mensaje de confirmación por WhatsApp.</p>
+            <button type="button" class="btn-primary btn-block" id="btn-after-cancel">
+                <i class="fas fa-plus"></i> Agendar Nueva Cita
+            </button>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/api.js"></script>
