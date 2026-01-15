@@ -261,7 +261,9 @@ export const appointmentController = {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
           });
 
-          // Detectar si es cliente nuevo (sin visitas anteriores Y sin membresía activa)
+          // Detectar si es cliente nuevo (tipo Nuevo Y sin membresía activa)
+          // client_type_id: 1 = Nuevo, 2 = Recurrente
+          const isTypeNuevo = client.client_type_id === 1;
           const hasNoVisits = !client.total_visits || client.total_visits === 0;
 
           // Verificar si tiene membresía activa
@@ -271,8 +273,9 @@ export const appointmentController = {
           );
           const hasActiveMembership = membershipCheck.rows.length > 0;
 
-          // Solo marcar como NUEVO si no tiene visitas Y no tiene membresía
-          const isNewClient = hasNoVisits && !hasActiveMembership;
+          // NUEVO = tipo Nuevo (1) Y sin membresía activa
+          // Si el cliente ya es tipo Recurrente (2), NUNCA es nuevo
+          const isNewClient = isTypeNuevo && !hasActiveMembership;
           const clientIndicator = isNewClient ? '🆕 NUEVO - VALIDAR DEPÓSITO' : '';
 
           // Nombre del cliente con indicador si es nuevo
@@ -280,7 +283,7 @@ export const appointmentController = {
             ? `${client.name} (NUEVO - VALIDAR DEPÓSITO)`
             : client.name;
 
-          console.log(`[CREATE APPT] Client ${client.name}: visits=${client.total_visits}, hasMembership=${hasActiveMembership}, isNew=${isNewClient}`);
+          console.log(`[CREATE APPT] Client ${client.name}: type_id=${client.client_type_id}, visits=${client.total_visits}, hasMembership=${hasActiveMembership}, isNew=${isNewClient}`);
 
           // Lógica de notificación al admin:
           // - Si es pago completo → SOLO enviar notificación de pago completo (cita confirmada automáticamente)
