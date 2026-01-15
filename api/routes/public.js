@@ -159,8 +159,17 @@ router.get('/client/:clientId/pending-appointments', async (req, res, next) => {
 
         const apt = result.rows[0];
 
+        // Formatear la fecha como string YYYY-MM-DD
+        let dateStr;
+        if (apt.appointment_date instanceof Date) {
+            dateStr = apt.appointment_date.toISOString().split('T')[0];
+        } else {
+            dateStr = String(apt.appointment_date).split('T')[0];
+        }
+
         // Calcular si puede modificar/cancelar (mínimo 2 horas antes)
-        const appointmentDateTime = new Date(`${apt.appointment_date}T${apt.start_time}`);
+        // Usar timezone de México para el cálculo
+        const appointmentDateTime = new Date(`${dateStr}T${apt.start_time}-06:00`);
         const now = new Date();
         const hoursUntil = (appointmentDateTime - now) / (1000 * 60 * 60);
         const canModify = hoursUntil >= 2;
@@ -170,7 +179,7 @@ router.get('/client/:clientId/pending-appointments', async (req, res, next) => {
             hasPending: true,
             appointment: {
                 id: apt.id,
-                date: apt.appointment_date,
+                date: dateStr, // Enviar como string formateado
                 time: apt.start_time,
                 endTime: apt.end_time,
                 status: apt.status,
