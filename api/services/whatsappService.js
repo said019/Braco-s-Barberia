@@ -388,6 +388,64 @@ export const sendDepositCancellation = async ({ phone, name, date, bookingUrl })
     return await sendTemplate(phone, sid, variables);
 };
 
+// ============================================================================
+// 17. Cliente: Confirmación de cancelación por cliente
+// Template: copy_cancelacion - Variables: {{1}} Service, {{2}} Date, {{3}} BookingURL
+// ============================================================================
+export const sendClientCancellationConfirmation = async ({ phone, service, date }) => {
+    const bookingUrl = process.env.PUBLIC_URL
+        ? `${process.env.PUBLIC_URL}/agendar.html`
+        : 'https://bracos-barberia-production.up.railway.app/agendar.html';
+
+    return await sendCancellationResponse({ phone, service, date, bookingUrl });
+};
+
+// ============================================================================
+// 18. Cliente: Confirmación de modificación de cita
+// Usa sendBookingConfirmation ya que la estructura es la misma
+// ============================================================================
+export const sendModificationConfirmation = async ({ phone, name, service, date, time, code }) => {
+    // Usamos el mismo template de confirmación de cita
+    // El mensaje indica la cita actualizada
+    return await sendBookingConfirmation({ phone, name, service, date, time, code });
+};
+
+// ============================================================================
+// 19. Admin: Notificación de modificación de cita por cliente
+// Usa mensaje de texto libre ya que no hay template específico
+// ============================================================================
+export const sendAdminModification = async ({ clientName, clientPhone, oldService, oldDate, oldTime, newService, newDate, newTime }) => {
+    const adminPhone = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
+    if (!adminPhone) return { success: false, error: 'Admin phone not configured' };
+
+    const adminPhones = adminPhone.split(',').map(p => p.trim()).filter(p => p);
+
+    const message = `✏️ *Cita Modificada por Cliente*
+
+${clientName} modificó su cita:
+
+❌ Anterior:
+📅 ${oldDate} • 🕐 ${oldTime}
+✂️ ${oldService}
+
+✅ Nueva:
+📅 ${newDate} • 🕐 ${newTime}
+✂️ ${newService}
+
+📱 Tel: ${clientPhone || 'No disponible'}`;
+
+    const results = [];
+    for (const phone of adminPhones) {
+        const result = await sendTextMessage(phone, message);
+        results.push({ phone, ...result });
+    }
+
+    return {
+        success: results.some(r => r.success),
+        results
+    };
+};
+
 // Alias para compatibilidad
 export const sendWhatsAppDepositAccepted = sendDepositConfirmed;
 
@@ -407,9 +465,12 @@ export default {
     sendAdminNewAppointment,
     sendAdminFullPayment,
     sendAdminCancellation,
+    sendAdminModification,
     sendRecurringClientWelcome,
     sendConfirmationResponse,
     sendCancellationResponse,
+    sendClientCancellationConfirmation,
+    sendModificationConfirmation,
     sendWelcomeWithClientCode,
     sendTextMessage,
     sendPolicies,

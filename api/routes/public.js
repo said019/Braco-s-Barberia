@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../config/database.js';
 import Client from '../models/Client.js';
+import * as whatsappService from '../services/whatsappService.js';
 
 const router = express.Router();
 
@@ -290,8 +291,46 @@ router.put('/appointments/:id', async (req, res, next) => {
 
         const updatedApt = updatedResult.rows[0];
 
-        // TODO: Enviar WhatsApp de confirmación al cliente y notificación al admin
-        // Esto requiere importar whatsappService - se puede agregar después
+        // Enviar WhatsApp de confirmación al cliente y notificación al admin
+        try {
+            const dateObj = new Date(finalDate + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+
+            // Notificar al cliente
+            if (oldApt.client_phone) {
+                await whatsappService.sendModificationConfirmation({
+                    phone: oldApt.client_phone,
+                    name: oldApt.client_name,
+                    service: updatedApt.service_name,
+                    date: formattedDate,
+                    time: finalTime,
+                    code: '----'
+                });
+            }
+
+            // Notificar al admin
+            const oldDateObj = new Date(oldApt.appointment_date + 'T12:00:00');
+            const oldFormattedDate = oldDateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+
+            await whatsappService.sendAdminModification({
+                clientName: oldApt.client_name,
+                clientPhone: oldApt.client_phone,
+                oldService: oldApt.service_name,
+                oldDate: oldFormattedDate,
+                oldTime: oldApt.start_time,
+                newService: updatedApt.service_name,
+                newDate: formattedDate,
+                newTime: finalTime
+            });
+
+            console.log('[MODIFY APPT] WhatsApp notifications sent');
+        } catch (whatsappError) {
+            console.error('[MODIFY APPT] WhatsApp error:', whatsappError.message);
+        }
 
         res.json({
             success: true,
@@ -383,7 +422,35 @@ router.post('/appointments/:id/cancel', async (req, res, next) => {
             })
         ]);
 
-        // TODO: Enviar WhatsApp de confirmación al cliente y al admin
+        // Enviar WhatsApp de confirmación al cliente y al admin
+        try {
+            const dateObj = new Date(apt.appointment_date + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+
+            // Notificar al cliente
+            if (apt.client_phone) {
+                await whatsappService.sendClientCancellationConfirmation({
+                    phone: apt.client_phone,
+                    service: apt.service_name,
+                    date: formattedDate
+                });
+                console.log('[CANCEL APPT] Client WhatsApp sent');
+            }
+
+            // Notificar al admin
+            await whatsappService.sendAdminCancellation({
+                clientName: apt.client_name,
+                clientPhone: apt.client_phone,
+                serviceName: apt.service_name,
+                date: formattedDate,
+                time: apt.start_time
+            });
+            console.log('[CANCEL APPT] Admin WhatsApp sent');
+        } catch (whatsappError) {
+            console.error('[CANCEL APPT] WhatsApp error:', whatsappError.message);
+        }
 
         res.json({
             success: true,
