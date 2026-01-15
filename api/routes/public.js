@@ -141,7 +141,7 @@ router.get('/client/:clientId/pending-appointments', async (req, res, next) => {
             FROM appointments a
             JOIN services s ON a.service_id = s.id
             WHERE a.client_id = $1
-              AND a.status IN ('scheduled', 'confirmed', 'pending_deposit')
+              AND a.status IN ('scheduled', 'confirmed', 'pending')
               AND (a.appointment_date > CURRENT_DATE 
                    OR (a.appointment_date = CURRENT_DATE 
                        AND a.start_time > CURRENT_TIME))
@@ -255,7 +255,7 @@ router.put('/appointments/:id', async (req, res, next) => {
             SELECT id FROM appointments 
             WHERE appointment_date = $1 
               AND id != $2
-              AND status IN ('scheduled', 'confirmed', 'pending_deposit')
+              AND status IN ('scheduled', 'confirmed', 'pending')
               AND (
                   (start_time <= $3 AND end_time > $3) OR
                   (start_time < $4 AND end_time >= $4) OR
