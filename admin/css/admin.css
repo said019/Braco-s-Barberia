@@ -943,17 +943,80 @@ input[type="date"].form-input {
 }
 
 /* Webkit (Chrome/Safari) specific fix to position icon */
+/* Webkit (Chrome/Safari) specific fix to position icon */
 input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     left: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
-    margin: 0;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
+    opacity: 0.6;
     filter: invert(1);
-    /* Ensure it's white to contrast with dark bg */
-    opacity: 0.7;
+    /* Make icon white for dark theme */
 }
+
+/* ============================================================================
+   SELECTOR DE PAÍS (ADMIN)
+   ============================================================================ */
+.phone-input-group {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(22, 22, 22, 0.95);
+    transition: border-color 0.3s ease;
+}
+
+.phone-input-group:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.1);
+}
+
+.country-select {
+    padding: 0.75rem 0.5rem 0.75rem 0.75rem;
+    background: rgba(196, 163, 90, 0.05);
+    border: none;
+    border-right: 1px solid rgba(196, 163, 90, 0.2);
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 100px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C4A35A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 20px;
+}
+
+.country-select:focus {
+    outline: none;
+    background-color: rgba(196, 163, 90, 0.1);
+}
+
+.country-select option {
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: 0.5rem;
+}
+
+.phone-input-group .phone-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+}
+
+.phone-input-group .phone-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
@@ -1491,11 +1554,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     .sidebar.open {
         transform: translateX(0);
     }
-    
+
     .mobile-overlay {
         z-index: 1040;
     }
-    
+
     .mobile-overlay.active {
         display: block;
         opacity: 1;
@@ -2456,8 +2519,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Contenido dentro de td */
-    .data-table td > div,
-    .data-table td > span {
+    .data-table td>div,
+    .data-table td>span {
         display: block;
         text-align: left;
     }
@@ -2747,7 +2810,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100%;
         padding: 0.5rem 0;
         border: none;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .data-table.mobile-cards td:last-child {
@@ -2825,7 +2888,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100%;
         padding: 0.5rem 0;
         border: none;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .data-table td:last-child {
@@ -3793,7 +3856,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         padding: 0.5rem 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
     #services-table-body td:last-child {
@@ -3882,7 +3945,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         padding: 0.5rem 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
     #clients-tbody td:last-child {
@@ -4059,7 +4122,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         padding: 0.5rem 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         text-align: left !important;
     }
 
@@ -4230,6 +4293,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    OVERRIDE FINAL - TABLAS MÓVILES SIMPLES
    ============================================ */
 @media (max-width: 768px) {
+
     /* Forzar tablas a formato tarjeta */
     .data-table {
         display: block !important;
@@ -4314,10 +4378,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Asegurar que el contenido de las celdas sea visible */
-    .data-table td > div,
-    .data-table td > span,
-    .data-table td > strong,
-    .data-table td > small {
+    .data-table td>div,
+    .data-table td>span,
+    .data-table td>strong,
+    .data-table td>small {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -4393,7 +4457,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         overflow: visible !important;
         width: 100% !important;
     }
-    
+
     /* Botón menú siempre visible */
     .mobile-menu-toggle {
         display: flex !important;
@@ -4413,7 +4477,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         align-items: center !important;
         justify-content: center !important;
     }
-    
+
     /* Sidebar */
     .sidebar {
         position: fixed !important;
@@ -4425,11 +4489,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         transition: transform 0.3s ease !important;
         z-index: 9998 !important;
     }
-    
+
     .sidebar.open {
         transform: translateX(0) !important;
     }
-    
+
     /* Overlay */
     .mobile-overlay {
         position: fixed !important;
@@ -4438,11 +4502,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         z-index: 9997 !important;
         display: none !important;
     }
-    
+
     .mobile-overlay.active {
         display: block !important;
     }
-    
+
     /* Contenido principal */
     .main-content {
         margin-left: 0 !important;
@@ -4450,33 +4514,33 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         overflow-x: hidden !important;
     }
-    
+
     /* Header con espacio para botón */
     .top-header,
     .main-header {
         padding-left: 4rem !important;
     }
-    
+
     /* Filtros en columna */
     .filters-bar {
         flex-direction: column !important;
         gap: 0.75rem !important;
     }
-    
-    .filters-bar > * {
+
+    .filters-bar>* {
         width: 100% !important;
     }
-    
+
     /* Stats grid más compacto */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.75rem !important;
     }
-    
+
     .stat-card {
         padding: 0.75rem !important;
     }
-    
+
     .stat-value {
         font-size: 1.25rem !important;
     }
@@ -4512,6 +4576,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    FIX FINAL - TARJETAS DE TABLA COMPLETAS
    ============================================ */
 @media (max-width: 768px) {
+
     /* Contenedor de tablas */
     #memberships-container,
     #clients-container,
@@ -4608,9 +4673,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Contenido dentro de celdas - todo a la izquierda */
-    .data-table td > *,
-    .data-table td > div,
-    .data-table td > span {
+    .data-table td>*,
+    .data-table td>div,
+    .data-table td>span {
         text-align: left !important;
     }
 
@@ -4648,6 +4713,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    FIX - SELECT Y DROPDOWN MÁS GRANDES
    ============================================ */
 @media (max-width: 768px) {
+
     /* Select inputs */
     select,
     .form-select,
@@ -4683,7 +4749,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         padding: 0.5rem !important;
     }
 
-    .filters-bar > * {
+    .filters-bar>* {
         width: 100% !important;
         min-width: 0 !important;
     }
@@ -4704,6 +4770,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    Esta sección va AL FINAL para sobrescribir todo
    ============================================ */
 @media screen and (max-width: 768px) {
+
     /* Reset completo de tablas */
     table.data-table,
     .data-table {
@@ -4809,21 +4876,21 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Contenido de celdas - EXCEPTO .actions */
-    table.data-table tbody tr td > span,
-    table.data-table tbody tr td > strong,
-    table.data-table tbody tr td > small,
-    table.data-table tbody tr td > a,
-    .data-table td > span,
-    .data-table td > strong,
-    .data-table td > small {
+    table.data-table tbody tr td>span,
+    table.data-table tbody tr td>strong,
+    table.data-table tbody tr td>small,
+    table.data-table tbody tr td>a,
+    .data-table td>span,
+    .data-table td>strong,
+    .data-table td>small {
         display: block !important;
         width: 100% !important;
         text-align: left !important;
     }
 
     /* DIV normal dentro de celdas (no .actions) */
-    table.data-table tbody tr td > div:not(.actions),
-    .data-table td > div:not(.actions) {
+    table.data-table tbody tr td>div:not(.actions),
+    .data-table td>div:not(.actions) {
         display: block !important;
         width: 100% !important;
         text-align: left !important;
@@ -4909,6 +4976,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    FORZAR TARJETAS MÓVILES - MÁXIMA PRIORIDAD
    ============================================ */
 @media screen and (max-width: 768px) {
+
     /* TABLA */
     .data-table,
     table.data-table,
@@ -4946,7 +5014,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         border-radius: 12px !important;
         padding: 1rem !important;
         margin-bottom: 1rem !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
         box-sizing: border-box !important;
     }
 
@@ -4962,7 +5030,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         padding: 0.5rem 0 !important;
         margin: 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         text-align: left !important;
         font-size: 0.9rem !important;
         box-sizing: border-box !important;
@@ -5022,16 +5090,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* DIV dentro de TD (excepto actions) */
-    .data-table td > div:not(.actions) {
+    .data-table td>div:not(.actions) {
         display: block !important;
         width: 100% !important;
     }
 
     /* ACTIONS container */
-    .data-table td > .actions,
+    .data-table td>.actions,
     .data-table .actions,
     table.data-table .actions,
-    td > .actions,
+    td>.actions,
     .actions {
         display: flex !important;
         flex-direction: row !important;
@@ -5059,8 +5127,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         height: 44px !important;
         padding: 0 8px !important;
         margin: 0 !important;
-        background: rgba(196,163,90,0.1) !important;
-        border: 1px solid rgba(196,163,90,0.4) !important;
+        background: rgba(196, 163, 90, 0.1) !important;
+        border: 1px solid rgba(196, 163, 90, 0.4) !important;
         border-radius: 8px !important;
         color: #c4a35a !important;
         font-size: 1rem !important;
@@ -5088,6 +5156,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    CORRECCIÓN COMPLETA MÓVIL - VERSIÓN FINAL
    ============================================ */
 @media screen and (max-width: 768px) {
+
     /* === RESET GLOBAL === */
     body {
         overflow-x: hidden !important;
@@ -5155,8 +5224,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* === TEXTO === */
-    h1, h2, h3, h4, h5, h6,
-    p, span, div, td, th {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    div,
+    td,
+    th {
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         hyphens: auto !important;
@@ -5205,11 +5283,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         display: block !important;
         width: 100% !important;
         background: #1e1e1e !important;
-        border: 1px solid rgba(196,163,90,0.3) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
         border-radius: 12px !important;
         padding: 1rem !important;
         margin-bottom: 1rem !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     }
 
     .data-table td {
@@ -5217,14 +5295,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         padding: 0.4rem 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         text-align: left !important;
         word-wrap: break-word !important;
     }
 
     .data-table td:last-child {
         border-bottom: none !important;
-        border-top: 1px solid rgba(196,163,90,0.2) !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
         padding-top: 0.75rem !important;
         margin-top: 0.5rem !important;
     }
@@ -5248,7 +5326,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         font-weight: 600 !important;
         padding-bottom: 0.6rem !important;
         margin-bottom: 0.4rem !important;
-        border-bottom: 1px solid rgba(196,163,90,0.25) !important;
+        border-bottom: 1px solid rgba(196, 163, 90, 0.25) !important;
     }
 
     .data-table td:first-child::before {
@@ -5277,8 +5355,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         height: 44px !important;
         min-height: 44px !important;
         padding: 0 !important;
-        background: rgba(196,163,90,0.1) !important;
-        border: 1px solid rgba(196,163,90,0.35) !important;
+        background: rgba(196, 163, 90, 0.1) !important;
+        border: 1px solid rgba(196, 163, 90, 0.35) !important;
         border-radius: 8px !important;
         color: #c4a35a !important;
         font-size: 1rem !important;
@@ -5314,7 +5392,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
     }
 
-    .filters-bar > * {
+    .filters-bar>* {
         width: 100% !important;
     }
 
@@ -5378,7 +5456,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         width: 100% !important;
         padding: 0.5rem 0 !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         text-align: left !important;
         justify-content: initial !important;
         align-items: initial !important;
@@ -5420,7 +5498,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         color: #f5f3ee !important;
         padding-bottom: 0.75rem !important;
         margin-bottom: 0.5rem !important;
-        border-bottom: 1px solid rgba(196,163,90,0.25) !important;
+        border-bottom: 1px solid rgba(196, 163, 90, 0.25) !important;
     }
 
     #clients-tbody td:first-child::before,
@@ -5444,20 +5522,20 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     #notifications-body td:last-child,
     #appointments-table-body td:last-child {
         border-bottom: none !important;
-        border-top: 1px solid rgba(196,163,90,0.2) !important;
+        border-top: 1px solid rgba(196, 163, 90, 0.2) !important;
         padding-top: 0.75rem !important;
         margin-top: 0.5rem !important;
     }
 
     /* Contenido de celdas alineado a la izquierda */
-    #clients-tbody td > *,
-    #services-table-body td > *,
-    #products-table-body td > *,
-    #top-services-body td > *,
-    #membership-usage-body td > *,
-    #blocked-dates-body td > *,
-    #notifications-body td > *,
-    #appointments-table-body td > * {
+    #clients-tbody td>*,
+    #services-table-body td>*,
+    #products-table-body td>*,
+    #top-services-body td>*,
+    #membership-usage-body td>*,
+    #blocked-dates-body td>*,
+    #notifications-body td>*,
+    #appointments-table-body td>* {
         text-align: left !important;
     }
 
@@ -5511,7 +5589,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         max-width: 100% !important;
         box-sizing: border-box !important;
         background: #1e1e1e !important;
-        border: 1px solid rgba(196,163,90,0.3) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
         border-radius: 12px !important;
         padding: 1rem !important;
         margin-bottom: 1rem !important;
@@ -5592,7 +5670,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Asegurar que el body no tenga scroll horizontal */
-    html, body {
+    html,
+    body {
         max-width: 100vw !important;
         overflow-x: hidden !important;
     }
@@ -5638,7 +5717,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     td .actions,
     .data-table .actions,
     .data-table td .actions,
-    td > .actions {
+    td>.actions {
         display: flex !important;
         flex-wrap: wrap !important;
         justify-content: flex-end !important;
@@ -5670,8 +5749,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
         box-sizing: border-box !important;
         padding: 0 !important;
         margin: 0 !important;
-        background: rgba(196,163,90,0.1) !important;
-        border: 1px solid rgba(196,163,90,0.3) !important;
+        background: rgba(196, 163, 90, 0.1) !important;
+        border: 1px solid rgba(196, 163, 90, 0.3) !important;
         border-radius: 8px !important;
         color: #c4a35a !important;
     }
@@ -5787,9 +5866,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* Consistencia de altura en contenido de celdas */
-    .data-table td > *,
-    td > span,
-    td > div:not(.actions) {
+    .data-table td>*,
+    td>span,
+    td>div:not(.actions) {
         min-height: 20px !important;
         line-height: 1.4 !important;
     }
@@ -5862,12 +5941,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 
     /* 5. Contenido dentro de TD - word-break */
-    .data-table td > *,
-    td > span,
-    td > div,
-    td > strong,
-    td > small,
-    td > p {
+    .data-table td>*,
+    td>span,
+    td>div,
+    td>strong,
+    td>small,
+    td>p {
         max-width: 100% !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
@@ -5896,7 +5975,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     /* =====================================================
        FIX SERVICIOS MÓVIL - Descripciones y Botones
        ===================================================== */
-    
+
     /* Descripción del servicio - mostrar completa */
     #services-table-body td:first-child .text-sm,
     #services-table-body td:first-child .text-muted,
@@ -5970,6 +6049,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
    Máxima prioridad - sobreescribir todo
    ===================================================== */
 @media screen and (max-width: 768px) {
+
     /* Forzar que la fila de acciones sea visible */
     #services-table-body tr td:last-child {
         display: block !important;
@@ -5985,7 +6065,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
     /* Container de acciones */
     #services-table-body tr td:last-child .actions,
-    #services-table-body tr td:last-child > .actions,
+    #services-table-body tr td:last-child>.actions,
     #services-table-body .actions {
         display: flex !important;
         visibility: visible !important;
