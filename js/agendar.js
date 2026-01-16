@@ -293,7 +293,27 @@ function prefillClientForm(client) {
     }
 
     if (phoneInput && client.phone) {
-        phoneInput.value = client.phone;
+        const countrySelect = document.getElementById('country-code');
+        let localPhone = client.phone;
+
+        // Intentar detectar el código de país del número guardado
+        if (countrySelect) {
+            const countryCodes = ['593', '502', '503', '504', '505', '506', '507', '52', '54', '55', '56', '57', '58', '34', '33', '39', '44', '49', '1'];
+            // Ordenar por longitud descendente para matchear primero los más largos
+            countryCodes.sort((a, b) => b.length - a.length);
+
+            for (const code of countryCodes) {
+                if (client.phone.startsWith(code)) {
+                    countrySelect.value = code;
+                    localPhone = client.phone.substring(code.length);
+                    break;
+                }
+            }
+            countrySelect.disabled = true;
+            countrySelect.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
+        }
+
+        phoneInput.value = localPhone;
         phoneInput.readOnly = true;
         phoneInput.style.backgroundColor = 'rgba(196, 163, 90, 0.1)';
     }
@@ -324,6 +344,14 @@ function clearClientForm() {
         phoneInput.value = '';
         phoneInput.readOnly = false;
         phoneInput.style.backgroundColor = '';
+    }
+
+    // Reset country selector
+    const countrySelect = document.getElementById('country-code');
+    if (countrySelect) {
+        countrySelect.value = '52'; // Default to Mexico
+        countrySelect.disabled = false;
+        countrySelect.style.backgroundColor = '';
     }
 
     if (emailInput) {
@@ -682,10 +710,10 @@ function setupEventListeners() {
         await submitBooking();
     });
 
-    // Formatear teléfono mientras se escribe
+    // Formatear teléfono mientras se escribe (permitir hasta 15 dígitos para internacionales)
     const phoneInput = document.getElementById('client-phone');
     phoneInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 15);
     });
 }
 
@@ -705,7 +733,7 @@ async function submitBooking() {
 
     const missingFields = [];
     if (!name) missingFields.push('Nombre Completo');
-    if (!phoneVal || phoneVal.length < 10) missingFields.push('Teléfono (10 dígitos)');
+    if (!phoneVal || phoneVal.length < 7) missingFields.push('Teléfono (mínimo 7 dígitos)');
 
     if (missingFields.length > 0) {
         showToast(`⚠️ Campos obligatorios: ${missingFields.join(', ')}`, 'error');
@@ -729,7 +757,10 @@ async function submitBooking() {
     btnConfirm.textContent = 'Procesando...';
 
     const formData = new FormData(elements.bookingForm);
-    const phone = formData.get('phone').replace(/\D/g, '');
+    // Combinar código de país + número local
+    const countryCode = document.getElementById('country-code')?.value || '52';
+    const localPhone = formData.get('phone').replace(/\D/g, '');
+    const phone = countryCode + localPhone;
 
     try {
         // Si hay cliente logueado con código, usarlo directamente

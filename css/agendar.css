@@ -2596,3 +2596,82 @@
         width: 100%;
     }
 }
+
+/* ============================================================================
+   PHONE INPUT WITH COUNTRY SELECTOR
+   ============================================================================ */
+.phone-input-group {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+    transition: border-color 0.3s ease;
+}
+
+.phone-input-group:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.1);
+}
+
+.country-select {
+    padding: 0.875rem 0.75rem;
+    background: rgba(196, 163, 90, 0.1);
+    border: none;
+    border-right: 1px solid rgba(196, 163, 90, 0.2);
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    cursor: pointer;
+    min-width: 110px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C4A35A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+}
+
+.country-select:focus {
+    outline: none;
+    background-color: rgba(196, 163, 90, 0.15);
+}
+
+.country-select option {
+    background: var(--charcoal);
+    color: var(--cream);
+    padding: 0.5rem;
+}
+
+.phone-input-group .phone-input {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--cream);
+    font-family: var(--font-body);
+    font-size: 1rem;
+}
+
+.phone-input-group .phone-input:focus {
+    outline: none;
+}
+
+.phone-input-group .phone-input::placeholder {
+    color: rgba(245, 243, 238, 0.4);
+}
+
+@media (max-width: 480px) {
+    .country-select {
+        min-width: 95px;
+        font-size: 0.85rem;
+        padding: 0.75rem 0.5rem;
+        padding-right: 24px;
+    }
+
+    .phone-input-group .phone-input {
+        font-size: 0.95rem;
+        padding: 0.75rem;
+    }
+}
