@@ -434,7 +434,8 @@ if (!document.querySelector('#toast-animations')) {
 
 function validatePhone(phone) {
     const cleaned = phone.replace(/\D/g, '');
-    return cleaned.length === 10;
+    // Soporta números internacionales (7-15 dígitos)
+    return cleaned.length >= 7 && cleaned.length <= 15;
 }
 
 function validateEmail(email) {
@@ -533,7 +534,7 @@ function sortTable(tableId, field, columnIndex) {
     if (!tableSortState[tableId]) {
         tableSortState[tableId] = { field: null, direction: 'asc' };
     }
-    
+
     const state = tableSortState[tableId];
     if (state.field === field) {
         state.direction = state.direction === 'asc' ? 'desc' : 'asc';
@@ -581,8 +582,8 @@ function sortTable(tableId, field, columnIndex) {
         const arrows = th.querySelector('.sort-arrows');
         if (arrows) {
             if (th.dataset.field === field) {
-                arrows.innerHTML = state.direction === 'asc' 
-                    ? '<i class="fas fa-sort-up"></i>' 
+                arrows.innerHTML = state.direction === 'asc'
+                    ? '<i class="fas fa-sort-up"></i>'
                     : '<i class="fas fa-sort-down"></i>';
             } else {
                 arrows.innerHTML = '<i class="fas fa-sort"></i>';
@@ -599,7 +600,7 @@ function parseSpanishDate(str) {
         'jul': 6, 'julio': 6, 'ago': 7, 'agosto': 7, 'sep': 8, 'sept': 8, 'septiembre': 8,
         'oct': 9, 'octubre': 9, 'nov': 10, 'noviembre': 10, 'dic': 11, 'diciembre': 11
     };
-    
+
     const match = str.match(/(\d{1,2})\s*(?:de\s*)?(\w+)(?:\s*(?:de\s*)?(\d{4}))?/i);
     if (match) {
         const day = parseInt(match[1]);

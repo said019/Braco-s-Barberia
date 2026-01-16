@@ -24,9 +24,17 @@ const sendTemplate = async (to, contentSid, variables = {}) => {
 
     if (!to) return { success: false, error: 'No phone' };
 
-    // Format phone: ensure whatsapp:+52...
+    // Format phone: support international numbers
     let phone = to.replace(/\D/g, '');
-    if (!phone.startsWith('52')) phone = '52' + phone;
+    // Si el número tiene 10 dígitos, asumimos México (+52)
+    // Si tiene más, asumimos que ya incluye código de país
+    if (phone.length === 10) {
+        phone = '52' + phone;
+    } else if (phone.length < 10) {
+        // Número muy corto, agregar código de México por defecto
+        phone = '52' + phone;
+    }
+    // Si ya tiene 11+ dígitos, asumimos que incluye código de país
     const toWhatsapp = `whatsapp:+${phone}`;
 
     try {
@@ -357,7 +365,13 @@ export const sendTextMessage = async (phone, message) => {
         let to = phone;
         if (!to.startsWith('whatsapp:')) {
             let clean = to.replace(/\D/g, '');
-            if (!clean.startsWith('52')) clean = '52' + clean;
+            // Si tiene 10 dígitos, asumimos México (+52)
+            // Si tiene más, asumimos que ya incluye código de país
+            if (clean.length === 10) {
+                clean = '52' + clean;
+            } else if (clean.length < 10) {
+                clean = '52' + clean;
+            }
             to = `whatsapp:+${clean}`;
         }
 

@@ -509,24 +509,30 @@ if (document.querySelector('.products-grid')) {
 }
 
 /**
- * Formatea teléfono
+ * Formatea teléfono (soporta internacionales)
  */
 function formatPhone(phone) {
     const cleaned = phone.replace(/\D/g, '');
 
+    // Formato mexicano (10 dígitos)
     if (cleaned.length === 10) {
         return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 6)} ${cleaned.slice(6)}`;
+    }
+
+    // Formato internacional con código de país
+    if (cleaned.length > 10) {
+        return `+${cleaned}`;
     }
 
     return phone;
 }
 
 /**
- * Valida número de teléfono mexicano
+ * Valida número de teléfono (internacional: 7-15 dígitos)
  */
 function validatePhone(phone) {
     const cleaned = phone.replace(/\D/g, '');
-    return cleaned.length === 10;
+    return cleaned.length >= 7 && cleaned.length <= 15;
 }
 
 /**
