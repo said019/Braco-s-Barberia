@@ -307,8 +307,14 @@ export const appointmentController = {
             });
             console.log(`[CREATE APPT] Admin New Appointment Notification SENT. IsNewClient: ${isNewClient}`);
           } else {
-            // Cliente recurrente - NO enviar notificación al admin
-            console.log(`[CREATE APPT] Skipping admin notification - recurring client ${client.name}`);
+            // Cliente recurrente - enviar notificación con template diferente
+            await whatsappService.sendAdminNewAppointmentRecurring({
+              clientName: client.name,
+              serviceName: service.name,
+              date: formattedDate,
+              time: start_time
+            });
+            console.log(`[CREATE APPT] Admin Recurring Appointment Notification SENT for ${client.name}`);
           }
 
           // NOTA: El mensaje de "cliente recurrente" NO se envía aquí.

@@ -237,6 +237,23 @@ export const sendAdminNewAppointment = async ({ clientName, serviceName, date, t
 };
 
 // ============================================================================
+// 7b. Admin: Nueva Cita de Cliente Recurrente (No nuevo)
+// Template: admin_nva_cita2 - Variables: {{1}} Client, {{2}} Service, {{3}} Date, {{4}} Time
+// ============================================================================
+export const sendAdminNewAppointmentRecurring = async ({ clientName, serviceName, date, time }) => {
+    const variables = {
+        "1": clientName,
+        "2": serviceName,
+        "3": date,
+        "4": time
+    };
+    // Template SID for recurring clients: admin_nva_cita2
+    const sid = process.env.TWILIO_TEMPLATE_ADMIN_APPT_RECURRING_SID || 'HX5d5ff493c5ded8637cff76e1d5496502';
+
+    return await sendTemplateToAllAdmins(sid, variables);
+};
+
+// ============================================================================
 // 8. Admin: Pago Completo (Notificación al dueño)
 // Template: pago_completo - Variables: {{1}} Client, {{2}} Service, {{3}} Amount, {{4}} Date
 // ============================================================================
@@ -477,6 +494,7 @@ export default {
     sendReminder24h,
     sendReminder2h,
     sendAdminNewAppointment,
+    sendAdminNewAppointmentRecurring,
     sendAdminFullPayment,
     sendAdminCancellation,
     sendAdminModification,
