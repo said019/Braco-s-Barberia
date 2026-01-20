@@ -46,11 +46,11 @@
 
         .card-flipper {
             position: relative;
-            /* Robust sizing using Viewport Units - No calc/aspect-ratio dependency */
+            /* Robust sizing using Viewport Units - adjusted for 12 diamonds */
             width: 90vw;
-            height: 57vw;
+            height: 60vw;
             max-width: 380px;
-            max-height: 240px;
+            max-height: 260px;
             transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
             transform-style: preserve-3d;
             -webkit-transform-style: preserve-3d;
@@ -211,9 +211,9 @@
         .diamonds-grid-12 {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 0.6rem;
-            /* Slightly larger gap */
-            margin: 1.5rem auto;
+            gap: 0.4rem;
+            /* Slightly compact gap */
+            margin: 0.8rem auto;
             position: relative;
             z-index: 5;
             width: fit-content;
