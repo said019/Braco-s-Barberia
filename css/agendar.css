@@ -2734,7 +2734,7 @@
 }
 
 .country-select {
-    padding: 0.875rem 0.75rem;
+    padding: 0.875rem 0.5rem;
     background: rgba(196, 163, 90, 0.1);
     border: none;
     border-right: 1px solid rgba(196, 163, 90, 0.2);
@@ -2742,7 +2742,10 @@
     font-family: var(--font-body);
     font-size: 0.95rem;
     cursor: pointer;
-    min-width: 110px;
+    width: auto;
+    min-width: 80px;
+    max-width: 140px;
+    flex-shrink: 0;
     appearance: none;
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C4A35A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -2770,6 +2773,7 @@
     color: var(--cream);
     font-family: var(--font-body);
     font-size: 1rem;
+    min-width: 100px;
 }
 
 .phone-input-group .phone-input:focus {
