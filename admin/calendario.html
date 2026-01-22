@@ -229,6 +229,7 @@
         let filteredAppointments = [];
         let allClients = [];
         let allServices = [];
+        let allExtras = [];
 
         // Helper: Formatear fecha como YYYY-MM-DD sin problemas de zona horaria
         function formatDateYMD(date) {
@@ -894,9 +895,17 @@
             return labels[status] || status;
         }
 
-        // Load clients and services
+        // Load clients, services and extras
         async function loadClientsAndServices() {
             try {
+                // Si allExtras está vacío, cargar extras usando endpoint público
+                const extrasResponse = await fetch('/api/services/extras');
+                const extrasData = await extrasResponse.json();
+
+                if (extrasData.success) {
+                    allExtras = extrasData.data || [];
+                }
+
                 const [clients, services] = await Promise.all([
                     AdminAPI.getClients(),
                     AdminAPI.getServices()
@@ -908,9 +917,10 @@
 
                 console.log('Loaded clients:', allClients.length);
                 console.log('Loaded services:', allServices.length);
+                console.log('Loaded extras:', allExtras.length);
             } catch (error) {
-                console.error('Error loading clients/services:', error);
-                showToast('Error al cargar clientes/servicios', 'error');
+                console.error('Error loading clients/services/extras:', error);
+                showToast('Error al cargar datos iniciales', 'error');
             }
         }
 
@@ -971,6 +981,20 @@
                     </select>
                 </div>
 
+                <!-- Extras Selector -->
+                <div class="form-group">
+                    <label class="form-label">Extras (Opcional)</label>
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(196, 163, 90, 0.3); border-radius: 4px; padding: 0.5rem; max-height: 150px; overflow-y: auto;">
+                        ${allExtras.length > 0 ? allExtras.map(extra => `
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; cursor: pointer; color: var(--cream); font-size: 0.9rem;">
+                                <input type="checkbox" name="appointment-extras" value="${extra.id}" data-price="${extra.price}" 
+                                    style="width: 16px; height: 16px; accent-color: var(--gold);">
+                                <span>${extra.name} (+$${extra.price})</span>
+                            </label>
+                        `).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">No hay extras disponibles</span>'}
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="appointment-notes" class="form-label">Notas</label>
                     <textarea id="appointment-notes" class="form-textarea" rows="3" placeholder="Notas adicionales..."></textarea>
@@ -1008,6 +1032,23 @@
             const serviceSelect = document.getElementById('appointment-service');
             const serviceName = serviceSelect.options[serviceSelect.selectedIndex].text.split(' - ')[0];
 
+            // Obtener extras seleccionados para mostrar nombres
+            const extrasCheckboxes = document.querySelectorAll('input[name="appointment-extras"]:checked');
+            let extrasNames = [];
+            let extrasTotal = 0;
+
+            extrasCheckboxes.forEach(cb => {
+                const extra = allExtras.find(e => e.id == cb.value);
+                if (extra) {
+                    extrasNames.push(extra.name);
+                    extrasTotal += parseFloat(extra.price);
+                }
+            });
+
+            const extrasText = extrasNames.length > 0
+                ? `<br><span style="font-size:0.85em; color: var(--gold);">+ ${extrasNames.join(', ')}</span>`
+                : '';
+
             // Formatear fecha para mostrar
             const dateObj = new Date(date + 'T12:00:00');
             const formattedDate = dateObj.toLocaleDateString('es-MX', {
@@ -1019,7 +1060,9 @@
                     <i class="fas fa-calendar-check" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
                     <h3 style="margin-bottom: 1rem; color: var(--cream);">Confirmar Cita</h3>
                     <p style="color: var(--cream); margin-bottom: 0.5rem;"><strong>${client.name}</strong></p>
-                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">${serviceName}</p>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                        ${serviceName} ${extrasText}
+                    </p>
                     <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${formattedDate} a las ${time}</p>
                     
                     <div style="background: rgba(196, 163, 90, 0.1); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
@@ -1065,6 +1108,10 @@
                 const clientId = client.id;
                 const notes = document.getElementById('appointment-notes').value;
 
+                // Obtener extras seleccionados
+                const extrasCheckboxes = document.querySelectorAll('input[name="appointment-extras"]:checked');
+                const extrasIds = Array.from(extrasCheckboxes).map(cb => parseInt(cb.value));
+
                 // Obtener preferencias de notificación del modal de confirmación
                 const sendWhatsApp = document.getElementById('send-whatsapp-notification')?.checked ?? true;
                 const sendEmail = document.getElementById('send-email-notification')?.checked ?? true;
@@ -1081,7 +1128,8 @@
                     start_time: time,
                     notes: notes,
                     send_whatsapp: sendWhatsApp,
-                    send_email: sendEmail
+                    send_email: sendEmail,
+                    extras: extrasIds // Add extras array
                 };
 
                 await AdminAPI.createAppointment(appointmentData);

@@ -323,7 +323,24 @@ export const Appointment = {
       deposit_amount || 0,
       depositExpiresAt
     ]);
-    return result.rows[0];
+    const appointment = result.rows[0];
+
+    // Insertar extras si existen
+    if (appointmentData.extras && Array.isArray(appointmentData.extras) && appointmentData.extras.length > 0) {
+      for (const extraId of appointmentData.extras) {
+        // Obtener precio del servicio extra actual
+        const extraServiceRes = await query(`SELECT price FROM services WHERE id = $1`, [extraId]);
+        if (extraServiceRes.rows.length > 0) {
+          const extraPrice = extraServiceRes.rows[0].price;
+          await query(
+            `INSERT INTO appointment_extras (appointment_id, service_id, price) VALUES ($1, $2, $3)`,
+            [appointment.id, extraId, extraPrice]
+          );
+        }
+      }
+    }
+
+    return appointment;
   },
 
   // Marcar depósito como pagado

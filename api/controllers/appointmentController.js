@@ -161,8 +161,10 @@ export const appointmentController = {
         appointment_date,
         start_time,
         end_time,
+        end_time,
         notes,
-        status: req.body.status // Pass status if provided (e.g., 'pending')
+        status: req.body.status, // Pass status if provided (e.g., 'pending')
+        extras: req.body.extras // Pass extras array
       });
 
       console.log(`[CREATE APPT] Created: ID=${appointment.id}, Code=${appointment.checkout_code}, ClientID=${client_id}, Status=${appointment.status}`);
