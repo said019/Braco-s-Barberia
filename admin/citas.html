@@ -497,6 +497,7 @@
             // Change service button (always available except completed/cancelled)
             if (!['completed', 'cancelled'].includes(app.status)) {
                 buttons += `<button class="btn-icon" onclick="openChangeServiceModal(${id}, ${serviceId})" title="Cambiar Servicio" style="background: rgba(196,163,90,0.2); color: var(--gold);"><i class="fas fa-exchange-alt"></i></button>`;
+                buttons += `<button class="btn-icon" onclick="openExtrasModal(${id})" title="Agregar Extras" style="background: rgba(255,152,0,0.2); color: #FFA726;"><i class="fas fa-plus-circle"></i></button>`;
             }
 
             if (app.status === 'pending') {
@@ -651,6 +652,132 @@
                 }
             } catch (error) {
                 showToast(error.message || 'Error al cambiar servicio', 'error');
+            }
+        }
+
+        // ============================
+        // EXTRAS DE CITAS
+        // ============================
+        let availableExtras = [];
+
+        async function loadExtras() {
+            try {
+                availableExtras = await api.get('/admin/services/extras');
+            } catch (e) {
+                console.error('Error loading extras:', e);
+                availableExtras = [];
+            }
+        }
+
+        async function openExtrasModal(appointmentId) {
+            // Cargar extras disponibles si aún no se han cargado
+            if (availableExtras.length === 0) {
+                await loadExtras();
+            }
+
+            // Obtener extras actuales de la cita
+            let currentExtras = [];
+            try {
+                const res = await api.get(`/admin/appointments/${appointmentId}/extras`);
+                currentExtras = res.extras || [];
+            } catch (e) {
+                console.error('Error loading appointment extras:', e);
+            }
+
+            const currentExtraIds = currentExtras.map(e => e.service_id);
+
+            const content = `
+                <div id="extras-modal-content">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: var(--cream); margin-bottom: 0.5rem; display: block;">Agregar Extra</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="extra-select" class="search-input" style="flex: 1;">
+                                <option value="">-- Seleccionar extra --</option>
+                                ${availableExtras.filter(e => !currentExtraIds.includes(e.id)).map(e => `
+                                    <option value="${e.id}">${e.name} - ${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(e.price)}</option>
+                                `).join('')}
+                            </select>
+                            <button class="btn btn-primary" onclick="addExtraToAppointment(${appointmentId})">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        ${availableExtras.length === 0 ? '<p style="color: #888; margin-top: 0.5rem; font-size: 0.85rem;"><i class="fas fa-info-circle"></i> No hay servicios extras definidos. Crea uno en Servicios marcando "Es Extra".</p>' : ''}
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(196,163,90,0.2); padding-top: 1rem;">
+                        <h4 style="color: var(--gold); margin-bottom: 0.75rem;">Extras agregados</h4>
+                        <div id="current-extras-list">
+                            ${currentExtras.length === 0 
+                                ? '<p style="color: #888;">Sin extras añadidos</p>'
+                                : currentExtras.map(e => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,152,0,0.1); border-radius: 4px; margin-bottom: 0.5rem;">
+                                        <span style="color: var(--cream);">${e.service_name}</span>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="color: #FFA726;">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(e.price)}</span>
+                                            <button class="btn-icon delete" onclick="removeExtraFromAppointment(${appointmentId}, ${e.id})" title="Quitar extra">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                        ${currentExtras.length > 0 ? `
+                            <div style="text-align: right; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid rgba(196,163,90,0.2);">
+                                <span style="color: var(--cream);">Total extras: </span>
+                                <span style="color: #FFA726; font-weight: bold;">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(currentExtras.reduce((sum, e) => sum + parseFloat(e.price), 0))}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.extrasModal.close()">Cerrar</button>
+            `;
+
+            window.extrasModal = showModal('extrasModal', '<i class="fas fa-plus-circle" style="color: #FFA726;"></i> Extras de la Cita', content, footer);
+        }
+
+        async function addExtraToAppointment(appointmentId) {
+            const select = document.getElementById('extra-select');
+            const serviceId = parseInt(select.value);
+
+            if (!serviceId) {
+                showToast('Selecciona un extra', 'warning');
+                return;
+            }
+
+            try {
+                const response = await api.post(`/admin/appointments/${appointmentId}/extras`, { service_id: serviceId });
+
+                if (response.success) {
+                    showToast(response.message || 'Extra agregado', 'success');
+                    // Refrescar modal
+                    window.extrasModal.close();
+                    openExtrasModal(appointmentId);
+                } else {
+                    throw new Error(response.error || 'Error al agregar extra');
+                }
+            } catch (error) {
+                showToast(error.message || 'Error al agregar extra', 'error');
+            }
+        }
+
+        async function removeExtraFromAppointment(appointmentId, extraId) {
+            try {
+                const response = await api.delete(`/admin/appointments/${appointmentId}/extras/${extraId}`);
+
+                if (response.success) {
+                    showToast(response.message || 'Extra eliminado', 'success');
+                    // Refrescar modal
+                    window.extrasModal.close();
+                    openExtrasModal(appointmentId);
+                } else {
+                    throw new Error(response.error || 'Error al eliminar extra');
+                }
+            } catch (error) {
+                showToast(error.message || 'Error al eliminar extra', 'error');
             }
         }
 

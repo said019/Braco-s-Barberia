@@ -1430,6 +1430,137 @@ router.put('/appointments/:id/service', authenticateToken, async (req, res, next
     }
 });
 
+// ============================
+// EXTRAS DE CITAS (Add-ons)
+// ============================
+
+// GET /api/admin/appointments/:id/extras - Obtener extras de una cita
+router.get('/appointments/:id/extras', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(`
+            SELECT ae.*, s.name as service_name, s.price as current_price
+            FROM appointment_extras ae
+            JOIN services s ON ae.service_id = s.id
+            WHERE ae.appointment_id = $1
+            ORDER BY ae.created_at
+        `, [id]);
+
+        // Calcular total de extras
+        const total = result.rows.reduce((sum, e) => sum + parseFloat(e.price), 0);
+
+        res.json({
+            success: true,
+            extras: result.rows,
+            total
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/admin/appointments/:id/extras - Agregar extra a cita
+router.post('/appointments/:id/extras', authenticateToken, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { service_id } = req.body;
+
+        if (!service_id) {
+            return res.status(400).json({ success: false, error: 'service_id es requerido' });
+        }
+
+        // Verificar que la cita existe
+        const apptCheck = await db.query('SELECT id FROM appointments WHERE id = $1', [id]);
+        if (apptCheck.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Cita no encontrada' });
+        }
+
+        // Obtener servicio extra
+        const serviceCheck = await db.query(
+            'SELECT id, name, price, is_extra FROM services WHERE id = $1',
+            [service_id]
+        );
+        if (serviceCheck.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Servicio no encontrado' });
+        }
+
+        const service = serviceCheck.rows[0];
+
+        // Verificar si ya está agregado
+        const existingCheck = await db.query(
+            'SELECT id FROM appointment_extras WHERE appointment_id = $1 AND service_id = $2',
+            [id, service_id]
+        );
+        if (existingCheck.rows.length > 0) {
+            return res.status(409).json({ success: false, error: 'Este extra ya está agregado a la cita' });
+        }
+
+        // Insertar extra
+        const result = await db.query(`
+            INSERT INTO appointment_extras (appointment_id, service_id, service_name, price)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [id, service_id, service.name, service.price]);
+
+        console.log(`[ADD EXTRA] Appointment ${id}: +${service.name} ($${service.price})`);
+
+        res.status(201).json({
+            success: true,
+            message: `Extra "${service.name}" agregado`,
+            extra: result.rows[0]
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// DELETE /api/admin/appointments/:id/extras/:extraId - Quitar extra de cita
+router.delete('/appointments/:id/extras/:extraId', authenticateToken, async (req, res, next) => {
+    try {
+        const { id, extraId } = req.params;
+
+        const result = await db.query(`
+            DELETE FROM appointment_extras 
+            WHERE id = $1 AND appointment_id = $2
+            RETURNING *
+        `, [extraId, id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Extra no encontrado' });
+        }
+
+        console.log(`[REMOVE EXTRA] Appointment ${id}: -${result.rows[0].service_name}`);
+
+        res.json({
+            success: true,
+            message: `Extra "${result.rows[0].service_name}" eliminado`
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/admin/services/extras - Obtener solo servicios extras (para selector)
+router.get('/services/extras', authenticateToken, async (req, res, next) => {
+    try {
+        const result = await db.query(`
+            SELECT id, name, price, duration_minutes
+            FROM services 
+            WHERE is_extra = TRUE AND is_active = TRUE
+            ORDER BY name
+        `);
+
+        res.json(result.rows);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /api/admin/appointments/:id/resend-whatsapp - Reenviar WhatsApp de confirmación
 router.post('/appointments/:id/resend-whatsapp', authenticateToken, async (req, res, next) => {
     try {
@@ -2083,7 +2214,7 @@ router.get('/service-categories', authenticateToken, async (req, res, next) => {
 router.get('/services', authenticateToken, async (req, res, next) => {
     try {
         const result = await db.query(`
-            SELECT s.*, sc.name as category_name
+            SELECT s.*, s.is_extra, sc.name as category_name
             FROM services s
             LEFT JOIN service_categories sc ON s.category_id = sc.id
             ORDER BY sc.display_order, s.display_order
@@ -2099,13 +2230,13 @@ router.get('/services', authenticateToken, async (req, res, next) => {
 // POST /api/admin/services
 router.post('/services', authenticateToken, async (req, res, next) => {
     try {
-        const { name, description, duration_minutes, price, category_id, is_active, image_url } = req.body;
+        const { name, description, duration_minutes, price, category_id, is_active, image_url, is_extra } = req.body;
 
         const result = await db.query(
-            `INSERT INTO services (name, description, duration_minutes, price, category_id, is_active, image_url)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO services (name, description, duration_minutes, price, category_id, is_active, image_url, is_extra)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [name, description, duration_minutes, price, category_id, is_active ?? true, image_url || null]
+            [name, description, duration_minutes, price, category_id, is_active ?? true, image_url || null, is_extra ?? false]
         );
 
         res.status(201).json(result.rows[0]);
@@ -2119,14 +2250,14 @@ router.post('/services', authenticateToken, async (req, res, next) => {
 router.put('/services/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, duration_minutes, price, category_id, is_active, image_url } = req.body;
+        const { name, description, duration_minutes, price, category_id, is_active, image_url, is_extra } = req.body;
 
         const result = await db.query(
             `UPDATE services 
              SET name = $2, description = $3, duration_minutes = $4, price = $5, 
-                 category_id = $6, is_active = $7, image_url = $8, updated_at = CURRENT_TIMESTAMP
+                 category_id = $6, is_active = $7, image_url = $8, is_extra = $9, updated_at = CURRENT_TIMESTAMP
              WHERE id = $1 RETURNING *`,
-            [id, name, description, duration_minutes, price, category_id, is_active, image_url || null]
+            [id, name, description, duration_minutes, price, category_id, is_active, image_url || null, is_extra ?? false]
         );
 
         res.json(result.rows[0]);

@@ -599,6 +599,124 @@
     font-size: 1.5rem;
 }
 
+/* Extras Section (Add-ons) */
+.extras-section {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(255, 152, 0, 0.02));
+    border: 1px solid rgba(255, 152, 0, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.extras-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.extras-subtitle {
+    font-size: 0.85rem;
+    color: rgba(245, 245, 240, 0.7);
+    margin-bottom: 1rem;
+}
+
+.extras-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.extra-card {
+    background: var(--charcoal);
+    border: 1px solid rgba(255, 152, 0, 0.15);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.extra-card:hover {
+    border-color: rgba(255, 152, 0, 0.4);
+    background: rgba(255, 152, 0, 0.05);
+}
+
+.extra-card.selected {
+    border-color: #FFA726;
+    background: rgba(255, 152, 0, 0.1);
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.15);
+}
+
+.extra-card .extra-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 152, 0, 0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.extra-card.selected .extra-checkbox {
+    background: #FFA726;
+    border-color: #FFA726;
+}
+
+.extra-card .extra-checkbox i {
+    color: var(--charcoal-dark);
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.extra-card.selected .extra-checkbox i {
+    opacity: 1;
+}
+
+.extra-card .extra-info {
+    flex: 1;
+}
+
+.extra-card .extra-name {
+    font-size: 0.9rem;
+    color: var(--cream);
+    font-weight: 500;
+}
+
+.extra-card .extra-price {
+    font-size: 0.85rem;
+    color: #FFA726;
+    font-weight: 600;
+}
+
+.extras-total {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 152, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.extras-total span {
+    font-size: 0.95rem;
+    color: var(--cream);
+}
+
+.extras-total strong {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: #FFA726;
+}
+
 /* Booking Form */
 .booking-form {
     background: var(--charcoal);

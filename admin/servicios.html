@@ -203,6 +203,7 @@
                         <span class="badge ${service.is_active ? 'active' : 'inactive'}">
                             ${service.is_active ? 'Activo' : 'Inactivo'}
                         </span>
+                        ${service.is_extra ? '<span class="badge" style="background: rgba(255,152,0,0.2); color: #FFA726; margin-left: 4px;">EXTRA</span>' : ''}
                     </td>
                     <td data-label="">
                         <div class="actions">
@@ -261,6 +262,11 @@
                                 <input type="text" id="service-name" value="${service ? service.name : ''}" required class="form-input">
                             </div>
 
+                            <div class="form-group">
+                                <label for="service-category">Categoría *</label>
+                                <select id="service-category" required class="form-input">${categoryOptions}</select>
+                            </div>
+
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="service-price">Precio ($) *</label>
@@ -277,6 +283,13 @@
                                     <input type="checkbox" id="service-active" ${!service || service.is_active ? 'checked' : ''} style="width: auto; margin-right: 10px;">
                                     <span>Servicio Activo (Disponible para citas)</span>
                                 </label>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label class="flex-center gap-2" style="justify-content: flex-start; cursor: pointer; display: flex; align-items: center;">
+                                    <input type="checkbox" id="service-extra" ${service && service.is_extra ? 'checked' : ''} style="width: auto; margin-right: 10px;">
+                                    <span style="color: #FFA726;"><i class="fas fa-plus-circle"></i> Es servicio EXTRA (solo admin, no suma tiempo)</span>
+                                </label>
+                                <p class="form-hint" style="margin-top: 0.25rem; font-size: 0.8rem; color: #888;">Los extras no aparecen en la web pública y no afectan la duración de la cita.</p>
                             </div>
                         </div>
                     </div>
@@ -358,12 +371,13 @@
 
             const data = {
                 name: document.getElementById('service-name').value,
-                category_id: service ? service.category_id : 1,  // Default to first category
+                category_id: parseInt(document.getElementById('service-category').value),
                 price: parseFloat(document.getElementById('service-price').value),
                 duration_minutes: parseInt(document.getElementById('service-duration').value),
                 description: document.getElementById('service-desc').value || '',  // Get edited description
                 image_url: document.getElementById('service-image-url').value || null,
-                is_active: document.getElementById('service-active').checked
+                is_active: document.getElementById('service-active').checked,
+                is_extra: document.getElementById('service-extra').checked
             };
 
             try {

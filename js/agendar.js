@@ -11,7 +11,9 @@ const state = {
     currentMonth: new Date(),
     availableSlots: [],
     services: [],
-    client: null
+    client: null,
+    availableExtras: [],
+    selectedExtras: []
 };
 
 // Helper para formatear fecha en formato YYYY-MM-DD sin timezone issues
@@ -510,9 +512,10 @@ function goToStep(step) {
         loadAvailability(state.selectedDate);
     }
 
-    // Si es paso 3, actualizar resumen
+    // Si es paso 3, actualizar resumen y cargar extras
     if (step === 3) {
         updateSummary();
+        loadAndRenderExtras();
     }
 
     // Scroll to top
@@ -661,8 +664,96 @@ function updateSummary() {
     }).format(state.selectedDate);
     document.getElementById('summary-time').textContent = state.selectedTime;
     document.getElementById('summary-duration').textContent = `${state.selectedService.duration_minutes} minutos`;
-    document.getElementById('summary-price').textContent = `$${state.selectedService.price}`;
+    updateTotalPrice();
 }
+
+// Actualizar precio total con extras
+function updateTotalPrice() {
+    const basePrice = parseFloat(state.selectedService.price);
+    const extrasTotal = state.selectedExtras.reduce((sum, e) => sum + parseFloat(e.price), 0);
+    const total = basePrice + extrasTotal;
+
+    document.getElementById('summary-price').textContent = `$${total}`;
+
+    // Mostrar desglose si hay extras
+    const totalDiv = document.getElementById('extras-total');
+    if (totalDiv) {
+        if (state.selectedExtras.length > 0) {
+            totalDiv.style.display = 'flex';
+            document.getElementById('extras-total-price').textContent = `$${total}`;
+        } else {
+            totalDiv.style.display = 'none';
+        }
+    }
+}
+
+// ============================================================================
+// EXTRAS (ADD-ONS)
+// ============================================================================
+async function loadAndRenderExtras() {
+    const section = document.getElementById('extras-section');
+    const grid = document.getElementById('extras-grid');
+
+    if (!section || !grid) return;
+
+    try {
+        // Cargar extras desde API
+        const response = await fetch(`${API.BASE_URL}/services/extras`);
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+            state.availableExtras = data.data;
+            section.style.display = 'block';
+
+            grid.innerHTML = state.availableExtras.map(extra => `
+                <div class="extra-card" data-id="${extra.id}" onclick="toggleExtra(${extra.id})">
+                    <div class="extra-checkbox">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="extra-info">
+                        <div class="extra-name">${extra.name}</div>
+                        <div class="extra-price">+$${parseFloat(extra.price).toFixed(0)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Restaurar selección si existe
+            state.selectedExtras.forEach(e => {
+                const card = grid.querySelector(`[data-id="${e.id}"]`);
+                if (card) card.classList.add('selected');
+            });
+        } else {
+            section.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading extras:', error);
+        section.style.display = 'none';
+    }
+}
+
+// Toggle selección de extra
+function toggleExtra(extraId) {
+    const extra = state.availableExtras.find(e => e.id === extraId);
+    if (!extra) return;
+
+    const card = document.querySelector(`.extra-card[data-id="${extraId}"]`);
+    const index = state.selectedExtras.findIndex(e => e.id === extraId);
+
+    if (index >= 0) {
+        // Quitar
+        state.selectedExtras.splice(index, 1);
+        card?.classList.remove('selected');
+    } else {
+        // Agregar
+        state.selectedExtras.push(extra);
+        card?.classList.add('selected');
+    }
+
+    updateTotalPrice();
+}
+
+// Exponer funciones globalmente
+window.toggleExtra = toggleExtra;
 
 // ============================================================================
 // CONFIGURAR EVENT LISTENERS

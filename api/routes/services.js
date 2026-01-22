@@ -8,6 +8,7 @@ const router = express.Router();
 // Rutas públicas
 router.get('/', serviceController.getAll);
 router.get('/categories', serviceController.getCategories);
+router.get('/extras', serviceController.getExtras);
 router.get('/:id', validateId, serviceController.getById);
 router.get('/category/:categoryId', validateId, serviceController.getByCategory);
 

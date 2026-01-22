@@ -1,7 +1,7 @@
 import { query } from '../config/database.js';
 
 export const Service = {
-  // Obtener todos los servicios activos
+  // Obtener todos los servicios activos (EXCLUYE extras para público)
   async getAll() {
     const sql = `
       SELECT 
@@ -17,6 +17,7 @@ export const Service = {
       FROM services s
       JOIN service_categories sc ON s.category_id = sc.id
       WHERE s.is_active = TRUE
+        AND (s.is_extra = FALSE OR s.is_extra IS NULL)
       ORDER BY sc.display_order, s.display_order
     `;
     const result = await query(sql);
@@ -54,6 +55,23 @@ export const Service = {
       SELECT * FROM service_categories
       WHERE is_active = TRUE
       ORDER BY display_order
+    `;
+    const result = await query(sql);
+    return result.rows;
+  },
+
+  // Obtener solo servicios extras activos (públicos)
+  async getExtras() {
+    const sql = `
+      SELECT 
+        id,
+        name,
+        description,
+        price,
+        duration_minutes
+      FROM services
+      WHERE is_active = TRUE AND is_extra = TRUE
+      ORDER BY name
     `;
     const result = await query(sql);
     return result.rows;
