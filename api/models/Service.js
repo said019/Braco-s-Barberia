@@ -61,30 +61,31 @@ export const Service = {
 
   // Crear servicio (admin)
   async create(serviceData) {
-    const { category_id, name, description, duration_minutes, price, display_order } = serviceData;
+    const { category_id, name, description, duration_minutes, price, display_order, image_url } = serviceData;
     const sql = `
-      INSERT INTO services (category_id, name, description, duration_minutes, price, display_order)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO services (category_id, name, description, duration_minutes, price, display_order, image_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const result = await query(sql, [category_id, name, description, duration_minutes, price, display_order || 0]);
+    const result = await query(sql, [category_id, name, description, duration_minutes, price, display_order || 0, image_url]);
     return result.rows[0];
   },
 
   // Actualizar servicio (admin)
   async update(id, serviceData) {
-    const { name, description, duration_minutes, price, is_active } = serviceData;
+    const { name, description, duration_minutes, price, is_active, image_url } = serviceData;
     const sql = `
       UPDATE services
       SET name = COALESCE($2, name),
           description = COALESCE($3, description),
           duration_minutes = COALESCE($4, duration_minutes),
           price = COALESCE($5, price),
-          is_active = COALESCE($6, is_active)
+          is_active = COALESCE($6, is_active),
+          image_url = COALESCE($7, image_url)
       WHERE id = $1
       RETURNING *
     `;
-    const result = await query(sql, [id, name, description, duration_minutes, price, is_active]);
+    const result = await query(sql, [id, name, description, duration_minutes, price, is_active, image_url]);
     return result.rows[0];
   },
 
