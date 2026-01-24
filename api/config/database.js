@@ -7,6 +7,7 @@ const { Pool } = pg;
 
 // Configuración del pool de conexiones
 const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'bracos_barberia',
@@ -15,6 +16,7 @@ const pool = new Pool({
   max: 20, // Máximo de conexiones en el pool
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  ssl: process.env.DB_SSL === 'true' || (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway.net')) ? { rejectUnauthorized: false } : false
 });
 
 // Evento de conexión exitosa
