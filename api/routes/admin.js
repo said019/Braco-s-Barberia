@@ -3217,10 +3217,13 @@ router.post('/blocked-dates', authenticateToken, async (req, res, next) => {
         }
 
         const dateObj = new Date(date + 'T12:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        if (dateObj < today) {
+        // Fix: Usar la fecha actual de México para evitar problemas de timezone
+        // Si el servidor está en UTC, "hoy" en México (GMT-6) podría ser "ayer" para el servidor
+        const mexicoDateStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Mexico_City' });
+        const todayMexico = new Date(mexicoDateStr + 'T00:00:00');
+
+        if (dateObj < todayMexico) {
             return res.status(400).json({
                 error: 'No se puede bloquear una fecha pasada'
             });
