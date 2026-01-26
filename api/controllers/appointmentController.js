@@ -144,6 +144,29 @@ export const appointmentController = {
         end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
       }
 
+      // ==========================================
+      // VERIFICAR SI YA TIENE CITA FUTURA (Conflict Check)
+      // ==========================================
+      const existingAppointment = await Appointment.getUpcomingByClientId(client_id);
+
+      if (existingAppointment) {
+        // Formatear fecha para el mensaje
+        const dateObj = new Date(existingAppointment.appointment_date + 'T12:00:00');
+        const formattedDate = dateObj.toLocaleDateString('es-MX', {
+          weekday: 'long', day: 'numeric', month: 'long'
+        });
+
+        res.status(409).json({
+          success: false,
+          error: 'Ya tienes una cita programada',
+          conflict: {
+            appointment: existingAppointment,
+            message: `Ya tienes una cita el ${formattedDate} a las ${existingAppointment.start_time}`
+          }
+        });
+        return;
+      }
+
       // Verificar disponibilidad
       const isAvailable = await Appointment.checkAvailability(
         appointment_date,

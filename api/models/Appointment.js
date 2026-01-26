@@ -143,6 +143,31 @@ export const Appointment = {
     return result.rows[0];
   },
 
+  // Obtener próxima cita existente por ID de cliente
+  async getUpcomingByClientId(clientId) {
+    const sql = `
+      SELECT 
+        a.*,
+        s.name as service_name,
+        s.duration_minutes
+      FROM appointments a
+      JOIN services s ON a.service_id = s.id
+      WHERE a.client_id = $1
+        AND a.status IN ('scheduled', 'confirmed', 'pending')
+        AND (
+          a.appointment_date > (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
+          OR (
+            a.appointment_date = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
+            AND a.start_time > (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::time::text
+          )
+        )
+      ORDER BY a.appointment_date ASC, a.start_time ASC
+      LIMIT 1
+    `;
+    const result = await query(sql, [clientId]);
+    return result.rows[0];
+  },
+
   // Verificar disponibilidad de un slot
   async checkAvailability(date, startTime, endTime, excludeId = null) {
     const sql = `SELECT check_slot_availability($1, $2, $3, $4) as available`;

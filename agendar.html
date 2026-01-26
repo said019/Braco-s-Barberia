@@ -737,6 +737,56 @@
         </div>
     </div>
 
+    <!-- Conflict Appointment Modal -->
+    <div class="modal-overlay hidden" id="modal-conflict-appointment">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-circle" style="color: #FFA726;"></i> Cita Existente Detectada</h3>
+                <button type="button" class="modal-close" onclick="closeConflictModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Hola, hemos detectado que ya tienes una cita programada:</p>
+
+                <div class="current-appointment-summary"
+                    style="background: rgba(255, 167, 38, 0.1); border: 1px solid rgba(255, 167, 38, 0.3);">
+                    <div class="summary-details">
+                        <span><i class="fas fa-cut"></i> <span id="conflict-service">-</span></span>
+                        <span><i class="fas fa-calendar"></i> <span id="conflict-date">-</span></span>
+                        <span><i class="fas fa-clock"></i> <span id="conflict-time">-</span></span>
+                    </div>
+                </div>
+
+                <p class="modify-question">¿Qué te gustaría hacer?</p>
+
+                <div class="modify-options">
+                    <button type="button" class="modify-option" onclick="handleConflictOption('cancel_old')">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>
+                            <strong>Cancelar Anterior y Agendar Esta</strong>
+                            <small>Sustituir la cita vieja por la nueva</small>
+                        </div>
+                    </button>
+                    <button type="button" class="modify-option" onclick="handleConflictOption('modify_old')">
+                        <i class="fas fa-edit"></i>
+                        <div>
+                            <strong>Modificar Cita Existente</strong>
+                            <small>Cambiar fecha/hora de la cita actual</small>
+                        </div>
+                    </button>
+                    <button type="button" class="modify-option" onclick="handleConflictOption('keep_old')">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Conservar Cita Anterior</strong>
+                            <small>Descartar esta nueva solicitud</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>

@@ -949,6 +949,7 @@ async function submitBooking() {
             return; // Detener flujo normal
         }
 
+
         // =====================================================
         // RECURRING CLIENT FLOW - Show Payment Options Modal
         // =====================================================
@@ -958,7 +959,16 @@ async function submitBooking() {
         // Store client & form data for later use
         state.recurringClient = client;
         state.recurringFormData = {
-            notes: formData.get('notes') || ''
+            notes: formData.get('notes') || '',
+            // Guardar datos necesarios para re-intentar post-cancelación
+            rawFormData: {
+                // Copiar los valores del form manualmente ya que FormData no se puede clonar fácilmente
+                name: formData.get('name'),
+                phone: phone, // Ya procesado con lada
+                email: formData.get('email'),
+                notes: formData.get('notes'),
+                birthdate: formData.get('birthdate')
+            }
         };
 
         // Check for memberships
@@ -979,6 +989,15 @@ async function submitBooking() {
 
     } catch (error) {
         console.error('Error:', error);
+
+        // Manejar conflicto de cita existente (409)
+        if (error.conflict) { // Ahora sí tenemos acceso a error.conflict gracias al cambio en api.js
+            showConflictModal(error.conflict);
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = originalText;
+            return;
+        }
+
         showToast(error.message || 'Error al agendar la cita', 'error');
         btnConfirm.disabled = false;
         btnConfirm.textContent = originalText;
@@ -1600,6 +1619,124 @@ function closeModifyModal() {
     document.body.style.overflow = '';
 }
 
+// ============================================================================
+// CONFLICT APPOINTMENT MODAL
+// ============================================================================
+
+function showConflictModal(conflictData) {
+    const modal = document.getElementById('modal-conflict-appointment');
+    if (!modal) return;
+
+    // Guardar datos del conflicto en state
+    state.conflictData = conflictData;
+
+    // Poblar datos
+    const apt = conflictData.appointment;
+    document.getElementById('conflict-service').textContent = apt.service_name;
+
+    // Formatear fecha
+    const dateObj = new Date(apt.appointment_date + 'T12:00:00');
+    const formattedDate = dateObj.toLocaleDateString('es-MX', {
+        weekday: 'long', day: 'numeric', month: 'long'
+    });
+    document.getElementById('conflict-date').textContent = formattedDate;
+
+    // Formatear hora (HH:MM -> 12h)
+    const [hours, minutes] = apt.start_time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    const timeFormatted = `${hour12}:${minutes} ${ampm}`;
+
+    document.getElementById('conflict-time').textContent = timeFormatted;
+
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closeConflictModal() {
+    const modal = document.getElementById('modal-conflict-appointment');
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+    state.conflictData = null;
+}
+
+async function handleConflictOption(option) {
+    if (!state.conflictData) return;
+
+    const conflictApt = state.conflictData.appointment;
+
+    if (option === 'keep_old') {
+        // Conservar cita anterior = Cancelar intento actual
+        closeConflictModal();
+        showToast('Solicitud descartada. Tu cita anterior sigue activa.', 'info');
+
+    } else if (option === 'modify_old') {
+        // Modificar cita existente
+        closeConflictModal();
+
+        // Simular que estamos viendo la cita en "Mis Reservaciones"
+        // Necesitamos formatear los datos como espera openModifyModal
+        state.pendingAppointment = {
+            id: conflictApt.id,
+            date: conflictApt.appointment_date,
+            time: conflictApt.start_time,
+            service: {
+                id: conflictApt.service_id,
+                name: conflictApt.service_name,
+                price: conflictApt.service_price || conflictApt.service?.price // Handle potential structure differences
+            },
+            canModify: true // Asumimos true ya que estamos ofreciendo la opción, o el backend ya filtró
+        };
+
+        openModifyModal();
+
+    } else if (option === 'cancel_old') {
+        // Cancelar Anterior y Agendar Esta
+        closeConflictModal();
+
+        // Mostrar modal de confirmación de cancelación (el normal)
+        // Pero necesitamos interceptar la confirmación para que luego agende la nueva
+        showCancelConfirmationForConflict(conflictApt);
+    }
+}
+
+function showCancelConfirmationForConflict(apt) {
+    const modal = document.getElementById('modal-cancel-appointment');
+
+    // Poblar modal cancelación
+    document.getElementById('cancel-service').textContent = apt.service_name;
+    // Formato fecha
+    const dateObj = new Date(apt.appointment_date + 'T12:00:00');
+    const dateFormatted = dateObj.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' });
+    document.getElementById('cancel-date').textContent = dateFormatted;
+    document.getElementById('cancel-time').textContent = apt.start_time;
+
+    // Cambiar comportamiento del botón confirmar
+    const btnConfirm = document.getElementById('btn-confirm-cancel');
+
+    // Guardar el handler original para restaurarlo después
+    if (!state.originalCancelHandler) {
+        state.originalCancelHandler = btnConfirm.onclick;
+        // Note: onclick property might not be set if it was addEventListener. 
+        // Logic assumes we attach a new listener and somehow bypass original or check flag.
+        // Better: Set a flag in state that 'confirmCancel' checks.
+    }
+
+    state.isConflictResolution = true;
+    state.conflictAptId = apt.id;
+
+    modal.classList.remove('hidden');
+}
+
+// Interceptar la cancelación en el main flow (necesitaremos modificar la funcion confirmCancel existente o crear una nueva si esta inline)
+// Revisando el HTML, el boton de cancelar tiene id="btn-confirm-cancel".
+// Necesitamos ver donde está el listener. Parece que no está en el snippet visto anteriormente, probablemente al final de 'setupEventListeners'.
+
+// Make global
+window.closeConflictModal = closeConflictModal;
+window.handleConflictOption = handleConflictOption;
+
 // Open cancel modal
 function openCancelModal() {
     if (!state.pendingAppointment || !state.pendingAppointment.canModify) return;
@@ -1625,10 +1762,88 @@ function closeCancelModal() {
     const modal = document.getElementById('modal-cancel-appointment');
     modal?.classList.add('hidden');
     document.body.style.overflow = '';
+
+    // Reset conflict resolution state if user closed without confirming
+    if (state.isConflictResolution) {
+        state.isConflictResolution = false;
+        state.conflictAptId = null;
+        // Don't nullify conflictData yet as they might want to return to conflict modal?
+        // Actually, if they close cancel modal, they are back to conflict modal?
+        // No, both modals are overlays. If they close cancel modal, they see the conflict modal underneath?
+        // Standard modal implementation usually has z-index.
+        // Let's assume they want to "cancel the cancel".
+        // If they close cancel modal, they should probably go back to conflict modal if it was open.
+        // Current implementation hides cancel modal.
+        // If conflict modal is still visible (it wasn't hidden, just covered), then we are fine.
+        // But in `handleConflictOption('cancel_old')` we called `closeConflictModal()` first.
+        // So conflict modal is hidden.
+
+        // If they close the cancel confirmation, they effectively canceled the action.
+        // We should probably re-show the conflict modal or just let them stay on the form.
+        // For now, just resetting state is safe.
+    }
 }
 
 // Confirm cancel appointment
 async function confirmCancelAppointment() {
+    // Si es flujo de resolución de conflictos (cancelar anterior para agendar nueva)
+    if (state.isConflictResolution && state.conflictAptId) {
+        const btn = document.getElementById('btn-confirm-cancel');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+
+        try {
+            // Usar API pública para cancelar (asumiendo que tenemos clientID o auth)
+            // Si estamos en este flujo, tenemos state.loggedInClient o state.tempClient (pero tempClient no tiene ID validado aun)
+            // PERO, si saltó el conflicto, es porque el backend detectó cliente por ID (loggedIn) o por teléfono.
+            // Necesitamos el ID del cliente para cancelar.
+
+            // Si no hay loggedInClient, ¿cómo sabemos que es él?
+            // El backend detectó conflicto por el client_id asociado al teléfono o session.
+            // Si el usuario "invitado" puso un teléfono que ya existe, el backend devolvió el conflicto.
+            // El backend sabe quién es. Pero el frontend quizás no tiene el ID si es guest.
+
+            // Requerimiento: "Cancelar Anterior".
+            // Para cancelar necesitamos appointmentID y clientID (por seguridad en backend logic).
+            // Si el usuario no está logueado, no tenemos clientID en state.loggedInClient.
+            // Pero el appointment conflictivo tiene client_id (ver Appointment.js query).
+            // state.conflictData.appointment tiene todos los datos.
+
+            const conflictApt = state.conflictData.appointment;
+
+            // Usamos endpoint publico. Cancelamos cita conflictiva.
+            // Usamos el client_id que viene en la cita conflictiva.
+            await API.cancelAppointmentByClient(
+                conflictApt.id,
+                conflictApt.client_id,
+                'Cancelación por traslape con nueva cita'
+            );
+
+            showToast('Cita anterior cancelada. Procesando nueva cita...', 'success');
+            closeCancelModal();
+
+            // Limpiar estado de conflicto
+            state.isConflictResolution = false;
+            state.conflictAptId = null;
+            state.conflictData = null;
+
+            // REINTENTAR AGENDAR LA NUEVA CITA de inmediato
+            setTimeout(() => {
+                submitBooking();
+            }, 500);
+
+        } catch (error) {
+            console.error('Error cancelando cita conflictiva:', error);
+            showToast('Error al cancelar la cita anterior: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+        return;
+    }
+
+    // Flujo normal de cancelación (Mis Reservas)
     if (!state.pendingAppointment || !state.loggedInClient) return;
 
     const btn = document.getElementById('btn-confirm-cancel');

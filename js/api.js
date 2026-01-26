@@ -235,7 +235,15 @@ const API = {
                     throw new Error(errorMessages);
                 }
 
-                throw new Error(errorData.message || 'Error al crear la cita');
+                const error = new Error(errorData.error || errorData.message || 'Error al crear la cita');
+                error.data = errorData; // Attach full error data (including conflict info)
+
+                // Si es conflicto (409), asegurar que marcamos el tipo
+                if (response.status === 409) {
+                    error.conflict = errorData.conflict;
+                }
+
+                throw error;
             }
 
             const result = await response.json();
