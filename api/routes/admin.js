@@ -3284,7 +3284,7 @@ router.delete('/blocked-dates/:id', authenticateToken, async (req, res, next) =>
 // GET /api/admin/blocked-time-slots
 router.get('/blocked-time-slots', authenticateToken, async (req, res, next) => {
     try {
-        const { date } = req.query;
+        const { date, start_date, end_date } = req.query;
 
         let query = `
             SELECT id, blocked_date, start_time, end_time, reason, created_at, created_by
@@ -3295,6 +3295,9 @@ router.get('/blocked-time-slots', authenticateToken, async (req, res, next) => {
         if (date) {
             query += ` WHERE blocked_date = $1`;
             params.push(date);
+        } else if (start_date && end_date) {
+            query += ` WHERE blocked_date BETWEEN $1 AND $2`;
+            params.push(start_date, end_date);
         } else {
             query += ` WHERE blocked_date >= CURRENT_DATE`;
         }

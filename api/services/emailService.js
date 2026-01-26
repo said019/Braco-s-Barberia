@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,11 +6,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Gmail SMTP transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+    }
+});
 
-// From email address (must be from verified domain)
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Braco\'s Barbería <no-reply@bracosbarberia.com>';
+// From email configuration
+const FROM_NAME = process.env.GMAIL_FROM_NAME || "Braco's Barberia";
+const FROM_EMAIL = process.env.GMAIL_USER;
 
 /**
  * Load and populate an email template
@@ -35,6 +42,26 @@ function loadTemplate(templateName, variables) {
 }
 
 /**
+ * Send email using Gmail SMTP
+ */
+async function sendEmail(to, subject, html) {
+    try {
+        const result = await transporter.sendMail({
+            from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+            to,
+            subject,
+            html
+        });
+
+        console.log('Email sent successfully:', result.messageId);
+        return { success: true, id: result.messageId };
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Send booking confirmation email
  */
 export async function sendBookingConfirmation(data) {
@@ -53,20 +80,7 @@ export async function sendBookingConfirmation(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `✅ Cita Agendada - ${service}`,
-            html
-        });
-
-        console.log('Booking confirmation email sent:', result);
-        return { success: true, id: result.id };
-    } catch (error) {
-        console.error('Error sending booking confirmation:', error);
-        return { success: false, error: error.message };
-    }
+    return sendEmail(email, `✅ Cita Agendada - ${service}`, html);
 }
 
 /**
@@ -88,20 +102,7 @@ export async function sendDepositAccepted(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `🎉 ¡Tu Cita está Confirmada! - Braco's`,
-            html
-        });
-
-        console.log('Deposit accepted email sent:', result);
-        return { success: true, id: result.id };
-    } catch (error) {
-        console.error('Error sending deposit accepted email:', error);
-        return { success: false, error: error.message };
-    }
+    return sendEmail(email, `🎉 ¡Tu Cita está Confirmada! - Braco's`, html);
 }
 
 /**
@@ -125,20 +126,7 @@ export async function sendMembershipWelcome(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `👑 ¡Bienvenido a ${membershipName}! - Braco's`,
-            html
-        });
-
-        console.log('Membership welcome email sent:', result);
-        return { success: true, id: result.id };
-    } catch (error) {
-        console.error('Error sending membership welcome email:', error);
-        return { success: false, error: error.message };
-    }
+    return sendEmail(email, `👑 ¡Bienvenido a ${membershipName}! - Braco's`, html);
 }
 
 /**
@@ -160,21 +148,9 @@ export async function sendCheckoutReceipt(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `🧾 Recibo de Pago - Braco's Barbería`,
-            html
-        });
-
-        console.log('Checkout receipt email sent:', result);
-        return { success: true, id: result.id };
-    } catch (error) {
-        console.error('Error sending checkout receipt:', error);
-        return { success: false, error: error.message };
-    }
+    return sendEmail(email, `🧾 Recibo de Pago - Braco's Barbería`, html);
 }
+
 /**
  * Send password reset email to admin
  */
@@ -191,20 +167,7 @@ export async function sendPasswordReset(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `🔐 Restablecer Contraseña - Braco's Admin`,
-            html
-        });
-
-        console.log('Password reset email sent:', result);
-        return { success: true, id: result.id };
-    } catch (error) {
-        console.error('Error sending password reset email:', error);
-        return { success: false, error: error.message };
-    }
+    return sendEmail(email, `🔐 Restablecer Contraseña - Braco's Admin`, html);
 }
 
 /**
@@ -223,18 +186,19 @@ export async function sendClientWelcome(data) {
 
     if (!html) return { success: false, error: 'Template not found' };
 
-    try {
-        const result = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: to,
-            subject: `🎉 ¡Bienvenido a la Familia Braco's! - Tu Código de Cliente`,
-            html
-        });
+    return sendEmail(to, `🎉 ¡Bienvenido a la Familia Braco's! - Tu Código de Cliente`, html);
+}
 
-        console.log('Client welcome email sent:', result);
-        return { success: true, id: result.id };
+/**
+ * Verify SMTP connection
+ */
+export async function verifyConnection() {
+    try {
+        await transporter.verify();
+        console.log('✅ Gmail SMTP connection verified');
+        return { success: true };
     } catch (error) {
-        console.error('Error sending client welcome email:', error);
+        console.error('❌ Gmail SMTP connection failed:', error);
         return { success: false, error: error.message };
     }
 }
@@ -245,5 +209,6 @@ export default {
     sendMembershipWelcome,
     sendCheckoutReceipt,
     sendPasswordReset,
-    sendClientWelcome
+    sendClientWelcome,
+    verifyConnection
 };

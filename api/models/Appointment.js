@@ -158,7 +158,7 @@ export const Appointment = {
           a.appointment_date > (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
           OR (
             a.appointment_date = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
-            AND a.start_time > (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::time::text
+            AND a.start_time > (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::time
           )
         )
       ORDER BY a.appointment_date ASC, a.start_time ASC

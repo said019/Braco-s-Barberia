@@ -227,6 +227,7 @@
         let currentDate = new Date();
         let allAppointments = [];
         let filteredAppointments = [];
+        let allBlockedSlots = []; // New: Store blocked slots
         let allClients = [];
         let allServices = [];
         let allExtras = [];
@@ -239,90 +240,37 @@
             return `${year}-${month}-${day}`;
         }
 
-        // Colores por servicio/estilista y tipo de cliente
-        // Miguel (Rojo): Dúo, Corte de cabello, Barba, Prótesis capilar
-        // Bárbara (Azul marino): TIC, Mascarillas, Manicura, Pedicura
-        // Golden Card (Morado), Black Card (Negro)
-        function getAppointmentColor(serviceName, clientColor) {
-            const name = serviceName?.toLowerCase() || '';
+        // ... (colors code) ...
 
-            // Si el cliente es Golden Card o Black Card, usar color especial
-            if (clientColor) {
-                const color = clientColor.toLowerCase();
-                // Golden Card - Morado (color en BD es #FFD700 dorado, pero queremos morado)
-                if (color === '#ffd700' || color.includes('ffd700')) {
-                    return '#8B5CF6'; // Morado
-                }
-                // Black Card - Negro
-                if (color === '#1a1a1a' || color.includes('1a1a1a')) {
-                    return '#1a1a1a';
-                }
-            }
+        // ...
 
-            // Black Card por nombre de servicio - Negro
-            if (name.includes('black')) return '#1a1a1a';
-
-            // Golden Card por nombre de servicio - Morado
-            if (name.includes('golden')) return '#8B5CF6';
-
-            // Bárbara (Azul marino) - TIC, mascarillas, manicura, pedicura
-            if (name.includes('tic') || name.includes('neocapilar') ||
-                name.includes('mascarilla') || name.includes('manicura') ||
-                name.includes('pedicura') || name.includes('facial') ||
-                name.includes('limpieza')) {
-                return '#1E3A5F'; // Azul marino
-            }
-
-            // Miguel (Rojo) - Dúo, corte, barba, prótesis
-            if (name.includes('dúo') || name.includes('duo') ||
-                name.includes('corte') || name.includes('barba') ||
-                name.includes('prótesis') || name.includes('protesis') ||
-                name.includes('cabello')) {
-                return '#DC2626'; // Rojo
-            }
-
-            // Default - Dorado
-            return '#C4A35A';
-        }
-
-        // Alias para compatibilidad
-        function getServiceColor(serviceName) {
-            return getAppointmentColor(serviceName, null);
-        }
-
-        // Initialize
-        document.getElementById('current-date').textContent =
-            new Date().toLocaleDateString('es-MX', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            });
-
-        // Event Listeners
-        document.getElementById('view-select').addEventListener('change', (e) => {
-            currentView = e.target.value;
-            renderCalendar();
-        });
-
-        document.getElementById('filter-status').addEventListener('change', applyFilters);
-        document.getElementById('filter-search').addEventListener('input', debounce(applyFilters, 300));
-        document.getElementById('filter-show-cancelled').addEventListener('change', applyFilters);
-
-        // Load appointments
+        // Load appointments AND blocked slots
         async function loadAppointments() {
             try {
                 const startDate = formatDateYMD(getMonthStart(currentDate));
+                // Extend end date to cover full view if needed, but getMonthEnd covers the main view
                 const endDate = formatDateYMD(getMonthEnd(currentDate));
 
-                console.log('Loading appointments from', startDate, 'to', endDate);
+                console.log('Loading data from', startDate, 'to', endDate);
 
-                const data = await AdminAPI.getAppointments({
-                    start_date: startDate,
-                    end_date: endDate
-                });
+                // Parallel fetch
+                const [appointmentsData, blockedData] = await Promise.all([
+                    AdminAPI.getAppointments({ start_date: startDate, end_date: endDate }),
+                    fetchWithAuth(`/api/admin/blocked-time-slots?start_date=${startDate}&end_date=${endDate}`)
+                ]);
 
-                console.log('API response:', data);
+                console.log('Appointments:', appointmentsData);
+                console.log('Blocked Slots:', blockedData);
 
-                // data is an array from the API, normalize it
-                allAppointments = Array.isArray(data) ? data : (data.appointments || []);
+                // Normalize appointments
+                allAppointments = Array.isArray(appointmentsData) ? appointmentsData : (appointmentsData.appointments || []);
+
+                // Store blocked slots
+                allBlockedSlots = Array.isArray(blockedData) ? blockedData : [];
+
+                applyFilters();
+
+            } catch (error) {
 
                 console.log('Loaded appointments:', allAppointments.length);
                 if (allAppointments.length > 0) {
@@ -507,12 +455,22 @@
                         return aptHour === hour;
                     });
 
+                    // Find BLOCKED slots for this hour and day
+                    const hourBlocked = allBlockedSlots.filter(slot => {
+                        const slotDate = slot.blocked_date.split('T')[0];
+                        if (slotDate !== dateStr) return false;
+                        const slotHour = parseInt(slot.start_time.split(':')[0]);
+                        // Show if the block starts in this hour
+                        return slotHour === hour;
+                    });
+
                     gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                      onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
                                      oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
                                      title="Click: Nueva cita | Click derecho: Bloquear"
                                      style="cursor: pointer;">`;
 
+                    // Render Appointments
                     hourAppointments.forEach(apt => {
                         const startMinutes = parseInt(apt.start_time.split(':')[1]);
                         const endHour = parseInt(apt.end_time.split(':')[0]);
@@ -529,6 +487,28 @@
                                 <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)}</span>
                                 <span class="gcal-appointment-client">${apt.client_name}</span>
                                 <span class="gcal-appointment-service">${apt.service_name}</span>
+                            </div>
+                        `;
+                    });
+
+                    // Render Blocked Slots
+                    hourBlocked.forEach(slot => {
+                        const startMinutes = parseInt(slot.start_time.split(':')[1]);
+                        const endHour = parseInt(slot.end_time.split(':')[0]);
+                        const endMinutes = parseInt(slot.end_time.split(':')[1]);
+
+                        const duration = (endHour - hour) * 60 + (endMinutes - startMinutes);
+                        const height = (duration / 60) * 60;
+                        const top = (startMinutes / 60) * 60;
+
+                        gridHTML += `
+                            <div class="gcal-appointment blocked-slot"
+                                 onclick="event.stopPropagation(); deleteBlockedTime(${slot.id})"
+                                 title="Bloqueado: ${slot.reason}. Click para eliminar."
+                                 style="top: ${top}px; height: ${Math.max(height, 30)}px; background-color: #EF5350; opacity: 0.8; border-left: 3px solid #B71C1C; cursor: not-allowed;">
+                                <span class="gcal-appointment-time"><i class="fas fa-ban"></i> ${slot.start_time.slice(0, 5)}</span>
+                                <span class="gcal-appointment-client">BLOQUEADO</span>
+                                <span class="gcal-appointment-service">${slot.reason || ''}</span>
                             </div>
                         `;
                     });
@@ -576,12 +556,21 @@
                     return aptHour === hour;
                 });
 
+                // Find BLOCKED slots for this hour
+                const hourBlocked = allBlockedSlots.filter(slot => {
+                    const slotDate = slot.blocked_date.split('T')[0];
+                    if (slotDate !== dateStr) return false;
+                    const slotHour = parseInt(slot.start_time.split(':')[0]);
+                    return slotHour === hour;
+                });
+
                 gridHTML += `<div class="gcal-time-slot gcal-day-column"
                                  onclick="openNewAppointmentModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
                                  oncontextmenu="event.preventDefault(); openBlockTimeModal('${dateStr}', '${hour.toString().padStart(2, '0')}:00')"
                                  title="Click: Nueva cita | Click derecho: Bloquear"
                                  style="cursor: pointer;">`;
 
+                // Render Appointments
                 hourAppointments.forEach(apt => {
                     const startMinutes = parseInt(apt.start_time.split(':')[1]);
                     const endHour = parseInt(apt.end_time.split(':')[0]);
@@ -598,6 +587,28 @@
                             <span class="gcal-appointment-time">${apt.start_time.slice(0, 5)} - ${apt.end_time.slice(0, 5)}</span>
                             <span class="gcal-appointment-client">${apt.client_name}</span>
                             <span class="gcal-appointment-service">${apt.service_name}</span>
+                        </div>
+                    `;
+                });
+
+                // Render Blocked
+                hourBlocked.forEach(slot => {
+                    const startMinutes = parseInt(slot.start_time.split(':')[1]);
+                    const endHour = parseInt(slot.end_time.split(':')[0]);
+                    const endMinutes = parseInt(slot.end_time.split(':')[1]);
+
+                    const duration = (endHour - hour) * 60 + (endMinutes - startMinutes);
+                    const height = (duration / 60) * 60;
+                    const top = (startMinutes / 60) * 60;
+
+                    gridHTML += `
+                        <div class="gcal-appointment blocked-slot"
+                             onclick="event.stopPropagation(); deleteBlockedTime(${slot.id})"
+                             title="Bloqueado: ${slot.reason}. Click para eliminar."
+                             style="top: ${top}px; height: ${Math.max(height, 40)}px; background-color: #EF5350; opacity: 0.8; border-left: 3px solid #B71C1C; cursor: not-allowed; z-index: 5;">
+                            <span class="gcal-appointment-time"><i class="fas fa-ban"></i> ${slot.start_time.slice(0, 5)}</span>
+                            <span class="gcal-appointment-client">BLOQUEADO</span>
+                            <span class="gcal-appointment-service">${slot.reason || ''}</span>
                         </div>
                     `;
                 });
