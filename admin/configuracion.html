@@ -719,8 +719,7 @@
                                 <div>
                                     <h4
                                         style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.5rem;">
-                                        <i class="fas fa-key"
-                                            style="color: var(--gold); margin-right: 0.5rem;"></i>
+                                        <i class="fas fa-key" style="color: var(--gold); margin-right: 0.5rem;"></i>
                                         Cambiar Contraseña
                                     </h4>
                                     <p
@@ -853,16 +852,19 @@
                 <div id="tab-reminders24h" class="tab-content">
                     <div class="info-badge">
                         <i class="fas fa-info-circle"></i>
-                        <span>Revisa las citas entre 23h y 25h y reprograma si es necesario (se reenvía WhatsApp automáticamente).</span>
+                        <span>Revisa las citas entre 23h y 25h y reprograma si es necesario (se reenvía WhatsApp
+                            automáticamente).</span>
                     </div>
 
                     <div class="card">
                         <div class="card-header" style="justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #25D366; margin-bottom: 0.25rem;">
+                                <h3
+                                    style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #25D366; margin-bottom: 0.25rem;">
                                     <i class="fab fa-whatsapp"></i> Recordatorios 24h
                                 </h3>
-                                <p style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.5); margin: 0;">Citas entre 23h y 25h (revisar / reprogramar)</p>
+                                <p style="font-size: 0.85rem; color: rgba(245, 243, 238, 0.5); margin: 0;">Citas entre
+                                    23h y 25h (revisar / reprogramar)</p>
                             </div>
                             <div style="display: flex; gap: 0.75rem; align-items: center;">
                                 <button class="btn btn-secondary btn-sm" onclick="loadReminders24h()">
@@ -880,12 +882,14 @@
                                         <th><i class="far fa-calendar"></i> Fecha/Hora</th>
                                         <th><i class="fas fa-user"></i> Cliente</th>
                                         <th><i class="fas fa-cut"></i> Servicio</th>
-                                        <th style="width: 220px; text-align: center;"><i class="fas fa-bolt"></i> Acciones</th>
+                                        <th style="width: 220px; text-align: center;"><i class="fas fa-bolt"></i>
+                                            Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="4" style="text-align: center; padding: 2rem; color: rgba(245, 243, 238, 0.6);">
+                                        <td colspan="4"
+                                            style="text-align: center; padding: 2rem; color: rgba(245, 243, 238, 0.6);">
                                             <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
                                             Cargando...
                                         </td>
@@ -1684,14 +1688,14 @@
                 'Desbloquear'
             );
 
-            modal.onConfirm = async () => {
+            modal.onConfirm(async () => {
                 try {
                     await api.delete(`/admin/blocked-dates/${id}`);
                     loadBlockedDates();
                 } catch (error) {
                     showToast('Error: ' + error.message, 'error');
                 }
-            };
+            });
         }
 
         function showConfirmModal(title, message, cancelText, confirmText) {
