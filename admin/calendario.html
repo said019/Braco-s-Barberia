@@ -271,17 +271,12 @@
                 applyFilters();
 
             } catch (error) {
-
-                console.log('Loaded appointments:', allAppointments.length);
-                if (allAppointments.length > 0) {
-                    console.log('Sample appointment:', allAppointments[0]);
-                }
-
-                applyFilters();
-
-            } catch (error) {
                 console.error('Error loading appointments:', error);
                 showToast('Error al cargar las citas', 'error');
+                // Ensure calendar renders even if data load fails
+                allAppointments = [];
+                allBlockedSlots = [];
+                applyFilters();
             }
         }
 
