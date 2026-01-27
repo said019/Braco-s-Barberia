@@ -256,7 +256,7 @@
                 // Parallel fetch
                 const [appointmentsData, blockedData] = await Promise.all([
                     AdminAPI.getAppointments({ start_date: startDate, end_date: endDate }),
-                    fetchWithAuth(`/api/admin/blocked-time-slots?start_date=${startDate}&end_date=${endDate}`)
+                    fetchWithAuth(`/admin/blocked-time-slots?start_date=${startDate}&end_date=${endDate}`)
                 ]);
 
                 console.log('Appointments:', appointmentsData);

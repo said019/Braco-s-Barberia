@@ -40,8 +40,8 @@ async function fetchWithAuth(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-        // Si es 401, token inválido - redirigir a login
-        if (response.status === 401) {
+        // Si es 401 o 403, token inválido/expirado - redirigir a login
+        if (response.status === 401 || response.status === 403) {
             logout();
             return;
         }
