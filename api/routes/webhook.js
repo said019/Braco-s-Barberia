@@ -49,7 +49,7 @@ async function handleConfirmation(phone) {
         JOIN clients c ON a.client_id = c.id
         JOIN services s ON a.service_id = s.id
         WHERE c.phone LIKE '%' || $1
-          AND a.status = 'scheduled'
+          AND a.status IN ('scheduled', 'confirmed')
           AND a.appointment_date >= CURRENT_DATE
         ORDER BY a.appointment_date ASC, a.start_time ASC
         LIMIT 1
