@@ -1690,6 +1690,7 @@
 
             modal.onConfirm(async () => {
                 try {
+                    console.log('Attempting to delete blocked date with ID:', id);
                     await api.delete(`/admin/blocked-dates/${id}`);
                     loadBlockedDates();
                 } catch (error) {

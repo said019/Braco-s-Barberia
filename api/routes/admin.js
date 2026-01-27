@@ -3260,13 +3260,17 @@ router.post('/blocked-dates', authenticateToken, async (req, res, next) => {
 router.delete('/blocked-dates/:id', authenticateToken, async (req, res, next) => {
     try {
         const { id } = req.params;
+        console.log(`[DELETE] Request to delete blocked date with ID: ${id}`);
 
         const result = await db.query(
             'DELETE FROM blocked_dates WHERE id = $1 RETURNING *',
             [id]
         );
 
+        console.log(`[DELETE] Result row count: ${result.rows.length}`);
+
         if (result.rows.length === 0) {
+            console.log(`[DELETE] ID ${id} not found in blocked_dates table`);
             return res.status(404).json({ error: 'No encontrado' });
         }
 
