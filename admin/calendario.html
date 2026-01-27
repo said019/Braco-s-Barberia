@@ -240,9 +240,21 @@
             return `${year}-${month}-${day}`;
         }
 
-        // ... (colors code) ...
-
         // ...
+
+        function getAppointmentColor(serviceName, clientColor) {
+            // Priority: Client Color -> Service Type Fallback -> Default Gold
+            if (clientColor) return clientColor;
+            
+            // Fallback based on service keywords if no client color
+            const lowerService = (serviceName || '').toLowerCase();
+            if (lowerService.includes('corte')) return '#C4A35A'; // Gold
+            if (lowerService.includes('barba')) return '#8D6E63'; // Brown
+            if (lowerService.includes('niño')) return '#4CAF50'; // Green
+            if (lowerService.includes('tinte') || lowerService.includes('color')) return '#9C27B0'; // Purple
+            
+            return '#C4A35A'; // Default Gold
+        }
 
         // Load appointments AND blocked slots
         async function loadAppointments() {
