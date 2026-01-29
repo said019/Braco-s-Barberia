@@ -420,18 +420,35 @@ export const Appointment = {
     return this.updateStatus(id, 'cancelled', reason);
   },
 
-  // Confirmar cita (también actualiza nota de depósito)
+  // Confirmar cita (depósito validado - pasar a scheduled)
   async confirm(id) {
-    // Actualizar status y cambiar nota de "Pendiente de Depósito" a "Depósito Confirmado"
-    const sql = `
+    // Actualizar status a 'scheduled' (agendada) y cambiar nota de depósito
+    const updateSql = `
       UPDATE appointments 
-      SET status = 'confirmed',
+      SET status = 'scheduled',
           notes = REPLACE(COALESCE(notes, ''), 'Pendiente de Depósito $100', 'Depósito Confirmado ✓'),
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
       RETURNING *
     `;
-    const result = await query(sql, [id]);
+    await query(updateSql, [id]);
+
+    // Obtener cita completa con datos del cliente y servicio
+    const selectSql = `
+      SELECT 
+        a.*,
+        c.name as client_name,
+        c.phone as client_phone,
+        c.email as client_email,
+        s.name as service_name,
+        s.duration_minutes,
+        s.price as service_price
+      FROM appointments a
+      JOIN clients c ON a.client_id = c.id
+      JOIN services s ON a.service_id = s.id
+      WHERE a.id = $1
+    `;
+    const result = await query(selectSql, [id]);
     return result.rows[0];
   },
 

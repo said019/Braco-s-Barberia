@@ -214,7 +214,7 @@ export const sendReminder2h = async ({ phone, name, service, time, code }) => {
         "3": time,
         "4": code || '----'
     };
-    const sid = process.env.TWILIO_TEMPLATE_REMINDER_2H_SID || 'HX6ec4206e7a24fbc8b4a6ad2adf64addf';
+    const sid = process.env.TWILIO_TEMPLATE_REMINDER_2H_SID || 'HX854b0314373d0a8cf759d435e23014f0';
     return await sendTemplate(phone, sid, variables);
 };
 

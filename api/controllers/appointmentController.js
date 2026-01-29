@@ -453,7 +453,7 @@ export const appointmentController = {
     }
   },
 
-  // POST /api/appointments/:id/confirm - Confirmar cita
+  // POST /api/appointments/:id/confirm - Confirmar depósito (pending -> scheduled)
   async confirm(req, res, next) {
     try {
       const appointment = await Appointment.confirm(req.params.id);
@@ -461,27 +461,26 @@ export const appointmentController = {
         throw new AppError('Cita no encontrada', 404);
       }
 
+      console.log(`[CONFIRM APPT] Cita ${appointment.id} confirmada: ${appointment.client_name} - ${appointment.client_email} - ${appointment.client_phone}`);
+
       // Sync Google Calendar (Update status/color)
       try {
-        const fullAppointment = await Appointment.getById(req.params.id);
-        await googleCalendar.updateEvent(req.params.id, fullAppointment);
+        await googleCalendar.updateEvent(req.params.id, appointment);
       } catch (gcalError) {
         console.error('[CONFIRM APPT] Google Calendar sync error:', gcalError.message);
       }
 
-      // Send deposit accepted email if client has email AND enabled
+      // Obtener datos del cliente para verificar preferencias
       const clientData = await Client.getById(appointment.client_id);
 
       // Helper para formatear fecha correctamente
       const formatAppointmentDate = (dateValue) => {
         let dateStr = dateValue;
-        // Si es un objeto Date, convertir a ISO string
         if (dateValue instanceof Date) {
           dateStr = dateValue.toISOString().split('T')[0];
         } else if (typeof dateValue === 'string' && dateValue.includes('T')) {
           dateStr = dateValue.split('T')[0];
         }
-        // Crear fecha con hora fija para evitar problemas de timezone
         const dateObj = new Date(dateStr + 'T12:00:00');
         return dateObj.toLocaleDateString('es-MX', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -490,41 +489,57 @@ export const appointmentController = {
 
       const formattedDate = formatAppointmentDate(appointment.appointment_date);
 
-      if (appointment.client_email && clientData.email_enabled !== false) {
+      // Send deposit accepted email
+      if (appointment.client_email && clientData?.email_enabled !== false) {
         try {
-          await emailService.sendDepositAccepted({
+          console.log(`[CONFIRM APPT] Sending email to: ${appointment.client_email}`);
+          const emailRes = await emailService.sendDepositAccepted({
             email: appointment.client_email,
             name: appointment.client_name,
             service: appointment.service_name,
             date: formattedDate,
             time: appointment.start_time,
-            code: clientData.client_code || '----'
+            code: clientData?.client_code || '----'
           });
+          if (emailRes.success) {
+            console.log(`[CONFIRM APPT] Email sent successfully: ${emailRes.id}`);
+          } else {
+            console.error(`[CONFIRM APPT] Email failed: ${emailRes.error}`);
+          }
         } catch (emailError) {
-          console.error('Error sending deposit accepted email:', emailError);
+          console.error('[CONFIRM APPT] Error sending email:', emailError.message);
         }
+      } else {
+        console.log(`[CONFIRM APPT] No email sent - email: ${appointment.client_email}, enabled: ${clientData?.email_enabled}`);
       }
 
-      // Send WhatsApp deposit confirmation if enabled
-      if (appointment.client_phone && clientData.whatsapp_enabled !== false) {
+      // Send WhatsApp deposit confirmation
+      if (appointment.client_phone && clientData?.whatsapp_enabled !== false) {
         try {
-          await whatsappService.sendWhatsAppDepositAccepted({
+          console.log(`[CONFIRM APPT] Sending WhatsApp to: ${appointment.client_phone}`);
+          const whatsappRes = await whatsappService.sendWhatsAppDepositAccepted({
             phone: appointment.client_phone,
             name: appointment.client_name,
             service: appointment.service_name,
             date: formattedDate,
             time: appointment.start_time,
-            code: clientData.client_code || '----'
+            code: clientData?.client_code || '----'
           });
-          console.log('[CONFIRM APPT] WhatsApp deposit notification sent');
+          if (whatsappRes.success) {
+            console.log(`[CONFIRM APPT] WhatsApp sent successfully: ${whatsappRes.id}`);
+          } else {
+            console.error(`[CONFIRM APPT] WhatsApp failed: ${whatsappRes.error}`);
+          }
         } catch (whatsappError) {
-          console.error('[CONFIRM APPT] Error sending WhatsApp deposit:', whatsappError);
+          console.error('[CONFIRM APPT] Error sending WhatsApp:', whatsappError.message);
         }
+      } else {
+        console.log(`[CONFIRM APPT] No WhatsApp sent - phone: ${appointment.client_phone}, enabled: ${clientData?.whatsapp_enabled}`);
       }
 
       res.json({
         success: true,
-        message: 'Cita confirmada exitosamente',
+        message: 'Depósito confirmado - Cita agendada exitosamente',
         data: appointment
       });
     } catch (error) {
