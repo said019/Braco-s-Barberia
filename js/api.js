@@ -205,8 +205,9 @@ const API = {
                 return [];
             }
 
-            // Retornar solo los slots disponibles
-            return data.slots || [];
+            // Retornar solo los slots disponibles (filtrar los no disponibles)
+            const slots = data.slots || [];
+            return slots.filter(slot => slot.available);
         } catch (error) {
             return this.handleError(error);
         }
