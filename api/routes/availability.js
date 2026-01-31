@@ -37,9 +37,12 @@ router.get('/slots', async (req, res, next) => {
             });
         }
 
-        // 1. Obtener duración del servicio
+        // 1. Obtener duración del servicio y flags de concurrencia
         const serviceResult = await db.query(
-            'SELECT duration_minutes, name FROM services WHERE id = $1 AND is_active = true',
+            `SELECT duration_minutes, name, 
+                    COALESCE(allow_concurrent, FALSE) as allow_concurrent,
+                    COALESCE(is_barber_service, TRUE) as is_barber_service
+             FROM services WHERE id = $1 AND is_active = true`,
             [service_id]
         );
 
@@ -49,6 +52,8 @@ router.get('/slots', async (req, res, next) => {
 
         const serviceDuration = serviceResult.rows[0].duration_minutes;
         const serviceName = serviceResult.rows[0].name;
+        const allowConcurrent = serviceResult.rows[0].allow_concurrent;
+        const isBarberService = serviceResult.rows[0].is_barber_service;
 
         // 2. Verificar si la fecha está bloqueada (día completo)
         const blockedResult = await db.query(
@@ -92,13 +97,34 @@ router.get('/slots', async (req, res, next) => {
         const businessHours = hoursResult.rows[0];
 
         // 5. Obtener citas existentes para ese día (NO canceladas)
-        const appointmentsResult = await db.query(`
-            SELECT start_time, end_time 
-            FROM appointments 
-            WHERE appointment_date = $1 
-            AND status NOT IN ('cancelled', 'no_show')
-            ORDER BY start_time
-        `, [date]);
+        // LÓGICA DE CONCURRENCIA:
+        // - Si el servicio solicitado permite concurrencia (Barbie): solo verificar conflictos con otros servicios de Barbie
+        // - Si el servicio es de barbero: verificar conflictos con todos los servicios de barbero
+        let appointmentsResult;
+        
+        if (allowConcurrent) {
+            // Servicio de Barbie: solo conflicta con otros servicios de Barbie (allow_concurrent = TRUE)
+            appointmentsResult = await db.query(`
+                SELECT a.start_time, a.end_time 
+                FROM appointments a
+                JOIN services s ON a.service_id = s.id
+                WHERE a.appointment_date = $1 
+                AND a.status NOT IN ('cancelled', 'no_show')
+                AND COALESCE(s.allow_concurrent, FALSE) = TRUE
+                ORDER BY a.start_time
+            `, [date]);
+        } else {
+            // Servicio de barbero: conflicta con otros servicios de barbero (is_barber_service = TRUE)
+            appointmentsResult = await db.query(`
+                SELECT a.start_time, a.end_time 
+                FROM appointments a
+                JOIN services s ON a.service_id = s.id
+                WHERE a.appointment_date = $1 
+                AND a.status NOT IN ('cancelled', 'no_show')
+                AND COALESCE(s.is_barber_service, TRUE) = TRUE
+                ORDER BY a.start_time
+            `, [date]);
+        }
 
         // 6. Obtener intervalo de configuración
         const settingsResult = await db.query(

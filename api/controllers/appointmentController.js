@@ -72,7 +72,7 @@ export const appointmentController = {
         throw new AppError('Servicio no encontrado', 404);
       }
 
-      const slots = await Appointment.getAvailableSlots(date, service.duration_minutes);
+      const slots = await Appointment.getAvailableSlots(date, service.duration_minutes, serviceId);
 
       res.json({
         success: true,

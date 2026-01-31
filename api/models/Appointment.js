@@ -176,7 +176,8 @@ export const Appointment = {
   },
 
   // Obtener slots disponibles para un día y servicio
-  async getAvailableSlots(date, serviceDuration) {
+  // serviceId es opcional - si se proporciona, se aplica lógica de concurrencia
+  async getAvailableSlots(date, serviceDuration, serviceId = null) {
     // Obtener horarios del negocio
     const dayOfWeek = new Date(date).getDay();
     const hoursResult = await query(
@@ -190,12 +191,49 @@ export const Appointment = {
 
     const businessHours = hoursResult.rows[0];
 
-    // Obtener citas existentes
-    const appointmentsResult = await query(
-      `SELECT start_time, end_time FROM appointments 
-       WHERE appointment_date = $1 AND status NOT IN ('cancelled', 'no_show')`,
-      [date]
-    );
+    // Obtener flags de concurrencia del servicio si se proporciona serviceId
+    let allowConcurrent = false;
+    let isBarberService = true;
+    
+    if (serviceId) {
+      const serviceResult = await query(
+        `SELECT COALESCE(allow_concurrent, FALSE) as allow_concurrent,
+                COALESCE(is_barber_service, TRUE) as is_barber_service
+         FROM services WHERE id = $1`,
+        [serviceId]
+      );
+      if (serviceResult.rows.length > 0) {
+        allowConcurrent = serviceResult.rows[0].allow_concurrent;
+        isBarberService = serviceResult.rows[0].is_barber_service;
+      }
+    }
+
+    // Obtener citas existentes según lógica de concurrencia
+    // - Servicios de Barbie (allow_concurrent=TRUE): solo conflictan con otros de Barbie
+    // - Servicios de barbero: conflictan con otros servicios de barbero
+    let appointmentsResult;
+    
+    if (allowConcurrent) {
+      // Servicio de Barbie: solo verificar conflictos con otros servicios de Barbie
+      appointmentsResult = await query(
+        `SELECT a.start_time, a.end_time FROM appointments a
+         JOIN services s ON a.service_id = s.id
+         WHERE a.appointment_date = $1 
+         AND a.status NOT IN ('cancelled', 'no_show')
+         AND COALESCE(s.allow_concurrent, FALSE) = TRUE`,
+        [date]
+      );
+    } else {
+      // Servicio de barbero: verificar conflictos con servicios de barbero
+      appointmentsResult = await query(
+        `SELECT a.start_time, a.end_time FROM appointments a
+         JOIN services s ON a.service_id = s.id
+         WHERE a.appointment_date = $1 
+         AND a.status NOT IN ('cancelled', 'no_show')
+         AND COALESCE(s.is_barber_service, TRUE) = TRUE`,
+        [date]
+      );
+    }
 
     const bookedSlots = appointmentsResult.rows;
 
