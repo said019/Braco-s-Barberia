@@ -17,7 +17,7 @@ const state = {
 const elements = {
     steps: document.querySelectorAll('.checkout-step'),
     codeForm: document.getElementById('code-form'),
-    codeDigits: document.querySelectorAll('.code-digit'),
+    codeInput: document.getElementById('checkout-code'),
     productsGrid: document.getElementById('products-grid'),
     useMembershipCheckbox: document.getElementById('use-membership'),
     btnCompleteCheckout: document.getElementById('btn-complete-checkout')
@@ -33,41 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================================
-// CONFIGURAR INPUTS DE CÓDIGO
+// CONFIGURAR INPUT DE CÓDIGO
 // ============================================================================
 function setupCodeInputs() {
-    elements.codeDigits.forEach((input, index) => {
-        // Auto-focus en siguiente input
-        input.addEventListener('input', (e) => {
-            const value = e.target.value.replace(/\D/g, '');
-            e.target.value = value;
-
-            if (value && index < elements.codeDigits.length - 1) {
-                elements.codeDigits[index + 1].focus();
-            }
+    if (elements.codeInput) {
+        // Solo permitir números
+        elements.codeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
         });
-
-        // Backspace vuelve al anterior
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                elements.codeDigits[index - 1].focus();
-            }
-        });
-
-        // Paste en cualquier input
-        input.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
-            paste.split('').forEach((char, i) => {
-                if (elements.codeDigits[i]) {
-                    elements.codeDigits[i].value = char;
-                }
-            });
-            if (paste.length === 4) {
-                elements.codeDigits[3].focus();
-            }
-        });
-    });
+    }
 }
 
 // ============================================================================
@@ -111,7 +85,7 @@ function setupEventListeners() {
 // BUSCAR CITA POR CÓDIGO DE CLIENTE
 // ============================================================================
 async function searchCheckout() {
-    const code = Array.from(elements.codeDigits).map(i => i.value).join('');
+    const code = elements.codeInput.value.replace(/\D/g, '');
 
     if (code.length !== 4) {
         showToast('Ingresa los 4 dígitos de tu código de cliente', 'error');

@@ -78,10 +78,7 @@
 
                     <form id="code-form" class="code-form">
                         <div class="code-inputs">
-                            <input type="text" maxlength="1" class="code-digit" id="digit1" pattern="[0-9]" required>
-                            <input type="text" maxlength="1" class="code-digit" id="digit2" pattern="[0-9]" required>
-                            <input type="text" maxlength="1" class="code-digit" id="digit3" pattern="[0-9]" required>
-                            <input type="text" maxlength="1" class="code-digit" id="digit4" pattern="[0-9]" required>
+                            <input type="tel" maxlength="4" class="code-single-input" id="checkout-code" pattern="[0-9]{4}" inputmode="numeric" placeholder="0000" required>
                         </div>
                         <button type="submit" class="btn-primary">Buscar Cita</button>
                     </form>
