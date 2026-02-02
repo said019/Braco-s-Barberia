@@ -1061,8 +1061,9 @@ function showSuccess(appointmentData) {
     const successStep = document.getElementById('step-success');
     successStep.classList.remove('hidden');
 
-    // Llenar datos
-    document.getElementById('success-code').textContent = appointmentData.checkout_code || '----';
+    // Llenar datos - Siempre mostrar el código del cliente, no el de la cita
+    const clientCode = state.loggedInClient?.code || state.clientCode || appointmentData.client_code || '----';
+    document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
         `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
@@ -1117,8 +1118,9 @@ function showSuccessWithDepositInfo() {
     const successStep = document.getElementById('step-success');
     successStep.classList.remove('hidden');
 
-    // Llenar datos
-    document.getElementById('success-code').textContent = '----';
+    // Llenar datos - Mostrar código del cliente (aunque sea depósito pendiente)
+    const clientCode = state.clientCode || state.loggedInClient?.code || '----';
+    document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
         `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
@@ -1435,8 +1437,9 @@ function showSuccessWithPaymentInfo(appointmentData, client) {
     const successStep = document.getElementById('step-success');
     successStep.classList.remove('hidden');
 
-    // Llenar datos
-    document.getElementById('success-code').textContent = appointmentData.checkout_code || '----';
+    // Llenar datos - Siempre mostrar el código del cliente
+    const clientCode = client?.code || state.loggedInClient?.code || state.clientCode || '----';
+    document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
         `${formatDate(state.selectedDate, { weekday: 'long', day: 'numeric', month: 'long' })} a las ${state.selectedTime}`;
