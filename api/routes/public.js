@@ -424,24 +424,28 @@ router.post('/appointments/:id/cancel', async (req, res, next) => {
             WHERE id = $2
         `, [reason || null, id]);
 
-        // Crear notificación para admin
-        await db.query(`
-            INSERT INTO notifications (type, title, message, data, created_at)
-            VALUES ($1, $2, $3, $4, NOW())
-        `, [
-            'cita_cancelada',
-            'Cita Cancelada por Cliente',
-            `${apt.client_name} canceló: ${apt.service_name} - ${apt.appointment_date} ${apt.start_time}`,
-            JSON.stringify({
-                appointmentId: id,
-                clientName: apt.client_name,
-                clientPhone: apt.client_phone,
-                serviceName: apt.service_name,
-                date: apt.appointment_date,
-                time: apt.start_time,
-                cancelReason: reason || null
-            })
-        ]);
+        // Crear notificación para admin (opcional, no falla si tabla no existe)
+        try {
+            await db.query(`
+                INSERT INTO notifications (type, title, message, data, created_at)
+                VALUES ($1, $2, $3, $4, NOW())
+            `, [
+                'cita_cancelada',
+                'Cita Cancelada por Cliente',
+                `${apt.client_name} canceló: ${apt.service_name} - ${apt.appointment_date} ${apt.start_time}`,
+                JSON.stringify({
+                    appointmentId: id,
+                    clientName: apt.client_name,
+                    clientPhone: apt.client_phone,
+                    serviceName: apt.service_name,
+                    date: apt.appointment_date,
+                    time: apt.start_time,
+                    cancelReason: reason || null
+                })
+            ]);
+        } catch (notifError) {
+            console.error('[CANCEL APPT] Notification insert error (table may not exist):', notifError.message);
+        }
 
         // Enviar WhatsApp de confirmación al cliente y al admin
         try {
