@@ -179,6 +179,7 @@ router.get('/client/:clientId/pending-appointments', async (req, res, next) => {
             hasPending: true,
             appointment: {
                 id: apt.id,
+                clientId: parseInt(clientId),
                 date: dateStr, // Enviar como string formateado
                 time: apt.start_time,
                 endTime: apt.end_time,
@@ -279,47 +280,58 @@ router.put('/appointments/:id', async (req, res, next) => {
             });
         }
 
-        // Actualizar la cita
+        // Actualizar la cita y resetear reminder_sent para que se envíen nuevos recordatorios
         await db.query(`
             UPDATE appointments 
             SET service_id = $1,
                 appointment_date = $2,
                 start_time = $3,
                 end_time = $4,
+                reminder_sent = FALSE,
                 updated_at = NOW()
             WHERE id = $5
         `, [finalServiceId, finalDate, finalTime, endTime, id]);
 
-        // Obtener datos actualizados
+        // Obtener datos actualizados incluyendo client_code
         const updatedResult = await db.query(`
-            SELECT a.*, s.name as service_name, s.price as service_price
+            SELECT a.*, s.name as service_name, s.price as service_price, c.client_code
             FROM appointments a
             JOIN services s ON a.service_id = s.id
+            JOIN clients c ON a.client_id = c.id
             WHERE a.id = $1
         `, [id]);
 
         const updatedApt = updatedResult.rows[0];
 
-        // Enviar WhatsApp de confirmación al cliente y notificación al admin
+        // Enviar WhatsApp de confirmación como si fuera nueva cita + notificación al admin
         try {
             const dateObj = new Date(finalDate + 'T12:00:00');
             const formattedDate = dateObj.toLocaleDateString('es-MX', {
                 weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
             });
 
-            // Notificar al cliente
+            // Enviar confirmación completa al cliente (como nueva cita)
             if (oldApt.client_phone) {
-                await whatsappService.sendModificationConfirmation({
+                await whatsappService.sendWhatsAppBookingConfirmation({
                     phone: oldApt.client_phone,
                     name: oldApt.client_name,
                     service: updatedApt.service_name,
                     date: formattedDate,
-                    time: finalTime,
-                    code: '----'
+                    time: String(finalTime).slice(0, 5),
+                    code: updatedApt.client_code || '----'
                 });
+
+                // Enviar políticas después de la confirmación
+                setTimeout(async () => {
+                    try {
+                        await whatsappService.sendPolicies(oldApt.client_phone);
+                    } catch (e) {
+                        console.error('[MODIFY APPT] Error sending policies:', e.message);
+                    }
+                }, 2000);
             }
 
-            // Notificar al admin
+            // Notificar al admin sobre la modificación
             const oldDateObj = new Date(oldApt.appointment_date + 'T12:00:00');
             const oldFormattedDate = oldDateObj.toLocaleDateString('es-MX', {
                 weekday: 'long', day: 'numeric', month: 'long'
@@ -336,7 +348,7 @@ router.put('/appointments/:id', async (req, res, next) => {
                 newTime: finalTime
             });
 
-            console.log('[MODIFY APPT] WhatsApp notifications sent');
+            console.log('[MODIFY APPT] WhatsApp notifications sent (full confirmation + policies)');
         } catch (whatsappError) {
             console.error('[MODIFY APPT] WhatsApp error:', whatsappError.message);
         }

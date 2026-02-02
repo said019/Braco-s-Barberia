@@ -854,6 +854,52 @@ async function submitBooking() {
     const phone = countryCode + localPhone;
 
     try {
+        // =====================================================
+        // MODIFICATION FLOW - Si está modificando cita existente
+        // =====================================================
+        if (state.modifyingAppointment && state.pendingAppointment) {
+            const localDate = formatLocalDate(state.selectedDate);
+            
+            try {
+                const result = await API.modifyAppointment(
+                    state.pendingAppointment.id,
+                    state.loggedInClient?.id || state.pendingAppointment.clientId,
+                    {
+                        date: localDate,
+                        time: state.selectedTime,
+                        serviceId: state.selectedService.id
+                    }
+                );
+
+                if (result.success) {
+                    // Limpiar estado de modificación
+                    state.modifyingAppointment = false;
+                    state.modifyType = null;
+                    state.pendingAppointment = null;
+
+                    // Mostrar éxito
+                    showToast('¡Cita modificada exitosamente!', 'success');
+                    
+                    // Mostrar pantalla de éxito con datos actualizados
+                    showSuccess({
+                        checkout_code: state.loggedInClient?.code || '----',
+                        service_name: state.selectedService.name,
+                        appointment_date: localDate,
+                        start_time: state.selectedTime,
+                        price: state.selectedService.price
+                    });
+                } else {
+                    throw new Error(result.error || 'Error al modificar la cita');
+                }
+            } catch (modifyError) {
+                console.error('Error modificando cita:', modifyError);
+                showToast(modifyError.message || 'Error al modificar la cita', 'error');
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = originalText;
+            }
+            return;
+        }
+
         // Si hay cliente logueado con código, usarlo directamente
         let client = state.loggedInClient || await API.getClientByPhone(phone);
 
@@ -1679,6 +1725,7 @@ async function handleConflictOption(option) {
         // Necesitamos formatear los datos como espera openModifyModal
         state.pendingAppointment = {
             id: conflictApt.id,
+            clientId: conflictApt.client_id,
             date: conflictApt.appointment_date,
             time: conflictApt.start_time,
             service: {
