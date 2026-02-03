@@ -1419,6 +1419,9 @@ async function createRecurringAppointmentWithResult(client, notes, extraData = {
             ...extraData
         };
 
+        // Guardar código del cliente para mostrar en pantalla de éxito
+        state.clientCode = client.code;
+
         const result = await API.createAppointment(bookingData);
         return result;
     } catch (error) {
@@ -1524,6 +1527,9 @@ async function createRecurringAppointment(client, notes, extraData = {}) {
             email: email || null,
             ...extraData // Include optional flags (like is_full_payment)
         };
+
+        // Guardar código del cliente para mostrar en pantalla de éxito
+        state.clientCode = client.code;
 
         const result = await API.createAppointment(bookingData);
         showSuccess(result);
