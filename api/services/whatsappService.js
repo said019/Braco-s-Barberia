@@ -338,9 +338,56 @@ export const sendAdminCancellation = async ({ clientName, clientPhone, serviceNa
     };
     const sid = process.env.TWILIO_TEMPLATE_ADMIN_CANCEL_SID;
 
-    if (!sid) return { success: false, error: 'Admin Cancel Template SID missing' };
+    // Si hay template configurado, usarlo
+    if (sid) {
+        return await sendTemplateToAllAdmins(sid, variables);
+    }
 
-    return await sendTemplateToAllAdmins(sid, variables);
+    // Fallback: enviar mensaje de texto libre a todos los admins
+    console.log('[Twilio] Admin Cancel Template SID missing, using text fallback');
+    const message = `❌ *CITA CANCELADA*
+
+👤 Cliente: ${clientName}
+📱 Teléfono: ${clientPhone || 'No disponible'}
+💈 Servicio: ${serviceName}
+📅 Fecha: ${date}
+🕐 Hora: ${time}
+
+El cliente canceló su cita desde WhatsApp.`;
+
+    return await sendTextMessageToAllAdmins(message);
+};
+
+/**
+ * Helper to send text message to ALL admin phones (fallback when no template)
+ */
+const sendTextMessageToAllAdmins = async (message) => {
+    const adminPhonesStr = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
+
+    if (!adminPhonesStr) {
+        return { success: false, error: 'Admin Phone(s) missing' };
+    }
+
+    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(p => p);
+
+    if (adminPhones.length === 0) {
+        return { success: false, error: 'No valid admin phones' };
+    }
+
+    console.log(`[Twilio] Sending text to ${adminPhones.length} admin(s): ${adminPhones.join(', ')}`);
+
+    const results = [];
+    for (const phone of adminPhones) {
+        const result = await sendTextMessage(phone, message);
+        results.push({ phone, ...result });
+    }
+
+    const anySuccess = results.some(r => r.success);
+    return {
+        success: anySuccess,
+        results,
+        id: results.find(r => r.success)?.sid
+    };
 };
 
 // ============================================================================

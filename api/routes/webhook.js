@@ -169,6 +169,24 @@ async function handleCancellationRequest(phone) {
             console.error(`[WEBHOOK] Failed to send cancellation response: ${cancelRes?.error || 'unknown error'}`);
         }
 
+        // 4. Notificar al admin sobre la cancelación
+        try {
+            const adminResult = await whatsappService.sendAdminCancellation({
+                clientName: appt.client_name,
+                clientPhone: cleanPhone,
+                serviceName: appt.service_name,
+                date: dateFormatted,
+                time: appt.start_time
+            });
+            if (adminResult?.success) {
+                console.log(`[WEBHOOK] Admin cancellation notification sent`);
+            } else {
+                console.error(`[WEBHOOK] Failed to send admin cancellation: ${adminResult?.error || 'unknown error'}`);
+            }
+        } catch (adminError) {
+            console.error(`[WEBHOOK] Admin notification error:`, adminError.message);
+        }
+
     } else {
         // No hay cita pero igual enviar instrucciones
         await whatsappService.sendTextMessage(phone, `No encontramos una cita activa para cancelar. Si deseas agendar una nueva, visita: ${url}/agendar.html`);
