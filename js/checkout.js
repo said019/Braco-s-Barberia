@@ -29,7 +29,7 @@ const elements = {
 document.addEventListener('DOMContentLoaded', () => {
     setupCodeInputs();
     setupEventListeners();
-    loadProducts();
+    loadProducts({ silent: true });
 });
 
 // ============================================================================
@@ -116,6 +116,9 @@ async function searchCheckout() {
             return;
         }
 
+        // Refrescar productos justo antes del checkout para evitar precios desactualizados
+        await loadProducts({ silent: true });
+
         // Cargar membresías del cliente si existe
         if (checkoutData.client_id) {
             await loadClientMemberships(checkoutData.client_id);
@@ -199,16 +202,17 @@ function displayActiveMembership(membership) {
 // ============================================================================
 // CARGAR PRODUCTOS
 // ============================================================================
-async function loadProducts() {
+async function loadProducts({ silent = false } = {}) {
     try {
         state.products = await API.getProducts();
+        return state.products;
     } catch (error) {
         console.error('Error loading products:', error);
-        // Productos mock
-        state.products = [
-            { id: 1, name: 'Aceite para Barba Premium', description: '30ml', price: 450, stock: 10 },
-            { id: 2, name: 'Cera Moldeadora Ultra-Hold', description: '85g', price: 380, stock: 15 }
-        ];
+        state.products = [];
+        if (!silent) {
+            showToast('No se pudieron cargar los productos en este momento', 'error');
+        }
+        return state.products;
     }
 }
 

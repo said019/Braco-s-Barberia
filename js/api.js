@@ -361,9 +361,11 @@ const API = {
      */
     async getProducts() {
         try {
-            const response = await fetch(`${API_BASE_URL}/products`, {
+            const cacheBuster = Date.now();
+            const response = await fetch(`${API_BASE_URL}/products?ts=${cacheBuster}`, {
                 method: 'GET',
-                headers: this.getHeaders()
+                headers: this.getHeaders(),
+                cache: 'no-store'
             });
 
             if (!response.ok) {
