@@ -367,7 +367,9 @@ function clearClientForm() {
 async function loadServices() {
     try {
         // Intentar cargar servicios desde la API
-        const apiServices = await API.getServices();
+        const response = await API.getServices();
+        // La API devuelve { success, data: { services: [...], grouped: {...} } }
+        const apiServices = response?.data?.services || response?.services || (Array.isArray(response) ? response : []);
         if (apiServices && apiServices.length > 0) {
             // Mapear servicios de la API al formato esperado
             state.services = apiServices.map(s => ({

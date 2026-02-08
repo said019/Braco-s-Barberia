@@ -171,7 +171,7 @@
         <!-- Servicios Destacados - 12 SERVICIOS -->
         <div class="services-featured">
             <!-- 1. CORTE DE CABELLO CABALLERO -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="1">
                 <div class="service-image">
                     <img src="assets/corte_caballero.jpeg" alt="Corte de Cabello Caballero">
                 </div>
@@ -193,7 +193,7 @@
             </article>
 
             <!-- 2. CORTE DE CABELLO NIÑO -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="2">
                 <div class="service-image">
                     <img src="assets/corte_nino.jpeg" alt="Corte de Cabello Niño">
                 </div>
@@ -215,7 +215,7 @@
             </article>
 
             <!-- 3. RITUAL TRADICIONAL DE BARBA -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="3">
                 <div class="service-image">
                     <img src="assets/ritual_barba.jpeg" alt="Ritual Tradicional de Barba">
                 </div>
@@ -238,7 +238,7 @@
             </article>
 
             <!-- 4. DÚO -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="11">
                 <div class="service-image">
                     <img src="assets/duo.png" alt="DÚO">
                 </div>
@@ -258,7 +258,7 @@
             </article>
 
             <!-- 5. INSTALACIÓN DE PRÓTESIS CAPILAR -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="4">
                 <div class="service-image">
                     <img src="assets/instalacio_protesis.jpeg" alt="Instalación de Prótesis Capilar">
                 </div>
@@ -283,7 +283,7 @@
             </article>
 
             <!-- 6. MANTENIMIENTO DE PRÓTESIS CAPILAR -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="5">
                 <div class="service-image">
                     <img src="assets/mant_protesis.jpeg" alt="Mantenimiento de Prótesis Capilar">
                 </div>
@@ -308,7 +308,7 @@
             </article>
 
             <!-- 7. TERAPIA INTEGRAL CAPILAR (TIC) -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="6">
                 <div class="service-image">
                     <img src="assets/TIC.jpeg" alt="Terapia Integral Capilar">
                 </div>
@@ -335,7 +335,7 @@
             </article>
 
             <!-- 8. MASCARILLA PLASTIFICADA NEGRA -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="7">
                 <div class="service-image">
                     <img src="assets/mascarilla_negra.jpeg" alt="Mascarilla Plastificada Negra">
                 </div>
@@ -359,7 +359,7 @@
             </article>
 
             <!-- 9. MASCARILLA DE ARCILLA -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="8">
                 <div class="service-image">
                     <img src="assets/arcilla.jpeg" alt="Mascarilla de Arcilla">
                 </div>
@@ -385,7 +385,7 @@
             </article>
 
             <!-- 10. MANICURA CABALLERO -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="9">
                 <div class="service-image">
                     <img src="assets/manicura_caballero.jpeg" alt="Manicura Caballero">
                 </div>
@@ -408,7 +408,7 @@
             </article>
 
             <!-- 11. PEDICURA CABALLERO -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="10">
                 <div class="service-image">
                     <img src="assets/pedicura.jpeg" alt="Pedicura Caballero">
                 </div>
@@ -431,7 +431,7 @@
             </article>
 
             <!-- 12. PAQUETE NUPCIAL D'LUX -->
-            <article class="service-card featured">
+            <article class="service-card featured" data-service-id="12">
                 <div class="service-image">
                     <img src="assets/pqte_dlux.jpeg" alt="Paquete Nupcial D'Lux">
                 </div>
@@ -657,6 +657,35 @@
     <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- Actualizar precios dinámicamente desde la API -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await API.getServices();
+                const services = response?.data?.services || response?.services || (Array.isArray(response) ? response : []);
+                if (services && services.length > 0) {
+                    const priceMap = {};
+                    services.forEach(s => {
+                        priceMap[s.id] = parseFloat(s.price);
+                    });
+
+                    document.querySelectorAll('.service-card[data-service-id]').forEach(card => {
+                        const serviceId = parseInt(card.dataset.serviceId);
+                        if (priceMap[serviceId] !== undefined) {
+                            const priceEl = card.querySelector('.service-price');
+                            if (priceEl) {
+                                priceEl.textContent = '$' + priceMap[serviceId].toLocaleString('es-MX');
+                            }
+                        }
+                    });
+                    console.log('Precios actualizados desde la API');
+                }
+            } catch (err) {
+                console.warn('No se pudieron cargar precios desde la API, mostrando precios por defecto:', err.message);
+            }
+        });
+    </script>
 
     <!-- Google Translate -->
     <script type="text/javascript">
