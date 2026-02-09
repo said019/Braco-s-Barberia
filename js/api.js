@@ -75,7 +75,9 @@ const API = {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const result = await response.json();
+            // La API devuelve { success, data: { services, grouped } }
+            return result.data?.services || result.data || [];
         } catch (error) {
             return this.handleError(error);
         }

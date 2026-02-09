@@ -662,8 +662,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const response = await API.getServices();
-                const services = response?.data?.services || response?.services || (Array.isArray(response) ? response : []);
+                // API.getServices() ahora devuelve directamente el array
+                const services = await API.getServices();
                 if (services && services.length > 0) {
                     const priceMap = {};
                     services.forEach(s => {

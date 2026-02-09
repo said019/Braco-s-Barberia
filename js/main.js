@@ -320,15 +320,16 @@ Duración 240minutos (4horas)
 async function loadServices() {
     try {
         if (typeof API !== 'undefined') {
+            // API.getServices() ahora devuelve directamente el array de servicios
             const apiServices = await API.getServices();
             if (apiServices && apiServices.length > 0) {
                 // Mapear servicios de API al formato de visualización
                 const mappedServices = apiServices.map(s => ({
                     id: s.id,
                     name: s.name,
-                    price: s.price,
+                    price: parseFloat(s.price),
                     duration: s.duration_minutes,
-                    image: getServiceImage(s.name),
+                    image: s.image_url || getServiceImage(s.name),
                     description: s.description || ''
                 }));
                 console.log('Servicios cargados desde API (Landing):', mappedServices);
