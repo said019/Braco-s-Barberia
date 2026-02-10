@@ -1184,7 +1184,10 @@
 
         function renderHours(hours) {
             const container = document.getElementById('hours-container');
-            container.innerHTML = hours.map(h => `
+            container.innerHTML = hours.map(h => {
+                const hasBreak = h.break_start && h.break_end;
+
+                return `
                 <div class="day-config ${!h.is_open ? 'closed' : ''}" id="day-${h.day_of_week}">
                     <div class="day-label">
                         <div class="day-icon">
@@ -1213,19 +1216,25 @@
                         </div>
 
                         <div class="time-section">
-                            <div class="time-section-title">
-                                <i class="fas fa-utensils"></i>
-                                Descanso / Comida
+                            <div class="time-section-title" style="justify-content: space-between;">
+                                <div>
+                                    <i class="fas fa-utensils"></i>
+                                    Descanso / Comida
+                                </div>
+                                <label class="switch" style="transform: scale(0.6); margin: 0;">
+                                    <input type="checkbox" class="break-toggle" ${hasBreak ? 'checked' : ''} onchange="toggleBreak(${h.day_of_week}, this)">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
-                            <div class="time-row">
+                            <div class="time-row break-inputs" style="${!hasBreak ? 'opacity: 0.5; pointer-events: none;' : ''}">
                                 <div style="flex: 1;">
                                     <label style="font-size: 0.75rem; color: rgba(245, 243, 238, 0.6); letter-spacing: 0.05em; margin-bottom: 0.4rem; display: block;">Inicio</label>
-                                    ${createTimePicker(h.break_start || '', null, 'Opcional')}
+                                    ${createTimePicker(h.break_start || '', null, 'Inicio')}
                                 </div>
                                 <div class="time-separator">—</div>
                                 <div style="flex: 1;">
                                     <label style="font-size: 0.75rem; color: rgba(245, 243, 238, 0.6); letter-spacing: 0.05em; margin-bottom: 0.4rem; display: block;">Fin</label>
-                                    ${createTimePicker(h.break_end || '', null, 'Opcional')}
+                                    ${createTimePicker(h.break_end || '', null, 'Fin')}
                                 </div>
                             </div>
                         </div>
@@ -1239,7 +1248,7 @@
                         </label>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         async function toggleDay(day, checkbox) {
@@ -1262,9 +1271,22 @@
             await saveDay(day);
         }
 
+        async function toggleBreak(day, checkbox) {
+            const hasBreak = checkbox.checked;
+            const dayConfig = document.getElementById(`day-${day}`);
+            const breakInputs = dayConfig.querySelector('.break-inputs');
+
+            // Update UI
+            breakInputs.style.opacity = hasBreak ? '1' : '0.5';
+            breakInputs.style.pointerEvents = hasBreak ? 'auto' : 'none';
+
+            await saveDay(day);
+        }
+
         async function saveDay(day) {
             const row = document.getElementById(`day-${day}`);
             const timePickerInputs = row.querySelectorAll('.time-picker-input');
+            const hasBreak = row.querySelector('.break-toggle').checked;
 
             // Helper function to get valid time value or null
             const getTimeValue = (input) => {
@@ -1274,11 +1296,11 @@
             };
 
             const data = {
-                is_open: row.querySelector('input[type="checkbox"]').checked,
+                is_open: row.querySelector('input[type="checkbox"]:not(.break-toggle)').checked,
                 open_time: getTimeValue(timePickerInputs[0]),
                 close_time: getTimeValue(timePickerInputs[1]),
-                break_start: getTimeValue(timePickerInputs[2]),
-                break_end: getTimeValue(timePickerInputs[3])
+                break_start: hasBreak ? getTimeValue(timePickerInputs[2]) : null,
+                break_end: hasBreak ? getTimeValue(timePickerInputs[3]) : null
             };
 
             try {
@@ -1444,19 +1466,19 @@
                         dateStr = dateStr.split('T')[0];
                     }
                     const date = new Date(dateStr + 'T12:00:00');
-                    
+
                     // Verificar si la fecha es válida
                     if (isNaN(date.getTime())) {
                         console.error('Fecha inválida:', d.blocked_date);
                         return '';
                     }
-                    
+
                     const formattedDate = date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                     const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
                     // Determinar si es día completo o horario específico
                     const isPartial = d.start_time && d.end_time;
-                    const timeRange = isPartial 
+                    const timeRange = isPartial
                         ? `${formatTime(d.start_time)} - ${formatTime(d.end_time)}`
                         : 'Día completo';
 
@@ -1597,7 +1619,7 @@
             showCustomModal('blockDateModal', '<i class="fas fa-calendar-times"></i> Bloquear Fecha/Horario', content, footer);
         };
 
-        window.toggleTimeInputs = function() {
+        window.toggleTimeInputs = function () {
             const blockType = document.querySelector('input[name="block-type"]:checked').value;
             const container = document.getElementById('time-inputs-container');
             container.style.display = blockType === 'partial' ? 'flex' : 'none';
@@ -1640,12 +1662,12 @@
             if (blockType === 'partial') {
                 startTime = document.getElementById('block-start-time').value;
                 endTime = document.getElementById('block-end-time').value;
-                
+
                 if (!startTime || !endTime) {
                     showToast('Por favor selecciona el horario a bloquear', 'error');
                     return;
                 }
-                
+
                 if (startTime >= endTime) {
                     showToast('La hora de inicio debe ser menor a la hora de fin', 'error');
                     return;
@@ -1658,8 +1680,8 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bloqueando...';
                 btn.disabled = true;
 
-                await api.post('/admin/blocked-dates', { 
-                    date, 
+                await api.post('/admin/blocked-dates', {
+                    date,
                     reason,
                     start_time: startTime,
                     end_time: endTime
