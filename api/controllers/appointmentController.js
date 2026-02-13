@@ -368,7 +368,10 @@ export const appointmentController = {
       res.status(201).json({
         success: true,
         message: 'Cita creada exitosamente',
-        data: appointment
+        data: {
+          ...appointment,
+          client_code: client.client_code
+        }
       });
     } catch (error) {
       next(error);

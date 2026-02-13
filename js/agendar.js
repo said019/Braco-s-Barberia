@@ -860,7 +860,7 @@ async function submitBooking() {
         // =====================================================
         if (state.modifyingAppointment && state.pendingAppointment) {
             const localDate = formatLocalDate(state.selectedDate);
-            
+
             try {
                 const result = await API.modifyAppointment(
                     state.pendingAppointment.id,
@@ -880,10 +880,10 @@ async function submitBooking() {
 
                     // Mostrar éxito
                     showToast('¡Cita modificada exitosamente!', 'success');
-                    
+
                     // Mostrar pantalla de éxito con datos actualizados
                     showSuccess({
-                        checkout_code: state.loggedInClient?.code || '----',
+                        checkout_code: state.loggedInClient?.client_code || '----',
                         service_name: state.selectedService.name,
                         appointment_date: localDate,
                         start_time: state.selectedTime,
@@ -981,7 +981,7 @@ async function submitBooking() {
                 const appointment = await API.createAppointment(appointmentData);
 
                 if (appointment && appointment.id) {
-                    state.clientCode = client.code;
+                    state.clientCode = client.client_code;
                     showDepositModal(state.tempClient);
                 } else {
                     throw new Error('No se pudo pre-agendar la cita.');
@@ -1063,7 +1063,7 @@ function showSuccess(appointmentData) {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Siempre mostrar el código del cliente, no el de la cita
-    const clientCode = state.loggedInClient?.code || state.clientCode || appointmentData.client_code || '----';
+    const clientCode = state.loggedInClient?.client_code || state.clientCode || appointmentData.client_code || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
@@ -1120,7 +1120,7 @@ function showSuccessWithDepositInfo() {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Mostrar código del cliente (aunque sea depósito pendiente)
-    const clientCode = state.clientCode || state.loggedInClient?.code || '----';
+    const clientCode = state.clientCode || state.loggedInClient?.client_code || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
@@ -1442,7 +1442,7 @@ function showSuccessWithPaymentInfo(appointmentData, client) {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Siempre mostrar el código del cliente
-    const clientCode = client?.code || state.loggedInClient?.code || state.clientCode || '----';
+    const clientCode = client?.client_code || state.loggedInClient?.client_code || state.clientCode || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
