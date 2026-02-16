@@ -807,6 +807,88 @@ function setupEventListeners() {
     phoneInput.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 15);
     });
+
+    // Verificar si el teléfono ya está registrado al salir del campo
+    phoneInput.addEventListener('blur', async () => {
+        // No verificar si ya está logueado con código o si el campo es readOnly
+        if (state.loggedInClient || phoneInput.readOnly) return;
+
+        const localPhone = phoneInput.value.replace(/\D/g, '');
+        if (localPhone.length < 7) return; // No buscar si es muy corto
+
+        const countryCode = document.getElementById('country-code')?.value || '52';
+        const fullPhone = countryCode + localPhone;
+
+        try {
+            const existingClient = await API.getClientByPhone(fullPhone);
+            if (existingClient && existingClient.id) {
+                showPhoneExistsModal(existingClient);
+            }
+        } catch (e) {
+            // Silenciar errores de red - no bloquear el flujo
+            console.log('Error verificando teléfono:', e.message);
+        }
+    });
+}
+
+// ============================================================================
+// MODAL: TELÉFONO YA REGISTRADO
+// ============================================================================
+function showPhoneExistsModal(client) {
+    const modal = document.getElementById('phone-exists-modal');
+    if (!modal) return;
+
+    document.getElementById('pe-client-name').textContent = client.name;
+    document.getElementById('pe-client-code').textContent = client.client_code || client.code || '----';
+
+    // Botón "Sí, soy yo" → pre-llenar formulario con datos del cliente
+    const btnYes = document.getElementById('pe-btn-yes');
+    btnYes.onclick = () => {
+        // Normalizar el campo code para consistencia
+        client.code = client.client_code || client.code;
+
+        // Guardar cliente como logueado
+        state.loggedInClient = client;
+
+        // Pre-llenar el formulario
+        prefillClientForm(client);
+
+        // Mostrar bienvenida si existe el área de quick login
+        const loginCard = document.querySelector('.quick-login-card');
+        const welcomeCard = document.getElementById('quick-login-welcome');
+        if (loginCard && welcomeCard) {
+            document.getElementById('welcome-client-name').textContent = client.name.split(' ')[0];
+            loginCard.style.display = 'none';
+            welcomeCard.classList.remove('hidden');
+        }
+
+        // Cargar membresías
+        API.getClientMemberships(client.id).then(memberships => {
+            state.clientMemberships = (memberships || []).filter(m => m.remaining_services > 0);
+        }).catch(() => {});
+
+        closePhoneExistsModal();
+        showToast(`¡Bienvenido de vuelta, ${client.name.split(' ')[0]}!`, 'success');
+    };
+
+    // Botón "No, soy otra persona" → limpiar teléfono para que pongan otro
+    const btnNo = document.getElementById('pe-btn-no');
+    btnNo.onclick = () => {
+        const phoneInput = document.getElementById('client-phone');
+        if (phoneInput) {
+            phoneInput.value = '';
+            phoneInput.focus();
+        }
+        closePhoneExistsModal();
+        showToast('Ingresa un número de teléfono diferente', 'info');
+    };
+
+    modal.classList.remove('hidden');
+}
+
+function closePhoneExistsModal() {
+    const modal = document.getElementById('phone-exists-modal');
+    if (modal) modal.classList.add('hidden');
 }
 
 // ============================================================================
@@ -860,7 +942,7 @@ async function submitBooking() {
         // =====================================================
         if (state.modifyingAppointment && state.pendingAppointment) {
             const localDate = formatLocalDate(state.selectedDate);
-
+            
             try {
                 const result = await API.modifyAppointment(
                     state.pendingAppointment.id,
@@ -880,10 +962,10 @@ async function submitBooking() {
 
                     // Mostrar éxito
                     showToast('¡Cita modificada exitosamente!', 'success');
-
+                    
                     // Mostrar pantalla de éxito con datos actualizados
                     showSuccess({
-                        checkout_code: state.loggedInClient?.client_code || '----',
+                        checkout_code: state.loggedInClient?.code || '----',
                         service_name: state.selectedService.name,
                         appointment_date: localDate,
                         start_time: state.selectedTime,
@@ -981,7 +1063,7 @@ async function submitBooking() {
                 const appointment = await API.createAppointment(appointmentData);
 
                 if (appointment && appointment.id) {
-                    state.clientCode = client.client_code;
+                    state.clientCode = client.code;
                     showDepositModal(state.tempClient);
                 } else {
                     throw new Error('No se pudo pre-agendar la cita.');
@@ -1063,7 +1145,7 @@ function showSuccess(appointmentData) {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Siempre mostrar el código del cliente, no el de la cita
-    const clientCode = state.loggedInClient?.client_code || state.clientCode || appointmentData.client_code || '----';
+    const clientCode = state.loggedInClient?.code || state.clientCode || appointmentData.client_code || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
@@ -1120,7 +1202,7 @@ function showSuccessWithDepositInfo() {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Mostrar código del cliente (aunque sea depósito pendiente)
-    const clientCode = state.clientCode || state.loggedInClient?.client_code || '----';
+    const clientCode = state.clientCode || state.loggedInClient?.code || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
@@ -1442,7 +1524,7 @@ function showSuccessWithPaymentInfo(appointmentData, client) {
     successStep.classList.remove('hidden');
 
     // Llenar datos - Siempre mostrar el código del cliente
-    const clientCode = client?.client_code || state.loggedInClient?.client_code || state.clientCode || '----';
+    const clientCode = client?.code || state.loggedInClient?.code || state.clientCode || '----';
     document.getElementById('success-code').textContent = clientCode;
     document.getElementById('success-service').textContent = state.selectedService.name;
     document.getElementById('success-datetime').textContent =
