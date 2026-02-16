@@ -45,8 +45,31 @@ export const Client = {
     return result.rows[0];
   },
 
-  // Obtener cliente por teléfono
+  // Obtener cliente por teléfono (busca con y sin código de país)
   async getByPhone(phone) {
+    // Limpiar el teléfono de caracteres no numéricos
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Generar variantes: con código de país y sin él
+    const variants = [cleanPhone];
+    
+    // Códigos de país comunes (ordenados por longitud descendente)
+    const countryCodes = ['593', '502', '503', '504', '505', '506', '507', '52', '54', '55', '56', '57', '58', '34', '33', '39', '44', '49', '1'];
+    
+    // Si el teléfono empieza con un código de país, agregar variante sin él
+    for (const code of countryCodes) {
+      if (cleanPhone.startsWith(code) && cleanPhone.length > code.length + 6) {
+        variants.push(cleanPhone.substring(code.length));
+      }
+    }
+    
+    // También agregar variante con código 52 (México) por si el guardado no lo tiene
+    if (!cleanPhone.startsWith('52') && cleanPhone.length >= 10) {
+      variants.push('52' + cleanPhone);
+    }
+    
+    // Buscar con todas las variantes
+    const placeholders = variants.map((_, i) => `$${i + 1}`).join(', ');
     const sql = `
       SELECT 
         c.*,
@@ -54,9 +77,11 @@ export const Client = {
         ct.color as client_type_color
       FROM clients c
       JOIN client_types ct ON c.client_type_id = ct.id
-      WHERE c.phone = $1
+      WHERE c.phone IN (${placeholders})
+      ORDER BY c.total_visits DESC, c.created_at ASC
+      LIMIT 1
     `;
-    const result = await query(sql, [phone]);
+    const result = await query(sql, variants);
     return result.rows[0];
   },
 
