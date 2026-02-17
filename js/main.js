@@ -430,6 +430,247 @@ if (document.querySelector('.services-featured')) {
 }
 
 // ============================================================================
+// RESEÑAS (LANDING)
+// ============================================================================
+const reviewsState = {
+    initialized: false,
+    loading: false,
+    items: [],
+    offset: 0,
+    limit: 9,
+    hasMore: false,
+    currentPage: 0,
+    perPage: getReviewsPerPage(),
+    summary: {
+        average_rating: 0,
+        total_reviews: 0
+    }
+};
+
+function getReviewsPerPage() {
+    if (window.innerWidth <= 768) return 1;
+    if (window.innerWidth <= 1024) return 2;
+    return 3;
+}
+
+function formatReviewDate(dateStr) {
+    try {
+        return new Intl.DateTimeFormat('es-MX', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).format(new Date(dateStr));
+    } catch (error) {
+        return '';
+    }
+}
+
+function escapeHtml(text) {
+    return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getStars(rating) {
+    const safe = Math.max(1, Math.min(5, Number(rating) || 1));
+    return '★'.repeat(safe) + '☆'.repeat(5 - safe);
+}
+
+function updateReviewsSummary() {
+    const avgEl = document.getElementById('reviews-average-rating');
+    const starsEl = document.getElementById('reviews-stars-display');
+    const totalEl = document.getElementById('reviews-total-count');
+
+    if (avgEl) {
+        avgEl.textContent = Number(reviewsState.summary.average_rating || 0).toFixed(1);
+    }
+
+    if (starsEl) {
+        starsEl.textContent = getStars(Math.round(reviewsState.summary.average_rating || 0));
+    }
+
+    if (totalEl) {
+        totalEl.textContent = String(reviewsState.summary.total_reviews || 0);
+    }
+}
+
+function renderReviewDots(totalPages) {
+    const dotsContainer = document.getElementById('reviews-dots');
+    if (!dotsContainer) return;
+
+    if (totalPages <= 1) {
+        dotsContainer.innerHTML = '';
+        return;
+    }
+
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < totalPages; i += 1) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = `reviews-dot ${i === reviewsState.currentPage ? 'active' : ''}`;
+        dot.setAttribute('aria-label', `Ir a página ${i + 1} de reseñas`);
+        dot.addEventListener('click', () => {
+            reviewsState.currentPage = i;
+            renderReviewsPage();
+        });
+        dotsContainer.appendChild(dot);
+    }
+}
+
+function renderReviewsPage() {
+    const track = document.getElementById('reviews-track');
+    const prevBtn = document.getElementById('reviews-prev');
+    const nextBtn = document.getElementById('reviews-next');
+    const loadMoreBtn = document.getElementById('reviews-load-more');
+
+    if (!track) return;
+
+    const totalItems = reviewsState.items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / reviewsState.perPage));
+    reviewsState.currentPage = Math.min(reviewsState.currentPage, totalPages - 1);
+
+    if (totalItems === 0) {
+        track.style.gridTemplateColumns = '1fr';
+        track.innerHTML = `
+            <article class="review-card-empty">
+                <p>Todavía no hay reseñas publicadas.</p>
+                <small>Las nuevas reseñas aparecerán aquí después del checkout.</small>
+            </article>
+        `;
+    } else {
+        const start = reviewsState.currentPage * reviewsState.perPage;
+        const visible = reviewsState.items.slice(start, start + reviewsState.perPage);
+        const columns = Math.max(1, Math.min(reviewsState.perPage, visible.length));
+        track.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+        track.innerHTML = visible.map(review => `
+            <article class="review-card">
+                <div class="review-card-top">
+                    <strong class="review-card-name">${escapeHtml(review.client_name)}</strong>
+                    <span class="review-card-stars">${getStars(review.rating)}</span>
+                </div>
+                <p class="review-card-comment">"${escapeHtml(review.comment)}"</p>
+                <span class="review-card-date">${formatReviewDate(review.created_at)}</span>
+            </article>
+        `).join('');
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = reviewsState.currentPage <= 0 || totalItems === 0;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = reviewsState.currentPage >= totalPages - 1 || totalItems === 0;
+    }
+
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = reviewsState.hasMore ? 'inline-flex' : 'none';
+        loadMoreBtn.disabled = reviewsState.loading;
+        loadMoreBtn.textContent = reviewsState.loading ? 'Cargando...' : 'Cargar Más Reseñas';
+    }
+
+    renderReviewDots(totalPages);
+    updateReviewsSummary();
+}
+
+async function loadReviews({ append = false } = {}) {
+    if (reviewsState.loading || typeof API === 'undefined' || typeof API.getPublicReviews !== 'function') {
+        return;
+    }
+
+    reviewsState.loading = true;
+    renderReviewsPage();
+
+    try {
+        const nextOffset = append ? reviewsState.offset : 0;
+        const result = await API.getPublicReviews({
+            limit: reviewsState.limit,
+            offset: nextOffset
+        });
+
+        const payload = result.data || {};
+        const incoming = Array.isArray(payload.reviews) ? payload.reviews : [];
+
+        if (append) {
+            const existingIds = new Set(reviewsState.items.map(item => item.id));
+            const newItems = incoming.filter(item => !existingIds.has(item.id));
+            reviewsState.items = [...reviewsState.items, ...newItems];
+            reviewsState.offset = nextOffset + incoming.length;
+        } else {
+            reviewsState.items = incoming;
+            reviewsState.offset = incoming.length;
+            reviewsState.currentPage = 0;
+        }
+
+        reviewsState.hasMore = Boolean(payload.pagination?.has_more);
+        reviewsState.summary = payload.summary || reviewsState.summary;
+    } catch (error) {
+        console.error('Error cargando reseñas:', error);
+    } finally {
+        reviewsState.loading = false;
+        renderReviewsPage();
+    }
+}
+
+function setupReviewsSection() {
+    if (reviewsState.initialized) return;
+
+    const track = document.getElementById('reviews-track');
+    if (!track) return;
+
+    const prevBtn = document.getElementById('reviews-prev');
+    const nextBtn = document.getElementById('reviews-next');
+    const loadMoreBtn = document.getElementById('reviews-load-more');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (reviewsState.currentPage > 0) {
+                reviewsState.currentPage -= 1;
+                renderReviewsPage();
+            }
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(reviewsState.items.length / reviewsState.perPage);
+            if (reviewsState.currentPage < totalPages - 1) {
+                reviewsState.currentPage += 1;
+                renderReviewsPage();
+            }
+        });
+    }
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', async () => {
+            await loadReviews({ append: true });
+        });
+    }
+
+    const handleResize = debounce(() => {
+        const newPerPage = getReviewsPerPage();
+        if (newPerPage === reviewsState.perPage) return;
+
+        const firstVisibleIndex = reviewsState.currentPage * reviewsState.perPage;
+        reviewsState.perPage = newPerPage;
+        reviewsState.currentPage = Math.floor(firstVisibleIndex / reviewsState.perPage);
+        renderReviewsPage();
+    }, 180);
+
+    window.addEventListener('resize', handleResize);
+
+    reviewsState.initialized = true;
+    renderReviewsPage();
+    loadReviews();
+}
+
+if (document.getElementById('reviews-track')) {
+    setupReviewsSection();
+}
+
+// ============================================================================
 // CARGAR PRODUCTOS
 // ============================================================================
 async function loadProducts() {

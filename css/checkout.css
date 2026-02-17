@@ -573,6 +573,116 @@
     line-height: 1.8;
 }
 
+/* Reviews */
+.review-module {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    background: linear-gradient(145deg,
+            rgba(196, 163, 90, 0.08) 0%,
+            rgba(26, 26, 26, 0.85) 100%);
+}
+
+.review-title {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.review-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-stars {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.review-star-btn {
+    border: 0;
+    background: transparent;
+    color: rgba(196, 163, 90, 0.35);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    padding: 0;
+}
+
+.review-star-btn:hover {
+    transform: translateY(-1px);
+}
+
+.review-star-btn.active {
+    color: var(--gold);
+}
+
+.review-label {
+    text-align: left;
+    color: var(--cream);
+    font-size: 0.9rem;
+}
+
+.review-textarea {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    background: var(--charcoal-dark);
+    color: var(--cream);
+    padding: 0.9rem 1rem;
+    resize: vertical;
+    font-family: var(--font-body);
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.2);
+}
+
+.review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.review-counter {
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.review-status {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.review-status-success {
+    color: #b9fbc0;
+    border-color: rgba(185, 251, 192, 0.3);
+    background: rgba(31, 71, 41, 0.35);
+}
+
+.review-status-error {
+    color: #ffd2d2;
+    border-color: rgba(255, 115, 115, 0.4);
+    background: rgba(95, 24, 24, 0.35);
+}
+
 /* Responsive */
 /* ========== RESPONSIVE DESIGN ========== */
 
@@ -803,6 +913,15 @@
         padding: 1rem 2rem;
         font-size: 0.85rem;
     }
+
+    .review-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .review-star-btn {
+        font-size: 1.8rem;
+    }
 }
 
 /* Móviles pequeños (hasta 480px) */
@@ -898,6 +1017,18 @@
 
     .membership-tier {
         font-size: 1.1rem;
+    }
+
+    .review-module {
+        padding: 1.2rem;
+    }
+
+    .review-title {
+        font-size: 1.15rem;
+    }
+
+    .review-star-btn {
+        font-size: 1.55rem;
     }
 
     .membership-status {

@@ -185,6 +185,166 @@
 }
 
 /* ============================================================================
+   REVIEWS SECTION
+   ============================================================================ */
+.reviews-section {
+    padding: 4rem 2rem 5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.reviews-summary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(196, 163, 90, 0.2);
+    background: rgba(196, 163, 90, 0.06);
+    margin-bottom: 2rem;
+}
+
+.reviews-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.reviews-stat strong {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.reviews-stat span {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.reviews-stars-display {
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+}
+
+.reviews-carousel {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.reviews-nav-btn {
+    width: 44px;
+    border: 1px solid rgba(196, 163, 90, 0.3);
+    background: rgba(196, 163, 90, 0.08);
+    color: var(--gold);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reviews-nav-btn:hover:not(:disabled) {
+    background: rgba(196, 163, 90, 0.2);
+}
+
+.reviews-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.reviews-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.review-card {
+    border: 1px solid rgba(196, 163, 90, 0.18);
+    background: linear-gradient(145deg, rgba(55, 55, 55, 0.95), rgba(35, 35, 35, 0.95));
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+}
+
+.review-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.review-card-name {
+    color: var(--cream);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+}
+
+.review-card-stars {
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    font-size: 0.95rem;
+}
+
+.review-card-comment {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    opacity: 0.9;
+    flex: 1;
+}
+
+.review-card-date {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    opacity: 0.65;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.review-card-empty {
+    border: 1px dashed rgba(196, 163, 90, 0.25);
+    background: rgba(196, 163, 90, 0.04);
+    padding: 1.5rem;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.review-card-empty p {
+    margin-bottom: 0.5rem;
+}
+
+.reviews-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin: 1.25rem 0 1rem;
+}
+
+.reviews-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(196, 163, 90, 0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reviews-dot.active {
+    width: 24px;
+    background: var(--gold);
+}
+
+.reviews-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* ============================================================================
    SERVICES SECTION
    ============================================================================ */
 .services-section {
@@ -999,6 +1159,10 @@
 
 /* Tablets grandes (hasta 1024px) */
 @media (max-width: 1024px) {
+    .reviews-track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .services-featured {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1018,6 +1182,28 @@
 
 /* Tablets y móviles (hasta 768px) */
 @media (max-width: 768px) {
+    .reviews-section {
+        padding: 3rem 1.25rem 3.5rem;
+    }
+
+    .reviews-summary {
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .reviews-carousel {
+        grid-template-columns: auto 1fr auto;
+        gap: 0.6rem;
+    }
+
+    .reviews-nav-btn {
+        width: 38px;
+    }
+
+    .reviews-track {
+        grid-template-columns: 1fr;
+    }
+
     .hero {
         min-height: 70vh;
         padding: 5rem 2rem 3rem;
@@ -1170,6 +1356,19 @@
 
 /* Móviles pequeños (hasta 480px) */
 @media (max-width: 480px) {
+    .reviews-summary {
+        flex-direction: column;
+    }
+
+    .reviews-stars-display {
+        font-size: 1.2rem;
+    }
+
+    .reviews-nav-btn {
+        width: 34px;
+        font-size: 1rem;
+    }
+
     .hero {
         padding: 4rem 1.5rem 2.5rem;
         min-height: 60vh;

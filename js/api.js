@@ -452,6 +452,56 @@ const API = {
         }
     },
 
+    /**
+     * Registra una reseña de cliente (una por checkout)
+     */
+    async submitReview(reviewData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/reviews`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(reviewData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            }
+
+            return result;
+        } catch (error) {
+            return this.handleError(error);
+        }
+    },
+
+    /**
+     * Obtiene reseñas públicas paginadas para la landing
+     */
+    async getPublicReviews({ limit = 9, offset = 0 } = {}) {
+        try {
+            const params = new URLSearchParams({
+                limit: String(limit),
+                offset: String(offset)
+            });
+
+            const response = await fetch(`${API_BASE_URL}/reviews/public?${params.toString()}`, {
+                method: 'GET',
+                headers: this.getHeaders()
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            }
+
+            return result;
+        } catch (error) {
+            return this.handleError(error);
+        }
+    },
+
 
     // ========================================================================
     // HEALTH CHECK

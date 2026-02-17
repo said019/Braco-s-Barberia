@@ -10,7 +10,10 @@ const state = {
     products: [],
     cart: {},
     useMembership: false,
-    paymentMethod: 'efectivo'
+    paymentMethod: 'efectivo',
+    completedCheckoutId: null,
+    selectedRating: 0,
+    reviewSubmitted: false
 };
 
 // Elementos DOM
@@ -20,7 +23,15 @@ const elements = {
     codeInput: document.getElementById('checkout-code'),
     productsGrid: document.getElementById('products-grid'),
     useMembershipCheckbox: document.getElementById('use-membership'),
-    btnCompleteCheckout: document.getElementById('btn-complete-checkout')
+    btnCompleteCheckout: document.getElementById('btn-complete-checkout'),
+    reviewModule: document.getElementById('review-module'),
+    reviewForm: document.getElementById('review-form'),
+    reviewStars: document.querySelectorAll('.review-star-btn'),
+    reviewComment: document.getElementById('review-comment'),
+    reviewCounter: document.getElementById('review-counter'),
+    btnSubmitReview: document.getElementById('btn-submit-review'),
+    reviewSuccessMessage: document.getElementById('review-success-message'),
+    reviewErrorMessage: document.getElementById('review-error-message')
 };
 
 // ============================================================================
@@ -49,10 +60,12 @@ function setupCodeInputs() {
 // ============================================================================
 function setupEventListeners() {
     // Formulario de código
-    elements.codeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await searchCheckout();
-    });
+    if (elements.codeForm) {
+        elements.codeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await searchCheckout();
+        });
+    }
 
     // Checkbox de membresía
     if (elements.useMembershipCheckbox) {
@@ -79,6 +92,28 @@ function setupEventListeners() {
             await completeCheckout();
         });
     }
+
+    // Calificación por estrellas
+    elements.reviewStars.forEach(star => {
+        star.addEventListener('click', () => {
+            setSelectedRating(Number(star.dataset.rating));
+        });
+    });
+
+    // Contador de comentario
+    if (elements.reviewComment) {
+        elements.reviewComment.addEventListener('input', () => {
+            updateReviewCounter();
+        });
+    }
+
+    // Envío de reseña
+    if (elements.reviewForm) {
+        elements.reviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await submitReview();
+        });
+    }
 }
 
 // ============================================================================
@@ -93,6 +128,7 @@ async function searchCheckout() {
     }
 
     state.checkoutCode = code;
+    resetReviewState();
 
     // Mostrar loading
     const btn = elements.codeForm.querySelector('button');
@@ -223,6 +259,8 @@ function showCheckoutScreen() {
     // Ocultar código, mostrar checkout
     document.getElementById('step-code').classList.add('hidden');
     document.getElementById('step-checkout').classList.remove('hidden');
+    document.getElementById('step-success').classList.add('hidden');
+    resetReviewUI();
 
     // Llenar información
     document.getElementById('display-code').textContent = state.checkoutCode;
@@ -457,6 +495,7 @@ async function completeCheckout() {
         const result = await API.completeCheckout(checkoutPayload);
 
         if (result.success) {
+            state.completedCheckoutId = result.checkout_id || null;
             // Mostrar pantalla de éxito
             showSuccessScreen();
         } else {
@@ -476,7 +515,7 @@ async function completeCheckout() {
 // ============================================================================
 function showSuccessScreen() {
     // Calcular total final
-    const servicePrice = state.useMembership ? 0 : state.checkoutData.service_price;
+    const servicePrice = (state.useMembership || state.paymentMethod === 'cortesia') ? 0 : state.checkoutData.service_price;
     const productsTotal = Object.entries(state.cart).reduce((sum, [id, qty]) => {
         const product = state.products.find(p => p.id == id);
         return sum + (product ? product.price * qty : 0);
@@ -501,6 +540,146 @@ function showSuccessScreen() {
         minute: '2-digit'
     });
 
+    configureReviewModule();
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================================
+// RESEÑAS
+// ============================================================================
+function resetReviewState() {
+    state.completedCheckoutId = null;
+    state.selectedRating = 0;
+    state.reviewSubmitted = false;
+}
+
+function resetReviewUI() {
+    if (elements.reviewModule) {
+        elements.reviewModule.classList.add('hidden');
+    }
+
+    if (elements.reviewForm) {
+        elements.reviewForm.reset();
+        elements.reviewForm.classList.remove('hidden');
+    }
+
+    setSelectedRating(0);
+    updateReviewCounter();
+
+    if (elements.reviewSuccessMessage) {
+        elements.reviewSuccessMessage.classList.add('hidden');
+    }
+
+    if (elements.reviewErrorMessage) {
+        elements.reviewErrorMessage.classList.add('hidden');
+        elements.reviewErrorMessage.textContent = '';
+    }
+
+    if (elements.btnSubmitReview) {
+        elements.btnSubmitReview.disabled = false;
+        elements.btnSubmitReview.textContent = 'Enviar Reseña';
+    }
+
+    if (elements.reviewComment) {
+        elements.reviewComment.disabled = false;
+    }
+
+    elements.reviewStars.forEach(star => {
+        star.disabled = false;
+    });
+}
+
+function setSelectedRating(rating) {
+    state.selectedRating = rating;
+    elements.reviewStars.forEach(star => {
+        const starRating = Number(star.dataset.rating);
+        star.classList.toggle('active', starRating <= rating);
+    });
+}
+
+function updateReviewCounter() {
+    if (!elements.reviewCounter || !elements.reviewComment) return;
+    const length = elements.reviewComment.value.trim().length;
+    elements.reviewCounter.textContent = `${length}/500`;
+}
+
+function configureReviewModule() {
+    resetReviewUI();
+
+    const canReview = state.completedCheckoutId && state.checkoutData?.client_id;
+    if (!canReview || !elements.reviewModule) {
+        return;
+    }
+
+    elements.reviewModule.classList.remove('hidden');
+}
+
+async function submitReview() {
+    if (!state.completedCheckoutId) {
+        showToast('No se encontró el checkout para registrar tu reseña', 'error');
+        return;
+    }
+
+    if (state.selectedRating < 1 || state.selectedRating > 5) {
+        showToast('Selecciona una calificación de 1 a 5 estrellas', 'error');
+        return;
+    }
+
+    const comment = elements.reviewComment?.value.trim() || '';
+    if (comment.length < 8) {
+        showToast('Escribe un comentario de al menos 8 caracteres', 'error');
+        return;
+    }
+
+    const submitBtn = elements.btnSubmitReview;
+    const originalText = submitBtn ? submitBtn.textContent : 'Enviar Reseña';
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+    }
+
+    if (elements.reviewErrorMessage) {
+        elements.reviewErrorMessage.classList.add('hidden');
+        elements.reviewErrorMessage.textContent = '';
+    }
+
+    try {
+        const response = await API.submitReview({
+            checkout_id: state.completedCheckoutId,
+            client_id: state.checkoutData.client_id,
+            rating: state.selectedRating,
+            comment
+        });
+
+        if (!response.success) {
+            throw new Error(response.message || 'No se pudo guardar la reseña');
+        }
+
+        state.reviewSubmitted = true;
+
+        if (elements.reviewSuccessMessage) {
+            elements.reviewSuccessMessage.classList.remove('hidden');
+        }
+
+        if (elements.reviewForm) {
+            elements.reviewForm.classList.add('hidden');
+        }
+
+        showToast('Gracias por tu reseña', 'success');
+    } catch (error) {
+        const message = error.message || 'No se pudo enviar la reseña';
+
+        if (elements.reviewErrorMessage) {
+            elements.reviewErrorMessage.textContent = message;
+            elements.reviewErrorMessage.classList.remove('hidden');
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
 }
