@@ -116,7 +116,7 @@ export const Appointment = {
       JOIN clients c ON a.client_id = c.id
       JOIN services s ON a.service_id = s.id
       WHERE c.client_code = $1
-        AND a.status IN ('scheduled', 'confirmed', 'in_progress')
+        AND a.status IN ('scheduled', 'confirmed', 'in_progress', 'pending')
         AND a.appointment_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
       ORDER BY a.appointment_date ASC, a.start_time ASC
       LIMIT 1
