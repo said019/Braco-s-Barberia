@@ -101,6 +101,11 @@ export const Appointment = {
 
   // Obtener cita de hoy o próxima por código de cliente (busca hoy o futuro)
   async getByClientCode(clientCode) {
+    // Search for appointments by client code:
+    // 1. Active appointments (scheduled/confirmed/in_progress/pending) for today or future
+    // 2. Completed appointments from today (admin may have already marked it done)
+    // 3. Recently completed appointments (last 3 days) as fallback
+    // Prioritize active appointments, then today's completed, then recent completed
     const sql = `
       SELECT 
         a.*,
@@ -116,9 +121,22 @@ export const Appointment = {
       JOIN clients c ON a.client_id = c.id
       JOIN services s ON a.service_id = s.id
       WHERE c.client_code = $1
-        AND a.status IN ('scheduled', 'confirmed', 'in_progress', 'pending')
-        AND a.appointment_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
-      ORDER BY a.appointment_date ASC, a.start_time ASC
+        AND (
+          (a.status IN ('scheduled', 'confirmed', 'in_progress', 'pending')
+           AND a.appointment_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date)
+          OR
+          (a.status = 'completed'
+           AND a.appointment_date >= ((CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date - INTERVAL '3 days'))
+        )
+      ORDER BY 
+        CASE 
+          WHEN a.status IN ('in_progress', 'confirmed', 'scheduled', 'pending') THEN 0
+          WHEN a.status = 'completed' 
+               AND a.appointment_date = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date THEN 1
+          ELSE 2
+        END,
+        a.appointment_date ASC, 
+        a.start_time ASC
       LIMIT 1
     `;
     const result = await query(sql, [clientCode]);
