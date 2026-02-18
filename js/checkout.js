@@ -146,8 +146,9 @@ async function searchCheckout() {
 
         state.checkoutData = checkoutData;
 
-        // Si la cita ya está completada, mostrar pantalla de éxito directamente
+        // Si la cita ya está completada, buscar checkout existente y estado de reseña
         if (checkoutData.status === 'completed') {
+            await loadCompletedCheckoutData(checkoutData.id);
             showSuccessScreen();
             return;
         }
@@ -196,6 +197,40 @@ async function getCheckoutData(code) {
         start_time: data.data.start_time,
         status: data.data.status
     };
+}
+
+// ============================================================================
+// CARGAR DATOS DE CHECKOUT COMPLETADO (checkout existente + reseña)
+// ============================================================================
+async function loadCompletedCheckoutData(appointmentId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/checkout/by-appointment/${appointmentId}`);
+        const data = await response.json();
+
+        if (response.ok && data.success && data.data.checkout) {
+            state.completedCheckoutId = data.data.checkout.id;
+
+            // Guardar datos del checkout para mostrar en la pantalla de éxito
+            state.completedCheckoutInfo = data.data.checkout;
+
+            // Si ya existe una reseña, guardarla para mostrar en modo lectura
+            if (data.data.review) {
+                state.existingReview = data.data.review;
+            } else {
+                state.existingReview = null;
+            }
+        } else {
+            // No hay checkout para esta cita (puede ser walk-in manejado por admin)
+            state.completedCheckoutId = null;
+            state.existingReview = null;
+            state.completedCheckoutInfo = null;
+        }
+    } catch (error) {
+        console.error('Error loading completed checkout data:', error);
+        state.completedCheckoutId = null;
+        state.existingReview = null;
+        state.completedCheckoutInfo = null;
+    }
 }
 
 // ============================================================================
@@ -514,31 +549,53 @@ async function completeCheckout() {
 // MOSTRAR PANTALLA DE ÉXITO
 // ============================================================================
 function showSuccessScreen() {
-    // Calcular total final
-    const servicePrice = (state.useMembership || state.paymentMethod === 'cortesia') ? 0 : state.checkoutData.service_price;
-    const productsTotal = Object.entries(state.cart).reduce((sum, [id, qty]) => {
-        const product = state.products.find(p => p.id == id);
-        return sum + (product ? product.price * qty : 0);
-    }, 0);
-    const total = servicePrice + productsTotal;
+    // Si es una cita ya completada, usar datos del checkout existente
+    if (state.checkoutData?.status === 'completed' && state.completedCheckoutInfo) {
+        const info = state.completedCheckoutInfo;
+        const paymentMethodMap = {
+            'cash': 'Efectivo',
+            'card': 'Tarjeta',
+            'transfer': 'Transferencia',
+            'membership': 'Membresía',
+            'courtesy': 'Cortesía'
+        };
 
-    // Ocultar checkout, mostrar éxito
+        document.getElementById('final-total').textContent = `$${parseFloat(info.total).toFixed(0)}`;
+        document.getElementById('final-method').textContent = paymentMethodMap[info.payment_method] || info.payment_method;
+        document.getElementById('final-date').textContent = formatDate(new Date(info.completed_at), {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else {
+        // Calcular total final desde el carrito actual (checkout recién hecho)
+        const servicePrice = (state.useMembership || state.paymentMethod === 'cortesia') ? 0 : state.checkoutData.service_price;
+        const productsTotal = Object.entries(state.cart).reduce((sum, [id, qty]) => {
+            const product = state.products.find(p => p.id == id);
+            return sum + (product ? product.price * qty : 0);
+        }, 0);
+        const total = servicePrice + productsTotal;
+
+        document.getElementById('final-total').textContent = `$${total}`;
+        document.getElementById('final-method').textContent =
+            state.paymentMethod === 'efectivo' ? 'Efectivo' :
+                state.paymentMethod === 'tarjeta' ? 'Tarjeta' :
+                    state.paymentMethod === 'cortesia' ? 'Cortesía' : 'Transferencia';
+        document.getElementById('final-date').textContent = formatDate(new Date(), {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Ocultar code/checkout steps, mostrar éxito
+    document.getElementById('step-code').classList.add('hidden');
     document.getElementById('step-checkout').classList.add('hidden');
     document.getElementById('step-success').classList.remove('hidden');
-
-    // Llenar datos
-    document.getElementById('final-total').textContent = `$${total}`;
-    document.getElementById('final-method').textContent =
-        state.paymentMethod === 'efectivo' ? 'Efectivo' :
-            state.paymentMethod === 'tarjeta' ? 'Tarjeta' :
-                state.paymentMethod === 'cortesia' ? 'Cortesía' : 'Transferencia';
-    document.getElementById('final-date').textContent = formatDate(new Date(), {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
 
     configureReviewModule();
 
@@ -551,6 +608,8 @@ function showSuccessScreen() {
 // ============================================================================
 function resetReviewState() {
     state.completedCheckoutId = null;
+    state.completedCheckoutInfo = null;
+    state.existingReview = null;
     state.selectedRating = 0;
     state.reviewSubmitted = false;
 }
@@ -558,6 +617,22 @@ function resetReviewState() {
 function resetReviewUI() {
     if (elements.reviewModule) {
         elements.reviewModule.classList.add('hidden');
+    }
+
+    // Limpiar bloque de reseña existente si existe
+    const existingBlock = document.getElementById('existing-review-block');
+    if (existingBlock) {
+        existingBlock.remove();
+    }
+
+    // Restaurar títulos del módulo de reseña
+    const reviewTitle = elements.reviewModule?.querySelector('.review-title');
+    if (reviewTitle) {
+        reviewTitle.textContent = 'Califica tu experiencia';
+    }
+    const reviewSubtitle = elements.reviewModule?.querySelector('.review-subtitle');
+    if (reviewSubtitle) {
+        reviewSubtitle.textContent = 'Tu reseña aparece en nuestra página principal y solo puedes enviarla una vez por checkout.';
     }
 
     if (elements.reviewForm) {
@@ -614,6 +689,69 @@ function configureReviewModule() {
     }
 
     elements.reviewModule.classList.remove('hidden');
+
+    // Si ya existe una reseña, mostrarla en modo lectura
+    if (state.existingReview) {
+        showExistingReview(state.existingReview);
+    }
+}
+
+// ============================================================================
+// MOSTRAR RESEÑA EXISTENTE (MODO LECTURA)
+// ============================================================================
+function showExistingReview(review) {
+    // Ocultar el formulario
+    if (elements.reviewForm) {
+        elements.reviewForm.classList.add('hidden');
+    }
+
+    // Mostrar las estrellas en modo lectura
+    setSelectedRating(review.rating);
+    elements.reviewStars.forEach(star => {
+        star.disabled = true;
+    });
+
+    // Crear/mostrar el bloque de reseña existente
+    let existingBlock = document.getElementById('existing-review-block');
+    if (!existingBlock) {
+        existingBlock = document.createElement('div');
+        existingBlock.id = 'existing-review-block';
+        existingBlock.className = 'existing-review-block';
+        elements.reviewModule.appendChild(existingBlock);
+    }
+
+    const reviewDate = formatDate(new Date(review.created_at), {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+
+    existingBlock.innerHTML = `
+        <div class="existing-review-stars" style="text-align: center; margin-bottom: 0.5rem;">
+            ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+        </div>
+        <p class="existing-review-comment" style="font-style: italic; color: var(--text-secondary); text-align: center; margin-bottom: 0.5rem;">"${review.comment}"</p>
+        <p class="existing-review-date" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">${reviewDate}</p>
+    `;
+    existingBlock.style.cssText = 'padding: 1rem; border: 1px solid var(--gold-dim, #b8860b33); border-radius: 8px; margin-top: 1rem;';
+
+    // Cambiar título del módulo
+    const reviewTitle = elements.reviewModule.querySelector('.review-title');
+    if (reviewTitle) {
+        reviewTitle.textContent = 'Tu reseña';
+    }
+    const reviewSubtitle = elements.reviewModule.querySelector('.review-subtitle');
+    if (reviewSubtitle) {
+        reviewSubtitle.textContent = '¡Gracias por compartir tu experiencia!';
+    }
+
+    // Ocultar mensajes de éxito/error
+    if (elements.reviewSuccessMessage) {
+        elements.reviewSuccessMessage.classList.add('hidden');
+    }
+    if (elements.reviewErrorMessage) {
+        elements.reviewErrorMessage.classList.add('hidden');
+    }
 }
 
 async function submitReview() {

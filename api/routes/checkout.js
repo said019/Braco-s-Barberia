@@ -1,9 +1,15 @@
 import express from 'express';
 import checkoutController from '../controllers/checkoutController.js';
 import { validate } from '../middleware/validators.js';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 const router = express.Router();
+
+// GET /api/checkout/by-appointment/:appointmentId - Obtener checkout y reseña por cita
+router.get('/by-appointment/:appointmentId', [
+    param('appointmentId').isInt({ min: 1 }).withMessage('ID de cita inválido'),
+    validate
+], checkoutController.getByAppointment);
 
 // POST /api/checkout - Procesar checkout (Público/Protegido por lógica interna)
 // Nota: Podríamos agregar validación de token si fuera necesario, pero el checkout es público

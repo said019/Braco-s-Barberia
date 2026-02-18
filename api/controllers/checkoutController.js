@@ -5,6 +5,60 @@ import whatsappService from '../services/whatsappService.js';
 import { query } from '../config/database.js';
 
 export const checkoutController = {
+    // GET /api/checkout/by-appointment/:appointmentId - Obtener checkout y reseña por cita
+    async getByAppointment(req, res, next) {
+        try {
+            const { appointmentId } = req.params;
+
+            // Buscar checkout asociado a esta cita
+            const checkoutResult = await query(`
+                SELECT ch.id as checkout_id, ch.total, ch.payment_method, ch.completed_at,
+                       ch.service_cost, ch.products_cost, ch.discount, ch.used_membership
+                FROM checkouts ch
+                WHERE ch.appointment_id = $1
+                LIMIT 1
+            `, [appointmentId]);
+
+            if (checkoutResult.rows.length === 0) {
+                return res.json({
+                    success: true,
+                    data: { checkout: null, review: null }
+                });
+            }
+
+            const checkout = checkoutResult.rows[0];
+
+            // Buscar reseña existente para este checkout
+            const reviewResult = await query(`
+                SELECT r.id, r.rating, r.comment, r.created_at
+                FROM reviews r
+                WHERE r.checkout_id = $1
+                LIMIT 1
+            `, [checkout.checkout_id]);
+
+            const review = reviewResult.rows.length > 0 ? reviewResult.rows[0] : null;
+
+            res.json({
+                success: true,
+                data: {
+                    checkout: {
+                        id: checkout.checkout_id,
+                        total: checkout.total,
+                        payment_method: checkout.payment_method,
+                        completed_at: checkout.completed_at,
+                        service_cost: checkout.service_cost,
+                        products_cost: checkout.products_cost,
+                        discount: checkout.discount,
+                        used_membership: checkout.used_membership
+                    },
+                    review: review
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     // POST /api/checkout - Procesar pago
     async processCheckout(req, res, next) {
         try {
