@@ -244,7 +244,7 @@ CREATE TABLE checkouts (
     products_cost DECIMAL(10,2) DEFAULT 0,
     discount DECIMAL(10,2) DEFAULT 0,
     total DECIMAL(10,2) NOT NULL,
-    payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('cash', 'card', 'transfer', 'membership')),
+    payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('cash', 'card', 'transfer', 'membership', 'courtesy')),
     used_membership BOOLEAN DEFAULT FALSE,
     membership_id INTEGER REFERENCES client_memberships(id),
     notes TEXT,
