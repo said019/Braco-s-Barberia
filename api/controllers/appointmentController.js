@@ -298,9 +298,10 @@ export const appointmentController = {
           );
           const hasActiveMembership = membershipCheck.rows.length > 0;
 
-          // NUEVO = tipo Nuevo (1) Y sin membresía activa
-          // Si el cliente ya es tipo Recurrente (2), NUNCA es nuevo
-          const isNewClient = isTypeNuevo && !hasActiveMembership;
+          // NUEVO = tipo Nuevo (1) Y sin membresía activa Y sin visitas previas
+          // Si el cliente ya es tipo Recurrente (2) O tiene visitas, NUNCA es nuevo
+          const hasVisits = client.total_visits && client.total_visits > 0;
+          const isNewClient = isTypeNuevo && !hasActiveMembership && !hasVisits;
           const clientIndicator = isNewClient ? '🆕 NUEVO - VALIDAR DEPÓSITO' : '';
 
           // Nombre del cliente con indicador si es nuevo
