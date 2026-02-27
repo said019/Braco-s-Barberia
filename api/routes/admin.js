@@ -407,18 +407,21 @@ router.get('/birthdays', authenticateToken, async (req, res, next) => {
                     c.id,
                     c.name,
                     c.phone,
-                    c.birthdate,
+                    TO_CHAR(c.birthdate, 'YYYY-MM-DD') as birthdate_str,
                     CASE
                         WHEN TO_CHAR(c.birthdate, 'MM-DD') >= TO_CHAR((NOW() AT TIME ZONE 'America/Mexico_City')::date, 'MM-DD')
-                        THEN TO_DATE(EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Mexico_City')::date)::text || TO_CHAR(c.birthdate, '-MM-DD'), 'YYYY-MM-DD')
-                        ELSE TO_DATE((EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Mexico_City')::date) + 1)::text || TO_CHAR(c.birthdate, '-MM-DD'), 'YYYY-MM-DD')
-                    END AS next_birthday
+                        THEN (EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Mexico_City')::date)::text || TO_CHAR(c.birthdate, '-MM-DD'))
+                        ELSE ((EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Mexico_City')::date) + 1)::text || TO_CHAR(c.birthdate, '-MM-DD'))
+                    END AS next_birthday_str
                 FROM clients c
                 WHERE c.birthdate IS NOT NULL
             )
-            SELECT * FROM birthdays
-            WHERE next_birthday BETWEEN (NOW() AT TIME ZONE 'America/Mexico_City')::date AND (NOW() AT TIME ZONE 'America/Mexico_City')::date + $1 * INTERVAL '1 day'
-            ORDER BY next_birthday ASC`;
+            SELECT 
+                id, name, phone, birthdate_str as birthdate, 
+                next_birthday_str as next_birthday 
+            FROM birthdays
+            WHERE next_birthday_str::date BETWEEN (NOW() AT TIME ZONE 'America/Mexico_City')::date AND (NOW() AT TIME ZONE 'America/Mexico_City')::date + $1 * INTERVAL '1 day'
+            ORDER BY next_birthday_str ASC`;
         const result = await db.query(sql, [days]);
         res.json(result.rows);
     } catch (error) {
