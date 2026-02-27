@@ -591,8 +591,8 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
                     // Estilos dinámicos para resaltar si es hoy
                     const itemStyle = isToday
-                        ? 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gold); background: rgba(196,163,90,0.15); margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(196,163,90,0.15); animation: pulse 2s infinite;'
-                        : 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #333;';
+                        ? 'display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gold); background: rgba(196,163,90,0.15); margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(196,163,90,0.15); animation: pulse 2s infinite;'
+                        : 'display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);';
 
                     const extraBadge = isToday
                         ? '<span class="badge badge-gold" style="margin-left: 0.5rem; animation: bounce 1s infinite;"><i class="fas fa-star" style="font-size: 0.7rem;"></i> ¡HOY!</span>'
@@ -600,9 +600,9 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
 
                     return `
             <div class="birthday-item" style="${itemStyle}">
-                <div>
-                    <span class="name" style="font-weight: ${isToday ? '700' : 'bold'}; color: ${isToday ? 'var(--gold)' : 'inherit'};">${c.name}</span>
-                    <div style="font-size: 0.85rem; color: #999; margin-top: 2px;">
+                <div style="flex: 1; min-width: 150px;">
+                    <div class="name" style="font-weight: ${isToday ? '700' : 'bold'}; color: ${isToday ? 'var(--gold)' : 'inherit'}; font-size: 1rem; line-height: 1.2;">${c.name}</div>
+                    <div style="font-size: 0.85rem; color: #999; margin-top: 4px; display: flex; align-items: center;">
                         ${birthdayDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
                         ${extraBadge}
                     </div>
