@@ -567,6 +567,9 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     container.innerHTML = '<p class="text-muted">No hay cumpleaños próximos.</p>';
                     return;
                 }
+                // Ordenar por días faltantes (calculado rápido del backend)
+                data.sort((a, b) => new Date(a.next_birthday) - new Date(b.next_birthday));
+
                 container.innerHTML = data.map(c => {
                     // Escapar comillas en nombre para evitar problemas con onclick
                     const safeName = (c.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
@@ -575,32 +578,41 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     const dateStr = (c.next_birthday || '').split('T')[0];
                     const [year, month, day] = dateStr.split('-').map(Number);
                     const birthdayDate = new Date(year, month - 1, day);
-                    
+
                     // Comprobar si es hoy (hora local México)
                     const todayStr = new Date().toLocaleString('en-CA', { timeZone: 'America/Mexico_City' }).split(',')[0];
                     const isToday = dateStr === todayStr;
 
+                    // Calcular días faltantes para el badge
+                    const todayDate = new Date(todayStr.split('-').map(Number)[0], todayStr.split('-').map(Number)[1] - 1, todayStr.split('-').map(Number)[2]);
+                    const daysUntil = Math.ceil((birthdayDate - todayDate) / (1000 * 60 * 60 * 24));
+                    const badgeColor = daysUntil === 0 ? 'badge-success' : daysUntil <= 7 ? 'badge-warning' : 'badge-info';
+                    const dayText = daysUntil === 0 ? 'Hoy' : daysUntil === 1 ? 'Mañana' : `${daysUntil} DÍAS`;
+
                     // Estilos dinámicos para resaltar si es hoy
-                    const itemStyle = isToday 
+                    const itemStyle = isToday
                         ? 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gold); background: rgba(196,163,90,0.15); margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(196,163,90,0.15); animation: pulse 2s infinite;'
-                        : 'display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);';
-                        
-                    const badgeHtml = isToday 
+                        : 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #333;';
+
+                    const extraBadge = isToday
                         ? '<span class="badge badge-gold" style="margin-left: 0.5rem; animation: bounce 1s infinite;"><i class="fas fa-star" style="font-size: 0.7rem;"></i> ¡HOY!</span>'
                         : '';
 
                     return `
             <div class="birthday-item" style="${itemStyle}">
                 <div>
-                    <span class="name" style="font-weight: ${isToday ? '700' : '500'}; color: ${isToday ? 'var(--gold)' : 'inherit'};">${c.name}</span>
-                    <span class="date" style="color: ${isToday ? 'var(--text-secondary)' : '#888'}; margin-left: 0.5rem;">
+                    <span class="name" style="font-weight: ${isToday ? '700' : 'bold'}; color: ${isToday ? 'var(--gold)' : 'inherit'};">${c.name}</span>
+                    <div style="font-size: 0.85rem; color: #999; margin-top: 2px;">
                         ${birthdayDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
-                        ${badgeHtml}
-                    </span>
+                        ${extraBadge}
+                    </div>
                 </div>
-                <button class="btn-whatsapp" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="${isToday ? 'transform: scale(1.1); box-shadow: 0 0 10px rgba(37,211,102,0.5);' : ''}">
-                    <i class="fas fa-birthday-cake"></i>
-                </button>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="badge ${badgeColor}" style="text-transform: uppercase;">${dayText}</span>
+                    <button class="btn-whatsapp" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="background: #25D366; color: white; padding: 4px 8px; border: none; border-radius: 4px; ${isToday ? 'transform: scale(1.1); box-shadow: 0 0 10px rgba(37,211,102,0.5);' : ''}">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                </div>
             </div>
         `;
                 }).join('');
@@ -947,78 +959,7 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
             return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
         }
 
-        // Cargar cumpleaños próximos
-        async function loadBirthdays() {
-            try {
-                const birthdayList = document.getElementById('birthday-list');
-                const response = await api.get('/admin/clients');
-                const clients = response.clients || [];
-
-                const today = new Date();
-                const upcomingBirthdays = [];
-
-                // Filtrar clientes con cumpleaños en los próximos 30 días
-                clients.forEach(client => {
-                    if (!client.birthdate) return;
-
-                    const birthDate = new Date(client.birthdate);
-                    const thisYear = today.getFullYear();
-                    const nextBirthday = new Date(thisYear, birthDate.getMonth(), birthDate.getDate());
-
-                    // Si ya pasó este año, usar el próximo año
-                    if (nextBirthday < today) {
-                        nextBirthday.setFullYear(thisYear + 1);
-                    }
-
-                    const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
-
-                    if (daysUntil >= 0 && daysUntil <= 30) {
-                        upcomingBirthdays.push({
-                            name: client.name,
-                            phone: client.phone,
-                            date: nextBirthday,
-                            daysUntil
-                        });
-                    }
-                });
-
-                // Ordenar por días hasta el cumpleaños
-                upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
-
-                if (upcomingBirthdays.length === 0) {
-                    birthdayList.innerHTML = '<p class="text-muted" style="padding: 1rem;">No hay cumpleaños próximos</p>';
-                    return;
-                }
-
-                // Renderizar lista de cumpleaños
-                birthdayList.innerHTML = upcomingBirthdays.map(b => {
-                    const dateStr = b.date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
-                    const badgeColor = b.daysUntil === 0 ? 'badge-success' : b.daysUntil <= 7 ? 'badge-warning' : 'badge-info';
-                    const dayText = b.daysUntil === 0 ? 'Hoy' : b.daysUntil === 1 ? 'Mañana' : `${b.daysUntil} días`;
-
-                    return `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #333;">
-                            <div>
-                                <strong>${b.name}</strong>
-                                <div style="font-size: 0.85rem; color: #999;">${dateStr}</div>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <span class="badge ${badgeColor}">${dayText}</span>
-                                <button onclick="openBirthdayModal('${b.name.replace(/'/g, "\\'")}', '${b.phone}')"
-                                        class="btn btn-sm"
-                                        style="background: #25D366; color: white; padding: 4px 8px;">
-                                    <i class="fab fa-whatsapp"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Error loading birthdays:', error);
-                document.getElementById('birthday-list').innerHTML = '<p class="text-muted" style="padding: 1rem;">Error al cargar cumpleaños</p>';
-            }
-        }
+        // La función loadBirthdays ya se definió más arriba, no necesitamos esta duplicada.
 
         // Modal de cumpleaños
         function openBirthdayModal(name, phone) {
