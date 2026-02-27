@@ -575,13 +575,30 @@ En Braco's Barbería te deseamos un día increíble lleno de alegría.
                     const dateStr = (c.next_birthday || '').split('T')[0];
                     const [year, month, day] = dateStr.split('-').map(Number);
                     const birthdayDate = new Date(year, month - 1, day);
+                    
+                    // Comprobar si es hoy (hora local México)
+                    const todayStr = new Date().toLocaleString('en-CA', { timeZone: 'America/Mexico_City' }).split(',')[0];
+                    const isToday = dateStr === todayStr;
+
+                    // Estilos dinámicos para resaltar si es hoy
+                    const itemStyle = isToday 
+                        ? 'display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gold); background: rgba(196,163,90,0.15); margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(196,163,90,0.15); animation: pulse 2s infinite;'
+                        : 'display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);';
+                        
+                    const badgeHtml = isToday 
+                        ? '<span class="badge badge-gold" style="margin-left: 0.5rem; animation: bounce 1s infinite;"><i class="fas fa-star" style="font-size: 0.7rem;"></i> ¡HOY!</span>'
+                        : '';
+
                     return `
-            <div class="birthday-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(196,163,90,0.1);">
+            <div class="birthday-item" style="${itemStyle}">
                 <div>
-                    <span class="name" style="font-weight: 500;">${c.name}</span>
-                    <span class="date" style="color: #888; margin-left: 0.5rem;">${birthdayDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
+                    <span class="name" style="font-weight: ${isToday ? '700' : '500'}; color: ${isToday ? 'var(--gold)' : 'inherit'};">${c.name}</span>
+                    <span class="date" style="color: ${isToday ? 'var(--text-secondary)' : '#888'}; margin-left: 0.5rem;">
+                        ${birthdayDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+                        ${badgeHtml}
+                    </span>
                 </div>
-                <button class="btn-whatsapp" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación">
+                <button class="btn-whatsapp" onclick="sendBirthdayMessage('${safeName}', '${safePhone}')" title="Enviar felicitación" style="${isToday ? 'transform: scale(1.1); box-shadow: 0 0 10px rgba(37,211,102,0.5);' : ''}">
                     <i class="fas fa-birthday-cake"></i>
                 </button>
             </div>
