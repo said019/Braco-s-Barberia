@@ -391,18 +391,6 @@ async function loadServices() {
         state.services = SERVICIOS_BRACOS;
     }
 
-    // --- NUEVO FILTRO PARA LA PÁGINA PÚBLICA ---
-    // Según requerimientos (issue #2): dejar solo "Hollywood Peeling" y "Limpieza facial" al público general
-    // PERO SOLO APLICARLO EN LA PÁGINA DE AGENDAR, NO EN EL INDEX.HTML MALA MÍA
-    if (window.location.pathname.includes('agendar.html')) {
-        const allowedKeywords = ["hollywood peeling", "limpieza facial"];
-        state.services = state.services.filter(s => {
-            const lowerName = s.name.toLowerCase();
-            // Incluimos también los IDs 7 y 8 (mascarillas) temporalmente por si a eso se refería con limpieza facial
-            return allowedKeywords.some(keyword => lowerName.includes(keyword)) || lowerName.includes('mascarilla') || lowerName.includes('peeling');
-        });
-    }
-
     renderServices(state.services);
 }
 
