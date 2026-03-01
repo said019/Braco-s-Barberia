@@ -1886,17 +1886,9 @@ router.post('/memberships', authenticateToken, async (req, res, next) => {
             return res.status(409).json({ error: 'Este folio ya está registrado para este tipo de membresía' });
         }
 
-        // Check existing active membership for THIS TYPE
-        // Ahora permitimos múltiples membresías activas si son de diferente tipo (ej: Corte y NeoCapilar)
-        const existing = await db.query(
-            `SELECT id FROM client_memberships 
-             WHERE client_id = $1 AND membership_type_id = $2 AND status = 'active'`,
-            [client_id, membership_type_id]
-        );
-
-        if (existing.rows.length > 0) {
-            return res.status(409).json({ error: 'El cliente ya tiene una membresía de este tipo activa' });
-        }
+        // NOTE: Se permite comprar la misma membresía aunque ya tenga una activa del mismo tipo.
+        // Caso de uso: cliente con Golden Card con servicios restantes quiere comprar otra para ahorrar
+        // o acumular. Cada compra crea un registro independiente con su propio contador de servicios.
 
         // Calculate expiration date
         const purchaseDate = new Date();
