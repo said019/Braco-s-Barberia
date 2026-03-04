@@ -424,7 +424,8 @@
     <div class="toast" id="toast"></div>
 
     <!-- Admin JS -->
-    <script src="js/admin.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="../js/admin.js"></script>
     <script>
     // ======================================================================
     // REGALOS ADMIN PAGE
@@ -474,11 +475,6 @@
     function serviceNames(services) {
         const arr = Array.isArray(services) ? services : JSON.parse(services || '[]');
         return arr.map(s => s.name).join(', ');
-    }
-
-    // ── Auth token ─────────────────────────────────────────────────────────
-    function getToken() {
-        return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
     }
 
     // ── Load all certificates ──────────────────────────────────────────────
@@ -656,7 +652,10 @@
     }
 
     // ── Init ───────────────────────────────────────────────────────────────
-    loadCertificates();
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAuth();
+        loadCertificates();
+    });
 
     // ======================================================================
     // SHARE MODAL
