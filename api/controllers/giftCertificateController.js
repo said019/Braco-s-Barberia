@@ -1,63 +1,34 @@
 import GiftCertificate from '../models/GiftCertificate.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { sendTextMessage } from '../services/whatsappService.js';
 
 const PUBLIC_URL = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
 
-// Format phone for WhatsApp delivery
-function normalizePhone(phone) {
-    if (!phone) return null;
-    const clean = phone.replace(/\D/g, '');
-    return clean.length === 10 ? '52' + clean : clean;
-}
-
-// Send gift certificate WhatsApp to buyer (payment confirmation) and recipient (the gift)
-async function notifyGiftCertificate(cert) {
-    const certUrl = `${PUBLIC_URL}/certificado.html?id=${cert.uuid}`;
+// Build a pre-filled WhatsApp link for manual sharing by the admin
+function buildWhatsAppLink(cert, certUrl) {
     const serviceList = cert.services.map(s => `• ${s.name}`).join('\n');
-    const totalFmt  = `$${parseFloat(cert.total).toFixed(0)}`;
+    const totalFmt    = `$${parseFloat(cert.total).toFixed(0)}`;
+    const phone       = cert.recipient_phone
+        ? cert.recipient_phone.replace(/\D/g, '')
+        : '';
 
-    // 1️⃣  Message to buyer
-    const buyerPhone = normalizePhone(cert.buyer_phone);
-    if (buyerPhone) {
-        const buyerMsg =
-`🎁 *¡Certificado de Regalo creado!*
+    const msg =
+`🎁 *¡Tienes un regalo en Braco's Barbería!*
 
-Hola *${cert.buyer_name}*, tu regalo para *${cert.recipient_name}* ya está listo.
-
-🎀 *Servicios incluidos:*
-${serviceList}
-
-💰 Total pagado: *${totalFmt}*
-
-Comparte este enlace con *${cert.recipient_name}* para que descargue su certificado:
-👉 ${certUrl}
-
-¡Gracias por elegir Braco's Barbería! 💈`;
-
-        await sendTextMessage(buyerPhone, buyerMsg);
-    }
-
-    // 2️⃣  Message to recipient (only if phone provided)
-    const recipientPhone = normalizePhone(cert.recipient_phone);
-    if (recipientPhone) {
-        const recipientMsg =
-`🎁 *¡Tienes un regalo!*
-
-Hola *${cert.recipient_name}*, *${cert.buyer_name}* te regaló un certificado de Braco's Barbería.
+Hola *${cert.recipient_name}*, *${cert.buyer_name}* te regaló un certificado.
 
 🎀 *Servicios incluidos:*
 ${serviceList}
 
-Descarga tu certificado en el siguiente enlace y úsalo cuando quieras:
+💰 Valor: *${totalFmt}*
+
+Descarga tu certificado aquí:
 👉 ${certUrl}
 
-📌 Válido por 6 meses. Preséntalo en la barbería o muestra esta imagen.
+📌 Válido por 6 meses. Preséntalo al llegar a tu cita. ¡Nos vemos pronto! 💈`;
 
-¡Nos vemos pronto! 💈`;
-
-        await sendTextMessage(recipientPhone, recipientMsg);
-    }
+    const encoded = encodeURIComponent(msg);
+    const base    = phone ? `https://wa.me/${phone.length === 10 ? '52' + phone : phone}` : 'https://wa.me/';
+    return `${base}?text=${encoded}`;
 }
 
 export const giftCertificateController = {
@@ -73,17 +44,17 @@ export const giftCertificateController = {
                 services, total, payment_method, notes
             });
 
-            // Fire-and-forget WhatsApp notifications
-            notifyGiftCertificate(cert)
-                .catch(err => console.error('[GiftCert] WhatsApp error:', err));
+            const certUrl    = `${PUBLIC_URL}/certificado.html?id=${cert.uuid}`;
+            const whatsappUrl = buildWhatsAppLink(cert, certUrl);
 
             res.status(201).json({
                 success: true,
                 message: 'Certificado creado correctamente',
                 data: {
-                    uuid: cert.uuid,
-                    url: `${PUBLIC_URL}/certificado.html?id=${cert.uuid}`,
-                    expires_at: cert.expires_at
+                    uuid:         cert.uuid,
+                    url:          certUrl,
+                    whatsapp_url: whatsappUrl,
+                    expires_at:   cert.expires_at
                 }
             });
         } catch (error) {

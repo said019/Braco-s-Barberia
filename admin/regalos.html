@@ -114,6 +114,31 @@
         .btn-create-submit:disabled { background:#5a4a2a; color:#888; cursor:not-allowed; }
 
         .section-sep { font-size:.72rem; color:#555; letter-spacing:2px; text-transform:uppercase; margin:14px 0 8px; border-bottom:1px solid rgba(255,255,255,.06); padding-bottom:6px; }
+
+        /* ── Share modal ── */
+        .share-success-icon { font-size:2.8rem; color:#C4A35A; text-align:center; margin-bottom:12px; }
+        .share-cert-url {
+            background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+            border-radius:6px; padding:10px 14px; font-size:.8rem; color:#aaa;
+            word-break:break-all; margin:14px 0; font-family:monospace; cursor:pointer;
+        }
+        .share-cert-url:hover { border-color:rgba(196,163,90,.4); color:#C4A35A; }
+        .btn-whatsapp {
+            display:inline-flex; align-items:center; gap:8px;
+            background:#25D366; color:#fff; border:none; border-radius:6px;
+            padding:12px 20px; font-size:.88rem; font-weight:700; cursor:pointer;
+            text-decoration:none; letter-spacing:.5px; transition:.2s; width:100%;
+            justify-content:center; margin-bottom:10px;
+        }
+        .btn-whatsapp:hover { background:#1ebe5d; }
+        .btn-view-cert {
+            display:inline-flex; align-items:center; gap:8px;
+            background:transparent; color:#C4A35A; border:1px solid rgba(196,163,90,.35);
+            border-radius:6px; padding:10px 20px; font-size:.85rem; cursor:pointer;
+            text-decoration:none; letter-spacing:.5px; transition:.2s; width:100%;
+            justify-content:center;
+        }
+        .btn-view-cert:hover { background:rgba(196,163,90,.08); }
     </style>
 </head>
 <body>
@@ -274,6 +299,34 @@
             </div>
         </main>
     </div><!-- /.admin-layout -->
+
+    <!-- ══ SHARE MODAL (after create) ══════════════════════════════════════ -->
+    <div class="modal-overlay hidden" id="share-modal" onclick="closeShareModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
+            <div class="share-success-icon">🎁</div>
+            <h3 style="text-align:center; color:#fff; margin-bottom:4px;">¡Certificado creado!</h3>
+            <p style="text-align:center; font-size:.85rem; color:#666; margin-bottom:16px;" id="share-subtitle">
+                Listo para compartir con el destinatario.
+            </p>
+
+            <p style="font-size:.75rem; color:#666; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;">Enlace del certificado</p>
+            <div class="share-cert-url" id="share-cert-url" onclick="copyCertUrl()" title="Clic para copiar">
+                —
+            </div>
+            <p style="font-size:.72rem; color:#555; text-align:center; margin-bottom:14px;">Clic para copiar el enlace</p>
+
+            <a class="btn-whatsapp" id="share-whatsapp-btn" href="#" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp" style="font-size:1.1rem;"></i>
+                Enviar por WhatsApp
+            </a>
+            <a class="btn-view-cert" id="share-view-btn" href="#" target="_blank" rel="noopener">
+                <i class="fas fa-eye"></i>
+                Ver certificado
+            </a>
+
+            <button class="modal-close" onclick="closeShareModal()" style="margin-top:14px;">Cerrar</button>
+        </div>
+    </div>
 
     <!-- ══ CREATE CERTIFICATE MODAL ══════════════════════════════════════ -->
     <div class="modal-overlay hidden" id="create-modal" onclick="closeCreateModal(event)">
@@ -605,6 +658,46 @@
     loadCertificates();
 
     // ======================================================================
+    // SHARE MODAL
+    // ======================================================================
+
+    let _shareCertUrl = '';
+
+    function openShareModal(certData, recipName) {
+        _shareCertUrl = certData.url || '';
+        document.getElementById('share-cert-url').textContent   = _shareCertUrl;
+        document.getElementById('share-subtitle').textContent   = `Comparte el certificado con ${recipName}.`;
+        document.getElementById('share-whatsapp-btn').href      = certData.whatsapp_url || '#';
+        document.getElementById('share-view-btn').href          = _shareCertUrl;
+        document.getElementById('share-modal').classList.remove('hidden');
+    }
+
+    function closeShareModal(evt) {
+        if (evt && evt.target !== document.getElementById('share-modal')) return;
+        document.getElementById('share-modal').classList.add('hidden');
+    }
+
+    function copyCertUrl() {
+        if (!_shareCertUrl) return;
+        navigator.clipboard.writeText(_shareCertUrl).then(() => {
+            showToast('Enlace copiado al portapapeles ✓');
+            document.getElementById('share-cert-url').textContent = '✓ Copiado!';
+            setTimeout(() => {
+                document.getElementById('share-cert-url').textContent = _shareCertUrl;
+            }, 2000);
+        }).catch(() => {
+            // fallback
+            const ta = document.createElement('textarea');
+            ta.value = _shareCertUrl;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Enlace copiado ✓');
+        });
+    }
+
+    // ======================================================================
     // CREATE CERTIFICATE
     // ======================================================================
 
@@ -763,11 +856,11 @@
             if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Error');
 
             document.getElementById('create-modal').classList.add('hidden');
-            showToast(`✓ Certificado creado para ${recipName}${recipPhone ? ' — WhatsApp enviado' : ''}`, 'success');
+            showToast(`✓ Certificado creado para ${recipName}`, 'success');
             loadCertificates();
 
-            // Open the certificate in a new tab
-            if (data.data?.url) window.open(data.data.url, '_blank');
+            // Show share modal instead of auto-opening tab
+            openShareModal(data.data, recipName);
 
         } catch (err) {
             showToast(err.message, 'error');
@@ -780,6 +873,7 @@
     // Close create modal on Escape (extend existing listener)
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
+            document.getElementById('share-modal').classList.add('hidden');
             document.getElementById('create-modal').classList.add('hidden');
             document.getElementById('cert-modal').classList.add('hidden');
         }
