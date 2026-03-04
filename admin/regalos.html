@@ -27,7 +27,8 @@
         .btn-sm-link:hover { background:rgba(196,163,90,.08); }
 
         /* ── Detail modal ── */
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; visibility:hidden; transition:opacity .25s, visibility .25s; }
+        .modal-overlay.active { opacity:1; visibility:visible; }
         .modal-box { background:#1e1e1e; border:1px solid rgba(196,163,90,.2); border-radius:12px; padding:28px 32px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
         .modal-box h3 { font-family:'Cormorant Garamond',serif; color:#C4A35A; font-size:1.4rem; margin-bottom:18px; }
         .modal-row { display:flex; gap:8px; margin-bottom:10px; font-size:.88rem; }
@@ -242,7 +243,7 @@
                     <button class="btn btn-secondary" onclick="loadCertificates()">
                         <i class="fas fa-sync-alt"></i> Actualizar
                     </button>
-                    <button class="btn btn-primary" onclick="openCreateModal()" style="margin-left:10px;">
+                    <button class="btn btn-primary" id="btn-nuevo-cert" style="margin-left:10px;">
                         <i class="fas fa-plus"></i> Nuevo Certificado
                     </button>
                 </div>
@@ -305,7 +306,7 @@
     </div><!-- /.admin-layout -->
 
     <!-- ══ SHARE MODAL (after create) ══════════════════════════════════════ -->
-    <div class="modal-overlay hidden" id="share-modal" onclick="closeShareModal(event)">
+    <div class="modal-overlay" id="share-modal" onclick="closeShareModal(event)">
         <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
             <div class="share-success-icon">🎁</div>
             <h3 style="text-align:center; color:#fff; margin-bottom:4px;">¡Certificado creado!</h3>
@@ -333,7 +334,7 @@
     </div>
 
     <!-- ══ CREATE CERTIFICATE MODAL ══════════════════════════════════════ -->
-    <div class="modal-overlay hidden" id="create-modal" onclick="closeCreateModal(event)">
+    <div class="modal-overlay" id="create-modal" onclick="closeCreateModal(event)">
         <div class="modal-box wide" onclick="event.stopPropagation()">
             <h3 class="create-title"><i class="fas fa-gift" style="margin-right:8px;"></i> Nuevo Certificado de Regalo</h3>
             <p class="modal-subtitle">El certificado se generará y se enviará por WhatsApp al destinatario.</p>
@@ -397,7 +398,7 @@
     </div>
 
     <!-- Detail / Redeem modal -->
-    <div class="modal-overlay hidden" id="cert-modal" onclick="closeCertModal(event)">
+    <div class="modal-overlay" id="cert-modal" onclick="closeCertModal(event)">
         <div class="modal-box" onclick="event.stopPropagation()">
             <h3><i class="fas fa-gift" style="margin-right:8px;"></i> Detalle del Certificado</h3>
 
@@ -604,12 +605,12 @@
         </a>`;
         document.getElementById('md-actions').innerHTML = actionsHtml;
 
-        document.getElementById('cert-modal').classList.remove('hidden');
+        document.getElementById('cert-modal').classList.add('active');
     }
 
     function closeCertModal(evt) {
         if (evt && evt.target !== document.getElementById('cert-modal')) return;
-        document.getElementById('cert-modal').classList.add('hidden');
+        document.getElementById('cert-modal').classList.remove('active');
         currentCert = null;
     }
 
@@ -625,7 +626,7 @@
             if (!res.ok || !data.success) throw new Error(data.error || 'Error');
 
             showToast('Certificado marcado como canjeado ✓');
-            if (fromModal) document.getElementById('cert-modal').classList.add('hidden');
+            if (fromModal) document.getElementById('cert-modal').classList.remove('active');
             loadCertificates();
         } catch (err) {
             showToast(err.message, 'error');
@@ -644,7 +645,7 @@
             if (!res.ok || !data.success) throw new Error(data.error || 'Error');
 
             showToast('Certificado cancelado');
-            if (fromModal) document.getElementById('cert-modal').classList.add('hidden');
+            if (fromModal) document.getElementById('cert-modal').classList.remove('active');
             loadCertificates();
         } catch (err) {
             showToast(err.message, 'error');
@@ -655,6 +656,12 @@
     document.addEventListener('DOMContentLoaded', () => {
         checkAuth();
         loadCertificates();
+
+        // Botón "Nuevo Certificado" — event listener directo (más robusto que onclick inline)
+        const btnNuevo = document.getElementById('btn-nuevo-cert');
+        if (btnNuevo) {
+            btnNuevo.addEventListener('click', () => openCreateModal());
+        }
     });
 
     // ======================================================================
@@ -669,12 +676,12 @@
         document.getElementById('share-subtitle').textContent   = `Comparte el certificado con ${recipName}.`;
         document.getElementById('share-whatsapp-btn').href      = certData.whatsapp_url || '#';
         document.getElementById('share-view-btn').href          = _shareCertUrl;
-        document.getElementById('share-modal').classList.remove('hidden');
+        document.getElementById('share-modal').classList.add('active');
     }
 
     function closeShareModal(evt) {
         if (evt && evt.target !== document.getElementById('share-modal')) return;
-        document.getElementById('share-modal').classList.add('hidden');
+        document.getElementById('share-modal').classList.remove('active');
     }
 
     function copyCertUrl() {
@@ -721,7 +728,7 @@
             el.classList.toggle('selected', el.dataset.value === 'efectivo');
         });
 
-        document.getElementById('create-modal').classList.remove('hidden');
+        document.getElementById('create-modal').classList.add('active');
 
         // Load services if not yet loaded
         if (allAdminServices.length === 0) {
@@ -733,7 +740,7 @@
 
     function closeCreateModal(evt) {
         if (evt && evt.target !== document.getElementById('create-modal')) return;
-        document.getElementById('create-modal').classList.add('hidden');
+        document.getElementById('create-modal').classList.remove('active');
     }
 
     async function loadAdminServices() {
@@ -855,7 +862,7 @@
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Error');
 
-            document.getElementById('create-modal').classList.add('hidden');
+            document.getElementById('create-modal').classList.remove('active');
             showToast(`✓ Certificado creado para ${recipName}`, 'success');
             loadCertificates();
 
@@ -873,9 +880,9 @@
     // Close create modal on Escape (extend existing listener)
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-            document.getElementById('share-modal').classList.add('hidden');
-            document.getElementById('create-modal').classList.add('hidden');
-            document.getElementById('cert-modal').classList.add('hidden');
+            document.getElementById('share-modal').classList.remove('active');
+            document.getElementById('create-modal').classList.remove('active');
+            document.getElementById('cert-modal').classList.remove('active');
         }
     });
     </script>
