@@ -69,6 +69,51 @@
         .toast.error   { border-color:rgba(239,83,80,.4); color:#ef9a9a; }
 
         .text-muted { color:#666; font-size:.82rem; }
+
+        /* ── Create modal extras ── */
+        .modal-box.wide { max-width:640px; }
+        .modal-box h3.create-title { color:#C4A35A; margin-bottom:6px; }
+        .modal-subtitle { font-size:.8rem; color:#666; margin-bottom:20px; }
+
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
+        @media(max-width:500px){ .form-grid{ grid-template-columns:1fr; } }
+
+        .form-group-modal { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+        .form-group-modal label { font-size:.78rem; color:#888; letter-spacing:.5px; text-transform:uppercase; }
+        .form-group-modal input, .form-group-modal select {
+            padding:9px 12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+            border-radius:6px; color:#ddd; font-size:.88rem; outline:none;
+        }
+        .form-group-modal input:focus, .form-group-modal select:focus { border-color:rgba(196,163,90,.4); }
+        .form-group-modal input::placeholder { color:#444; }
+
+        .services-pick-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:8px; margin:10px 0 16px; }
+        .svc-pick-card {
+            padding:10px 12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+            border-radius:8px; cursor:pointer; transition:.15s;
+        }
+        .svc-pick-card:hover { border-color:rgba(196,163,90,.3); background:rgba(196,163,90,.06); }
+        .svc-pick-card.selected { border-color:#C4A35A; background:rgba(196,163,90,.12); }
+        .svc-pick-name { font-size:.83rem; color:#ddd; margin-bottom:2px; }
+        .svc-pick-price { font-size:.78rem; color:#C4A35A; font-weight:600; }
+
+        .create-summary { background:rgba(255,255,255,.04); border-radius:6px; padding:10px 14px; margin-bottom:14px; font-size:.85rem; color:#aaa; }
+        .create-summary strong { color:#C4A35A; }
+
+        .payment-pick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+        .pay-opt { padding:7px 14px; border:1px solid rgba(255,255,255,.12); border-radius:20px; font-size:.8rem; color:#888; cursor:pointer; transition:.15s; }
+        .pay-opt:hover { border-color:rgba(196,163,90,.3); color:#C4A35A; }
+        .pay-opt.selected { border-color:#C4A35A; color:#C4A35A; background:rgba(196,163,90,.1); }
+
+        .btn-create-submit {
+            width:100%; padding:12px; background:#C4A35A; color:#111; border:none;
+            border-radius:6px; font-size:.88rem; font-weight:700; letter-spacing:1px;
+            text-transform:uppercase; cursor:pointer; transition:.2s; margin-top:6px;
+        }
+        .btn-create-submit:hover { background:#d4b76a; }
+        .btn-create-submit:disabled { background:#5a4a2a; color:#888; cursor:not-allowed; }
+
+        .section-sep { font-size:.72rem; color:#555; letter-spacing:2px; text-transform:uppercase; margin:14px 0 8px; border-bottom:1px solid rgba(255,255,255,.06); padding-bottom:6px; }
     </style>
 </head>
 <body>
@@ -168,6 +213,9 @@
                     <button class="btn btn-secondary" onclick="loadCertificates()">
                         <i class="fas fa-sync-alt"></i> Actualizar
                     </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()" style="margin-left:10px;">
+                        <i class="fas fa-plus"></i> Nuevo Certificado
+                    </button>
                 </div>
             </header>
 
@@ -226,6 +274,70 @@
             </div>
         </main>
     </div><!-- /.admin-layout -->
+
+    <!-- ══ CREATE CERTIFICATE MODAL ══════════════════════════════════════ -->
+    <div class="modal-overlay hidden" id="create-modal" onclick="closeCreateModal(event)">
+        <div class="modal-box wide" onclick="event.stopPropagation()">
+            <h3 class="create-title"><i class="fas fa-gift" style="margin-right:8px;"></i> Nuevo Certificado de Regalo</h3>
+            <p class="modal-subtitle">El certificado se generará y se enviará por WhatsApp al destinatario.</p>
+
+            <!-- Servicios -->
+            <div class="section-sep">Servicios incluidos</div>
+            <div id="svc-pick-grid" class="services-pick-grid">
+                <p style="color:#555; font-size:.85rem;">Cargando servicios...</p>
+            </div>
+
+            <!-- Resumen -->
+            <div class="create-summary" id="create-summary" style="display:none;">
+                Total seleccionado: <strong id="create-total">$0</strong>
+            </div>
+
+            <!-- Comprador -->
+            <div class="section-sep">Datos del comprador (quién paga)</div>
+            <div class="form-grid">
+                <div class="form-group-modal">
+                    <label>Nombre *</label>
+                    <input type="text" id="c-buyer-name" placeholder="Nombre del cliente" autocomplete="off">
+                </div>
+                <div class="form-group-modal">
+                    <label>Teléfono *</label>
+                    <input type="tel" id="c-buyer-phone" placeholder="10 dígitos" maxlength="15">
+                </div>
+            </div>
+
+            <!-- Destinatario -->
+            <div class="section-sep">Destinatario (quien recibe el regalo)</div>
+            <div class="form-grid">
+                <div class="form-group-modal">
+                    <label>Nombre *</label>
+                    <input type="text" id="c-recip-name" placeholder="¿Para quién es?" autocomplete="off">
+                </div>
+                <div class="form-group-modal">
+                    <label>WhatsApp (opcional)</label>
+                    <input type="tel" id="c-recip-phone" placeholder="Para enviarle el certificado" maxlength="15">
+                </div>
+            </div>
+
+            <!-- Notas internas -->
+            <div class="form-group-modal">
+                <label>Notas internas (opcional)</label>
+                <input type="text" id="c-notes" placeholder="Ej: pagó en efectivo, recogida el martes...">
+            </div>
+
+            <!-- Método de pago -->
+            <div class="section-sep">Método de pago recibido</div>
+            <div class="payment-pick" id="payment-pick">
+                <div class="pay-opt selected" data-value="efectivo" onclick="selectPayment(this)">💵 Efectivo</div>
+                <div class="pay-opt" data-value="tarjeta"      onclick="selectPayment(this)">💳 Tarjeta</div>
+                <div class="pay-opt" data-value="transferencia" onclick="selectPayment(this)">📲 Transferencia</div>
+            </div>
+
+            <button class="btn-create-submit" id="btn-create-submit" onclick="submitCreate()" disabled>
+                Generar y Enviar Certificado
+            </button>
+            <button class="modal-close" onclick="closeCreateModal()">Cancelar</button>
+        </div>
+    </div>
 
     <!-- Detail / Redeem modal -->
     <div class="modal-overlay hidden" id="cert-modal" onclick="closeCertModal(event)">
@@ -451,11 +563,6 @@
         currentCert = null;
     }
 
-    // Close on Escape
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') document.getElementById('cert-modal').classList.add('hidden');
-    });
-
     // ── Redeem ─────────────────────────────────────────────────────────────
     async function redeemCert(uuid, fromModal = false) {
         if (!confirm('¿Marcar este certificado como canjeado?')) return;
@@ -496,6 +603,187 @@
 
     // ── Init ───────────────────────────────────────────────────────────────
     loadCertificates();
+
+    // ======================================================================
+    // CREATE CERTIFICATE
+    // ======================================================================
+
+    let allAdminServices = [];
+    let createSelected   = [];   // [{id,name,price}]
+    let createPayment    = 'efectivo';
+
+    async function openCreateModal() {
+        createSelected = [];
+        createPayment  = 'efectivo';
+        document.getElementById('c-buyer-name').value  = '';
+        document.getElementById('c-buyer-phone').value = '';
+        document.getElementById('c-recip-name').value  = '';
+        document.getElementById('c-recip-phone').value = '';
+        document.getElementById('c-notes').value       = '';
+        document.getElementById('create-summary').style.display = 'none';
+        updateCreateBtn();
+
+        // Reset payment selection
+        document.querySelectorAll('.pay-opt').forEach(el => {
+            el.classList.toggle('selected', el.dataset.value === 'efectivo');
+        });
+
+        document.getElementById('create-modal').classList.remove('hidden');
+
+        // Load services if not yet loaded
+        if (allAdminServices.length === 0) {
+            await loadAdminServices();
+        } else {
+            renderSvcPickGrid();
+        }
+    }
+
+    function closeCreateModal(evt) {
+        if (evt && evt.target !== document.getElementById('create-modal')) return;
+        document.getElementById('create-modal').classList.add('hidden');
+    }
+
+    async function loadAdminServices() {
+        try {
+            const res  = await fetch(`${API_BASE}/services`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const data = await res.json();
+            let list = [];
+            if (Array.isArray(data)) list = data;
+            else if (data.data?.services) list = data.data.services;
+            else if (Array.isArray(data.data)) list = data.data;
+            allAdminServices = list.filter(s => s.is_active !== false);
+            renderSvcPickGrid();
+        } catch (e) {
+            document.getElementById('svc-pick-grid').innerHTML =
+                '<p style="color:#ef5350; font-size:.85rem;">Error al cargar servicios</p>';
+        }
+    }
+
+    function renderSvcPickGrid() {
+        const grid = document.getElementById('svc-pick-grid');
+        if (!allAdminServices.length) {
+            grid.innerHTML = '<p style="color:#555; font-size:.85rem;">Sin servicios activos</p>';
+            return;
+        }
+        grid.innerHTML = allAdminServices.map(s => `
+            <div class="svc-pick-card" data-id="${s.id}" data-name="${escHtml(s.name)}" data-price="${s.price}"
+                 onclick="toggleSvcPick(this)">
+                <div class="svc-pick-name">${escHtml(s.name)}</div>
+                <div class="svc-pick-price">$${parseFloat(s.price).toFixed(0)}</div>
+            </div>
+        `).join('');
+    }
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function toggleSvcPick(card) {
+        const id    = parseInt(card.dataset.id);
+        const name  = card.dataset.name;
+        const price = parseFloat(card.dataset.price);
+        const idx   = createSelected.findIndex(s => s.id === id);
+        if (idx >= 0) {
+            createSelected.splice(idx, 1);
+            card.classList.remove('selected');
+        } else {
+            createSelected.push({ id, name, price });
+            card.classList.add('selected');
+        }
+        updateCreateSummary();
+        updateCreateBtn();
+    }
+
+    function updateCreateSummary() {
+        const box = document.getElementById('create-summary');
+        const tot = createSelected.reduce((s, x) => s + x.price, 0);
+        if (!createSelected.length) { box.style.display = 'none'; return; }
+        box.style.display = 'block';
+        document.getElementById('create-total').textContent = money(tot);
+    }
+
+    function selectPayment(el) {
+        document.querySelectorAll('.pay-opt').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+        createPayment = el.dataset.value;
+    }
+
+    function updateCreateBtn() {
+        const ok = createSelected.length > 0
+            && document.getElementById('c-buyer-name').value.trim()
+            && document.getElementById('c-buyer-phone').value.trim()
+            && document.getElementById('c-recip-name').value.trim();
+        document.getElementById('btn-create-submit').disabled = !ok;
+    }
+
+    // Live validation on input fields
+    ['c-buyer-name','c-buyer-phone','c-recip-name'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateCreateBtn);
+    });
+
+    async function submitCreate() {
+        const buyerName  = document.getElementById('c-buyer-name').value.trim();
+        const buyerPhone = document.getElementById('c-buyer-phone').value.trim();
+        const recipName  = document.getElementById('c-recip-name').value.trim();
+        const recipPhone = document.getElementById('c-recip-phone').value.trim();
+        const notes      = document.getElementById('c-notes').value.trim();
+
+        if (!buyerName || !buyerPhone || !recipName || !createSelected.length) {
+            showToast('Completa todos los campos obligatorios', 'error');
+            return;
+        }
+
+        const total = createSelected.reduce((s, x) => s + x.price, 0);
+        const btn   = document.getElementById('btn-create-submit');
+        btn.disabled    = true;
+        btn.textContent = 'Generando...';
+
+        try {
+            const res  = await fetch(`${API_BASE}/gift-certificates`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    buyer_name:      buyerName,
+                    buyer_phone:     buyerPhone,
+                    recipient_name:  recipName,
+                    recipient_phone: recipPhone || null,
+                    services:        createSelected,
+                    total,
+                    payment_method:  createPayment,
+                    notes:           notes || null
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Error');
+
+            document.getElementById('create-modal').classList.add('hidden');
+            showToast(`✓ Certificado creado para ${recipName}${recipPhone ? ' — WhatsApp enviado' : ''}`, 'success');
+            loadCertificates();
+
+            // Open the certificate in a new tab
+            if (data.data?.url) window.open(data.data.url, '_blank');
+
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = 'Generar y Enviar Certificado';
+        }
+    }
+
+    // Close create modal on Escape (extend existing listener)
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.getElementById('create-modal').classList.add('hidden');
+            document.getElementById('cert-modal').classList.add('hidden');
+        }
+    });
     </script>
 </body>
 </html>

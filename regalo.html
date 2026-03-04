@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +7,23 @@
     <link rel="icon" href="assets/logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/regalo.css">
-    <link rel="stylesheet" href="css/translate.css">
+    <style>
+        .gift-landing { min-height:80vh; display:flex; align-items:center; justify-content:center; padding:60px 20px; }
+        .gift-card { max-width:560px; width:100%; text-align:center; }
+        .gift-icon { font-size:3.5rem; color:var(--gold,#C4A35A); margin-bottom:20px; }
+        .gift-title { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:600; margin-bottom:12px; }
+        .gift-subtitle { font-size:1rem; color:var(--text-muted,#888); line-height:1.7; margin-bottom:36px; }
+        .gift-steps { display:flex; flex-direction:column; gap:16px; text-align:left; background:rgba(255,255,255,.04); border:1px solid rgba(196,163,90,.15); border-radius:12px; padding:24px 28px; margin-bottom:36px; }
+        .gift-step { display:flex; align-items:flex-start; gap:14px; }
+        .gift-step-num { width:28px; height:28px; border-radius:50%; background:rgba(196,163,90,.15); color:#C4A35A; font-size:.8rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+        .gift-step-text { font-size:.9rem; line-height:1.5; color:#ccc; }
+        .gift-step-text strong { color:#fff; }
+        .gift-cta-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    </style>
 </head>
-
 <body>
-    <!-- Header -->
     <header id="header">
         <nav>
             <a href="index.html" class="logo">
@@ -28,7 +35,6 @@
                 <li><a href="agendar.html">Agendar</a></li>
                 <li><a href="checkout.html">Checkout</a></li>
                 <li><a href="membresias.html">Membresías</a></li>
-                <li><a href="regalo.html" class="active">Regalo</a></li>
             </ul>
             <a href="agendar.html" class="btn-primary nav-cta">Reservar Cita</a>
             <button class="mobile-menu-btn" aria-label="Menú" id="mobile-menu-btn">
@@ -37,7 +43,6 @@
         </nav>
     </header>
 
-    <!-- Mobile Navigation -->
     <div class="mobile-nav" id="mobile-nav">
         <ul>
             <li><a href="index.html">Inicio</a></li>
@@ -45,149 +50,47 @@
             <li><a href="agendar.html">Agendar</a></li>
             <li><a href="checkout.html">Checkout</a></li>
             <li><a href="membresias.html">Membresías</a></li>
-            <li><a href="regalo.html">Regalo</a></li>
             <li><a href="agendar.html" class="btn-primary btn-block">Reservar Cita</a></li>
         </ul>
     </div>
 
-    <!-- Main -->
-    <main class="regalo-main">
-        <div class="regalo-container">
-
-            <!-- Page header -->
-            <div class="page-header">
-                <span class="page-label">Para alguien especial</span>
-                <h1 class="page-title">Certificado de Regalo</h1>
-                <div class="page-line"></div>
-                <p class="page-description">
-                    Regala una experiencia única de barbería. Elige los servicios, paga y tu ser
-                    querido recibirá un certificado que puede canjear cuando quiera.
-                </p>
+    <main class="gift-landing">
+        <div class="gift-card">
+            <div class="gift-icon"><i class="fas fa-gift"></i></div>
+            <h1 class="gift-title">Certificado de Regalo</h1>
+            <p class="gift-subtitle">
+                Regala una experiencia única en Braco's Barbería.<br>
+                El certificado incluye los servicios que elijas y es válido por 6 meses.
+            </p>
+            <div class="gift-steps">
+                <div class="gift-step">
+                    <div class="gift-step-num">1</div>
+                    <div class="gift-step-text"><strong>Visítanos</strong> — Dinos para quién es el regalo y qué servicios deseas incluir.</div>
+                </div>
+                <div class="gift-step">
+                    <div class="gift-step-num">2</div>
+                    <div class="gift-step-text"><strong>Realizas el pago</strong> en efectivo, tarjeta o transferencia directamente en la barbería.</div>
+                </div>
+                <div class="gift-step">
+                    <div class="gift-step-num">3</div>
+                    <div class="gift-step-text"><strong>Reciben el certificado</strong> por WhatsApp con un enlace para descargar la imagen del regalo.</div>
+                </div>
+                <div class="gift-step">
+                    <div class="gift-step-num">4</div>
+                    <div class="gift-step-text"><strong>Lo canjean cuando quieran</strong> — solo presentan el certificado al llegar a su cita.</div>
+                </div>
             </div>
-
-            <!-- ── FORM ───────────────────────────────────────────── -->
-            <div id="form-screen">
-
-                <!-- 1. Servicios -->
-                <div class="regalo-section">
-                    <h2 class="section-title"><i class="fas fa-scissors"></i> Elige los Servicios</h2>
-                    <div id="services-grid" class="services-grid">
-                        <div class="services-loading">
-                            <i class="fas fa-circle-notch fa-spin"></i> Cargando servicios...
-                        </div>
-                    </div>
-
-                    <!-- Summary -->
-                    <div class="summary-box" id="summary-box" style="display:none;">
-                        <div id="summary-items"></div>
-                        <div class="summary-row total">
-                            <span>Total del regalo</span>
-                            <span class="amount" id="summary-total">$0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Comprador -->
-                <div class="regalo-section">
-                    <h2 class="section-title"><i class="fas fa-user"></i> Tus Datos</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="buyer-name">Tu nombre *</label>
-                            <input type="text" id="buyer-name" placeholder="Nombre completo" autocomplete="name">
-                        </div>
-                        <div class="form-group">
-                            <label for="buyer-phone">Tu teléfono *</label>
-                            <input type="tel" id="buyer-phone" placeholder="10 dígitos" autocomplete="tel" maxlength="15">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="buyer-email">Tu correo (opcional)</label>
-                        <input type="email" id="buyer-email" placeholder="para recibir confirmación" autocomplete="email">
-                    </div>
-                </div>
-
-                <!-- 3. Destinatario -->
-                <div class="regalo-section">
-                    <h2 class="section-title"><i class="fas fa-gift"></i> Datos del Destinatario</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="recipient-name">Nombre del destinatario *</label>
-                            <input type="text" id="recipient-name" placeholder="¿Para quién es el regalo?">
-                        </div>
-                        <div class="form-group">
-                            <label for="recipient-phone">WhatsApp del destinatario</label>
-                            <input type="tel" id="recipient-phone" placeholder="Para enviarle el certificado" maxlength="15">
-                        </div>
-                    </div>
-                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">
-                        Si ingresas su WhatsApp, recibirá el certificado directamente. Si no, se lo enviarás tú.
-                    </p>
-                </div>
-
-                <!-- 4. Pago -->
-                <div class="regalo-section">
-                    <h2 class="section-title"><i class="fas fa-money-bill-wave"></i> Método de Pago</h2>
-                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-                        El pago se realiza en persona en la barbería antes de recibir el certificado.
-                    </p>
-                    <div class="payment-options" id="payment-options">
-                        <label class="payment-option selected" data-value="efectivo">
-                            <input type="radio" name="payment" value="efectivo" checked>
-                            <span class="payment-icon"><i class="fas fa-money-bill-wave"></i></span>
-                            <span class="payment-label">Efectivo</span>
-                        </label>
-                        <label class="payment-option" data-value="tarjeta">
-                            <input type="radio" name="payment" value="tarjeta">
-                            <span class="payment-icon"><i class="far fa-credit-card"></i></span>
-                            <span class="payment-label">Tarjeta</span>
-                        </label>
-                        <label class="payment-option" data-value="transferencia">
-                            <input type="radio" name="payment" value="transferencia">
-                            <span class="payment-icon"><i class="fas fa-mobile-alt"></i></span>
-                            <span class="payment-label">Transferencia</span>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="btn-submit" id="btn-submit" disabled>
-                    Generar Certificado de Regalo
-                </button>
-
-            </div><!-- /#form-screen -->
-
-            <!-- ── SUCCESS ─────────────────────────────────────────── -->
-            <div id="success-screen" class="hidden">
-                <div class="regalo-section success-screen">
-                    <div class="success-icon-wrap">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <h2 class="success-title">¡Certificado Creado!</h2>
-                    <p class="success-subtitle" id="success-message">
-                        El certificado fue enviado por WhatsApp al destinatario.
-                    </p>
-
-                    <div class="cert-url-box">
-                        <a id="cert-link" href="#" target="_blank">Abrir certificado</a>
-                    </div>
-
-                    <div class="success-actions">
-                        <a class="btn-outline" id="btn-view-cert" href="#" target="_blank">
-                            <i class="fas fa-eye"></i>&nbsp; Ver Certificado
-                        </a>
-                        <a class="btn-outline" href="regalo.html">
-                            <i class="fas fa-plus"></i>&nbsp; Crear otro
-                        </a>
-                        <a class="btn-outline" href="index.html">
-                            <i class="fas fa-home"></i>&nbsp; Inicio
-                        </a>
-                    </div>
-                </div>
-            </div><!-- /#success-screen -->
-
-        </div><!-- /.regalo-container -->
+            <div class="gift-cta-row">
+                <a href="https://wa.me/524421234567?text=Hola%2C%20quiero%20comprar%20un%20certificado%20de%20regalo" class="btn-primary" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i>&nbsp; Pedir por WhatsApp
+                </a>
+                <a href="agendar.html" class="btn-outline">
+                    <i class="fas fa-calendar-alt"></i>&nbsp; Agendar cita
+                </a>
+            </div>
+        </div>
     </main>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-content">
             <a href="index.html" class="footer-logo">
@@ -198,215 +101,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
-
-    <script src="js/api.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/translate.js"></script>
-    <script>
-    // ========================================================================
-    // REGALO.JS — inline script
-    // ========================================================================
-
-    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:3000/api'
-        : '/api';
-
-    let allServices = [];
-    let selectedServices = [];
-    let selectedPayment = 'efectivo';
-
-    // ── Toast ──────────────────────────────────────────────────────────────
-    function showToast(msg, type = 'info') {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = `toast ${type} show`;
-        setTimeout(() => t.classList.remove('show'), 3500);
-    }
-
-    // ── Load services from API ─────────────────────────────────────────────
-    async function loadServices() {
-        try {
-            const res  = await fetch(`${API_BASE_URL}/services`);
-            const data = await res.json();
-            // API returns { success, data: { services: [...] } } or flat array
-            let services = [];
-            if (Array.isArray(data)) {
-                services = data;
-            } else if (data.data?.services) {
-                services = data.data.services;
-            } else if (data.data && Array.isArray(data.data)) {
-                services = data.data;
-            }
-
-            // Filter only active services
-            allServices = services.filter(s => s.is_active !== false);
-            renderServices();
-        } catch (e) {
-            console.error('Error loading services:', e);
-            document.getElementById('services-grid').innerHTML =
-                '<p style="color:#888; font-size:0.9rem;">No se pudieron cargar los servicios. Recarga la página.</p>';
-        }
-    }
-
-    function renderServices() {
-        const grid = document.getElementById('services-grid');
-        if (allServices.length === 0) {
-            grid.innerHTML = '<p style="color:#888;">Sin servicios disponibles.</p>';
-            return;
-        }
-        grid.innerHTML = allServices.map(s => `
-            <div class="service-card" data-id="${s.id}" data-name="${s.name}" data-price="${s.price}" onclick="toggleService(this)">
-                <div class="service-card-name">${s.name}</div>
-                <div class="service-card-price">$${parseFloat(s.price).toFixed(0)}</div>
-                <div class="service-card-duration">${s.duration_minutes} min</div>
-            </div>
-        `).join('');
-    }
-
-    function toggleService(card) {
-        const id    = parseInt(card.dataset.id);
-        const name  = card.dataset.name;
-        const price = parseFloat(card.dataset.price);
-
-        const idx = selectedServices.findIndex(s => s.id === id);
-        if (idx >= 0) {
-            selectedServices.splice(idx, 1);
-            card.classList.remove('selected');
-        } else {
-            selectedServices.push({ id, name, price });
-            card.classList.add('selected');
-        }
-
-        updateSummary();
-        updateSubmitBtn();
-    }
-
-    function updateSummary() {
-        const box = document.getElementById('summary-box');
-        const itemsEl = document.getElementById('summary-items');
-        const totalEl = document.getElementById('summary-total');
-
-        if (selectedServices.length === 0) {
-            box.style.display = 'none';
-            return;
-        }
-
-        box.style.display = 'block';
-
-        let total = 0;
-        itemsEl.innerHTML = selectedServices.map(s => {
-            total += s.price;
-            return `<div class="summary-row"><span>${s.name}</span><span>$${s.price.toFixed(0)}</span></div>`;
-        }).join('');
-
-        totalEl.textContent = `$${total.toFixed(0)}`;
-    }
-
-    // ── Payment selection ──────────────────────────────────────────────────
-    document.querySelectorAll('.payment-option').forEach(label => {
-        label.addEventListener('click', () => {
-            document.querySelectorAll('.payment-option').forEach(l => l.classList.remove('selected'));
-            label.classList.add('selected');
-            selectedPayment = label.dataset.value;
-        });
-    });
-
-    // ── Enable/disable submit ──────────────────────────────────────────────
-    function updateSubmitBtn() {
-        const buyerName  = document.getElementById('buyer-name').value.trim();
-        const buyerPhone = document.getElementById('buyer-phone').value.trim();
-        const recipName  = document.getElementById('recipient-name').value.trim();
-        const hasServices = selectedServices.length > 0;
-
-        const ok = buyerName && buyerPhone && recipName && hasServices;
-        document.getElementById('btn-submit').disabled = !ok;
-    }
-
-    ['buyer-name','buyer-phone','recipient-name'].forEach(id => {
-        document.getElementById(id).addEventListener('input', updateSubmitBtn);
-    });
-
-    // ── Submit ─────────────────────────────────────────────────────────────
-    document.getElementById('btn-submit').addEventListener('click', async () => {
-        const buyerName    = document.getElementById('buyer-name').value.trim();
-        const buyerPhone   = document.getElementById('buyer-phone').value.trim();
-        const buyerEmail   = document.getElementById('buyer-email').value.trim();
-        const recipName    = document.getElementById('recipient-name').value.trim();
-        const recipPhone   = document.getElementById('recipient-phone').value.trim();
-
-        if (!buyerName || !buyerPhone || !recipName || selectedServices.length === 0) {
-            showToast('Completa todos los campos obligatorios', 'error');
-            return;
-        }
-
-        const total = selectedServices.reduce((s, x) => s + x.price, 0);
-
-        const btn = document.getElementById('btn-submit');
-        btn.disabled = true;
-        btn.textContent = 'Generando certificado...';
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/gift-certificates`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    buyer_name:      buyerName,
-                    buyer_phone:     buyerPhone,
-                    buyer_email:     buyerEmail || null,
-                    recipient_name:  recipName,
-                    recipient_phone: recipPhone || null,
-                    services:        selectedServices,
-                    total,
-                    payment_method:  selectedPayment
-                })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok || !data.success) {
-                throw new Error(data.message || data.error || 'Error al crear el certificado');
-            }
-
-            const certUrl = data.data.url;
-
-            // Show success
-            document.getElementById('form-screen').classList.add('hidden');
-            document.getElementById('success-screen').classList.remove('hidden');
-
-            document.getElementById('cert-link').href    = certUrl;
-            document.getElementById('cert-link').textContent = certUrl;
-            document.getElementById('btn-view-cert').href = certUrl;
-
-            const hasRecipPhone = !!recipPhone;
-            document.getElementById('success-message').textContent = hasRecipPhone
-                ? `El certificado fue enviado por WhatsApp a ${recipName}. También puedes compartir el enlace directamente.`
-                : `Comparte este enlace con ${recipName} para que descargue su certificado.`;
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        } catch (err) {
-            console.error(err);
-            showToast(err.message || 'Error al generar el certificado', 'error');
-            btn.disabled = false;
-            btn.textContent = 'Generar Certificado de Regalo';
-        }
-    });
-
-    // ── Mobile menu ────────────────────────────────────────────────────────
-    const menuBtn  = document.getElementById('mobile-menu-btn');
-    const mobileNav = document.getElementById('mobile-nav');
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            mobileNav.classList.toggle('open');
-            menuBtn.classList.toggle('active');
-        });
-    }
-
-    // ── Init ───────────────────────────────────────────────────────────────
-    loadServices();
-    </script>
 </body>
 </html>

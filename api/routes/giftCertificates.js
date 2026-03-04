@@ -11,8 +11,10 @@ const router = express.Router();
 // GET /api/gift-certificates/:uuid  — view certificate (public, for certificado.html)
 router.get('/:uuid', giftCertificateController.getByUuid);
 
-// POST /api/gift-certificates  — purchase a gift certificate (public)
-router.post('/', [
+// ── Admin ───────────────────────────────────────────────────────────────────
+
+// POST /api/gift-certificates  — create a gift certificate (admin only)
+router.post('/', authenticateToken, isAdmin, [
     body('buyer_name').trim().notEmpty().withMessage('El nombre del comprador es obligatorio'),
     body('buyer_phone').trim().notEmpty().withMessage('El teléfono del comprador es obligatorio'),
     body('buyer_email').optional({ nullable: true }).isEmail().withMessage('Email inválido'),
@@ -23,8 +25,6 @@ router.post('/', [
     body('payment_method').isIn(['efectivo', 'tarjeta', 'transferencia']).withMessage('Método de pago inválido'),
     validate
 ], giftCertificateController.create);
-
-// ── Admin ───────────────────────────────────────────────────────────────────
 
 // GET /api/gift-certificates  — list all (admin)
 router.get('/', authenticateToken, isAdmin, giftCertificateController.getAll);
