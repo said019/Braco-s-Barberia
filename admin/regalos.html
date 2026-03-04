@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificados de Regalo | Braco's Admin</title>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        /* ── Status badges ── */
+        .badge-status { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; letter-spacing:.5px; }
+        .badge-active    { background:rgba(76,175,80,.15); color:#66bb6a; border:1px solid rgba(76,175,80,.3); }
+        .badge-redeemed  { background:rgba(158,158,158,.12); color:#999; border:1px solid rgba(158,158,158,.25); }
+        .badge-expired   { background:rgba(239,83,80,.12); color:#ef9a9a; border:1px solid rgba(239,83,80,.25); }
+        .badge-cancelled { background:rgba(239,83,80,.12); color:#ef9a9a; border:1px solid rgba(239,83,80,.25); }
+
+        /* ── Table actions ── */
+        .action-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        .btn-sm { padding:4px 12px; border-radius:4px; font-size:0.78rem; font-weight:600; cursor:pointer; border:none; transition:.2s; letter-spacing:.5px; }
+        .btn-sm-gold   { background:#C4A35A; color:#111; }
+        .btn-sm-gold:hover { background:#d4b76a; }
+        .btn-sm-danger { background:rgba(239,83,80,.15); color:#ef9a9a; border:1px solid rgba(239,83,80,.3); }
+        .btn-sm-danger:hover { background:rgba(239,83,80,.3); }
+        .btn-sm-link   { background:transparent; color:#C4A35A; border:1px solid rgba(196,163,90,.3); }
+        .btn-sm-link:hover { background:rgba(196,163,90,.08); }
+
+        /* ── Detail modal ── */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .modal-box { background:#1e1e1e; border:1px solid rgba(196,163,90,.2); border-radius:12px; padding:28px 32px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+        .modal-box h3 { font-family:'Cormorant Garamond',serif; color:#C4A35A; font-size:1.4rem; margin-bottom:18px; }
+        .modal-row { display:flex; gap:8px; margin-bottom:10px; font-size:.88rem; }
+        .modal-row-label { color:#777; min-width:130px; flex-shrink:0; }
+        .modal-row-val { color:#ddd; }
+        .modal-services { list-style:none; margin:8px 0 14px; padding-left:4px; }
+        .modal-services li { font-size:.86rem; color:#ccc; padding:4px 0; display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.05); }
+        .modal-services li:last-child { border-bottom:none; }
+        .modal-close { display:block; margin-top:18px; background:transparent; border:1px solid #444; color:#888; padding:8px 18px; border-radius:6px; cursor:pointer; font-size:.82rem; }
+        .modal-close:hover { border-color:#888; color:#ddd; }
+
+        /* ── Stats summary row ── */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:14px; margin-bottom:24px; }
+        .stat-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:16px 18px; }
+        .stat-value { font-size:1.5rem; font-weight:700; color:#C4A35A; margin-bottom:4px; }
+        .stat-label { font-size:.75rem; color:#666; letter-spacing:.5px; text-transform:uppercase; }
+
+        /* ── Search / filter bar ── */
+        .filter-bar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+        .filter-bar input, .filter-bar select {
+            padding:8px 12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+            border-radius:6px; color:#ddd; font-size:.85rem; outline:none;
+        }
+        .filter-bar input::placeholder { color:#555; }
+        .filter-bar input:focus, .filter-bar select:focus { border-color:rgba(196,163,90,.4); }
+
+        /* ── Empty state ── */
+        .empty-state { text-align:center; padding:50px 20px; color:#555; }
+        .empty-state i { font-size:2.5rem; margin-bottom:14px; display:block; color:#333; }
+
+        /* ── Toast ── */
+        .toast {
+            position:fixed; bottom:24px; right:24px; background:#1e1e1e; border:1px solid rgba(196,163,90,.3);
+            color:#ddd; padding:12px 20px; border-radius:8px; font-size:.85rem; z-index:9999;
+            transform:translateY(80px); opacity:0; transition:.3s;
+        }
+        .toast.show { transform:none; opacity:1; }
+        .toast.success { border-color:rgba(76,175,80,.4); color:#66bb6a; }
+        .toast.error   { border-color:rgba(239,83,80,.4); color:#ef9a9a; }
+
+        .text-muted { color:#666; font-size:.82rem; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Abrir menú">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.png" alt="Logo"
+                    style="height:60px; margin-bottom:10px; display:block; margin:0 auto 10px;">
+                <p class="sidebar-subtitle">Administración</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="calendario.html" class="nav-item">
+                        <span class="nav-icon"><i class="far fa-calendar-alt"></i></span>
+                        <span>Calendario</span>
+                    </a>
+                    <a href="citas.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-scissors"></i></span>
+                        <span>Citas</span>
+                        <span class="badge" id="nav-badge-citas">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Gestión</span>
+                    <a href="clientes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="membresias.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-crown"></i></span>
+                        <span>Membresías</span>
+                    </a>
+                    <a href="regalos.html" class="nav-item active">
+                        <span class="nav-icon"><i class="fas fa-gift"></i></span>
+                        <span>Regalos</span>
+                    </a>
+                    <a href="servicios.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cut"></i></span>
+                        <span>Servicios</span>
+                    </a>
+                    <a href="productos.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-pump-soap"></i></span>
+                        <span>Productos</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Reportes</span>
+                    <a href="reportes.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span>Ventas</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Sistema</span>
+                    <a href="configuracion.html" class="nav-item">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar" id="admin-avatar">A</div>
+                    <div class="admin-info">
+                        <div class="admin-name" id="admin-name">Admin</div>
+                        <div class="admin-role" id="admin-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title">
+                    <h2>Certificados de Regalo</h2>
+                    <p class="header-date">Gestión de gift certificates emitidos</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadCertificates()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">—</div>
+                    <div class="stat-label">Total emitidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-active">—</div>
+                    <div class="stat-label">Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-redeemed">—</div>
+                    <div class="stat-label">Canjeados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-revenue">—</div>
+                    <div class="stat-label">Ingresos</div>
+                </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <input type="text" id="search-input" placeholder="Buscar por nombre o teléfono..." oninput="applyFilters()" style="flex:1; min-width:180px;">
+                <select id="status-filter" onchange="applyFilters()">
+                    <option value="">Todos los estados</option>
+                    <option value="active">Activos</option>
+                    <option value="redeemed">Canjeados</option>
+                    <option value="expired">Vencidos</option>
+                    <option value="cancelled">Cancelados</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="data-table" id="certs-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Para</th>
+                            <th>De</th>
+                            <th>Servicios</th>
+                            <th>Total</th>
+                            <th>Pago</th>
+                            <th>Estado</th>
+                            <th>Vence</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="certs-tbody">
+                        <tr><td colspan="9" style="text-align:center; padding:40px; color:#555;">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div><!-- /.admin-layout -->
+
+    <!-- Detail / Redeem modal -->
+    <div class="modal-overlay hidden" id="cert-modal" onclick="closeCertModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3><i class="fas fa-gift" style="margin-right:8px;"></i> Detalle del Certificado</h3>
+
+            <div class="modal-row"><span class="modal-row-label">Para:</span>         <span class="modal-row-val" id="md-recipient">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Teléfono recipiente:</span><span class="modal-row-val" id="md-recipient-phone">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Comprador:</span>    <span class="modal-row-val" id="md-buyer">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Tel. comprador:</span><span class="modal-row-val" id="md-buyer-phone">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Método de pago:</span><span class="modal-row-val" id="md-payment">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Estado:</span>       <span class="modal-row-val" id="md-status">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Creado:</span>       <span class="modal-row-val" id="md-created">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Vence:</span>        <span class="modal-row-val" id="md-expires">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Canjeado el:</span>  <span class="modal-row-val" id="md-redeemed">—</span></div>
+            <div class="modal-row"><span class="modal-row-label">Notas:</span>        <span class="modal-row-val" id="md-notes">—</span></div>
+
+            <p style="font-size:.8rem; color:#666; margin-top:12px; margin-bottom:4px; letter-spacing:1px; text-transform:uppercase;">Servicios incluidos</p>
+            <ul class="modal-services" id="md-services"></ul>
+            <p style="font-size:1rem; color:#C4A35A; font-weight:700;" id="md-total">Total: —</p>
+
+            <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;" id="md-actions">
+                <!-- Rendered by JS based on status -->
+            </div>
+            <button class="modal-close" onclick="closeCertModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Admin JS -->
+    <script src="js/admin.js"></script>
+    <script>
+    // ======================================================================
+    // REGALOS ADMIN PAGE
+    // ======================================================================
+
+    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3000/api'
+        : '/api';
+
+    let allCerts = [];
+    let currentCert = null;
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent  = msg;
+        t.className    = `toast show ${type}`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function fmt(dateStr) {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function money(n) {
+        return '$' + parseFloat(n || 0).toLocaleString('es-MX', { minimumFractionDigits:0 });
+    }
+
+    function statusBadge(status) {
+        const map = {
+            active:    ['Activo',    'active'],
+            redeemed:  ['Canjeado',  'redeemed'],
+            expired:   ['Vencido',   'expired'],
+            cancelled: ['Cancelado', 'cancelled']
+        };
+        const [label, cls] = map[status] || [status, 'redeemed'];
+        return `<span class="badge-status badge-${cls}">${label}</span>`;
+    }
+
+    function getPaymentLabel(pm) {
+        const map = { efectivo:'Efectivo', transferencia:'Transferencia', tarjeta:'Tarjeta' };
+        return map[pm] || pm;
+    }
+
+    function serviceNames(services) {
+        const arr = Array.isArray(services) ? services : JSON.parse(services || '[]');
+        return arr.map(s => s.name).join(', ');
+    }
+
+    // ── Auth token ─────────────────────────────────────────────────────────
+    function getToken() {
+        return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken') || '';
+    }
+
+    // ── Load all certificates ──────────────────────────────────────────────
+    async function loadCertificates() {
+        try {
+            const res  = await fetch(`${API_BASE}/gift-certificates`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar');
+
+            allCerts = data.data || [];
+            updateStats(allCerts);
+            applyFilters();
+        } catch (err) {
+            document.getElementById('certs-tbody').innerHTML =
+                `<tr><td colspan="9" style="text-align:center;color:#ef5350;padding:30px;">${err.message}</td></tr>`;
+        }
+    }
+
+    // ── Stats ──────────────────────────────────────────────────────────────
+    function updateStats(list) {
+        document.getElementById('stat-total').textContent    = list.length;
+        document.getElementById('stat-active').textContent   = list.filter(c => c.status === 'active').length;
+        document.getElementById('stat-redeemed').textContent = list.filter(c => c.status === 'redeemed').length;
+        const revenue = list.reduce((s, c) => s + parseFloat(c.total || 0), 0);
+        document.getElementById('stat-revenue').textContent  = money(revenue);
+    }
+
+    // ── Filter ─────────────────────────────────────────────────────────────
+    function applyFilters() {
+        const q   = document.getElementById('search-input').value.toLowerCase().trim();
+        const st  = document.getElementById('status-filter').value;
+
+        const filtered = allCerts.filter(c => {
+            const matchQ  = !q ||
+                (c.recipient_name || '').toLowerCase().includes(q) ||
+                (c.buyer_name     || '').toLowerCase().includes(q) ||
+                (c.recipient_phone|| '').includes(q) ||
+                (c.buyer_phone    || '').includes(q);
+            const matchSt = !st || c.status === st;
+            return matchQ && matchSt;
+        });
+
+        renderTable(filtered);
+    }
+
+    // ── Render table ───────────────────────────────────────────────────────
+    function renderTable(list) {
+        const tbody = document.getElementById('certs-tbody');
+        if (!list.length) {
+            tbody.innerHTML = `<tr><td colspan="9">
+                <div class="empty-state"><i class="fas fa-gift"></i>No hay certificados</div>
+            </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+            const services = Array.isArray(c.services) ? c.services : JSON.parse(c.services || '[]');
+            const svcNames = services.map(s => s.name).join(', ');
+            return `<tr>
+                <td>${fmt(c.created_at)}</td>
+                <td><b>${c.recipient_name || '—'}</b><br><span class="text-muted">${c.recipient_phone || ''}</span></td>
+                <td>${c.buyer_name || '—'}<br><span class="text-muted">${c.buyer_phone || ''}</span></td>
+                <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${svcNames}">${svcNames}</td>
+                <td>${money(c.total)}</td>
+                <td>${getPaymentLabel(c.payment_method)}</td>
+                <td>${statusBadge(c.status)}</td>
+                <td>${fmt(c.expires_at)}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-sm btn-sm-link" onclick="openDetail('${c.uuid}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${c.status === 'active'
+                            ? `<button class="btn-sm btn-sm-gold" onclick="redeemCert('${c.uuid}')">Canjear</button>`
+                            : ''}
+                        ${c.status === 'active'
+                            ? `<button class="btn-sm btn-sm-danger" onclick="cancelCert('${c.uuid}')">Cancelar</button>`
+                            : ''}
+                        <a class="btn-sm btn-sm-link" href="../certificado.html?id=${c.uuid}" target="_blank" title="Ver certificado">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ── Detail modal ───────────────────────────────────────────────────────
+    function openDetail(uuid) {
+        currentCert = allCerts.find(c => c.uuid === uuid);
+        if (!currentCert) return;
+        const c = currentCert;
+
+        document.getElementById('md-recipient').textContent       = c.recipient_name || '—';
+        document.getElementById('md-recipient-phone').textContent = c.recipient_phone || '—';
+        document.getElementById('md-buyer').textContent           = c.buyer_name || '—';
+        document.getElementById('md-buyer-phone').textContent     = c.buyer_phone || '—';
+        document.getElementById('md-payment').textContent         = getPaymentLabel(c.payment_method);
+        document.getElementById('md-status').innerHTML            = statusBadge(c.status);
+        document.getElementById('md-created').textContent         = fmt(c.created_at);
+        document.getElementById('md-expires').textContent         = fmt(c.expires_at);
+        document.getElementById('md-redeemed').textContent        = c.redeemed_at ? fmt(c.redeemed_at) : '—';
+        document.getElementById('md-notes').textContent           = c.notes || '—';
+
+        const services = Array.isArray(c.services) ? c.services : JSON.parse(c.services || '[]');
+        document.getElementById('md-services').innerHTML = services.map(s =>
+            `<li><span>${s.name}</span><span style="color:#C4A35A;">$${parseFloat(s.price).toFixed(0)}</span></li>`
+        ).join('');
+        document.getElementById('md-total').textContent = `Total: ${money(c.total)}`;
+
+        // Action buttons inside modal
+        let actionsHtml = '';
+        if (c.status === 'active') {
+            actionsHtml = `
+                <button class="btn-sm btn-sm-gold" onclick="redeemCert('${c.uuid}', true)">
+                    <i class="fas fa-check"></i> Marcar como canjeado
+                </button>
+                <button class="btn-sm btn-sm-danger" onclick="cancelCert('${c.uuid}', true)">
+                    <i class="fas fa-times"></i> Cancelar certificado
+                </button>`;
+        }
+        actionsHtml += `<a class="btn-sm btn-sm-link" href="../certificado.html?id=${c.uuid}" target="_blank">
+            <i class="fas fa-external-link-alt"></i> Ver certificado
+        </a>`;
+        document.getElementById('md-actions').innerHTML = actionsHtml;
+
+        document.getElementById('cert-modal').classList.remove('hidden');
+    }
+
+    function closeCertModal(evt) {
+        if (evt && evt.target !== document.getElementById('cert-modal')) return;
+        document.getElementById('cert-modal').classList.add('hidden');
+        currentCert = null;
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') document.getElementById('cert-modal').classList.add('hidden');
+    });
+
+    // ── Redeem ─────────────────────────────────────────────────────────────
+    async function redeemCert(uuid, fromModal = false) {
+        if (!confirm('¿Marcar este certificado como canjeado?')) return;
+        try {
+            const res  = await fetch(`${API_BASE}/gift-certificates/${uuid}/redeem`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Error');
+
+            showToast('Certificado marcado como canjeado ✓');
+            if (fromModal) document.getElementById('cert-modal').classList.add('hidden');
+            loadCertificates();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    // ── Cancel ─────────────────────────────────────────────────────────────
+    async function cancelCert(uuid, fromModal = false) {
+        if (!confirm('¿Cancelar este certificado? Esta acción no se puede deshacer.')) return;
+        try {
+            const res  = await fetch(`${API_BASE}/gift-certificates/${uuid}/cancel`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Error');
+
+            showToast('Certificado cancelado');
+            if (fromModal) document.getElementById('cert-modal').classList.add('hidden');
+            loadCertificates();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    loadCertificates();
+    </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ import reviewsRoutes from './reviews.js';
 import publicRoutes from './public.js';
 import systemRoutes from './system.js'; // Added system routes import
 import webhookRoutes from './webhook.js';
+import giftCertificatesRoutes from './giftCertificates.js';
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use('/reviews', reviewsRoutes);
 
 router.use('/system', systemRoutes); // TEMPORARY SYSTEM ROUTES
 router.use('/webhooks', webhookRoutes);
+router.use('/gift-certificates', giftCertificatesRoutes);
 
 export default router;

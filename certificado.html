@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado de Regalo | Braco's Barbería</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&family=Montserrat:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --gold:  #C4A35A;
+            --black: #1A1A1A;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px 60px;
+            color: #e8e8e8;
+        }
+
+        /* ── Header ── */
+        .page-logo {
+            width: 70px;
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+
+        /* ── Certificate card ── */
+        #cert-wrap {
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto 28px;
+        }
+
+        /* The card itself — this is what gets captured by html2canvas */
+        #cert-card {
+            width: 520px;
+            min-height: 280px;
+            background: linear-gradient(135deg, #1a1209 0%, #2a1e0d 50%, #1a1209 100%);
+            border: 1px solid #C4A35A;
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            padding: 30px 32px 28px;
+            box-shadow: 0 0 60px rgba(196,163,90,0.18), 0 20px 40px rgba(0,0,0,0.8);
+            /* Scale down on small screens via wrapper transform */
+        }
+
+        /* Decorative lines */
+        #cert-card::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border: 1px solid rgba(196,163,90,0.22);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        /* Watermark scissor */
+        #cert-card::after {
+            content: '✂';
+            position: absolute;
+            right: 24px;
+            bottom: 20px;
+            font-size: 5rem;
+            color: rgba(196,163,90,0.06);
+            pointer-events: none;
+        }
+
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+        .cert-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .cert-brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .cert-brand-sub {
+            font-size: 0.65rem;
+            color: rgba(196,163,90,0.6);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .cert-logo {
+            width: 52px;
+            height: auto;
+        }
+
+        .cert-label {
+            font-size: 0.62rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(196,163,90,0.6);
+            margin-bottom: 4px;
+        }
+        .cert-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            color: #fff;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .cert-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(196,163,90,0.5), transparent);
+            margin: 14px 0;
+        }
+
+        .cert-for-label {
+            font-size: 0.62rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(196,163,90,0.6);
+            margin-bottom: 4px;
+        }
+        .cert-recipient {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+
+        .cert-services-label {
+            font-size: 0.62rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(196,163,90,0.6);
+            margin-bottom: 8px;
+        }
+        .cert-services-list {
+            list-style: none;
+            margin-bottom: 18px;
+        }
+        .cert-services-list li {
+            font-size: 0.85rem;
+            color: #ddd;
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cert-services-list li::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 4px;
+        }
+        .cert-validity {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.5;
+        }
+        .cert-id {
+            font-size: 0.62rem;
+            color: rgba(196,163,90,0.4);
+            text-align: right;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        /* ── Responsive scale ── */
+        @media (max-width: 560px) {
+            #cert-wrap {
+                overflow: hidden;
+            }
+            #cert-card {
+                transform-origin: top left;
+                /* JS will set scale */
+            }
+        }
+
+        /* ── Status badge ── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .status-badge.active    { background: rgba(76,175,80,0.15);  color: #66bb6a; border: 1px solid rgba(76,175,80,0.3); }
+        .status-badge.redeemed  { background: rgba(158,158,158,0.12); color: #999;    border: 1px solid rgba(158,158,158,0.25); }
+        .status-badge.expired   { background: rgba(239,83,80,0.12);   color: #ef9a9a; border: 1px solid rgba(239,83,80,0.25); }
+        .status-badge.cancelled { background: rgba(239,83,80,0.12);   color: #ef9a9a; border: 1px solid rgba(239,83,80,0.25); }
+
+        /* ── Buttons ── */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .btn-gold {
+            background: var(--gold);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-gold:hover { background: #D4B76A; }
+        .btn-outline {
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-outline:hover { background: var(--gold); color: #1a1a1a; }
+
+        /* ── Info note ── */
+        .info-note {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(196,163,90,0.07);
+            border: 1px solid rgba(196,163,90,0.18);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* ── Error / loading ── */
+        .state-msg {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .state-msg i { font-size: 2rem; margin-bottom: 14px; display: block; color: var(--gold); }
+        .state-msg.error i { color: #ef5350; }
+    </style>
+</head>
+<body>
+
+    <img src="assets/logo.png" alt="Braco's" class="page-logo">
+
+    <!-- Loading state -->
+    <div class="state-msg" id="state-loading">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        Cargando certificado...
+    </div>
+
+    <!-- Error state -->
+    <div class="state-msg error hidden" id="state-error">
+        <i class="fas fa-times-circle"></i>
+        <span id="error-msg">Certificado no encontrado.</span>
+    </div>
+
+    <!-- Certificate content -->
+    <div class="hidden" id="cert-content">
+
+        <!-- Status badge -->
+        <div id="status-badge-wrap" style="text-align:center; margin-bottom:16px;"></div>
+
+        <!-- The card (captured for download) -->
+        <div id="cert-wrap">
+            <div id="cert-card">
+                <div class="cert-header">
+                    <div class="cert-brand">
+                        <div class="cert-brand-name">Braco's Barbería</div>
+                        <div class="cert-brand-sub">Certificado de Regalo</div>
+                    </div>
+                    <img src="assets/logo.png" alt="Logo" class="cert-logo">
+                </div>
+
+                <div class="cert-label">Para</div>
+                <div class="cert-recipient" id="cert-recipient">—</div>
+
+                <div class="cert-divider"></div>
+
+                <div class="cert-services-label">Servicios incluidos</div>
+                <ul class="cert-services-list" id="cert-services-list"></ul>
+
+                <div class="cert-footer">
+                    <div class="cert-validity" id="cert-validity">Válido hasta —</div>
+                    <div class="cert-id" id="cert-id">ID —</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="btn-row" id="btn-row-active">
+            <button class="btn-gold" onclick="downloadCert()">
+                <i class="fas fa-download"></i> Guardar imagen
+            </button>
+            <a class="btn-outline" href="agendar.html">
+                <i class="fas fa-calendar-alt"></i> Agendar cita
+            </a>
+        </div>
+
+        <!-- Info note -->
+        <div class="info-note" id="info-note">
+            📌 Presenta este certificado (imagen o enlace) al visitar Braco's Barbería para canjear tus servicios.<br>
+            Ubicación: Heroico Colegio Militar #46, Local J — El Pedregal, Tequisquiapan, Qro.
+        </div>
+
+    </div><!-- /#cert-content -->
+
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+    // ========================================================================
+    // CERTIFICADO.JS
+    // ========================================================================
+
+    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:3000/api'
+        : '/api';
+
+    function show(id)  { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id)  { document.getElementById(id).classList.add('hidden'); }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function shortUuid(uuid) {
+        return uuid ? uuid.slice(0,8).toUpperCase() : '—';
+    }
+
+    const STATUS_LABELS = {
+        active:    { label: '✓ Activo',    cls: 'active'    },
+        redeemed:  { label: '✔ Canjeado',  cls: 'redeemed'  },
+        expired:   { label: '✗ Vencido',   cls: 'expired'   },
+        cancelled: { label: '✗ Cancelado', cls: 'cancelled' }
+    };
+
+    async function loadCertificate() {
+        const params = new URLSearchParams(window.location.search);
+        const uuid   = params.get('id');
+
+        if (!uuid) {
+            showError('ID de certificado no válido');
+            return;
+        }
+
+        try {
+            const res  = await fetch(`${API_BASE_URL}/gift-certificates/${uuid}`);
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || data.message || 'Certificado no encontrado');
+            }
+
+            renderCertificate(data.data);
+        } catch (err) {
+            showError(err.message || 'No se pudo cargar el certificado');
+        }
+    }
+
+    function renderCertificate(cert) {
+        // Status badge
+        const st = STATUS_LABELS[cert.status] || { label: cert.status, cls: 'active' };
+        document.getElementById('status-badge-wrap').innerHTML =
+            `<span class="status-badge ${st.cls}">${st.label}</span>`;
+
+        // Recipient
+        document.getElementById('cert-recipient').textContent = cert.recipient_name || '—';
+
+        // Services list
+        const services = Array.isArray(cert.services) ? cert.services : JSON.parse(cert.services || '[]');
+        document.getElementById('cert-services-list').innerHTML = services.map(s =>
+            `<li>${s.name} <span style="margin-left:auto; color:rgba(196,163,90,0.7); font-size:0.8rem;">$${parseFloat(s.price).toFixed(0)}</span></li>`
+        ).join('');
+
+        // Validity & ID
+        document.getElementById('cert-validity').textContent =
+            cert.expires_at ? `Válido hasta: ${formatDate(cert.expires_at)}` : 'Sin vencimiento';
+        document.getElementById('cert-id').textContent = `Ref. ${shortUuid(cert.uuid)}`;
+
+        // Update page title
+        document.title = `Regalo para ${cert.recipient_name} | Braco's`;
+
+        // If redeemed/expired/cancelled → dim the card
+        if (cert.status !== 'active') {
+            const card = document.getElementById('cert-card');
+            card.style.opacity = '0.55';
+            card.style.filter  = 'grayscale(60%)';
+
+            // Remove action buttons for used certs
+            document.getElementById('btn-row-active').innerHTML =
+                `<a class="btn-outline" href="agendar.html"><i class="fas fa-calendar-alt"></i> Agendar nueva cita</a>`;
+            document.getElementById('info-note').style.display = 'none';
+        }
+
+        // Show content
+        hide('state-loading');
+        show('cert-content');
+
+        // Scale card on small screens
+        scaleCard();
+    }
+
+    function showError(msg) {
+        hide('state-loading');
+        document.getElementById('error-msg').textContent = msg;
+        show('state-error');
+    }
+
+    function scaleCard() {
+        const card    = document.getElementById('cert-card');
+        const wrapper = document.getElementById('cert-wrap');
+        const availW  = Math.min(wrapper.clientWidth, window.innerWidth - 40);
+        const cardW   = 520; // natural width
+        if (availW < cardW) {
+            const scale = availW / cardW;
+            card.style.transform = `scale(${scale})`;
+            card.style.transformOrigin = 'top left';
+            wrapper.style.height = (280 * scale) + 'px'; // approx card height
+        }
+    }
+
+    window.addEventListener('resize', scaleCard);
+
+    // ── Download ───────────────────────────────────────────────────────────
+    function downloadCert() {
+        const card = document.getElementById('cert-card');
+
+        // Temporarily reset any CSS scaling so html2canvas captures at full res
+        const prevTransform = card.style.transform;
+        const prevOrigin    = card.style.transformOrigin;
+        card.style.transform = 'none';
+        card.style.transformOrigin = 'top left';
+
+        html2canvas(card, {
+            scale: 3,
+            backgroundColor: null,
+            useCORS: true,
+            logging: false,
+            width: 520,
+            height: card.offsetHeight
+        }).then(canvas => {
+            // Restore scaling
+            card.style.transform      = prevTransform;
+            card.style.transformOrigin = prevOrigin;
+
+            const link = document.createElement('a');
+            link.download = 'Certificado_Regalo_Bracos.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }).catch(err => {
+            console.error('Download error:', err);
+            card.style.transform      = prevTransform;
+            card.style.transformOrigin = prevOrigin;
+        });
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    loadCertificate();
+    </script>
+</body>
+</html>

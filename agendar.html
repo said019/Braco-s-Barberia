@@ -34,6 +34,7 @@
                 <li><a href="agendar.html" class="active">Agendar</a></li>
                 <li><a href="checkout.html">Checkout</a></li>
                 <li><a href="membresias.html">Membresías</a></li>
+                <li><a href="regalo.html">🎁 Regalo</a></li>
             </ul>
 
             <a href="agendar.html" class="btn-primary nav-cta">Reservar Cita</a>
@@ -54,6 +55,7 @@
             <li><a href="agendar.html">Agendar</a></li>
             <li><a href="checkout.html">Checkout</a></li>
             <li><a href="membresias.html">Membresías</a></li>
+            <li><a href="regalo.html">🎁 Regalo</a></li>
             <li><a href="agendar.html" class="btn-primary btn-block">Reservar Cita</a></li>
         </ul>
     </div>
@@ -299,7 +301,6 @@
                                 <option value="52" selected>🇲🇽 +52</option>
                                 <option value="1">🇺🇸 +1</option>
                                 <option value="34">🇪🇸 +34</option>
-                                <option value="41">🇨🇭 +41 (Suiza)</option>
                                 <option value="54">🇦🇷 +54</option>
                                 <option value="57">🇨🇴 +57</option>
                                 <option value="56">🇨🇱 +56</option>
@@ -416,26 +417,22 @@
             <div class="modal-content deposit-modal-alert" style="max-width: 440px;">
                 <button class="modal-close" onclick="closePhoneExistsModal()">&times;</button>
 
-                <div class="deposit-alert-header"
-                    style="background: linear-gradient(135deg, rgba(196,163,90,0.15), rgba(196,163,90,0.05));">
+                <div class="deposit-alert-header" style="background: linear-gradient(135deg, rgba(196,163,90,0.15), rgba(196,163,90,0.05));">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👋</div>
                     <h3 class="alert-title" style="color: var(--gold);">¡Ya te conocemos!</h3>
                     <p class="text-muted" style="margin-top: 0.5rem;">Este número de teléfono ya está registrado</p>
                 </div>
 
                 <div style="padding: 1.5rem; text-align: center;">
-                    <div
-                        style="background: var(--charcoal-dark); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(196,163,90,0.2);">
-                        <p style="color: var(--cream); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem;"
-                            id="pe-client-name">-</p>
+                    <div style="background: var(--charcoal-dark); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(196,163,90,0.2);">
+                        <p style="color: var(--cream); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem;" id="pe-client-name">-</p>
                         <p style="color: var(--gold); font-size: 1.3rem; font-weight: bold; letter-spacing: 2px;">
                             Código: <span id="pe-client-code">----</span>
                         </p>
                     </div>
 
                     <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.2rem;">
-                        Puedes usar tu código <strong style="color: var(--gold);">de 4 dígitos</strong> arriba para
-                        identificarte más rápido la próxima vez.
+                        Puedes usar tu código <strong style="color: var(--gold);">de 4 dígitos</strong> arriba para identificarte más rápido la próxima vez.
                     </p>
 
                     <p style="color: var(--cream); font-weight: 500; margin-bottom: 1rem;">¿Eres tú?</p>
