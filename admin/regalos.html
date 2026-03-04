@@ -40,8 +40,9 @@
         .modal-close:hover { border-color:#888; color:#ddd; }
 
         /* ── Stats summary row ── */
-        .stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:14px; margin-bottom:24px; }
-        .stat-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:16px 18px; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+        @media(max-width:700px){ .stats-row { grid-template-columns:repeat(2,1fr); } }
+        .stat-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:16px 18px; min-width:0; }
         .stat-value { font-size:1.5rem; font-weight:700; color:#C4A35A; margin-bottom:4px; }
         .stat-label { font-size:.75rem; color:#666; letter-spacing:.5px; text-transform:uppercase; }
 

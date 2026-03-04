@@ -34,7 +34,25 @@ export const GiftCertificate = {
       notes || null
     ]);
 
-    return result.rows[0];
+    const cert = result.rows[0];
+
+    // Registrar como venta en la tabla transactions
+    try {
+      await query(`
+        INSERT INTO transactions
+          (type, description, amount, payment_method, transaction_date)
+        VALUES ('service', $1, $2, $3, CURRENT_DATE)
+      `, [
+        `Certificado de regalo para ${cert.recipient_name}`,
+        cert.total,
+        cert.payment_method
+      ]);
+    } catch (txErr) {
+      // No abortar la creación si falla la transacción (log únicamente)
+      console.error('⚠️  No se pudo registrar transacción del certificado:', txErr.message);
+    }
+
+    return cert;
   },
 
   // -----------------------------------------------------------------------

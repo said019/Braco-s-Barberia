@@ -146,6 +146,45 @@ const startServer = async () => {
       process.exit(1);
     }
 
+    // Auto-migración: crear tabla gift_certificates si no existe
+    try {
+      const { query } = await import('./config/database.js');
+      await query(`
+        CREATE TABLE IF NOT EXISTS gift_certificates (
+          id              SERIAL PRIMARY KEY,
+          uuid            UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
+          buyer_name      VARCHAR(100) NOT NULL,
+          buyer_phone     VARCHAR(20)  NOT NULL,
+          buyer_email     VARCHAR(100),
+          recipient_name  VARCHAR(100) NOT NULL,
+          recipient_phone VARCHAR(20),
+          services        JSONB        NOT NULL DEFAULT '[]',
+          total           DECIMAL(10,2) NOT NULL,
+          payment_method  VARCHAR(20)  NOT NULL DEFAULT 'efectivo'
+            CHECK (payment_method IN ('efectivo', 'tarjeta', 'transferencia')),
+          status          VARCHAR(20)  NOT NULL DEFAULT 'active'
+            CHECK (status IN ('active', 'redeemed', 'expired', 'cancelled')),
+          redeemed_at     TIMESTAMP,
+          expires_at      DATE GENERATED ALWAYS AS
+                          (CAST(created_at AS DATE) + INTERVAL '6 months') STORED,
+          created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          notes           TEXT
+        )
+      `);
+      await query(`CREATE INDEX IF NOT EXISTS idx_gc_uuid   ON gift_certificates(uuid)`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_gc_status ON gift_certificates(status)`);
+      console.log('✅ Tabla gift_certificates lista');
+
+      // Asegurarse de que transactions.client_id admita NULL
+      // (para ventas de mostrador y certificados de regalo sin cliente registrado)
+      await query(`
+        ALTER TABLE transactions ALTER COLUMN client_id DROP NOT NULL
+      `).catch(() => {}); // Ignorar si ya es nullable o si falla
+    } catch (migErr) {
+      console.error('⚠️  Auto-migración gift_certificates falló:', migErr.message);
+    }
+
     // Iniciar servidor
     app.listen(PORT, () => {
       console.log('');
