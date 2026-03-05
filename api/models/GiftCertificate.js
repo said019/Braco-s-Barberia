@@ -6,7 +6,7 @@ export const GiftCertificate = {
   // -----------------------------------------------------------------------
   // Crear certificado
   // -----------------------------------------------------------------------
-  async create({ buyer_name, buyer_phone, buyer_email, recipient_name, recipient_phone, services, total, payment_method, notes }) {
+  async create({ buyer_name, buyer_phone, buyer_email, recipient_name, recipient_phone, sender_label, services, total, payment_method, notes }) {
     if (!buyer_name || !buyer_phone || !recipient_name) {
       throw new AppError('Faltan datos del comprador o del destinatario', 400);
     }
@@ -19,8 +19,8 @@ export const GiftCertificate = {
 
     const result = await query(`
       INSERT INTO gift_certificates
-        (buyer_name, buyer_phone, buyer_email, recipient_name, recipient_phone, services, total, payment_method, notes)
-      VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9)
+        (buyer_name, buyer_phone, buyer_email, recipient_name, recipient_phone, sender_label, services, total, payment_method, notes)
+      VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10)
       RETURNING *
     `, [
       buyer_name.trim(),
@@ -28,6 +28,7 @@ export const GiftCertificate = {
       buyer_email?.trim() || null,
       recipient_name.trim(),
       recipient_phone ? recipient_phone.replace(/\D/g, '') : null,
+      sender_label?.trim() || buyer_name.trim(),
       JSON.stringify(services),
       total,
       payment_method || 'efectivo',

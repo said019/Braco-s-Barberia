@@ -42,106 +42,122 @@
         /* The card itself — this is what gets captured by html2canvas */
         #cert-card {
             width: 520px;
-            min-height: 280px;
-            background: linear-gradient(135deg, #1a1209 0%, #2a1e0d 50%, #1a1209 100%);
-            border: 1px solid #C4A35A;
-            border-radius: 14px;
+            background: linear-gradient(150deg, #1c1408 0%, #2e2008 40%, #1a1209 100%);
+            border: 1.5px solid #C4A35A;
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
-            padding: 30px 32px 28px;
-            box-shadow: 0 0 60px rgba(196,163,90,0.18), 0 20px 40px rgba(0,0,0,0.8);
-            /* Scale down on small screens via wrapper transform */
+            padding: 28px 32px 26px;
+            box-shadow: 0 0 60px rgba(196,163,90,0.22), 0 20px 40px rgba(0,0,0,0.8);
         }
 
-        /* Decorative lines */
+        /* Inner frame */
         #cert-card::before {
             content: '';
             position: absolute;
             inset: 8px;
-            border: 1px solid rgba(196,163,90,0.22);
-            border-radius: 8px;
+            border: 1px solid rgba(196,163,90,0.18);
+            border-radius: 10px;
             pointer-events: none;
         }
 
-        /* Watermark scissor */
+        /* Watermark */
         #cert-card::after {
             content: '✂';
             position: absolute;
-            right: 24px;
-            bottom: 20px;
+            right: 22px;
+            bottom: 18px;
             font-size: 5rem;
-            color: rgba(196,163,90,0.06);
+            color: rgba(196,163,90,0.05);
             pointer-events: none;
         }
 
+        /* Header row */
         .cert-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 18px;
-        }
-        .cert-brand {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+            margin-bottom: 20px;
         }
         .cert-brand-name {
             font-family: 'Playfair Display', serif;
             font-size: 1.05rem;
-            color: var(--gold);
-            letter-spacing: 2px;
+            color: #C4A35A;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
         }
         .cert-brand-sub {
-            font-size: 0.65rem;
-            color: rgba(196,163,90,0.6);
-            letter-spacing: 3px;
+            font-size: 0.6rem;
+            color: rgba(196,163,90,0.55);
+            letter-spacing: 3.5px;
             text-transform: uppercase;
+            margin-top: 2px;
         }
-        .cert-logo {
-            width: 52px;
-            height: auto;
-        }
+        .cert-logo { width: 50px; height: auto; }
 
-        .cert-label {
-            font-size: 0.62rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: rgba(196,163,90,0.6);
-            margin-bottom: 4px;
-        }
-        .cert-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.55rem;
-            color: #fff;
-            margin-bottom: 16px;
-            letter-spacing: 1px;
-        }
-
+        /* Divider */
         .cert-divider {
             width: 100%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(196,163,90,0.5), transparent);
+            background: linear-gradient(90deg, transparent, rgba(196,163,90,0.45), transparent);
             margin: 14px 0;
         }
 
-        .cert-for-label {
-            font-size: 0.62rem;
+        /* PARA section */
+        .cert-for-row {
+            margin-bottom: 14px;
+        }
+        .cert-eyebrow {
+            font-size: 0.58rem;
             letter-spacing: 4px;
             text-transform: uppercase;
-            color: rgba(196,163,90,0.6);
-            margin-bottom: 4px;
+            color: rgba(196,163,90,0.65);
+            margin-bottom: 3px;
         }
         .cert-recipient {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 1.5rem;
-            color: var(--gold);
-            margin-bottom: 18px;
+            font-size: 1.65rem;
+            color: #fff;
+            line-height: 1.2;
         }
 
-        .cert-services-label {
-            font-size: 0.62rem;
+        /* DE PARTE DE section */
+        .cert-sender-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(196,163,90,0.08);
+            border: 1px solid rgba(196,163,90,0.2);
+            border-radius: 8px;
+            padding: 9px 14px;
+            margin-bottom: 16px;
+        }
+        .cert-sender-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .cert-sender-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .cert-sender-label {
+            font-size: 0.57rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(196,163,90,0.6);
+        }
+        .cert-sender-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            color: #C4A35A;
+            font-style: italic;
+        }
+
+        /* Services */
+        .cert-services-eyebrow {
+            font-size: 0.58rem;
             letter-spacing: 3px;
             text-transform: uppercase;
             color: rgba(196,163,90,0.6);
@@ -149,38 +165,47 @@
         }
         .cert-services-list {
             list-style: none;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
         .cert-services-list li {
-            font-size: 0.85rem;
-            color: #ddd;
-            padding: 3px 0;
+            font-size: 0.84rem;
+            color: #e0e0e0;
+            padding: 4px 0;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
+        .cert-services-list li:last-child { border-bottom: none; }
         .cert-services-list li::before {
             content: '';
-            width: 5px;
-            height: 5px;
+            width: 5px; height: 5px;
             border-radius: 50%;
-            background: var(--gold);
+            background: #C4A35A;
             flex-shrink: 0;
         }
+        .cert-svc-price {
+            margin-left: auto;
+            color: rgba(196,163,90,0.75);
+            font-size: 0.78rem;
+        }
 
+        /* Footer */
         .cert-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-top: 4px;
+            margin-top: 6px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(196,163,90,0.12);
         }
         .cert-validity {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.4);
-            line-height: 1.5;
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.55;
         }
         .cert-id {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             color: rgba(196,163,90,0.4);
             text-align: right;
             font-family: monospace;
@@ -189,13 +214,8 @@
 
         /* ── Responsive scale ── */
         @media (max-width: 560px) {
-            #cert-wrap {
-                overflow: hidden;
-            }
-            #cert-card {
-                transform-origin: top left;
-                /* JS will set scale */
-            }
+            #cert-wrap { overflow: hidden; }
+            #cert-card { transform-origin: top left; }
         }
 
         /* ── Status badge ── */
@@ -313,22 +333,39 @@
         <!-- The card (captured for download) -->
         <div id="cert-wrap">
             <div id="cert-card">
+                <!-- Header -->
                 <div class="cert-header">
-                    <div class="cert-brand">
+                    <div>
                         <div class="cert-brand-name">Braco's Barbería</div>
                         <div class="cert-brand-sub">Certificado de Regalo</div>
                     </div>
                     <img src="assets/logo.png" alt="Logo" class="cert-logo">
                 </div>
 
-                <div class="cert-label">Para</div>
-                <div class="cert-recipient" id="cert-recipient">—</div>
+                <div class="cert-divider"></div>
+
+                <!-- Para -->
+                <div class="cert-for-row">
+                    <div class="cert-eyebrow">Para</div>
+                    <div class="cert-recipient" id="cert-recipient">—</div>
+                </div>
+
+                <!-- De parte de -->
+                <div class="cert-sender-row" id="cert-sender-row">
+                    <div class="cert-sender-icon">🎁</div>
+                    <div class="cert-sender-text">
+                        <div class="cert-sender-label">De parte de</div>
+                        <div class="cert-sender-name" id="cert-sender-name">—</div>
+                    </div>
+                </div>
 
                 <div class="cert-divider"></div>
 
-                <div class="cert-services-label">Servicios incluidos</div>
+                <!-- Servicios -->
+                <div class="cert-services-eyebrow">Servicios incluidos</div>
                 <ul class="cert-services-list" id="cert-services-list"></ul>
 
+                <!-- Footer -->
                 <div class="cert-footer">
                     <div class="cert-validity" id="cert-validity">Válido hasta —</div>
                     <div class="cert-id" id="cert-id">ID —</div>
@@ -417,10 +454,17 @@
         // Recipient
         document.getElementById('cert-recipient').textContent = cert.recipient_name || '—';
 
+        // Sender ("De parte de")
+        const senderName = cert.sender_label || cert.buyer_name || '';
+        document.getElementById('cert-sender-name').textContent = senderName;
+        if (!senderName) {
+            document.getElementById('cert-sender-row').style.display = 'none';
+        }
+
         // Services list
         const services = Array.isArray(cert.services) ? cert.services : JSON.parse(cert.services || '[]');
         document.getElementById('cert-services-list').innerHTML = services.map(s =>
-            `<li>${s.name} <span style="margin-left:auto; color:rgba(196,163,90,0.7); font-size:0.8rem;">$${parseFloat(s.price).toFixed(0)}</span></li>`
+            `<li>${s.name}<span class="cert-svc-price">$${parseFloat(s.price).toFixed(0)}</span></li>`
         ).join('');
 
         // Validity & ID

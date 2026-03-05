@@ -174,6 +174,10 @@ const startServer = async () => {
       `);
       await query(`CREATE INDEX IF NOT EXISTS idx_gc_uuid   ON gift_certificates(uuid)`);
       await query(`CREATE INDEX IF NOT EXISTS idx_gc_status ON gift_certificates(status)`);
+      // Agregar sender_label si la tabla ya existía sin esa columna
+      await query(`
+        ALTER TABLE gift_certificates ADD COLUMN IF NOT EXISTS sender_label VARCHAR(120)
+      `).catch(() => {});
       console.log('✅ Tabla gift_certificates lista');
 
       // Asegurarse de que transactions.client_id admita NULL

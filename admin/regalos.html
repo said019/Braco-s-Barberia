@@ -363,6 +363,13 @@
                 </div>
             </div>
 
+            <!-- De parte de -->
+            <div class="form-group-modal">
+                <label>¿Cómo aparecerá en el certificado? <span style="color:#666; font-weight:400;">(opcional)</span></label>
+                <input type="text" id="c-sender-label" placeholder="Ej: Tu hermano Juan, Tu novia Karla, Con amor 💛..." autocomplete="off">
+                <small style="color:#555; font-size:.75rem; margin-top:4px; display:block;">Si lo dejas vacío, aparecerá el nombre del comprador.</small>
+            </div>
+
             <!-- Destinatario -->
             <div class="section-sep">Destinatario (quien recibe el regalo)</div>
             <div class="form-grid">
@@ -717,6 +724,7 @@
         createPayment  = 'efectivo';
         document.getElementById('c-buyer-name').value  = '';
         document.getElementById('c-buyer-phone').value = '';
+        document.getElementById('c-sender-label').value = '';
         document.getElementById('c-recip-name').value  = '';
         document.getElementById('c-recip-phone').value = '';
         document.getElementById('c-notes').value       = '';
@@ -824,11 +832,12 @@
     });
 
     async function submitCreate() {
-        const buyerName  = document.getElementById('c-buyer-name').value.trim();
-        const buyerPhone = document.getElementById('c-buyer-phone').value.trim();
-        const recipName  = document.getElementById('c-recip-name').value.trim();
-        const recipPhone = document.getElementById('c-recip-phone').value.trim();
-        const notes      = document.getElementById('c-notes').value.trim();
+        const buyerName   = document.getElementById('c-buyer-name').value.trim();
+        const buyerPhone  = document.getElementById('c-buyer-phone').value.trim();
+        const senderLabel = document.getElementById('c-sender-label').value.trim();
+        const recipName   = document.getElementById('c-recip-name').value.trim();
+        const recipPhone  = document.getElementById('c-recip-phone').value.trim();
+        const notes       = document.getElementById('c-notes').value.trim();
 
         if (!buyerName || !buyerPhone || !recipName || !createSelected.length) {
             showToast('Completa todos los campos obligatorios', 'error');
@@ -850,6 +859,7 @@
                 body: JSON.stringify({
                     buyer_name:      buyerName,
                     buyer_phone:     buyerPhone,
+                    sender_label:    senderLabel || buyerName,
                     recipient_name:  recipName,
                     recipient_phone: recipPhone || null,
                     services:        createSelected,
