@@ -352,7 +352,7 @@
 
                 <!-- De parte de -->
                 <div class="cert-sender-row" id="cert-sender-row">
-                    <div class="cert-sender-icon">🎁</div>
+                    <div class="cert-sender-icon">🎀</div>
                     <div class="cert-sender-text">
                         <div class="cert-sender-label">De parte de</div>
                         <div class="cert-sender-name" id="cert-sender-name">—</div>
@@ -461,10 +461,10 @@
             document.getElementById('cert-sender-row').style.display = 'none';
         }
 
-        // Services list
+        // Services list (sin precio — es un regalo)
         const services = Array.isArray(cert.services) ? cert.services : JSON.parse(cert.services || '[]');
         document.getElementById('cert-services-list').innerHTML = services.map(s =>
-            `<li>${s.name}<span class="cert-svc-price">$${parseFloat(s.price).toFixed(0)}</span></li>`
+            `<li>${s.name}</li>`
         ).join('');
 
         // Validity & ID
@@ -504,13 +504,19 @@
     function scaleCard() {
         const card    = document.getElementById('cert-card');
         const wrapper = document.getElementById('cert-wrap');
-        const availW  = Math.min(wrapper.clientWidth, window.innerWidth - 40);
-        const cardW   = 520; // natural width
+        // Reset first so we can measure the natural height
+        card.style.transform       = 'none';
+        card.style.transformOrigin = 'top left';
+        wrapper.style.height       = 'auto';
+
+        const availW = Math.min(wrapper.clientWidth, window.innerWidth - 40);
+        const cardW  = 520; // natural width
         if (availW < cardW) {
-            const scale = availW / cardW;
-            card.style.transform = `scale(${scale})`;
+            const scale      = availW / cardW;
+            const naturalH   = card.offsetHeight; // actual height after content render
+            card.style.transform       = `scale(${scale})`;
             card.style.transformOrigin = 'top left';
-            wrapper.style.height = (280 * scale) + 'px'; // approx card height
+            wrapper.style.height       = (naturalH * scale) + 'px';
         }
     }
 

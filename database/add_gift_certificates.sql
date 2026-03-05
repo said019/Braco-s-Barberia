@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS gift_certificates (
     recipient_name  VARCHAR(100) NOT NULL,
     recipient_phone VARCHAR(20),
 
+    -- Cómo aparecerá el remitente en el certificado (ej: "tu papá", "tu tío")
+    sender_label  VARCHAR(100),
+
     -- Servicios incluidos (array de objetos {id, name, price})
     services      JSONB        NOT NULL DEFAULT '[]',
     total         DECIMAL(10,2) NOT NULL,

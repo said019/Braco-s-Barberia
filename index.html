@@ -106,6 +106,7 @@
                 <li><a href="agendar.html">Agendar</a></li>
                 <li><a href="checkout.html">Checkout</a></li>
                 <li><a href="membresias.html">Membresías</a></li>
+                <li><a href="#regalo">🎁 Regalos</a></li>
             </ul>
 
             <a href="agendar.html" class="btn-primary nav-cta">Reservar Cita</a>
@@ -601,6 +602,110 @@
     </section>
 
     <!-- ========================================
+         CERTIFICADO DE REGALO
+         ======================================== -->
+    <section class="gift-cert-section" id="regalo">
+        <div class="section-header">
+            <span class="section-label">Para alguien especial</span>
+            <h2 class="section-title">Certificado de Regalo</h2>
+            <div class="section-line"></div>
+            <p class="section-subtitle">Diseña el regalo perfecto. Elige los servicios, agrega un mensaje y envíanos la solicitud — nosotros nos encargamos del resto.</p>
+        </div>
+
+        <div class="gift-cert-container">
+            <!-- Form side -->
+            <div class="gift-cert-form-wrap">
+                <form id="gift-cert-form" novalidate>
+
+                    <div class="gift-form-group">
+                        <label>Tu nombre <span class="gift-required">*</span></label>
+                        <input type="text" id="gc-buyer-name" placeholder="¿Quién compra el regalo?" required>
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>Tu teléfono <span class="gift-required">*</span></label>
+                        <input type="tel" id="gc-buyer-phone" placeholder="10 dígitos" required>
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>¿Cómo aparecerás en el certificado? <span class="gift-required">*</span></label>
+                        <input type="text" id="gc-sender-label" placeholder='Ej: "tu papá", "tu tío", "tu amigo Carlos"' required>
+                        <span class="gift-hint">Así aparecerá: "Hola [nombre], <em>[esto]</em> te regaló un certificado"</span>
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>Nombre de quien recibe el regalo <span class="gift-required">*</span></label>
+                        <input type="text" id="gc-recipient-name" placeholder="Nombre del destinatario" required>
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>Teléfono del destinatario</label>
+                        <input type="tel" id="gc-recipient-phone" placeholder="Para enviarle el certificado por WhatsApp">
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>Servicios a incluir <span class="gift-required">*</span></label>
+                        <div class="gift-services-grid" id="gc-services-grid">
+                            <!-- Se carga dinámicamente -->
+                            <div class="gift-services-loading">Cargando servicios...</div>
+                        </div>
+                    </div>
+
+                    <div class="gift-form-group">
+                        <label>Mensaje personal (opcional)</label>
+                        <textarea id="gc-message" rows="3" placeholder="Escribe algo especial para quien lo recibe..."></textarea>
+                    </div>
+
+                    <div id="gc-error" class="gift-error hidden"></div>
+                    <div id="gc-success" class="gift-success hidden"></div>
+
+                    <button type="submit" class="btn-primary btn-block gift-submit-btn" id="gc-submit-btn">
+                        <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                    </button>
+
+                    <p class="gift-note">
+                        <i class="fas fa-info-circle"></i>
+                        Te contactaremos para coordinar el pago. El certificado se enviará al destinatario por WhatsApp una vez confirmado.
+                    </p>
+                </form>
+            </div>
+
+            <!-- Preview side -->
+            <div class="gift-cert-preview-wrap">
+                <div class="gift-preview-card" id="gc-preview-card">
+                    <div class="gpc-header">
+                        <div>
+                            <div class="gpc-brand">Braco's Barbería</div>
+                            <div class="gpc-sub">Certificado de Regalo</div>
+                        </div>
+                        <img src="assets/logo.png" alt="Logo" class="gpc-logo">
+                    </div>
+                    <div class="gpc-divider"></div>
+                    <div class="gpc-for-label">Para</div>
+                    <div class="gpc-recipient" id="gpc-recipient">—</div>
+                    <div class="gpc-sender-row">
+                        <span class="gpc-bow">🎀</span>
+                        <div>
+                            <div class="gpc-sender-label">De parte de</div>
+                            <div class="gpc-sender-name" id="gpc-sender">—</div>
+                        </div>
+                    </div>
+                    <div class="gpc-divider"></div>
+                    <div class="gpc-services-label">Servicios incluidos</div>
+                    <ul class="gpc-services-list" id="gpc-services-list">
+                        <li class="gpc-placeholder">Selecciona servicios arriba</li>
+                    </ul>
+                    <div class="gpc-footer">
+                        <div class="gpc-validity">Válido 6 meses</div>
+                        <div class="gpc-watermark">✂</div>
+                    </div>
+                </div>
+                <p class="gift-preview-note">Vista previa del certificado</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
          CONTACTO
          ======================================== -->
     <section class="contact-section" id="contacto">
@@ -725,6 +830,155 @@
                 console.warn('No se pudieron cargar precios desde la API, mostrando precios por defecto:', err.message);
             }
         });
+    </script>
+
+    <!-- Certificado de Regalo -->
+    <script>
+    (function () {
+        const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://localhost:3000/api'
+            : '/api';
+
+        let selectedServices = [];
+        let allServices      = [];
+
+        // ── Load services ──────────────────────────────────────────────────
+        async function loadServices() {
+            try {
+                const res  = await fetch(`${API_BASE}/services`);
+                const data = await res.json();
+                allServices = Array.isArray(data) ? data : (data.services || data.data || []);
+                renderServicePicker();
+            } catch {
+                document.getElementById('gc-services-grid').innerHTML =
+                    '<div class="gift-services-loading">No se pudieron cargar los servicios. Descríbelos en el mensaje personal.</div>';
+            }
+        }
+
+        function renderServicePicker() {
+            const grid = document.getElementById('gc-services-grid');
+            if (!allServices.length) {
+                grid.innerHTML = '<div class="gift-services-loading">Sin servicios disponibles.</div>';
+                return;
+            }
+            grid.innerHTML = allServices.map(s => `
+                <div class="gift-svc-card" data-id="${s.id}" data-name="${s.name}" onclick="gcToggleService(this)">
+                    <div class="gift-svc-name">${s.name}</div>
+                </div>
+            `).join('');
+        }
+
+        window.gcToggleService = function (el) {
+            const id   = parseInt(el.dataset.id);
+            const name = el.dataset.name;
+            if (el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedServices = selectedServices.filter(s => s.id !== id);
+            } else {
+                el.classList.add('selected');
+                selectedServices.push({ id, name });
+            }
+            updatePreview();
+        };
+
+        // ── Live preview ───────────────────────────────────────────────────
+        function updatePreview() {
+            const recipient = document.getElementById('gc-recipient-name').value.trim() || '—';
+            const sender    = document.getElementById('gc-sender-label').value.trim()   || '—';
+
+            document.getElementById('gpc-recipient').textContent = recipient;
+            document.getElementById('gpc-sender').textContent    = sender;
+
+            const listEl = document.getElementById('gpc-services-list');
+            if (selectedServices.length === 0) {
+                listEl.innerHTML = '<li class="gpc-placeholder">Selecciona servicios arriba</li>';
+            } else {
+                listEl.innerHTML = selectedServices.map(s => `<li>${s.name}</li>`).join('');
+            }
+        }
+
+        ['gc-recipient-name', 'gc-sender-label'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', updatePreview);
+        });
+
+        // ── Submit ─────────────────────────────────────────────────────────
+        document.getElementById('gift-cert-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const errorEl   = document.getElementById('gc-error');
+            const successEl = document.getElementById('gc-success');
+            const btn       = document.getElementById('gc-submit-btn');
+
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            const buyerName      = document.getElementById('gc-buyer-name').value.trim();
+            const buyerPhone     = document.getElementById('gc-buyer-phone').value.trim();
+            const senderLabel    = document.getElementById('gc-sender-label').value.trim();
+            const recipientName  = document.getElementById('gc-recipient-name').value.trim();
+            const recipientPhone = document.getElementById('gc-recipient-phone').value.trim();
+            const message        = document.getElementById('gc-message').value.trim();
+
+            if (!buyerName || !buyerPhone || !senderLabel || !recipientName) {
+                errorEl.textContent = 'Por favor completa todos los campos obligatorios.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            if (selectedServices.length === 0) {
+                errorEl.textContent = 'Selecciona al menos un servicio para incluir en el certificado.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled    = true;
+            btn.innerHTML   = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            try {
+                const res = await fetch(`${API_BASE}/gift-certificates/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        buyer_name:         buyerName,
+                        buyer_phone:        buyerPhone,
+                        recipient_name:     recipientName,
+                        recipient_phone:    recipientPhone || null,
+                        sender_label:       senderLabel,
+                        services_requested: selectedServices.map(s => s.name).join(', '),
+                        personal_message:   message || null
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || data.message || 'Error al enviar la solicitud');
+                }
+
+                successEl.innerHTML = `
+                    <strong>🎁 ¡Solicitud enviada!</strong><br>
+                    Nos pondremos en contacto al <strong>${buyerPhone}</strong> para coordinar el pago.<br>
+                    Una vez confirmado, enviamos el certificado al destinatario por WhatsApp.
+                `;
+                successEl.classList.remove('hidden');
+                this.reset();
+                selectedServices = [];
+                document.querySelectorAll('.gift-svc-card.selected').forEach(c => c.classList.remove('selected'));
+                updatePreview();
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Solicitud';
+            }
+        });
+
+        // ── Init ───────────────────────────────────────────────────────────
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadServices);
+        } else {
+            loadServices();
+        }
+    })();
     </script>
 
     <!-- Google Translate -->

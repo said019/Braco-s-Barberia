@@ -8,6 +8,16 @@ const router = express.Router();
 
 // ── Public ─────────────────────────────────────────────────────────────────
 
+// POST /api/gift-certificates/request  — solicitud del cliente (sin pago aún)
+router.post('/request', [
+    body('buyer_name').trim().notEmpty().withMessage('El nombre del comprador es obligatorio'),
+    body('buyer_phone').trim().notEmpty().withMessage('El teléfono del comprador es obligatorio'),
+    body('recipient_name').trim().notEmpty().withMessage('El nombre del destinatario es obligatorio'),
+    body('sender_label').trim().notEmpty().withMessage('El campo "cómo aparecerás" es obligatorio'),
+    body('services_requested').trim().notEmpty().withMessage('Selecciona al menos un servicio'),
+    validate
+], giftCertificateController.createRequest);
+
 // GET /api/gift-certificates/:uuid  — view certificate (public, for certificado.html)
 router.get('/:uuid', giftCertificateController.getByUuid);
 
