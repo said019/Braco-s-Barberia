@@ -684,7 +684,7 @@
                     <div class="gpc-for-label">Para</div>
                     <div class="gpc-recipient" id="gpc-recipient">—</div>
                     <div class="gpc-sender-row">
-                        <span class="gpc-bow">🎀</span>
+                        <span class="gpc-bow">🎁</span>
                         <div>
                             <div class="gpc-sender-label">De parte de</div>
                             <div class="gpc-sender-name" id="gpc-sender">—</div>
@@ -847,7 +847,8 @@
             try {
                 const res  = await fetch(`${API_BASE}/services`);
                 const data = await res.json();
-                allServices = Array.isArray(data) ? data : (data.services || data.data || []);
+                allServices = Array.isArray(data) ? data : (data.data?.services || data.services || data.data || []);
+                if (!Array.isArray(allServices)) allServices = [];
                 renderServicePicker();
             } catch {
                 document.getElementById('gc-services-grid').innerHTML =
