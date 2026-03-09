@@ -1003,6 +1003,10 @@
 
     async function loadRequests() {
         try {
+            // Ensure services are loaded so we can show prices
+            if (allAdminServices.length === 0) {
+                await loadAdminServices();
+            }
             const res = await fetch(`${API_BASE}/gift-certificates/requests`, {
                 headers: { 'Authorization': `Bearer ${getToken()}` }
             });
@@ -1015,6 +1019,24 @@
             document.getElementById('requests-list').innerHTML =
                 `<div class="empty-state" style="color:#ef5350;"><i class="fas fa-exclamation-triangle"></i>${err.message}</div>`;
         }
+    }
+
+    // Match service names from request text against loaded services to calculate price
+    function calcRequestPrice(servicesText) {
+        if (!servicesText || !allAdminServices.length) return { items: [], total: 0 };
+        const names = servicesText.split(',').map(s => s.trim().toLowerCase());
+        const items = [];
+        let total = 0;
+        for (const name of names) {
+            const match = allAdminServices.find(s => s.name.toLowerCase() === name);
+            if (match) {
+                items.push({ name: match.name, price: parseFloat(match.price) });
+                total += parseFloat(match.price);
+            } else {
+                items.push({ name: name, price: null });
+            }
+        }
+        return { items, total };
     }
 
     function updateRequestBadge() {
@@ -1050,6 +1072,7 @@
             const isPending    = r.status === 'pending';
             const isInProgress = r.status === 'in_progress';
             const canAct       = isPending || isInProgress;
+            const pricing      = calcRequestPrice(r.services_requested);
 
             return `<div class="request-card">
                 <div class="request-card-header">
@@ -1057,7 +1080,11 @@
                         <span class="request-card-title">Solicitud #${r.id}</span>
                         ${reqStatusBadge(r.status)}
                     </div>
-                    <span class="request-card-date">${fmt(r.created_at)}</span>
+                    <div style="text-align:right;">
+                        ${pricing.total > 0 ? `<div style="font-size:1.2rem; font-weight:700; color:#C4A35A;">${money(pricing.total)}</div>
+                        <div style="font-size:.7rem; color:#666; text-transform:uppercase; letter-spacing:.5px;">Cobrar al cliente</div>` : ''}
+                        <div class="request-card-date">${fmt(r.created_at)}</div>
+                    </div>
                 </div>
                 <div class="request-card-body">
                     <div class="request-field">
@@ -1078,7 +1105,9 @@
                     </div>
                     <div class="request-field" style="grid-column:1/-1;">
                         <div class="request-field-label">Servicios solicitados</div>
-                        <div class="request-field-val">${escHtml(r.services_requested)}</div>
+                        <div class="request-field-val">${pricing.items.map(i =>
+                            `<span style="display:inline-flex; align-items:center; gap:4px; margin-right:12px;">${escHtml(i.name)} ${i.price !== null ? `<span style="color:#C4A35A; font-weight:600;">$${i.price.toFixed(0)}</span>` : '<span style="color:#ef9a9a; font-size:.75rem;">(no encontrado)</span>'}</span>`
+                        ).join('')}</div>
                     </div>
                     ${r.recipient_phone ? `<div class="request-field">
                         <div class="request-field-label">WhatsApp destinatario</div>
