@@ -18,10 +18,21 @@ router.post('/request', [
     validate
 ], giftCertificateController.createRequest);
 
+// ── Admin ───────────────────────────────────────────────────────────────────
+
+// GET /api/gift-certificates/requests  — list all requests (admin)
+// NOTE: Must be defined BEFORE /:uuid to avoid "requests" matching as a uuid param
+router.get('/requests', authenticateToken, isAdmin, giftCertificateController.getAllRequests);
+
+// PATCH /api/gift-certificates/requests/:id  — update request status (admin)
+router.patch('/requests/:id', authenticateToken, isAdmin, [
+    body('status').isIn(['pending', 'in_progress', 'completed', 'cancelled']).withMessage('Estado inválido'),
+    body('admin_notes').optional({ nullable: true }).trim(),
+    validate
+], giftCertificateController.updateRequest);
+
 // GET /api/gift-certificates/:uuid  — view certificate (public, for certificado.html)
 router.get('/:uuid', giftCertificateController.getByUuid);
-
-// ── Admin ───────────────────────────────────────────────────────────────────
 
 // POST /api/gift-certificates  — create a gift certificate (admin only)
 router.post('/', authenticateToken, isAdmin, [

@@ -75,6 +75,45 @@
 
         .text-muted { color:#666; font-size:.82rem; }
 
+        /* ── Tabs ── */
+        .tabs-bar { display:flex; gap:0; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,.08); }
+        .tab-btn {
+            padding:10px 20px; background:transparent; border:none; border-bottom:2px solid transparent;
+            color:#666; font-size:.88rem; font-weight:600; cursor:pointer; transition:.2s; position:relative;
+        }
+        .tab-btn:hover { color:#aaa; }
+        .tab-btn.active { color:#C4A35A; border-bottom-color:#C4A35A; }
+        .tab-badge {
+            display:inline-flex; align-items:center; justify-content:center;
+            background:#C4A35A; color:#111; font-size:.65rem; font-weight:700;
+            min-width:18px; height:18px; border-radius:9px; padding:0 5px; margin-left:6px;
+        }
+        .tab-badge:empty { display:none; }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* ── Request cards ── */
+        .requests-list { display:flex; flex-direction:column; gap:14px; }
+        .request-card {
+            background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+            border-radius:10px; padding:18px 20px; transition:.15s;
+        }
+        .request-card:hover { border-color:rgba(196,163,90,.25); }
+        .request-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+        .request-card-title { font-size:1rem; font-weight:600; color:#ddd; }
+        .request-card-date { font-size:.75rem; color:#555; }
+        .request-card-body { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; margin-bottom:14px; }
+        @media(max-width:500px){ .request-card-body { grid-template-columns:1fr; } }
+        .request-field { font-size:.84rem; }
+        .request-field-label { color:#666; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+        .request-field-val { color:#ccc; }
+        .request-message { background:rgba(255,255,255,.03); border-left:3px solid rgba(196,163,90,.3); padding:8px 12px; margin-bottom:14px; font-size:.84rem; color:#aaa; font-style:italic; border-radius:0 6px 6px 0; }
+        .request-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .badge-pending    { background:rgba(255,183,77,.15); color:#ffb74d; border:1px solid rgba(255,183,77,.3); }
+        .badge-in_progress { background:rgba(66,165,245,.15); color:#42a5f5; border:1px solid rgba(66,165,245,.3); }
+        .badge-completed  { background:rgba(76,175,80,.15); color:#66bb6a; border:1px solid rgba(76,175,80,.3); }
+        .badge-req-cancelled { background:rgba(239,83,80,.12); color:#ef9a9a; border:1px solid rgba(239,83,80,.25); }
+
         /* ── Create modal extras ── */
         .modal-box.wide { max-width:640px; }
         .modal-box h3.create-title { color:#C4A35A; margin-bottom:6px; }
@@ -249,58 +288,91 @@
                 </div>
             </header>
 
-            <!-- Stats row -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-total">—</div>
-                    <div class="stat-label">Total emitidos</div>
+            <!-- Tabs -->
+            <div class="tabs-bar">
+                <button class="tab-btn active" onclick="switchTab('solicitudes')">
+                    <i class="fas fa-inbox" style="margin-right:6px;"></i>Solicitudes
+                    <span class="tab-badge" id="tab-badge-requests"></span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('certificados')">
+                    <i class="fas fa-certificate" style="margin-right:6px;"></i>Certificados
+                </button>
+            </div>
+
+            <!-- ══ TAB: Solicitudes Pendientes ══ -->
+            <div class="tab-panel active" id="panel-solicitudes">
+                <div class="filter-bar">
+                    <select id="req-status-filter" onchange="applyRequestFilters()">
+                        <option value="">Todas las solicitudes</option>
+                        <option value="pending" selected>Pendientes</option>
+                        <option value="in_progress">En progreso</option>
+                        <option value="completed">Completadas</option>
+                        <option value="cancelled">Canceladas</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="loadRequests()" style="padding:8px 14px; font-size:.82rem;">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-active">—</div>
-                    <div class="stat-label">Activos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-redeemed">—</div>
-                    <div class="stat-label">Canjeados</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-revenue">—</div>
-                    <div class="stat-label">Ingresos</div>
+                <div class="requests-list" id="requests-list">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Cargando solicitudes...</div>
                 </div>
             </div>
 
-            <!-- Filter bar -->
-            <div class="filter-bar">
-                <input type="text" id="search-input" placeholder="Buscar por nombre o teléfono..." oninput="applyFilters()" style="flex:1; min-width:180px;">
-                <select id="status-filter" onchange="applyFilters()">
-                    <option value="">Todos los estados</option>
-                    <option value="active">Activos</option>
-                    <option value="redeemed">Canjeados</option>
-                    <option value="expired">Vencidos</option>
-                    <option value="cancelled">Cancelados</option>
-                </select>
-            </div>
+            <!-- ══ TAB: Certificados Emitidos ══ -->
+            <div class="tab-panel" id="panel-certificados">
+                <!-- Stats row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">—</div>
+                        <div class="stat-label">Total emitidos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-active">—</div>
+                        <div class="stat-label">Activos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-redeemed">—</div>
+                        <div class="stat-label">Canjeados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-revenue">—</div>
+                        <div class="stat-label">Ingresos</div>
+                    </div>
+                </div>
 
-            <!-- Table -->
-            <div class="table-container">
-                <table class="data-table" id="certs-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Para</th>
-                            <th>De</th>
-                            <th>Servicios</th>
-                            <th>Total</th>
-                            <th>Pago</th>
-                            <th>Estado</th>
-                            <th>Vence</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="certs-tbody">
-                        <tr><td colspan="9" style="text-align:center; padding:40px; color:#555;">Cargando...</td></tr>
-                    </tbody>
-                </table>
+                <!-- Filter bar -->
+                <div class="filter-bar">
+                    <input type="text" id="search-input" placeholder="Buscar por nombre o teléfono..." oninput="applyFilters()" style="flex:1; min-width:180px;">
+                    <select id="status-filter" onchange="applyFilters()">
+                        <option value="">Todos los estados</option>
+                        <option value="active">Activos</option>
+                        <option value="redeemed">Canjeados</option>
+                        <option value="expired">Vencidos</option>
+                        <option value="cancelled">Cancelados</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="data-table" id="certs-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Para</th>
+                                <th>De</th>
+                                <th>Servicios</th>
+                                <th>Total</th>
+                                <th>Pago</th>
+                                <th>Estado</th>
+                                <th>Vence</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="certs-tbody">
+                            <tr><td colspan="9" style="text-align:center; padding:40px; color:#555;">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div><!-- /.admin-layout -->
@@ -445,6 +517,7 @@
 
     let allCerts = [];
     let currentCert = null;
+    let _pendingRequestId = null;
 
     // ── Toast ──────────────────────────────────────────────────────────────
     function showToast(msg, type = 'success') {
@@ -663,6 +736,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         checkAuth();
         loadCertificates();
+        loadRequests();
 
         // Botón "Nuevo Certificado" — event listener directo (más robusto que onclick inline)
         const btnNuevo = document.getElementById('btn-nuevo-cert');
@@ -876,6 +950,19 @@
             showToast(`✓ Certificado creado para ${recipName}`, 'success');
             loadCertificates();
 
+            // If created from a request, mark it as completed
+            if (_pendingRequestId) {
+                try {
+                    await fetch(`${API_BASE}/gift-certificates/requests/${_pendingRequestId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${getToken()}` },
+                        body: JSON.stringify({ status: 'completed' })
+                    });
+                    loadRequests();
+                } catch {}
+                _pendingRequestId = null;
+            }
+
             // Show share modal instead of auto-opening tab
             openShareModal(data.data, recipName);
 
@@ -895,6 +982,166 @@
             document.getElementById('cert-modal').classList.remove('active');
         }
     });
+
+    // ======================================================================
+    // TABS
+    // ======================================================================
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', (tab === 'solicitudes' && i === 0) || (tab === 'certificados' && i === 1));
+        });
+        document.getElementById('panel-solicitudes').classList.toggle('active', tab === 'solicitudes');
+        document.getElementById('panel-certificados').classList.toggle('active', tab === 'certificados');
+    }
+
+    // ======================================================================
+    // REQUESTS (Solicitudes)
+    // ======================================================================
+
+    let allRequests = [];
+
+    async function loadRequests() {
+        try {
+            const res = await fetch(`${API_BASE}/gift-certificates/requests`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar solicitudes');
+            allRequests = data.data || [];
+            updateRequestBadge();
+            applyRequestFilters();
+        } catch (err) {
+            document.getElementById('requests-list').innerHTML =
+                `<div class="empty-state" style="color:#ef5350;"><i class="fas fa-exclamation-triangle"></i>${err.message}</div>`;
+        }
+    }
+
+    function updateRequestBadge() {
+        const pending = allRequests.filter(r => r.status === 'pending').length;
+        document.getElementById('tab-badge-requests').textContent = pending > 0 ? pending : '';
+    }
+
+    function applyRequestFilters() {
+        const st = document.getElementById('req-status-filter').value;
+        const filtered = st ? allRequests.filter(r => r.status === st) : allRequests;
+        renderRequests(filtered);
+    }
+
+    function reqStatusBadge(status) {
+        const map = {
+            pending:     ['Pendiente',  'pending'],
+            in_progress: ['En progreso','in_progress'],
+            completed:   ['Completada', 'completed'],
+            cancelled:   ['Cancelada',  'req-cancelled']
+        };
+        const [label, cls] = map[status] || [status, 'pending'];
+        return `<span class="badge-status badge-${cls}">${label}</span>`;
+    }
+
+    function renderRequests(list) {
+        const container = document.getElementById('requests-list');
+        if (!list.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>No hay solicitudes</div>`;
+            return;
+        }
+
+        container.innerHTML = list.map(r => {
+            const isPending    = r.status === 'pending';
+            const isInProgress = r.status === 'in_progress';
+            const canAct       = isPending || isInProgress;
+
+            return `<div class="request-card">
+                <div class="request-card-header">
+                    <div>
+                        <span class="request-card-title">Solicitud #${r.id}</span>
+                        ${reqStatusBadge(r.status)}
+                    </div>
+                    <span class="request-card-date">${fmt(r.created_at)}</span>
+                </div>
+                <div class="request-card-body">
+                    <div class="request-field">
+                        <div class="request-field-label">Comprador</div>
+                        <div class="request-field-val">${escHtml(r.buyer_name)}</div>
+                    </div>
+                    <div class="request-field">
+                        <div class="request-field-label">Teléfono</div>
+                        <div class="request-field-val">${escHtml(r.buyer_phone)}</div>
+                    </div>
+                    <div class="request-field">
+                        <div class="request-field-label">Para</div>
+                        <div class="request-field-val">${escHtml(r.recipient_name)}</div>
+                    </div>
+                    <div class="request-field">
+                        <div class="request-field-label">Aparecerá como</div>
+                        <div class="request-field-val">${escHtml(r.sender_label || r.buyer_name)}</div>
+                    </div>
+                    <div class="request-field" style="grid-column:1/-1;">
+                        <div class="request-field-label">Servicios solicitados</div>
+                        <div class="request-field-val">${escHtml(r.services_requested)}</div>
+                    </div>
+                    ${r.recipient_phone ? `<div class="request-field">
+                        <div class="request-field-label">WhatsApp destinatario</div>
+                        <div class="request-field-val">${escHtml(r.recipient_phone)}</div>
+                    </div>` : ''}
+                </div>
+                ${r.personal_message ? `<div class="request-message">"${escHtml(r.personal_message)}"</div>` : ''}
+                ${r.admin_notes ? `<p style="font-size:.8rem; color:#666; margin-bottom:10px;"><i class="fas fa-sticky-note" style="margin-right:4px;"></i> ${escHtml(r.admin_notes)}</p>` : ''}
+                <div class="request-actions">
+                    ${canAct ? `<button class="btn-sm btn-sm-gold" onclick="createFromRequest(${r.id})">
+                        <i class="fas fa-gift" style="margin-right:4px;"></i> Crear Certificado
+                    </button>` : ''}
+                    ${isPending ? `<button class="btn-sm btn-sm-link" onclick="updateReqStatus(${r.id}, 'in_progress')">
+                        <i class="fas fa-clock" style="margin-right:4px;"></i> Marcar en progreso
+                    </button>` : ''}
+                    ${canAct ? `<button class="btn-sm btn-sm-danger" onclick="updateReqStatus(${r.id}, 'cancelled')">
+                        <i class="fas fa-times" style="margin-right:4px;"></i> Cancelar
+                    </button>` : ''}
+                    <a class="btn-sm btn-sm-link" href="https://wa.me/52${r.buyer_phone.replace(/\D/g,'')}" target="_blank" title="Contactar al comprador">
+                        <i class="fab fa-whatsapp"></i> Contactar
+                    </a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function updateReqStatus(id, status) {
+        const labels = { in_progress:'en progreso', cancelled:'cancelada', completed:'completada' };
+        if (status === 'cancelled' && !confirm('¿Cancelar esta solicitud?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/gift-certificates/requests/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${getToken()}` },
+                body: JSON.stringify({ status })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Error');
+            showToast(`Solicitud marcada como ${labels[status] || status}`);
+            loadRequests();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    function createFromRequest(reqId) {
+        const r = allRequests.find(x => x.id === reqId);
+        if (!r) return;
+
+        // Open create modal and pre-fill with request data
+        openCreateModal().then(() => {
+            document.getElementById('c-buyer-name').value  = r.buyer_name || '';
+            document.getElementById('c-buyer-phone').value = r.buyer_phone || '';
+            document.getElementById('c-sender-label').value = r.sender_label || '';
+            document.getElementById('c-recip-name').value  = r.recipient_name || '';
+            document.getElementById('c-recip-phone').value = r.recipient_phone || '';
+            document.getElementById('c-notes').value       = `Solicitud #${r.id}` + (r.personal_message ? ` — "${r.personal_message}"` : '');
+            updateCreateBtn();
+        });
+
+        // Store request ID so we can mark it completed after certificate creation
+        _pendingRequestId = reqId;
+    }
+
     </script>
     <script src="js/sidebar.js"></script>
 </body>
