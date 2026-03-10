@@ -987,20 +987,21 @@ async function submitBooking() {
         let client = state.loggedInClient || await API.getClientByPhone(phone);
 
         // Determinar si requiere depósito:
-        // 1. Si NO existe (es brand new)
-        // 2. Si existe PERO es tipo "Nuevo" (ID 1)
-        // 3. Servicios premium (siempre requieren depósito sin importar tipo de cliente):
-        //    - TIC y DÚO: $200
-        //    - PAQUETE NUPCIAL D'Lux: $400
+        // Solo clientes nuevos (brand new o tipo "Nuevo" ID 1)
+        // Montos según servicio:
+        //   - PAQUETE NUPCIAL D'Lux: $400
+        //   - TIC y DÚO: $200
+        //   - Otros: $100
         const isBrandNew = !client;
         const isExistingNew = client && client.client_type_id === 1; // 1 = Nuevo (según update_client_types.sql)
+        const isNewClient = isBrandNew || isExistingNew;
+
         const svcName = state.selectedService.name.toLowerCase();
         const isNupcialPackage = svcName.includes('nupcial');
         const isTIC = svcName.includes('tic');
         const isDUO = svcName.includes('dúo') || svcName.includes('duo');
-        const isPremiumService = isNupcialPackage || isTIC || isDUO;
 
-        const requiresDeposit = isBrandNew || isExistingNew || isPremiumService;
+        const requiresDeposit = isNewClient;
         let depositAmount = 100; // Default para clientes nuevos
         if (isNupcialPackage) depositAmount = 400;
         else if (isTIC || isDUO) depositAmount = 200;
