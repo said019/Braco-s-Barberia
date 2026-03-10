@@ -390,7 +390,6 @@ async function loadServices() {
         console.error('Error cargando servicios, usando fallback:', error);
         state.services = SERVICIOS_BRACOS;
     }
-
     renderServices(state.services);
 }
 
@@ -866,7 +865,7 @@ function showPhoneExistsModal(client) {
         // Cargar membresías
         API.getClientMemberships(client.id).then(memberships => {
             state.clientMemberships = (memberships || []).filter(m => m.remaining_services > 0);
-        }).catch(() => { });
+        }).catch(() => {});
 
         closePhoneExistsModal();
         showToast(`¡Bienvenido de vuelta, ${client.name.split(' ')[0]}!`, 'success');
@@ -943,7 +942,7 @@ async function submitBooking() {
         // =====================================================
         if (state.modifyingAppointment && state.pendingAppointment) {
             const localDate = formatLocalDate(state.selectedDate);
-
+            
             try {
                 const result = await API.modifyAppointment(
                     state.pendingAppointment.id,
@@ -963,7 +962,7 @@ async function submitBooking() {
 
                     // Mostrar éxito
                     showToast('¡Cita modificada exitosamente!', 'success');
-
+                    
                     // Mostrar pantalla de éxito con datos actualizados
                     showSuccess({
                         checkout_code: state.loggedInClient?.code || '----',
@@ -990,13 +989,21 @@ async function submitBooking() {
         // Determinar si requiere depósito:
         // 1. Si NO existe (es brand new)
         // 2. Si existe PERO es tipo "Nuevo" (ID 1)
-        // 3. Si es PAQUETE NUPCIAL D'lux (siempre requiere depósito de $200)
+        // 3. Servicios premium (siempre requieren depósito sin importar tipo de cliente):
+        //    - TIC y DÚO: $200
+        //    - PAQUETE NUPCIAL D'Lux: $400
         const isBrandNew = !client;
         const isExistingNew = client && client.client_type_id === 1; // 1 = Nuevo (según update_client_types.sql)
-        const isNupcialPackage = state.selectedService.name.toLowerCase().includes('nupcial');
+        const svcName = state.selectedService.name.toLowerCase();
+        const isNupcialPackage = svcName.includes('nupcial');
+        const isTIC = svcName.includes('tic');
+        const isDUO = svcName.includes('dúo') || svcName.includes('duo');
+        const isPremiumService = isNupcialPackage || isTIC || isDUO;
 
-        const requiresDeposit = isBrandNew || isExistingNew || isNupcialPackage;
-        const depositAmount = isNupcialPackage ? 200 : 100;
+        const requiresDeposit = isBrandNew || isExistingNew || isPremiumService;
+        let depositAmount = 100; // Default para clientes nuevos
+        if (isNupcialPackage) depositAmount = 400;
+        else if (isTIC || isDUO) depositAmount = 200;
 
         // Si requiere depósito, mostrar modal
         if (requiresDeposit) {
