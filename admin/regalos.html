@@ -503,6 +503,96 @@
         </div>
     </div>
 
+    <!-- ══ EDIT CERTIFICATE MODAL ══════════════════════════════════════ -->
+    <div class="modal-overlay" id="edit-modal" onclick="closeEditModal(event)">
+        <div class="modal-box wide" onclick="event.stopPropagation()">
+            <h3 class="create-title"><i class="fas fa-edit" style="margin-right:8px;"></i> Editar Certificado</h3>
+            <p class="modal-subtitle">Modifica los datos del certificado de regalo.</p>
+
+            <input type="hidden" id="e-uuid">
+
+            <!-- Servicios -->
+            <div class="section-sep">Servicios incluidos</div>
+            <div id="edit-svc-pick-grid" class="services-pick-grid">
+                <p style="color:#555; font-size:.85rem;">Cargando servicios...</p>
+            </div>
+
+            <!-- Resumen -->
+            <div class="create-summary" id="edit-summary" style="display:none;">
+                Total seleccionado: <strong id="edit-total">$0</strong>
+            </div>
+
+            <!-- Comprador -->
+            <div class="section-sep">Datos del comprador</div>
+            <div class="form-grid">
+                <div class="form-group-modal">
+                    <label>Nombre *</label>
+                    <input type="text" id="e-buyer-name" placeholder="Nombre del cliente" autocomplete="off">
+                </div>
+                <div class="form-group-modal">
+                    <label>Teléfono *</label>
+                    <input type="tel" id="e-buyer-phone" placeholder="10 dígitos" maxlength="15">
+                </div>
+            </div>
+
+            <!-- De parte de -->
+            <div class="form-group-modal">
+                <label>¿Cómo aparece en el certificado?</label>
+                <input type="text" id="e-sender-label" placeholder="Ej: Tu hermano Juan" autocomplete="off">
+            </div>
+
+            <!-- Destinatario -->
+            <div class="section-sep">Destinatario</div>
+            <div class="form-grid">
+                <div class="form-group-modal">
+                    <label>Nombre *</label>
+                    <input type="text" id="e-recip-name" placeholder="¿Para quién es?" autocomplete="off">
+                </div>
+                <div class="form-group-modal">
+                    <label>WhatsApp (opcional)</label>
+                    <input type="tel" id="e-recip-phone" placeholder="Teléfono del destinatario" maxlength="15">
+                </div>
+            </div>
+
+            <!-- Estado y Vencimiento -->
+            <div class="section-sep">Estado y vencimiento</div>
+            <div class="form-grid">
+                <div class="form-group-modal">
+                    <label>Estado</label>
+                    <select id="e-status">
+                        <option value="active">Activo</option>
+                        <option value="redeemed">Canjeado</option>
+                        <option value="expired">Vencido</option>
+                        <option value="cancelled">Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group-modal">
+                    <label>Fecha de vencimiento</label>
+                    <input type="date" id="e-expires-at">
+                </div>
+            </div>
+
+            <!-- Notas internas -->
+            <div class="form-group-modal">
+                <label>Notas internas (opcional)</label>
+                <input type="text" id="e-notes" placeholder="Notas internas...">
+            </div>
+
+            <!-- Método de pago -->
+            <div class="section-sep">Método de pago</div>
+            <div class="payment-pick" id="edit-payment-pick">
+                <div class="pay-opt" data-value="efectivo" onclick="selectEditPayment(this)">💵 Efectivo</div>
+                <div class="pay-opt" data-value="tarjeta" onclick="selectEditPayment(this)">💳 Tarjeta</div>
+                <div class="pay-opt" data-value="transferencia" onclick="selectEditPayment(this)">📲 Transferencia</div>
+            </div>
+
+            <button class="btn-create-submit" id="btn-edit-submit" onclick="submitEdit()">
+                Guardar Cambios
+            </button>
+            <button class="modal-close" onclick="closeEditModal()">Cancelar</button>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -631,6 +721,9 @@
                         <button class="btn-sm btn-sm-link" onclick="openDetail('${c.uuid}')">
                             <i class="fas fa-eye"></i>
                         </button>
+                        <button class="btn-sm btn-sm-link" onclick="openEditModal('${c.uuid}')" title="Editar">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
                         ${c.status === 'active'
                             ? `<button class="btn-sm btn-sm-gold" onclick="redeemCert('${c.uuid}')">Canjear</button>`
                             : ''}
@@ -680,6 +773,9 @@
                     <i class="fas fa-times"></i> Cancelar certificado
                 </button>`;
         }
+        actionsHtml += `<button class="btn-sm btn-sm-link" onclick="closeCertModal(); openEditModal('${c.uuid}');">
+            <i class="fas fa-pencil-alt"></i> Editar
+        </button>`;
         actionsHtml += `<a class="btn-sm btn-sm-link" href="../certificado.html?id=${c.uuid}" target="_blank">
             <i class="fas fa-external-link-alt"></i> Ver certificado
         </a>`;
@@ -974,12 +1070,13 @@
         }
     }
 
-    // Close create modal on Escape (extend existing listener)
+    // Close modals on Escape
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             document.getElementById('share-modal').classList.remove('active');
             document.getElementById('create-modal').classList.remove('active');
             document.getElementById('cert-modal').classList.remove('active');
+            document.getElementById('edit-modal').classList.remove('active');
         }
     });
 
@@ -1149,6 +1246,167 @@
             loadRequests();
         } catch (err) {
             showToast(err.message, 'error');
+        }
+    }
+
+    // ======================================================================
+    // EDIT CERTIFICATE
+    // ======================================================================
+
+    let editSelected   = [];   // [{id,name,price}]
+    let editPayment    = 'efectivo';
+    let editUuid       = null;
+
+    async function openEditModal(uuid) {
+        const cert = allCerts.find(c => c.uuid === uuid);
+        if (!cert) return;
+
+        editUuid = uuid;
+
+        // Ensure services are loaded
+        if (allAdminServices.length === 0) {
+            await loadAdminServices();
+        }
+
+        // Populate fields
+        document.getElementById('e-uuid').value        = uuid;
+        document.getElementById('e-buyer-name').value   = cert.buyer_name || '';
+        document.getElementById('e-buyer-phone').value  = cert.buyer_phone || '';
+        document.getElementById('e-sender-label').value = cert.sender_label || '';
+        document.getElementById('e-recip-name').value   = cert.recipient_name || '';
+        document.getElementById('e-recip-phone').value  = cert.recipient_phone || '';
+        document.getElementById('e-notes').value        = cert.notes || '';
+        document.getElementById('e-status').value       = cert.status || 'active';
+
+        // Expires at
+        if (cert.expires_at) {
+            const d = new Date(cert.expires_at);
+            document.getElementById('e-expires-at').value = d.toISOString().split('T')[0];
+        } else {
+            document.getElementById('e-expires-at').value = '';
+        }
+
+        // Payment method
+        editPayment = cert.payment_method || 'efectivo';
+        document.querySelectorAll('#edit-payment-pick .pay-opt').forEach(el => {
+            el.classList.toggle('selected', el.dataset.value === editPayment);
+        });
+
+        // Populate selected services
+        const certServices = Array.isArray(cert.services) ? cert.services : JSON.parse(cert.services || '[]');
+        editSelected = certServices.map(s => ({ id: s.id, name: s.name, price: parseFloat(s.price) }));
+
+        renderEditSvcPickGrid();
+        updateEditSummary();
+
+        document.getElementById('edit-modal').classList.add('active');
+    }
+
+    function closeEditModal(evt) {
+        if (evt && evt.target !== document.getElementById('edit-modal')) return;
+        document.getElementById('edit-modal').classList.remove('active');
+        editUuid = null;
+    }
+
+    function renderEditSvcPickGrid() {
+        const grid = document.getElementById('edit-svc-pick-grid');
+        if (!allAdminServices.length) {
+            grid.innerHTML = '<p style="color:#555; font-size:.85rem;">Sin servicios activos</p>';
+            return;
+        }
+        grid.innerHTML = allAdminServices.map(s => {
+            const isSelected = editSelected.some(x => x.id === s.id);
+            return `
+            <div class="svc-pick-card${isSelected ? ' selected' : ''}" data-id="${s.id}" data-name="${escHtml(s.name)}" data-price="${s.price}"
+                 onclick="toggleEditSvcPick(this)">
+                <div class="svc-pick-name">${escHtml(s.name)}</div>
+                <div class="svc-pick-price">$${parseFloat(s.price).toFixed(0)}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleEditSvcPick(card) {
+        const id    = parseInt(card.dataset.id);
+        const name  = card.dataset.name;
+        const price = parseFloat(card.dataset.price);
+        const idx   = editSelected.findIndex(s => s.id === id);
+        if (idx >= 0) {
+            editSelected.splice(idx, 1);
+            card.classList.remove('selected');
+        } else {
+            editSelected.push({ id, name, price });
+            card.classList.add('selected');
+        }
+        updateEditSummary();
+    }
+
+    function updateEditSummary() {
+        const box = document.getElementById('edit-summary');
+        const tot = editSelected.reduce((s, x) => s + x.price, 0);
+        if (!editSelected.length) { box.style.display = 'none'; return; }
+        box.style.display = 'block';
+        document.getElementById('edit-total').textContent = money(tot);
+    }
+
+    function selectEditPayment(el) {
+        document.querySelectorAll('#edit-payment-pick .pay-opt').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+        editPayment = el.dataset.value;
+    }
+
+    async function submitEdit() {
+        const buyerName   = document.getElementById('e-buyer-name').value.trim();
+        const buyerPhone  = document.getElementById('e-buyer-phone').value.trim();
+        const senderLabel = document.getElementById('e-sender-label').value.trim();
+        const recipName   = document.getElementById('e-recip-name').value.trim();
+        const recipPhone  = document.getElementById('e-recip-phone').value.trim();
+        const notes       = document.getElementById('e-notes').value.trim();
+        const status      = document.getElementById('e-status').value;
+        const expiresAt   = document.getElementById('e-expires-at').value;
+
+        if (!buyerName || !buyerPhone || !recipName || !editSelected.length) {
+            showToast('Completa todos los campos obligatorios y selecciona al menos un servicio', 'error');
+            return;
+        }
+
+        const total = editSelected.reduce((s, x) => s + x.price, 0);
+        const btn   = document.getElementById('btn-edit-submit');
+        btn.disabled    = true;
+        btn.textContent = 'Guardando...';
+
+        try {
+            const res = await fetch(`${API_BASE}/gift-certificates/${editUuid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    buyer_name:      buyerName,
+                    buyer_phone:     buyerPhone,
+                    sender_label:    senderLabel || buyerName,
+                    recipient_name:  recipName,
+                    recipient_phone: recipPhone || null,
+                    services:        editSelected,
+                    total,
+                    payment_method:  editPayment,
+                    notes:           notes || null,
+                    status,
+                    expires_at:      expiresAt || null
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Error');
+
+            document.getElementById('edit-modal').classList.remove('active');
+            showToast('Certificado actualizado correctamente', 'success');
+            loadCertificates();
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = 'Guardar Cambios';
         }
     }
 

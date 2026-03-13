@@ -161,6 +161,17 @@ export const giftCertificateController = {
         }
     },
 
+    // PUT /api/gift-certificates/:uuid  (admin)
+    async update(req, res, next) {
+        try {
+            const { uuid } = req.params;
+            const cert = await GiftCertificate.update(uuid, req.body);
+            res.json({ success: true, message: 'Certificado actualizado', data: cert });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     // GET /api/gift-certificates/requests  (admin)
     async getAllRequests(req, res, next) {
         try {
