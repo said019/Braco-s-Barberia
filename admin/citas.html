@@ -807,12 +807,24 @@
 
             const content = `
                 <div class="form-group">
-                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: block;">📅 Nueva Fecha</label>
-                    <input type="date" id="reschedule-date" class="search-input" style="width: 100%;" 
-                           value="${datePart}" min="${new Date().toISOString().split('T')[0]}">
+                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-calendar-alt" style="color: var(--gold);"></i> Nueva Fecha
+                    </label>
+                    <div onclick="document.getElementById('reschedule-date').showPicker()" 
+                         style="position: relative; cursor: pointer; display: flex; align-items: center; border: 1px solid rgba(196,163,90,0.4); border-radius: 8px; padding: 0.75rem 1rem; background: rgba(196,163,90,0.06); transition: all 0.2s;"
+                         onmouseover="this.style.borderColor='var(--gold)'; this.style.background='rgba(196,163,90,0.12)';"
+                         onmouseout="this.style.borderColor='rgba(196,163,90,0.4)'; this.style.background='rgba(196,163,90,0.06)';">
+                        <i class="far fa-calendar" style="color: var(--gold); margin-right: 10px; font-size: 1.1rem;"></i>
+                        <input type="date" id="reschedule-date" class="search-input" 
+                               style="width: 100%; border: none; background: transparent; color: var(--cream); font-size: 0.95rem; cursor: pointer; padding: 0; outline: none;" 
+                               value="${datePart}" min="${new Date().toISOString().split('T')[0]}">
+                        <i class="fas fa-chevron-down" style="color: rgba(196,163,90,0.5); margin-left: 8px; font-size: 0.75rem;"></i>
+                    </div>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: block;">🕐 Nueva Hora</label>
+                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-clock" style="color: #42A5F5;"></i> Nueva Hora
+                    </label>
                     <div id="reschedule-slots-container" style="max-height: 280px; overflow-y: auto; border: 1px solid rgba(196,163,90,0.2); border-radius: 8px; padding: 0.5rem;">
                         <p style="color: #888; text-align: center; padding: 1rem;">Selecciona una fecha para ver horarios disponibles...</p>
                     </div>
@@ -821,7 +833,7 @@
                     <i class="fas fa-info-circle"></i> Se reenviará la confirmación por WhatsApp y se reprogramarán los recordatorios automáticamente.
                 </p>
                 <p id="reschedule-current" style="color: rgba(196,163,90,0.6); font-size: 0.8rem; margin-top: 0.5rem;">
-                    Actual: ${datePart} a las ${currentTimeShort}
+                    <i class="fas fa-history" style="margin-right: 4px;"></i> Actual: ${datePart} a las ${currentTimeShort}
                 </p>
             `;
 
