@@ -498,9 +498,10 @@
             const serviceId = app.service_id;
             let buttons = '';
 
-            // Change service button (always available except completed/cancelled)
+            // Change service & time buttons (always available except completed/cancelled)
             if (!['completed', 'cancelled'].includes(app.status)) {
                 buttons += `<button class="btn-icon" onclick="openChangeServiceModal(${id}, ${serviceId})" title="Cambiar Servicio" style="background: rgba(196,163,90,0.2); color: var(--gold);"><i class="fas fa-exchange-alt"></i></button>`;
+                buttons += `<button class="btn-icon" onclick="openChangeTimeModal(${id}, '${app.appointment_date}', '${app.start_time}', ${serviceId})" title="Cambiar Hora" style="background: rgba(33,150,243,0.2); color: #42A5F5;"><i class="fas fa-clock"></i></button>`;
                 buttons += `<button class="btn-icon" onclick="openExtrasModal(${id})" title="Agregar Extras" style="background: rgba(255,152,0,0.2); color: #FFA726;"><i class="fas fa-plus-circle"></i></button>`;
             }
 
@@ -783,6 +784,190 @@
             } catch (error) {
                 showToast(error.message || 'Error al eliminar extra', 'error');
             }
+        }
+
+        // ============================
+        // CAMBIAR HORA DE CITA
+        // ============================
+
+        let changeTimeAppointmentId = null;
+        let changeTimeServiceId = null;
+
+        async function openChangeTimeModal(appointmentId, currentDate, currentTime, serviceId) {
+            changeTimeAppointmentId = appointmentId;
+            changeTimeServiceId = serviceId;
+
+            // Extraer solo YYYY-MM-DD
+            let datePart = currentDate;
+            if (typeof currentDate === 'string' && currentDate.includes('T')) {
+                datePart = currentDate.split('T')[0];
+            }
+
+            const currentTimeShort = currentTime ? currentTime.substring(0, 5) : '';
+
+            const content = `
+                <div class="form-group">
+                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: block;">📅 Nueva Fecha</label>
+                    <input type="date" id="reschedule-date" class="search-input" style="width: 100%;" 
+                           value="${datePart}" min="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label style="color: var(--cream); margin-bottom: 0.5rem; display: block;">🕐 Nueva Hora</label>
+                    <div id="reschedule-slots-container" style="max-height: 280px; overflow-y: auto; border: 1px solid rgba(196,163,90,0.2); border-radius: 8px; padding: 0.5rem;">
+                        <p style="color: #888; text-align: center; padding: 1rem;">Selecciona una fecha para ver horarios disponibles...</p>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem;">
+                    <i class="fas fa-info-circle"></i> Se reenviará la confirmación por WhatsApp y se reprogramarán los recordatorios automáticamente.
+                </p>
+                <p id="reschedule-current" style="color: rgba(196,163,90,0.6); font-size: 0.8rem; margin-top: 0.5rem;">
+                    Actual: ${datePart} a las ${currentTimeShort}
+                </p>
+            `;
+
+            const footer = `
+                <button class="btn btn-secondary" onclick="window.changeTimeModal.close()">Cancelar</button>
+                <button class="btn btn-primary" id="btn-confirm-reschedule" onclick="confirmReschedule()" disabled>Reprogramar</button>
+            `;
+
+            window.changeTimeModal = showModal('changeTimeModal', '<i class="fas fa-clock" style="color: #42A5F5;"></i> Cambiar Fecha / Hora', content, footer);
+
+            // Cargar slots para la fecha actual
+            document.getElementById('reschedule-date').addEventListener('change', loadAvailableSlots);
+            await loadAvailableSlots();
+        }
+
+        let selectedSlotTime = null;
+
+        async function loadAvailableSlots() {
+            const date = document.getElementById('reschedule-date').value;
+            const container = document.getElementById('reschedule-slots-container');
+            selectedSlotTime = null;
+
+            const btnConfirm = document.getElementById('btn-confirm-reschedule');
+            if (btnConfirm) btnConfirm.disabled = true;
+
+            if (!date) {
+                container.innerHTML = '<p style="color: #888; text-align: center; padding: 1rem;">Selecciona una fecha</p>';
+                return;
+            }
+
+            container.innerHTML = '<p style="color: #888; text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin"></i> Cargando horarios...</p>';
+
+            try {
+                // Usar la misma base URL que el api.js del admin
+                const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:3000/api'
+                    : '/api';
+                const res = await fetch(`${apiBase}/availability/slots?service_id=${changeTimeServiceId}&date=${date}`);
+                const data = await res.json();
+
+                if (data.blocked) {
+                    container.innerHTML = `<p style="color: var(--error); text-align: center; padding: 1rem;"><i class="fas fa-ban"></i> Día bloqueado: ${data.blocked_reason || 'No disponible'}</p>`;
+                    return;
+                }
+
+                if (data.closed) {
+                    container.innerHTML = '<p style="color: var(--error); text-align: center; padding: 1rem;"><i class="fas fa-store-slash"></i> Cerrado este día</p>';
+                    return;
+                }
+
+                const slots = (data.slots || []).filter(s => s.available);
+
+                if (slots.length === 0) {
+                    container.innerHTML = '<p style="color: var(--warning); text-align: center; padding: 1rem;"><i class="fas fa-exclamation-triangle"></i> No hay horarios disponibles para esta fecha</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; padding: 0.5rem;">
+                        ${slots.map(slot => `
+                            <button type="button" class="slot-btn" 
+                                    onclick="selectSlot(this, '${slot.time}')" 
+                                    style="
+                                        padding: 0.6rem 0.4rem;
+                                        background: rgba(196,163,90,0.08);
+                                        border: 1px solid rgba(196,163,90,0.25);
+                                        border-radius: 6px;
+                                        color: var(--cream);
+                                        cursor: pointer;
+                                        font-family: 'Montserrat', sans-serif;
+                                        font-size: 0.85rem;
+                                        text-align: center;
+                                        transition: all 0.2s;
+                                    "
+                                    onmouseover="if(!this.classList.contains('slot-selected')) { this.style.background='rgba(196,163,90,0.2)'; this.style.borderColor='var(--gold)'; }"
+                                    onmouseout="if(!this.classList.contains('slot-selected')) { this.style.background='rgba(196,163,90,0.08)'; this.style.borderColor='rgba(196,163,90,0.25)'; }">
+                                ${slot.display || slot.time}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error loading slots:', err);
+                container.innerHTML = '<p style="color: var(--error); text-align: center; padding: 1rem;"><i class="fas fa-exclamation-circle"></i> Error al cargar horarios</p>';
+            }
+        }
+
+        function selectSlot(btn, time) {
+            // Deseleccionar anterior
+            document.querySelectorAll('.slot-btn').forEach(b => {
+                b.classList.remove('slot-selected');
+                b.style.background = 'rgba(196,163,90,0.08)';
+                b.style.borderColor = 'rgba(196,163,90,0.25)';
+                b.style.color = 'var(--cream)';
+            });
+
+            // Seleccionar nuevo
+            btn.classList.add('slot-selected');
+            btn.style.background = 'rgba(196,163,90,0.35)';
+            btn.style.borderColor = 'var(--gold)';
+            btn.style.color = 'var(--gold)';
+
+            selectedSlotTime = time;
+
+            const btnConfirm = document.getElementById('btn-confirm-reschedule');
+            if (btnConfirm) btnConfirm.disabled = false;
+        }
+
+        async function confirmReschedule() {
+            const newDate = document.getElementById('reschedule-date').value;
+
+            if (!newDate || !selectedSlotTime) {
+                showToast('Selecciona fecha y hora', 'warning');
+                return;
+            }
+
+            const dateObj = new Date(newDate + 'T12:00:00');
+            const formattedDate = dateObj.toLocaleDateString('es-MX', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+
+            showConfirm(
+                'Reprogramar Cita',
+                `¿Reprogramar esta cita para el <strong>${formattedDate}</strong> a las <strong>${selectedSlotTime}</strong>?<br><br><small style="color: #888;">Se reenviará confirmación por WhatsApp y se reprogramarán los recordatorios automáticos.</small>`,
+                async () => {
+                    try {
+                        const response = await api.put(`/admin/appointments/${changeTimeAppointmentId}/reschedule`, {
+                            appointment_date: newDate,
+                            start_time: selectedSlotTime
+                        });
+
+                        if (response.success) {
+                            const msg = response.whatsapp_sent
+                                ? 'Cita reprogramada y WhatsApp reenviado ✅'
+                                : 'Cita reprogramada ✅ (WhatsApp no enviado)';
+                            showToast(msg, 'success');
+                            window.changeTimeModal.close();
+                            loadData();
+                        } else {
+                            throw new Error(response.message || response.error || 'Error al reprogramar');
+                        }
+                    } catch (error) {
+                        showToast(error.message || 'Error al reprogramar la cita', 'error');
+                    }
+                }
+            );
         }
 
         init();

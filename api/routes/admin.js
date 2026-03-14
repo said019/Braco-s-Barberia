@@ -1278,13 +1278,14 @@ router.put('/appointments/:id/reschedule', authenticateToken, async (req, res, n
             });
         }
 
-        // Actualizar cita y resetear flags de recordatorio
+        // Actualizar cita y resetear AMBOS flags de recordatorio (24h + 2h)
         const updateResult = await db.query(
             `UPDATE appointments
              SET appointment_date = $2,
                  start_time = $3,
                  end_time = $4,
                  reminder_sent = FALSE,
+                 reminder_2h_sent = FALSE,
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = $1
              RETURNING *`,
