@@ -161,6 +161,56 @@ export const giftCertificateController = {
         }
     },
 
+    // PUT /api/gift-certificates/:uuid  (admin)
+    async update(req, res, next) {
+        try {
+            const { uuid } = req.params;
+            const cert = await GiftCertificate.update(uuid, req.body);
+            res.json({ success: true, message: 'Certificado actualizado', data: cert });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // GET /api/gift-certificates/requests  (admin)
+    async getAllRequests(req, res, next) {
+        try {
+            const { status } = req.query;
+            let sql = 'SELECT * FROM gift_certificate_requests';
+            const params = [];
+            if (status) {
+                sql += ' WHERE status = $1';
+                params.push(status);
+            }
+            sql += ' ORDER BY created_at DESC';
+            const result = await dbQuery(sql, params);
+            res.json({ success: true, data: result.rows });
+        } catch (error) {
+            if (error.code === '42P01') {
+                return res.json({ success: true, data: [] });
+            }
+            next(error);
+        }
+    },
+
+    // PATCH /api/gift-certificates/requests/:id  (admin)
+    async updateRequest(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { status, admin_notes } = req.body;
+            const result = await dbQuery(`
+                UPDATE gift_certificate_requests
+                SET status = $1, admin_notes = COALESCE($2, admin_notes), updated_at = NOW()
+                WHERE id = $3
+                RETURNING *
+            `, [status, admin_notes || null, id]);
+            if (!result.rows.length) throw new AppError('Solicitud no encontrada', 404);
+            res.json({ success: true, data: result.rows[0] });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     // GET /api/gift-certificates  (admin)
     async getAll(req, res, next) {
         try {

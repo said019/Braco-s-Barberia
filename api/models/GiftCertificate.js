@@ -111,6 +111,49 @@ export const GiftCertificate = {
   },
 
   // -----------------------------------------------------------------------
+  // Editar certificado (admin)
+  // -----------------------------------------------------------------------
+  async update(uuid, { buyer_name, buyer_phone, buyer_email, recipient_name, recipient_phone, sender_label, services, total, payment_method, notes, status, expires_at }) {
+    const cert = await this.getByUuid(uuid);
+    if (!cert) throw new AppError('Certificado no encontrado', 404);
+
+    const result = await query(`
+      UPDATE gift_certificates SET
+        buyer_name      = COALESCE($1,  buyer_name),
+        buyer_phone     = COALESCE($2,  buyer_phone),
+        buyer_email     = COALESCE($3,  buyer_email),
+        recipient_name  = COALESCE($4,  recipient_name),
+        recipient_phone = COALESCE($5,  recipient_phone),
+        sender_label    = COALESCE($6,  sender_label),
+        services        = COALESCE($7::jsonb, services),
+        total           = COALESCE($8,  total),
+        payment_method  = COALESCE($9,  payment_method),
+        notes           = COALESCE($10, notes),
+        status          = COALESCE($11, status),
+        expires_at      = COALESCE($12, expires_at),
+        updated_at      = NOW()
+      WHERE uuid = $13
+      RETURNING *
+    `, [
+      buyer_name   || null,
+      buyer_phone  || null,
+      buyer_email  || null,
+      recipient_name || null,
+      recipient_phone || null,
+      sender_label || null,
+      services ? JSON.stringify(services) : null,
+      total        || null,
+      payment_method || null,
+      notes !== undefined ? notes : null,
+      status       || null,
+      expires_at   || null,
+      uuid
+    ]);
+
+    return result.rows[0];
+  },
+
+  // -----------------------------------------------------------------------
   // Listar todos (admin)
   // -----------------------------------------------------------------------
   async getAll({ status, limit = 50, offset = 0 } = {}) {
