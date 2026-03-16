@@ -28,6 +28,6 @@ DELETE FROM membership_types;
 INSERT INTO membership_types 
 (name, description, total_services, validity_days, price, applicable_services, is_transferable, is_active, display_order, client_type_id) 
 VALUES
-('Golden Card Corte', '6 servicios de corte caballero + barba. Inversión de $1500. Intransferible.', 6, 36500, 1500.00, '{1, 3}', false, true, 1, 2),
+('Golden Card Corte', '6 servicios de corte caballero + barba. Inversión de $1650. Intransferible.', 6, 36500, 1650.00, '{1, 3}', false, true, 1, 2),
 ('Golden Card NeoCapilar', '8 servicios de Tratamiento Integral Capilar (TIC). Compra 7 te regala 1. Inversión de $3850. Intransferible.', 8, 36500, 3850.00, '{6}', false, true, 2, 2),
-('Black Card', '12 servicios. Paga 11 te regala 12. Transferible. Incluye: Corte, Barba, Mascarillas, Manicure, Pedicure.', 12, 36500, 3300.00, '{1, 3, 7, 8, 9, 10, 11, 12}', true, true, 3, 3);
+('Black Card', '12 servicios. Paga 11 te regala 12. Transferible. Incluye: Corte, Barba, Mascarillas, Manicure, Pedicure.', 12, 36500, 3630.00, '{1, 3, 7, 8, 9, 10, 11, 12}', true, true, 3, 3);

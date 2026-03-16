@@ -3484,9 +3484,9 @@ router.post('/debug/seed-database', authenticateToken, async (req, res, next) =>
             await client.query(`
                 INSERT INTO membership_types (id, name, description, client_type_id, total_services, validity_days, price, benefits, is_active, display_order)
                 OVERRIDING SYSTEM VALUE VALUES
-                (8, 'Golden Card Corte', 'Membresía de 6 Servicios Totales (Corte, Barba, Dúo)', 2, 6, 180, 1500.00, '{"transferable": false}', true, 4),
+                (8, 'Golden Card Corte', 'Membresía de 6 Servicios Totales (Corte, Barba, Dúo)', 2, 6, 180, 1650.00, '{"transferable": false}', true, 4),
                 (9, 'Golden NeoCapilar', 'Membresía de 8 Servicios Totales (TIC, Salud y Prevención)', 3, 8, 365, 3850.00, '{"transferable": false}', true, 5),
-                (10, 'Black Card', 'Membresía de 12 Servicios Totales (Cortes, Barba, Mascarillas, Manicura)', 4, 12, 365, 3300.00, '{"transferable": true}', true, 6)
+                (10, 'Black Card', 'Membresía de 12 Servicios Totales (Cortes, Barba, Mascarillas, Manicura)', 4, 12, 365, 3630.00, '{"transferable": true}', true, 6)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     description = EXCLUDED.description,
