@@ -167,6 +167,22 @@ export const appointmentController = {
         return;
       }
 
+      // Verificar si la fecha/horario está bloqueado
+      const blockedResult = await db.query(
+        `SELECT reason FROM blocked_dates
+         WHERE blocked_date = $1
+         AND (
+           (start_time IS NULL)
+           OR (start_time < $3 AND end_time > $2)
+         )`,
+        [appointment_date, start_time, end_time]
+      );
+
+      if (blockedResult.rows.length > 0) {
+        const reason = blockedResult.rows[0].reason || 'Horario no disponible';
+        throw new AppError(`Este horario está bloqueado: ${reason}`, 409);
+      }
+
       // Verificar disponibilidad
       const isAvailable = await Appointment.checkAvailability(
         appointment_date,
