@@ -886,6 +886,7 @@
     // ======================================================================
 
     let allAdminServices = [];
+    let allMemberships   = [];
     let createSelected   = [];   // [{id,name,price}]
     let createPayment    = 'efectivo';
 
@@ -923,15 +924,22 @@
 
     async function loadAdminServices() {
         try {
-            const res  = await fetch(`${API_BASE}/services`, {
-                headers: { 'Authorization': `Bearer ${getToken()}` }
-            });
-            const data = await res.json();
+            const [svcRes, memRes] = await Promise.all([
+                fetch(`${API_BASE}/services`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+                fetch(`${API_BASE}/admin/membership-types`, { headers: { 'Authorization': `Bearer ${getToken()}` } })
+            ]);
+            const svcData = await svcRes.json();
             let list = [];
-            if (Array.isArray(data)) list = data;
-            else if (data.data?.services) list = data.data.services;
-            else if (Array.isArray(data.data)) list = data.data;
+            if (Array.isArray(svcData)) list = svcData;
+            else if (svcData.data?.services) list = svcData.data.services;
+            else if (Array.isArray(svcData.data)) list = svcData.data;
             allAdminServices = list.filter(s => s.is_active !== false);
+
+            // Load memberships
+            const memData = await memRes.json();
+            const memList = memData.types || memData.data || [];
+            allMemberships = memList.filter(m => m.is_active !== false);
+
             renderSvcPickGrid();
         } catch (e) {
             document.getElementById('svc-pick-grid').innerHTML =
@@ -941,17 +949,30 @@
 
     function renderSvcPickGrid() {
         const grid = document.getElementById('svc-pick-grid');
-        if (!allAdminServices.length) {
+        if (!allAdminServices.length && !allMemberships.length) {
             grid.innerHTML = '<p style="color:#555; font-size:.85rem;">Sin servicios activos</p>';
             return;
         }
-        grid.innerHTML = allAdminServices.map(s => `
+        let html = allAdminServices.map(s => `
             <div class="svc-pick-card" data-id="${s.id}" data-name="${escHtml(s.name)}" data-price="${s.price}"
                  onclick="toggleSvcPick(this)">
                 <div class="svc-pick-name">${escHtml(s.name)}</div>
                 <div class="svc-pick-price">$${parseFloat(s.price).toFixed(0)}</div>
             </div>
         `).join('');
+        if (allMemberships.length) {
+            html += `<div style="grid-column:1/-1; margin-top:8px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08);">
+                <span style="font-size:.78rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Membresías</span>
+            </div>`;
+            html += allMemberships.map(m => `
+                <div class="svc-pick-card" data-id="m${m.id}" data-name="${escHtml(m.name)}" data-price="${m.price}"
+                     onclick="toggleSvcPick(this)" style="border-color:rgba(196,163,90,.2);">
+                    <div class="svc-pick-name">${escHtml(m.name)}</div>
+                    <div class="svc-pick-price">$${parseFloat(m.price).toLocaleString('es-MX')}</div>
+                </div>
+            `).join('');
+        }
+        grid.innerHTML = html;
     }
 
     function escHtml(str) {
@@ -959,7 +980,8 @@
     }
 
     function toggleSvcPick(card) {
-        const id    = parseInt(card.dataset.id);
+        const rawId = card.dataset.id;
+        const id    = rawId.startsWith('m') ? rawId : parseInt(rawId);
         const name  = card.dataset.name;
         const price = parseFloat(card.dataset.price);
         const idx   = createSelected.findIndex(s => s.id === id);
@@ -1310,11 +1332,11 @@
 
     function renderEditSvcPickGrid() {
         const grid = document.getElementById('edit-svc-pick-grid');
-        if (!allAdminServices.length) {
+        if (!allAdminServices.length && !allMemberships.length) {
             grid.innerHTML = '<p style="color:#555; font-size:.85rem;">Sin servicios activos</p>';
             return;
         }
-        grid.innerHTML = allAdminServices.map(s => {
+        let html = allAdminServices.map(s => {
             const isSelected = editSelected.some(x => x.id === s.id);
             return `
             <div class="svc-pick-card${isSelected ? ' selected' : ''}" data-id="${s.id}" data-name="${escHtml(s.name)}" data-price="${s.price}"
@@ -1323,10 +1345,26 @@
                 <div class="svc-pick-price">$${parseFloat(s.price).toFixed(0)}</div>
             </div>`;
         }).join('');
+        if (allMemberships.length) {
+            html += `<div style="grid-column:1/-1; margin-top:8px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08);">
+                <span style="font-size:.78rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Membresías</span>
+            </div>`;
+            html += allMemberships.map(m => {
+                const isSelected = editSelected.some(x => x.id === 'm' + m.id);
+                return `
+                <div class="svc-pick-card${isSelected ? ' selected' : ''}" data-id="m${m.id}" data-name="${escHtml(m.name)}" data-price="${m.price}"
+                     onclick="toggleEditSvcPick(this)" style="border-color:rgba(196,163,90,.2);">
+                    <div class="svc-pick-name">${escHtml(m.name)}</div>
+                    <div class="svc-pick-price">$${parseFloat(m.price).toLocaleString('es-MX')}</div>
+                </div>`;
+            }).join('');
+        }
+        grid.innerHTML = html;
     }
 
     function toggleEditSvcPick(card) {
-        const id    = parseInt(card.dataset.id);
+        const rawId = card.dataset.id;
+        const id    = rawId.startsWith('m') ? rawId : parseInt(rawId);
         const name  = card.dataset.name;
         const price = parseFloat(card.dataset.price);
         const idx   = editSelected.findIndex(s => s.id === id);
