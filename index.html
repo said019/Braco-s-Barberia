@@ -843,16 +843,29 @@
         let allServices      = [];
 
         // ── Load services ──────────────────────────────────────────────────
+        let gcMemberships = [];
+
         async function loadServices() {
             try {
-                const res  = await fetch(`${API_BASE}/services`);
-                const data = await res.json();
+                const [svcRes, memRes] = await Promise.all([
+                    fetch(`${API_BASE}/services`),
+                    fetch(`${API_BASE}/public/membership-types`)
+                ]);
+                const data = await svcRes.json();
                 // La API devuelve { success, data: { services: [...], grouped: {...} } }
                 allServices = Array.isArray(data) ? data
                     : Array.isArray(data.data) ? data.data
                     : Array.isArray(data.data?.services) ? data.data.services
                     : (data.services || []);
                 allServices = allServices.filter(s => s.is_active !== false);
+
+                // Load memberships
+                try {
+                    const memData = await memRes.json();
+                    const memList = Array.isArray(memData) ? memData : (memData.types || memData.data || []);
+                    gcMemberships = memList.filter(m => m.is_active !== false);
+                } catch { gcMemberships = []; }
+
                 renderServicePicker();
             } catch {
                 document.getElementById('gc-services-grid').innerHTML =
@@ -862,20 +875,34 @@
 
         function renderServicePicker() {
             const grid = document.getElementById('gc-services-grid');
-            if (!allServices.length) {
+            if (!allServices.length && !gcMemberships.length) {
                 grid.innerHTML = '<div class="gift-services-loading">Sin servicios disponibles.</div>';
                 return;
             }
-            grid.innerHTML = allServices.map(s => `
+            let html = allServices.map(s => `
                 <div class="gift-svc-card" data-id="${s.id}" data-name="${s.name}" onclick="gcToggleService(this)">
                     <div class="gift-svc-name">${s.name}</div>
                 </div>
             `).join('');
+            if (gcMemberships.length) {
+                html += `<div style="grid-column:1/-1; margin-top:6px; padding-top:10px; border-top:1px solid rgba(196,163,90,.15);">
+                    <span style="font-size:.75rem; color:var(--gold,#C4A35A); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Membresías</span>
+                </div>`;
+                html += gcMemberships.map(m => `
+                    <div class="gift-svc-card" data-id="m${m.id}" data-name="${m.name}" onclick="gcToggleService(this)"
+                         style="border-color:rgba(196,163,90,.25);">
+                        <div class="gift-svc-name">${m.name}</div>
+                        <div style="font-size:.75rem; color:var(--gold,#C4A35A); margin-top:2px;">$${parseFloat(m.price).toLocaleString('es-MX')}</div>
+                    </div>
+                `).join('');
+            }
+            grid.innerHTML = html;
         }
 
         window.gcToggleService = function (el) {
-            const id   = parseInt(el.dataset.id);
-            const name = el.dataset.name;
+            const rawId = el.dataset.id;
+            const id    = rawId.startsWith('m') ? rawId : parseInt(rawId);
+            const name  = el.dataset.name;
             if (el.classList.contains('selected')) {
                 el.classList.remove('selected');
                 selectedServices = selectedServices.filter(s => s.id !== id);
