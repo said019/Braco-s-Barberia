@@ -215,7 +215,7 @@ CREATE TABLE appointments (
     appointment_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show')),
+    status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('pending', 'scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show')),
     checkout_code VARCHAR(6) UNIQUE,
     notes TEXT,
     reminder_sent BOOLEAN DEFAULT FALSE,

@@ -132,7 +132,13 @@
                     <!-- View Controls -->
                     <div class="calendar-view-controls">
                         <button class="btn btn-secondary btn-sm" onclick="goToday()">HOY</button>
-                        <select id="view-select" class="form-select">
+                        <button class="btn btn-secondary btn-sm" onclick="loadAppointments()" title="Actualizar citas" id="btn-refresh-calendar">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAppointments()" title="Actualizar citas" id="btn-refresh-calendar">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <select id="view-select" class="form-select" onchange="changeView(this.value)">
                             <option value="month">Mes</option>
                             <option value="week" selected>Semana</option>
                             <option value="day">Día</option>
@@ -269,9 +275,16 @@
         // Load appointments AND blocked slots
         async function loadAppointments() {
             try {
-                const startDate = formatDateYMD(getMonthStart(currentDate));
-                // Extend end date to cover full view if needed, but getMonthEnd covers the main view
-                const endDate = formatDateYMD(getMonthEnd(currentDate));
+                // Calculate date range that covers the full visible view
+                // For week view: need to include days that spill into next/prev month
+                // For month view: same approach covers edge weeks
+                const monthStart = getMonthStart(currentDate);
+                const monthEnd = getMonthEnd(currentDate);
+                // Extend 7 days before and after to cover week views that cross month boundaries
+                const extendedStart = addDays(monthStart, -7);
+                const extendedEnd = addDays(monthEnd, 7);
+                const startDate = formatDateYMD(extendedStart);
+                const endDate = formatDateYMD(extendedEnd);
 
                 console.log('Loading data from', startDate, 'to', endDate);
 
@@ -1274,6 +1287,33 @@
                 showToast(error.message, 'error');
             }
         }
+
+        // View switching
+        function changeView(view) {
+            currentView = view;
+            loadAppointments();
+        }
+
+        // Auto-refresh cada 60 segundos para mostrar nuevas citas
+        setInterval(() => {
+            loadAppointments();
+        }, 60000);
+
+        // View switching
+        function changeView(view) {
+            currentView = view;
+            loadAppointments();
+        }
+
+        // Auto-refresh cada 60 segundos para mostrar nuevas citas
+        setInterval(() => {
+            loadAppointments();
+        }, 60000);
+
+        // Filter event listeners
+        document.getElementById('filter-status').addEventListener('change', applyFilters);
+        document.getElementById('filter-search').addEventListener('input', applyFilters);
+        document.getElementById('filter-show-cancelled').addEventListener('change', applyFilters);
 
         // Initial load
         loadClientsAndServices();
