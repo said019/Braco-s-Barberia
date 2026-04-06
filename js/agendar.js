@@ -300,7 +300,7 @@ function prefillClientForm(client) {
 
         // Intentar detectar el código de país del número guardado
         if (countrySelect) {
-            const countryCodes = ['593', '502', '503', '504', '505', '506', '507', '52', '54', '55', '56', '57', '58', '34', '33', '39', '44', '49', '1'];
+            const countryCodes = ['593', '502', '503', '504', '505', '506', '507', '52', '54', '55', '56', '57', '58', '64', '34', '33', '39', '44', '49', '1'];
             // Ordenar por longitud descendente para matchear primero los más largos
             countryCodes.sort((a, b) => b.length - a.length);
 
