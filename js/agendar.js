@@ -1280,14 +1280,6 @@ Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
                         <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
                         <i class="fas fa-copy" style="opacity: 0.5;"></i>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
-                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
-                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
-                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
-                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
-                    </div>
                     <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
                 </div>
 
@@ -1580,14 +1572,6 @@ Anexo mi comprobante de pago anticipado.`;
                 <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000176357788')">
                         <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000176357788</code></span>
-                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('722969010620447083')">
-                        <span><strong>Mercado Pago:</strong> <code style="color: var(--gold);">722969010620447083</code></span>
-                        <i class="fas fa-copy" style="opacity: 0.5;"></i>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('4217470097744441')">
-                        <span><strong>OXXO:</strong> <code style="color: var(--gold);">4217 4700 9774 4441</code></span>
                         <i class="fas fa-copy" style="opacity: 0.5;"></i>
                     </div>
                     <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Miguel Alejandro Trujillo Revuelta</p>
