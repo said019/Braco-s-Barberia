@@ -1276,8 +1276,8 @@ Soy cliente nuevo, anexo mi depósito de $100 para confirmar mi asistencia.`;
 
                 <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
                 <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('036060500776760269')">
-                        <span><strong>Inbursa:</strong> <code style="color: var(--gold);">036060500776760269</code></span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000135144929')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000135144929</code></span>
                         <i class="fas fa-copy" style="opacity: 0.5;"></i>
                     </div>
                     <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Bárbara Florina Becerril Aceves</p>
@@ -1570,8 +1570,8 @@ Anexo mi comprobante de pago anticipado.`;
 
                 <p style="font-weight: 600; margin-bottom: 0.75rem;"><i class="fas fa-university"></i> Datos para Transferencia:</p>
                 <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('036060500776760269')">
-                        <span><strong>Inbursa:</strong> <code style="color: var(--gold);">036060500776760269</code></span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('638180000135144929')">
+                        <span><strong>NU México:</strong> <code style="color: var(--gold);">638180000135144929</code></span>
                         <i class="fas fa-copy" style="opacity: 0.5;"></i>
                     </div>
                     <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.75rem; text-align: center;">Beneficiario: Bárbara Florina Becerril Aceves</p>
