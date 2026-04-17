@@ -1,533 +1,371 @@
-import twilio from 'twilio';
+import axios from 'axios';
 
-// Config
-const ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-const AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-const FROM_NUMBER = process.env.TWILIO_PHONE_NUMBER; // Usually 'whatsapp:+52...'
-const ENABLED = process.env.WHATSAPP_ENABLED === 'true';
+// Evolution API Config
+const EVOLUTION_URL = process.env.EVOLUTION_API_URL;
+const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
+const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE_NAME || 'bracos-barberia';
+const ENABLED = process.env.WHATSAPP_ENABLED !== 'false';
+const BOOKING_URL = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
 
-const client = (ACCOUNT_SID && AUTH_TOKEN) ? twilio(ACCOUNT_SID, AUTH_TOKEN) : null;
+function formatPhone(phone) {
+    if (!phone) return null;
+    let cleaned = String(phone).replace(/\D/g, '');
+    if (cleaned.length === 10) cleaned = '52' + cleaned;
+    else if (cleaned.length < 10) cleaned = '52' + cleaned;
+    // Quitar el 1 extra de México si viene como 521XXXXXXXXXX (13 dígitos)
+    // Evolution API espera 521XXXXXXXXXX para México (12 dígitos)
+    return cleaned;
+}
 
-/**
- * Helper to send Twilio Template
- */
-const sendTemplate = async (to, contentSid, variables = {}) => {
+async function sendText(to, message) {
     if (!ENABLED) {
-        console.log('[Twilio] Service disabled, skipping message');
+        console.log('[Evolution] WhatsApp deshabilitado, omitiendo mensaje');
         return { success: false, error: 'Disabled' };
     }
-
-    if (!client) {
-        console.error('[Twilio] Credentials missing');
+    if (!EVOLUTION_URL || !EVOLUTION_KEY) {
+        console.error('[Evolution] Faltan credenciales (EVOLUTION_API_URL / EVOLUTION_API_KEY)');
         return { success: false, error: 'Credentials missing' };
     }
-
-    if (!to) return { success: false, error: 'No phone' };
-
-    // Format phone: support international numbers
-    let phone = to.replace(/\D/g, '');
-    // Si el número tiene 10 dígitos, asumimos México (+52)
-    // Si tiene más, asumimos que ya incluye código de país
-    if (phone.length === 10) {
-        phone = '52' + phone;
-    } else if (phone.length < 10) {
-        // Número muy corto, agregar código de México por defecto
-        phone = '52' + phone;
-    }
-    // Si ya tiene 11+ dígitos, asumimos que incluye código de país
-    const toWhatsapp = `whatsapp:+${phone}`;
+    const phone = formatPhone(to);
+    if (!phone) return { success: false, error: 'No phone' };
 
     try {
-        const msg = await client.messages.create({
-            from: FROM_NUMBER,
-            to: toWhatsapp,
-            contentSid: contentSid,
-            contentVariables: JSON.stringify(variables)
-        });
-        console.log(`[Twilio] Sent ${contentSid} to ${to}: ${msg.sid}`);
-        return { success: true, id: msg.sid };
-    } catch (error) {
-        console.error(`[Twilio] Error sending to ${to}:`, error.message);
-        return { success: false, error: error.message };
+        const res = await axios.post(
+            `${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
+            { number: phone, text: message },
+            { headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_KEY }, timeout: 15000 }
+        );
+        console.log(`[Evolution] Mensaje enviado a ${to}`);
+        return { success: true, id: res.data?.key?.id };
+    } catch (err) {
+        console.error(`[Evolution] Error enviando a ${to}:`, err.response?.data || err.message);
+        return { success: false, error: err.message };
     }
-};
+}
 
-/**
- * Helper to send Twilio Template to ALL admin phones
- * Supports TWILIO_ADMIN_PHONES (comma-separated) or falls back to TWILIO_ADMIN_PHONE
- */
-const sendTemplateToAllAdmins = async (contentSid, variables = {}) => {
-    // Support multiple phones: TWILIO_ADMIN_PHONES=5512345678,5587654321
-    const adminPhonesStr = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
+async function sendPoll(to, question, options) {
+    if (!ENABLED || !EVOLUTION_URL || !EVOLUTION_KEY) return { success: false, error: 'Not configured' };
+    const phone = formatPhone(to);
+    if (!phone) return { success: false, error: 'No phone' };
 
-    if (!adminPhonesStr) {
-        return { success: false, error: 'Admin Phone(s) missing' };
+    try {
+        const res = await axios.post(
+            `${EVOLUTION_URL}/message/sendPoll/${EVOLUTION_INSTANCE}`,
+            {
+                number: phone,
+                pollMessage: {
+                    name: question,
+                    selectableCount: 1,
+                    values: options
+                }
+            },
+            { headers: { 'Content-Type': 'application/json', apikey: EVOLUTION_KEY }, timeout: 15000 }
+        );
+        console.log(`[Evolution] Poll enviado a ${to}`);
+        return { success: true, id: res.data?.key?.id };
+    } catch (err) {
+        console.error(`[Evolution] Error enviando poll a ${to}:`, err.response?.data || err.message);
+        return { success: false, error: err.message };
     }
+}
 
-    // Parse comma-separated phones
-    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(p => p);
+function getAdminPhones() {
+    const str = process.env.WA_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE || '';
+    return str.split(',').map(p => p.trim()).filter(Boolean);
+}
 
-    if (adminPhones.length === 0) {
-        return { success: false, error: 'No valid admin phones' };
-    }
-
-    console.log(`[Twilio] Sending to ${adminPhones.length} admin(s): ${adminPhones.join(', ')}`);
-
-    const results = [];
-    for (const phone of adminPhones) {
-        const result = await sendTemplate(phone, contentSid, variables);
-        results.push({ phone, ...result });
-    }
-
-    // Return success if at least one succeeded
-    const anySuccess = results.some(r => r.success);
-    return {
-        success: anySuccess,
-        results,
-        id: results.find(r => r.success)?.id
-    };
-};
+async function sendTextToAllAdmins(message) {
+    const phones = getAdminPhones();
+    if (!phones.length) return { success: false, error: 'No admin phones configured' };
+    const results = await Promise.all(phones.map(p => sendText(p, message)));
+    return { success: results.some(r => r.success), results };
+}
 
 // ============================================================================
-// 1. Cita Agendada (Confirmación inicial)
-// Template: cita_agendada3 - Variables: {{1}} Name, {{2}} Service, {{3}} Date, {{4}} Time, {{5}} Code
+// 1. Confirmación de cita agendada
 // ============================================================================
 export const sendBookingConfirmation = async ({ phone, name, service, date, time, code }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": date,
-        "4": time,
-        "5": code || '----'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_BOOKING_SID;
-    if (!sid) return { success: false, error: 'Booking Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `✅ *Cita confirmada en Braco's Barbería*
+
+👤 ${name}
+✂️ ${service}
+📅 ${date} a las ${time}
+🔑 Código: *${code || '----'}*
+
+Te esperamos. Si necesitas cambios, contáctanos.`;
+    return sendText(phone, msg);
 };
 
-// Alias para compatibilidad
 export const sendWhatsAppBookingConfirmation = sendBookingConfirmation;
 
 // ============================================================================
-// 2. Depósito Confirmado (Para clientes nuevos)
-// Template: deposito_confirmado - Variables: {{1}} Name, {{2}} Service, {{3}} Date, {{4}} Time, {{5}} Code
+// 2. Depósito confirmado (clientes nuevos)
 // ============================================================================
 export const sendDepositConfirmed = async ({ phone, name, service, date, time, code }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": date,
-        "4": time,
-        "5": code || '----'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_DEPOSIT_SID;
-    if (!sid) return { success: false, error: 'Deposit Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `🎉 *¡Depósito recibido!*
+
+Hola ${name}, confirmamos tu cita en Braco's Barbería:
+
+✂️ ${service}
+📅 ${date} a las ${time}
+🔑 Código: *${code || '----'}*
+
+¡Te esperamos!`;
+    return sendText(phone, msg);
 };
 
-// Alias para compatibilidad
 export const sendDepositAccepted = sendDepositConfirmed;
+export const sendWhatsAppDepositAccepted = sendDepositConfirmed;
 
 // ============================================================================
-// 3. Recibo Estándar (Checkout sin membresía)
-// Template: stnd_checkout - Variables: {{1}} Name, {{2}} Service, {{3}} Total, {{4}} Date
+// 3. Recibo estándar (sin membresía)
 // ============================================================================
 export const sendReceiptStandard = async ({ phone, name, service, total, date }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": total,
-        "4": date
-    };
-    const sid = process.env.TWILIO_TEMPLATE_RECEIPT_STD_SID;
-    if (!sid) return { success: false, error: 'Receipt STD Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `🧾 *Recibo de pago - Braco's Barbería*
+
+Gracias ${name} por tu visita.
+
+✂️ ${service}
+📅 ${date}
+💰 Total: *$${total}*
+
+¡Hasta pronto! 💈`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 4. Recibo Membresía (Checkout con membresía)
-// Template: membresia_checkout2 - Variables: {{1}} Name, {{2}} Service, {{3}} Membership, {{4}} Remaining, {{5}} CardURL
+// 4. Recibo con membresía
 // ============================================================================
 export const sendReceiptMembership = async ({ phone, name, service, membershipName, remaining, cardUrl }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": membershipName || 'Membresía',
-        "4": String(remaining),
-        "5": cardUrl || ''
-    };
-    const sid = process.env.TWILIO_TEMPLATE_RECEIPT_MEM_SID;
-    if (!sid) return { success: false, error: 'Receipt MEM Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `🧾 *Recibo de pago - Braco's Barbería*
+
+Gracias ${name} por tu visita.
+
+✂️ ${service}
+🎫 Membresía: ${membershipName || 'Membresía'}
+🔄 Servicios restantes: *${remaining}*
+${cardUrl ? `🔗 Tu tarjeta: ${cardUrl}` : ''}
+
+¡Hasta pronto! 💈`;
+    return sendText(phone, msg);
 };
 
-// Función combinada para compatibilidad
 export const sendCheckoutReceipt = async ({ type, phone, name, service, total, date, membershipName, remaining, cardUrl }) => {
-    if (type === 'membership') {
-        return await sendReceiptMembership({ phone, name, service, membershipName, remaining, cardUrl });
-    } else {
-        return await sendReceiptStandard({ phone, name, service, total, date });
-    }
+    if (type === 'membership') return sendReceiptMembership({ phone, name, service, membershipName, remaining, cardUrl });
+    return sendReceiptStandard({ phone, name, service, total, date });
 };
 
 // ============================================================================
-// 5. Bienvenida Membresía
-// Template: membresia_activa - Variables: {{1}} Name, {{2}} Membership, {{3}} Expiry, {{4}} CardURL, {{5}} Transferible
+// 5. Bienvenida membresía
 // ============================================================================
 export const sendMembershipWelcome = async ({ phone, name, membershipName, expiryDate, cardUrl, transferable }) => {
-    const variables = {
-        "1": name,
-        "2": membershipName,
-        "3": expiryDate,
-        "4": cardUrl || '',
-        "5": transferable ? 'Sí' : 'No'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_MEMBERSHIP_SID;
-    if (!sid) return { success: false, error: 'Membership Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `🌟 *¡Membresía activada!*
+
+Hola ${name}, tu membresía en Braco's Barbería está activa:
+
+🎫 ${membershipName}
+📅 Vigencia hasta: ${expiryDate}
+🔄 Transferible: ${transferable ? 'Sí' : 'No'}
+${cardUrl ? `🔗 Tu tarjeta: ${cardUrl}` : ''}
+
+¡Gracias por ser parte de la familia Braco's! 💈`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 6. Recordatorio 24h (Con Botones)
-// Template: copy_recordatorio_24hr - Variables: {{1}} Name, {{2}} Service, {{3}} Time, {{4}} Code
+// 6. Recordatorio 24h (con Poll para confirmar/cancelar)
 // ============================================================================
 export const sendReminder24h = async ({ phone, name, service, time, code }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": time,
-        "4": code || '----'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_REMINDER_SID;
-    if (!sid) return { success: false, error: 'Reminder Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    return sendPoll(
+        phone,
+        `📅 Cita mañana ${time} - ${service}\n¿Confirmas tu asistencia, ${name}?`,
+        ['✅ Confirmar Asistencia', '❌ Cancelar / Modificar']
+    );
 };
 
 // ============================================================================
-// 6b. Recordatorio 2h antes de la cita
-// Template: recordatorio_2h - Variables: {{1}} Name, {{2}} Service, {{3}} Time, {{4}} Code
+// 6b. Recordatorio 2h
 // ============================================================================
 export const sendReminder2h = async ({ phone, name, service, time, code }) => {
-    const variables = {
-        "1": name,
-        "2": service,
-        "3": time,
-        "4": code || '----'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_REMINDER_2H_SID || 'HX854b0314373d0a8cf759d435e23014f0';
-    return await sendTemplate(phone, sid, variables);
+    const msg = `⏰ *Recordatorio Braco's Barbería*
+
+Hola ${name}, tu cita es *hoy a las ${time}*.
+
+✂️ ${service}
+🔑 Código: ${code || '----'}
+
+¡Te esperamos! 💈`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 7. Admin: Nueva Cita (Notificación al dueño)
-// Template: admin_nva_cita - Variables: {{1}} Client, {{2}} Service, {{3}} Date, {{4}} Time
+// 7. Admin: Nueva cita (cliente nuevo)
 // ============================================================================
 export const sendAdminNewAppointment = async ({ clientName, serviceName, date, time }) => {
-    const variables = {
-        "1": clientName,
-        "2": serviceName,
-        "3": date,
-        "4": time
-    };
-    const sid = process.env.TWILIO_TEMPLATE_ADMIN_APPT_SID;
+    const msg = `🆕 *Nueva cita - Cliente Nuevo*
 
-    if (!sid) return { success: false, error: 'Admin Appt Template SID missing' };
+👤 ${clientName}
+✂️ ${serviceName}
+📅 ${date} a las ${time}
 
-    return await sendTemplateToAllAdmins(sid, variables);
+_Pendiente depósito para confirmar._`;
+    return sendTextToAllAdmins(msg);
 };
 
 // ============================================================================
-// 7b. Admin: Nueva Cita de Cliente Recurrente (No nuevo)
-// Template: admin_nva_cita2 - Variables: {{1}} Client, {{2}} Service, {{3}} Date, {{4}} Time
+// 7b. Admin: Nueva cita (cliente recurrente)
 // ============================================================================
 export const sendAdminNewAppointmentRecurring = async ({ clientName, serviceName, date, time }) => {
-    const variables = {
-        "1": clientName,
-        "2": serviceName,
-        "3": date,
-        "4": time
-    };
-    // Template SID for recurring clients: admin_nva_cita2
-    const sid = process.env.TWILIO_TEMPLATE_ADMIN_APPT_RECURRING_SID || 'HX5d5ff493c5ded8637cff76e1d5496502';
+    const msg = `📅 *Nueva cita - Cliente Recurrente*
 
-    return await sendTemplateToAllAdmins(sid, variables);
+👤 ${clientName}
+✂️ ${serviceName}
+📅 ${date} a las ${time}`;
+    return sendTextToAllAdmins(msg);
 };
 
 // ============================================================================
-// 8. Admin: Pago Completo (Notificación al dueño)
-// Template: pago_completo - Variables: {{1}} Client, {{2}} Service, {{3}} Amount, {{4}} Date
+// 8. Admin: Pago completo
 // ============================================================================
 export const sendAdminFullPayment = async ({ clientName, serviceName, amount, date }) => {
-    const variables = {
-        "1": clientName,
-        "2": serviceName,
-        "3": amount,
-        "4": date
-    };
-    const sid = process.env.TWILIO_TEMPLATE_ADMIN_PAY_SID;
+    const msg = `💰 *Pago completo recibido*
 
-    if (!sid) return { success: false, error: 'Admin Pay Template SID missing' };
+👤 ${clientName}
+✂️ ${serviceName}
+💵 Monto: $${amount}
+📅 ${date}
 
-    return await sendTemplateToAllAdmins(sid, variables);
+Cita confirmada automáticamente. ✅`;
+    return sendTextToAllAdmins(msg);
 };
 
 // ============================================================================
-// 9. Respuesta: Confirmación (Cuando cliente confirma asistencia)
-// Template: confirmacion - Sin variables (mensaje fijo)
+// 9. Respuesta: confirmación de asistencia
 // ============================================================================
 export const sendConfirmationResponse = async (phone) => {
-    const sid = process.env.TWILIO_TEMPLATE_CONFIRM_RESP_SID;
-    if (!sid) return { success: false, error: 'Confirm Response Template SID missing' };
-    return await sendTemplate(phone, sid, {});
+    const msg = `✅ *¡Asistencia confirmada!*
+
+Gracias por confirmar. Te esperamos en Braco's Barbería. 💈
+
+Si necesitas cambiar o cancelar, escríbenos.`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 10. Respuesta: Cancelación (Cuando cliente cancela/modifica)
-// Template: copy_cancelacion - Variables: {{1}} Service, {{2}} Date, {{3}} BookingURL
+// 10. Respuesta: cancelación
 // ============================================================================
 export const sendCancellationResponse = async ({ phone, service, date, bookingUrl }) => {
-    const variables = {
-        "1": service,
-        "2": date,
-        "3": bookingUrl
-    };
-    const sid = process.env.TWILIO_TEMPLATE_CANCEL_RESP_SID;
-    if (!sid) return { success: false, error: 'Cancel Response Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `❌ *Cita cancelada*
+
+Hemos cancelado tu cita de ${service} del ${date}.
+
+¿Deseas agendar en otra fecha? Hazlo aquí:
+${bookingUrl || BOOKING_URL + '/agendar.html'}`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 11. Bienvenida Cliente Nuevo (ID de 4 dígitos)
-// Mensaje de texto libre con el código de cliente para login futuro
+// 11. Bienvenida con código de cliente
 // ============================================================================
 export const sendWelcomeWithClientCode = async ({ phone, name, clientCode }) => {
-    // Usamos el template de cliente recurrente que contiene {{1}} Nombre y {{2}} Código
-    // Esto asegura que el mensaje llegue aunque no haya conversación previa (regla de 24h)
-    const variables = {
-        "1": name,
-        "2": clientCode
-    };
-    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID || 'HXe5f05d64d67eaa6c336594ca879c9139';
-
-    if (!sid) {
-        console.warn('Recurring Template SID missing, falling back to text (might fail)');
-        const message = `🎉 *¡Bienvenido a Braco's Barbería, ${name}!*
+    const msg = `🎉 *¡Bienvenido a Braco's Barbería, ${name}!*
 
 Tu código de cliente es: *${clientCode}*
 
-Guárdalo para agendar tus próximas citas de forma rápida. Solo ingresa este código y te reconoceremos al instante.
-
-¡Nos vemos pronto! 💈`;
-        return await sendTextMessage(phone, message);
-    }
-
-    return await sendTemplate(phone, sid, variables);
+Guárdalo para agendar tus próximas citas de forma rápida. 💈`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 12. Admin: Cancelación de Cita (Notificación al dueño)
-// Template: admin_cancelacion - Variables: {{1}} Client, {{2}} Phone, {{3}} Service, {{4}} Date, {{5}} Time
+// 12. Admin: Cancelación
 // ============================================================================
 export const sendAdminCancellation = async ({ clientName, clientPhone, serviceName, date, time }) => {
-    const variables = {
-        "1": clientName,
-        "2": clientPhone || 'No disponible',
-        "3": serviceName,
-        "4": date,
-        "5": time
-    };
-    const sid = process.env.TWILIO_TEMPLATE_ADMIN_CANCEL_SID;
+    const msg = `❌ *Cita cancelada*
 
-    // Si hay template configurado, usarlo
-    if (sid) {
-        return await sendTemplateToAllAdmins(sid, variables);
-    }
+👤 ${clientName}
+📱 ${clientPhone || 'No disponible'}
+✂️ ${serviceName}
+📅 ${date} • 🕐 ${time}
 
-    // Fallback: enviar mensaje de texto libre a todos los admins
-    console.log('[Twilio] Admin Cancel Template SID missing, using text fallback');
-    const message = `❌ *CITA CANCELADA*
-
-👤 Cliente: ${clientName}
-📱 Teléfono: ${clientPhone || 'No disponible'}
-💈 Servicio: ${serviceName}
-📅 Fecha: ${date}
-🕐 Hora: ${time}
-
-El cliente canceló su cita desde WhatsApp.`;
-
-    return await sendTextMessageToAllAdmins(message);
-};
-
-/**
- * Helper to send text message to ALL admin phones (fallback when no template)
- */
-const sendTextMessageToAllAdmins = async (message) => {
-    const adminPhonesStr = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
-
-    if (!adminPhonesStr) {
-        return { success: false, error: 'Admin Phone(s) missing' };
-    }
-
-    const adminPhones = adminPhonesStr.split(',').map(p => p.trim()).filter(p => p);
-
-    if (adminPhones.length === 0) {
-        return { success: false, error: 'No valid admin phones' };
-    }
-
-    console.log(`[Twilio] Sending text to ${adminPhones.length} admin(s): ${adminPhones.join(', ')}`);
-
-    const results = [];
-    for (const phone of adminPhones) {
-        const result = await sendTextMessage(phone, message);
-        results.push({ phone, ...result });
-    }
-
-    const anySuccess = results.some(r => r.success);
-    return {
-        success: anySuccess,
-        results,
-        id: results.find(r => r.success)?.sid
-    };
+El cliente canceló desde WhatsApp.`;
+    return sendTextToAllAdmins(msg);
 };
 
 // ============================================================================
-// 13. Cliente Recurrente (Cuando se promueve de Nuevo a Recurrente)
-// Template: copy_recurrente - Variables: {{1}} Name, {{2}} ClientCode
+// 13. Cliente recurrente (ascenso de nivel)
 // ============================================================================
 export const sendRecurringClientWelcome = async ({ phone, name, clientCode }) => {
-    const variables = {
-        "1": name,
-        "2": clientCode
-    };
-    const sid = process.env.TWILIO_TEMPLATE_RECURRING_SID || 'HXe5f05d64d67eaa6c336594ca879c9139';
-    if (!sid) return { success: false, error: 'Recurring Template SID missing' };
-    return await sendTemplate(phone, sid, variables);
+    const msg = `⭐ *¡Eres cliente recurrente en Braco's Barbería!*
+
+Hola ${name}, gracias por tu lealtad.
+
+Tu código de cliente: *${clientCode}*
+
+Úsalo para agendar rápidamente. ¡Nos vemos pronto! 💈`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 14. Políticas de Cita (Se envía después de cada confirmación)
-// Template: copy_politicas - Sin variables (mensaje fijo)
+// 14. Políticas
 // ============================================================================
 export const sendPolicies = async (phone) => {
-    const sid = process.env.TWILIO_TEMPLATE_POLICIES_SID || 'HX8c65f1d6db173c8fcd816915228461d6';
-    return await sendTemplate(phone, sid, {});
+    const msg = `📋 *Políticas de Braco's Barbería*
+
+• Si no puedes asistir, cancela con mínimo 2 horas de anticipación.
+• Después de 10 min de retraso, se libera tu horario.
+• El depósito no es reembolsable si cancelas el mismo día.
+
+¡Gracias por tu comprensión! 💈`;
+    return sendText(phone, msg);
 };
 
-// Enviar también a todos los admins
-export const sendAdminPolicies = async () => {
-    const sid = process.env.TWILIO_TEMPLATE_POLICIES_SID || 'HX8c65f1d6db173c8fcd816915228461d6';
-    return await sendTemplateToAllAdmins(sid, {});
-};
+export const sendAdminPolicies = async () => sendTextToAllAdmins('📋 Recordatorio: Políticas enviadas al cliente.');
 
 // ============================================================================
-// Texto Libre (Solo funciona dentro de ventana de 24h)
-// ============================================================================
-export const sendTextMessage = async (phone, message) => {
-    try {
-        if (!process.env.TWILIO_ACCOUNT_SID) return { success: false, error: 'Twilio not configured' };
-
-        let to = phone;
-        if (!to.startsWith('whatsapp:')) {
-            let clean = to.replace(/\D/g, '');
-            // Si tiene 10 dígitos, asumimos México (+52)
-            // Si tiene más, asumimos que ya incluye código de país
-            if (clean.length === 10) {
-                clean = '52' + clean;
-            } else if (clean.length < 10) {
-                clean = '52' + clean;
-            }
-            to = `whatsapp:+${clean}`;
-        }
-
-        const msg = await client.messages.create({
-            body: message,
-            from: FROM_NUMBER,
-            to: to
-        });
-
-        return { success: true, sid: msg.sid };
-    } catch (error) {
-        console.error('Twilio SendText Error:', error);
-        return { success: false, error: error.message };
-    }
-};
-
-// ============================================================================
-// 15. Cancelación por Depósito no recibido (Auto-cancelación 1 hora)
-// Template: cancelacion_reserva - Variables: {{1}} Name, {{2}} Date, {{3}} BookingURL
+// 15. Cancelación por depósito no recibido (auto-cancel 1h)
 // ============================================================================
 export const sendDepositCancellation = async ({ phone, name, date, bookingUrl }) => {
-    const variables = {
-        "1": name,
-        "2": date,
-        "3": bookingUrl || process.env.PUBLIC_URL || 'https://bracos-barberia-production.up.railway.app/agendar.html'
-    };
-    const sid = process.env.TWILIO_TEMPLATE_DEPOSIT_CANCEL_SID || 'HXf774c3cc08c4291a05aba9c173932279';
-    return await sendTemplate(phone, sid, variables);
+    const msg = `⏰ *Cita cancelada automáticamente*
+
+Hola ${name}, tu reserva del ${date} fue cancelada porque no recibimos el depósito en el tiempo establecido.
+
+¿Deseas reagendar? Hazlo aquí:
+${bookingUrl || BOOKING_URL + '/agendar.html'}`;
+    return sendText(phone, msg);
 };
 
 // ============================================================================
-// 17. Cliente: Confirmación de cancelación por cliente
-// Template: copy_cancelacion - Variables: {{1}} Service, {{2}} Date, {{3}} BookingURL
+// 17. Confirmación de cancelación por el cliente
 // ============================================================================
 export const sendClientCancellationConfirmation = async ({ phone, service, date }) => {
-    const bookingUrl = process.env.PUBLIC_URL
-        ? `${process.env.PUBLIC_URL}/agendar.html`
-        : 'https://bracos-barberia-production.up.railway.app/agendar.html';
-
-    return await sendCancellationResponse({ phone, service, date, bookingUrl });
+    return sendCancellationResponse({ phone, service, date, bookingUrl: `${BOOKING_URL}/agendar.html` });
 };
 
 // ============================================================================
-// 18. Cliente: Confirmación de modificación de cita
-// Usa sendBookingConfirmation ya que la estructura es la misma
+// 18. Confirmación de modificación
 // ============================================================================
 export const sendModificationConfirmation = async ({ phone, name, service, date, time, code }) => {
-    // Usamos el mismo template de confirmación de cita
-    // El mensaje indica la cita actualizada
-    return await sendBookingConfirmation({ phone, name, service, date, time, code });
+    return sendBookingConfirmation({ phone, name, service, date, time, code });
 };
 
 // ============================================================================
-// 19. Admin: Notificación de modificación de cita por cliente
-// Usa mensaje de texto libre ya que no hay template específico
+// 19. Admin: Modificación de cita
 // ============================================================================
 export const sendAdminModification = async ({ clientName, clientPhone, oldService, oldDate, oldTime, newService, newDate, newTime }) => {
-    const adminPhone = process.env.TWILIO_ADMIN_PHONES || process.env.TWILIO_ADMIN_PHONE;
-    if (!adminPhone) return { success: false, error: 'Admin phone not configured' };
+    const msg = `✏️ *Cita Modificada por Cliente*
 
-    const adminPhones = adminPhone.split(',').map(p => p.trim()).filter(p => p);
+👤 ${clientName} (${clientPhone || 'N/D'})
 
-    const message = `✏️ *Cita Modificada por Cliente*
-
-${clientName} modificó su cita:
-
-❌ Anterior:
-📅 ${oldDate} • 🕐 ${oldTime}
-✂️ ${oldService}
-
-✅ Nueva:
-📅 ${newDate} • 🕐 ${newTime}
-✂️ ${newService}
-
-📱 Tel: ${clientPhone || 'No disponible'}`;
-
-    const results = [];
-    for (const phone of adminPhones) {
-        const result = await sendTextMessage(phone, message);
-        results.push({ phone, ...result });
-    }
-
-    return {
-        success: results.some(r => r.success),
-        results
-    };
+❌ Anterior: ${oldDate} ${oldTime} - ${oldService}
+✅ Nueva: ${newDate} ${newTime} - ${newService}`;
+    return sendTextToAllAdmins(msg);
 };
 
-// Alias para compatibilidad
-export const sendWhatsAppDepositAccepted = sendDepositConfirmed;
+// ============================================================================
+// Mensaje de texto libre (compatibilidad)
+// ============================================================================
+export const sendTextMessage = async (phone, message) => sendText(phone, message);
 
-// Default export for backward compatibility
 export default {
     sendBookingConfirmation,
     sendWhatsAppBookingConfirmation,

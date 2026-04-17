@@ -12,6 +12,7 @@ import { testConnection } from './config/database.js';
 
 // Importar rutas
 import routes from './routes/index.js';
+import webhookEvolutionRoutes from './routes/webhookEvolution.js';
 
 // Importar middleware
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -71,11 +72,14 @@ const limiter = rateLimit({
     message: 'Demasiadas solicitudes, por favor intenta de nuevo más tarde.'
   }
 });
-// IMPORTANT: No aplicar rate-limit a webhooks (Twilio puede reintentar y usa proxy)
+// IMPORTANT: No aplicar rate-limit a webhooks
 app.use('/api', (req, res, next) => {
-  if (req.path.startsWith('/webhooks')) return next();
+  if (req.path.startsWith('/webhooks') || req.path.startsWith('/webhook')) return next();
   return limiter(req, res, next);
 });
+
+// Webhook Evolution API (público, sin auth)
+app.use('/api/webhook/evolution', webhookEvolutionRoutes);
 
 // ============================================
 // RUTAS
