@@ -639,6 +639,9 @@
                     <button class="tab-btn" onclick="switchTab('gcalendar')">
                         <i class="fab fa-google"></i> Google Calendar
                     </button>
+                    <button class="tab-btn" onclick="switchTab('whatsapp')">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
                 </div>
 
                 <!-- Tab: General Settings -->
@@ -970,6 +973,70 @@
                                 <li>Al conectar, podrás sincronizar todas tus citas con Google Calendar</li>
                                 <li>Las nuevas citas se crearán automáticamente en tu calendario</li>
                                 <li>Los cambios se sincronizarán en tiempo real</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: WhatsApp (Evolution API) -->
+            <div id="tab-whatsapp" class="tab-content">
+                <div class="info-badge">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Vincula el WhatsApp del negocio para enviar confirmaciones, recordatorios y recibos automáticamente.</span>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp Business</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Estado -->
+                        <div id="wa-status-container" style="margin-bottom: 2rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(37, 211, 102, 0.05); border-radius: 8px;">
+                                <div id="wa-status-icon" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(37, 211, 102, 0.15); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fab fa-whatsapp" style="font-size: 1.5rem; color: #25D366;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div id="wa-status-text" style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem;">
+                                        Verificando conexión...
+                                    </div>
+                                    <div id="wa-status-number" style="font-size: 0.85rem; opacity: 0.7;">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Code -->
+                        <div id="wa-qr-container" style="display:none; text-align:center; margin-bottom: 2rem; padding: 1.5rem; background: #fff; border-radius: 8px;">
+                            <img id="wa-qr-image" src="" alt="QR Code" style="max-width: 280px; margin: 0 auto; display:block;">
+                            <p style="color: #333; margin-top: 1rem; font-size: 0.9rem;">
+                                Abre WhatsApp en tu teléfono → Ajustes → Dispositivos vinculados → Vincular un dispositivo
+                            </p>
+                        </div>
+
+                        <!-- Botones -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button id="btn-wa-connect" class="btn btn-primary" onclick="connectWhatsApp()" style="display:none; background:#25D366; border-color:#25D366;">
+                                <i class="fab fa-whatsapp"></i> Generar QR para vincular
+                            </button>
+                            <button id="btn-wa-refresh" class="btn btn-secondary" onclick="loadWhatsAppStatus()">
+                                <i class="fas fa-sync"></i> Actualizar estado
+                            </button>
+                            <button id="btn-wa-disconnect" class="btn btn-danger" onclick="disconnectWhatsApp()" style="display:none;">
+                                <i class="fas fa-unlink"></i> Desvincular
+                            </button>
+                            <button id="btn-wa-test" class="btn btn-secondary" onclick="testWhatsApp()" style="display:none;">
+                                <i class="fas fa-paper-plane"></i> Enviar mensaje de prueba
+                            </button>
+                        </div>
+
+                        <!-- Help Text -->
+                        <div style="margin-top: 2rem; padding: 1rem; background: rgba(37, 211, 102, 0.05); border-left: 3px solid #25D366; border-radius: 4px;">
+                            <p style="margin: 0; font-size: 0.9rem;"><i class="fas fa-info-circle"></i> <strong>Cómo funciona:</strong></p>
+                            <ul style="margin: 0.5rem 0 0 1.5rem; font-size: 0.85rem; opacity: 0.8;">
+                                <li>Presiona "Generar QR" y escanéalo con el WhatsApp del negocio</li>
+                                <li>Una vez vinculado, los mensajes se enviarán desde ese número</li>
+                                <li>Si cierras sesión desde el teléfono, tendrás que vincular de nuevo</li>
                             </ul>
                         </div>
                     </div>
@@ -2095,6 +2162,101 @@
 
         // Initialize time picker listeners after a short delay to ensure DOM is ready
         setTimeout(initTimePickerListeners, 100);
+
+        // ============================================================================
+        // WhatsApp (Evolution API)
+        // ============================================================================
+        let waPollingInterval = null;
+
+        async function loadWhatsAppStatus() {
+            const statusText = document.getElementById('wa-status-text');
+            const statusNumber = document.getElementById('wa-status-number');
+            const btnConnect = document.getElementById('btn-wa-connect');
+            const btnDisconnect = document.getElementById('btn-wa-disconnect');
+            const btnTest = document.getElementById('btn-wa-test');
+            const qrContainer = document.getElementById('wa-qr-container');
+
+            try {
+                const data = await api.get('/evolution/status');
+                if (data.connected) {
+                    statusText.textContent = '✅ Conectado';
+                    statusText.style.color = '#25D366';
+                    statusNumber.textContent = data.number ? `📱 ${data.number}` : '';
+                    btnConnect.style.display = 'none';
+                    btnDisconnect.style.display = 'inline-flex';
+                    btnTest.style.display = 'inline-flex';
+                    qrContainer.style.display = 'none';
+                    if (waPollingInterval) { clearInterval(waPollingInterval); waPollingInterval = null; }
+                } else {
+                    statusText.textContent = data.state === 'not_configured' ? '⚠️ Sin configurar' : '❌ Desconectado';
+                    statusText.style.color = '#EF5350';
+                    statusNumber.textContent = data.state === 'not_configured'
+                        ? 'Faltan variables de entorno EVOLUTION_*'
+                        : `Instancia: ${data.instance || '-'} | Estado: ${data.state}`;
+                    btnConnect.style.display = 'inline-flex';
+                    btnDisconnect.style.display = 'none';
+                    btnTest.style.display = 'none';
+                }
+            } catch (e) {
+                statusText.textContent = '❌ Error';
+                statusText.style.color = '#EF5350';
+                statusNumber.textContent = e.message;
+            }
+        }
+
+        async function connectWhatsApp() {
+            const qrContainer = document.getElementById('wa-qr-container');
+            const qrImage = document.getElementById('wa-qr-image');
+            const statusText = document.getElementById('wa-status-text');
+
+            try {
+                showToast('Generando QR...', 'info');
+                const data = await api.post('/evolution/connect');
+                if (data.qrCode) {
+                    qrImage.src = data.qrCode;
+                    qrContainer.style.display = 'block';
+                    statusText.textContent = '📲 Esperando escaneo...';
+                    statusText.style.color = 'var(--gold)';
+
+                    // Poll status cada 3s
+                    if (waPollingInterval) clearInterval(waPollingInterval);
+                    waPollingInterval = setInterval(loadWhatsAppStatus, 3000);
+                } else {
+                    showToast('No se pudo generar el QR', 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        async function disconnectWhatsApp() {
+            if (!confirm('¿Desvincular WhatsApp? Los mensajes dejarán de enviarse hasta vincular de nuevo.')) return;
+            try {
+                await api.post('/evolution/logout');
+                showToast('WhatsApp desvinculado', 'success');
+                loadWhatsAppStatus();
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testWhatsApp() {
+            const phone = prompt('Número para prueba (10 dígitos):');
+            if (!phone) return;
+            try {
+                await api.post('/evolution/test', { phone });
+                showToast('Mensaje de prueba enviado', 'success');
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        // Cargar estado cuando se abre la pestaña WhatsApp
+        const origSwitchTab = window.switchTab;
+        window.switchTab = function(tab) {
+            if (origSwitchTab) origSwitchTab(tab);
+            if (tab === 'whatsapp') loadWhatsAppStatus();
+        };
     </script>
     <script src="js/sidebar.js"></script>
 </body>
