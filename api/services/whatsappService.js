@@ -82,7 +82,7 @@ async function sendTextToAllAdmins(message) {
 }
 
 // ============================================================================
-// 1. Confirmación de cita agendada
+// 1. Confirmación de cita agendada (+ poll con opciones)
 // ============================================================================
 export const sendBookingConfirmation = async ({ phone, name, service, date, time, code }) => {
     const msg = `✅ *Cita confirmada en Braco's Barbería*
@@ -92,14 +92,19 @@ export const sendBookingConfirmation = async ({ phone, name, service, date, time
 📅 ${date} a las ${time}
 🔑 Código: *${code || '----'}*
 
-Te esperamos. Si necesitas cambios, contáctanos.`;
-    return sendText(phone, msg);
+Te esperamos. 💈`;
+    await sendText(phone, msg);
+    return sendPoll(
+        phone,
+        `¿Necesitas hacer algún cambio?`,
+        ['✅ Todo bien', '🔄 Reagendar', '❌ Cancelar']
+    );
 };
 
 export const sendWhatsAppBookingConfirmation = sendBookingConfirmation;
 
 // ============================================================================
-// 2. Depósito confirmado (clientes nuevos)
+// 2. Depósito confirmado (clientes nuevos) + poll con opciones
 // ============================================================================
 export const sendDepositConfirmed = async ({ phone, name, service, date, time, code }) => {
     const msg = `🎉 *¡Depósito recibido!*
@@ -110,8 +115,13 @@ Hola ${name}, confirmamos tu cita en Braco's Barbería:
 📅 ${date} a las ${time}
 🔑 Código: *${code || '----'}*
 
-¡Te esperamos!`;
-    return sendText(phone, msg);
+¡Te esperamos! 💈`;
+    await sendText(phone, msg);
+    return sendPoll(
+        phone,
+        `¿Necesitas hacer algún cambio?`,
+        ['✅ Todo bien', '🔄 Reagendar', '❌ Cancelar']
+    );
 };
 
 export const sendDepositAccepted = sendDepositConfirmed;
@@ -173,18 +183,25 @@ ${cardUrl ? `🔗 Tu tarjeta: ${cardUrl}` : ''}
 };
 
 // ============================================================================
-// 6. Recordatorio 24h (con Poll para confirmar/cancelar)
+// 6. Recordatorio 24h (con Poll para confirmar/reagendar/cancelar)
 // ============================================================================
 export const sendReminder24h = async ({ phone, name, service, time, code }) => {
+    const intro = `📅 *Recordatorio Braco's Barbería*
+
+Hola ${name}, recordatorio de tu cita *mañana*:
+✂️ ${service}
+🕐 ${time}
+🔑 ${code || '----'}`;
+    await sendText(phone, intro);
     return sendPoll(
         phone,
-        `📅 Cita mañana ${time} - ${service}\n¿Confirmas tu asistencia, ${name}?`,
-        ['✅ Confirmar Asistencia', '❌ Cancelar / Modificar']
+        `¿Confirmas tu asistencia?`,
+        ['✅ Confirmar Asistencia', '🔄 Reagendar', '❌ Cancelar']
     );
 };
 
 // ============================================================================
-// 6b. Recordatorio 2h
+// 6b. Recordatorio 2h (+ poll compacto)
 // ============================================================================
 export const sendReminder2h = async ({ phone, name, service, time, code }) => {
     const msg = `⏰ *Recordatorio Braco's Barbería*
@@ -195,7 +212,12 @@ Hola ${name}, tu cita es *hoy a las ${time}*.
 🔑 Código: ${code || '----'}
 
 ¡Te esperamos! 💈`;
-    return sendText(phone, msg);
+    await sendText(phone, msg);
+    return sendPoll(
+        phone,
+        `¿Todo en orden?`,
+        ['✅ Ahí estaré', '❌ Cancelar']
+    );
 };
 
 // ============================================================================

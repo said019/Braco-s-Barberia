@@ -520,6 +520,125 @@
                 justify-content: space-between;
             }
         }
+
+        /* ===== Mobile Responsive ===== */
+        @media (max-width: 768px) {
+            .page-content {
+                padding: 0.75rem !important;
+            }
+
+            .top-header {
+                padding: 0.75rem 1rem !important;
+            }
+
+            .page-title {
+                font-size: 1.2rem !important;
+            }
+
+            /* Tabs: scroll horizontal en móvil */
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding: 0.5rem 0.75rem 0;
+                gap: 0.25rem;
+                scrollbar-width: thin;
+            }
+            .tabs::-webkit-scrollbar { height: 3px; }
+            .tabs::-webkit-scrollbar-thumb { background: rgba(196,163,90,0.4); border-radius: 2px; }
+
+            .tab-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .tab-btn i {
+                margin-right: 0.35rem;
+            }
+
+            /* Cards: reducir padding */
+            .card {
+                padding: 1rem !important;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.75rem;
+                padding-bottom: 0.75rem !important;
+            }
+            .card-header h3 {
+                font-size: 1.05rem !important;
+            }
+            .card-body {
+                padding: 0.75rem 0 !important;
+            }
+
+            /* Day config: todo apilado */
+            .day-config {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            /* Botones: stack en móvil */
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            div[style*="display: flex"][style*="gap: 1rem"][style*="flex-wrap"] .btn {
+                width: auto;
+                flex: 1 1 auto;
+                min-width: 140px;
+            }
+
+            /* Tablas: permitir scroll */
+            .table-responsive, .data-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+
+            /* QR WhatsApp: limitar tamaño */
+            #wa-qr-image {
+                max-width: 220px !important;
+            }
+
+            /* Info badges */
+            .info-badge {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            /* Status container WA/GCal */
+            #wa-status-container > div,
+            #gcal-status-container > div {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
+            }
+
+            /* Inputs más grandes en móvil para tocar bien */
+            input, select, textarea {
+                font-size: 16px !important; /* evita zoom de iOS */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tab-btn {
+                padding: 0.65rem 0.75rem;
+                font-size: 0.7rem;
+            }
+            .tab-btn i { margin-right: 0.25rem; }
+
+            .card-header h3 {
+                font-size: 1rem !important;
+            }
+        }
     </style>
 </head>
 

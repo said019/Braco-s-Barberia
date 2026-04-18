@@ -26,11 +26,7 @@ router.post('/', async (req, res) => {
                 const selectedOption = (votes[0]?.optionName || '').toLowerCase();
                 console.log(`[Evolution Webhook] Poll de ${phone}: "${selectedOption}"`);
 
-                if (selectedOption.includes('confirmar')) {
-                    await handleConfirmation(phone);
-                } else if (selectedOption.includes('cancelar') || selectedOption.includes('modificar')) {
-                    await handleCancellationRequest(phone);
-                }
+                await routeAction(phone, selectedOption);
                 return res.status(200).json({ received: true });
             }
 
@@ -42,12 +38,7 @@ router.post('/', async (req, res) => {
 
             if (text) {
                 console.log(`[Evolution Webhook] Texto de ${phone}: "${text}"`);
-                const lower = text.toLowerCase();
-                if (lower.includes('confirmar')) {
-                    await handleConfirmation(phone);
-                } else if (lower.includes('cancelar') || lower.includes('modificar')) {
-                    await handleCancellationRequest(phone);
-                }
+                await routeAction(phone, text.toLowerCase());
             }
         }
 
@@ -57,6 +48,21 @@ router.post('/', async (req, res) => {
         res.status(200).json({ received: true });
     }
 });
+
+// ============================================================================
+// ROUTER: Detecta intención del mensaje/poll y dispara el handler adecuado
+// ============================================================================
+async function routeAction(phone, text) {
+    if (text.includes('reagendar') || text.includes('modificar') || text.includes('cambiar')) {
+        await handleRescheduleRequest(phone);
+    } else if (text.includes('cancelar')) {
+        await handleCancellationRequest(phone);
+    } else if (text.includes('confirmar') || text.includes('ahí estaré') || text.includes('todo bien') || text.includes('todo en orden')) {
+        await handleConfirmation(phone);
+    } else {
+        console.log(`[Evolution Webhook] Opción no reconocida: "${text}"`);
+    }
+}
 
 // ============================================================================
 // HANDLER: CONFIRMACIÓN DE ASISTENCIA
@@ -161,6 +167,75 @@ async function handleCancellationRequest(phone) {
         }
     } else {
         await whatsappService.sendTextMessage(phone, `No encontramos una cita activa para cancelar. Si deseas agendar, visita: ${url}/agendar.html`);
+    }
+}
+
+// ============================================================================
+// HANDLER: REAGENDAR CITA
+// Cancela la cita actual y envía link para agendar de nuevo
+// ============================================================================
+async function handleRescheduleRequest(phone) {
+    const cleanPhone = phone.slice(-10);
+    const url = process.env.PUBLIC_URL || 'https://braco-s-barberia-production.up.railway.app';
+
+    const result = await query(`
+        SELECT a.id, a.appointment_date, a.start_time,
+               c.name as client_name,
+               s.name as service_name
+        FROM appointments a
+        JOIN clients c ON a.client_id = c.id
+        JOIN services s ON a.service_id = s.id
+        WHERE c.phone LIKE '%' || $1
+          AND a.status IN ('scheduled', 'confirmed', 'pending')
+          AND a.appointment_date >= CURRENT_DATE
+        ORDER BY a.appointment_date ASC, a.start_time ASC
+        LIMIT 1
+    `, [cleanPhone]);
+
+    if (result.rows.length > 0) {
+        const appt = result.rows[0];
+        const dateFormatted = new Date(appt.appointment_date).toLocaleDateString('es-MX', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        });
+
+        await query(
+            `UPDATE appointments SET status = 'cancelled', reminder_sent = TRUE, notes = COALESCE(notes, '') || ' [Reagendar solicitado vía WhatsApp]', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+            [appt.id]
+        );
+        console.log(`[Evolution Webhook] Cita ${appt.id} cancelada para reagendar`);
+
+        try {
+            await googleCalendar.updateEvent(appt.id, { ...appt, status: 'cancelled' });
+        } catch (_) {
+            try { await googleCalendar.deleteEvent(appt.id); } catch (_) {}
+        }
+
+        await whatsappService.sendTextMessage(
+            phone,
+            `🔄 *Reagendar cita*
+
+Tu cita de ${appt.service_name} del ${dateFormatted} fue liberada.
+
+Agenda una nueva fecha aquí:
+${url}/agendar.html`
+        );
+
+        try {
+            await whatsappService.sendAdminModification({
+                clientName: appt.client_name,
+                clientPhone: cleanPhone,
+                oldService: appt.service_name,
+                oldDate: dateFormatted,
+                oldTime: appt.start_time,
+                newService: 'Pendiente',
+                newDate: 'Pendiente',
+                newTime: 'Pendiente'
+            });
+        } catch (err) {
+            console.error('[Evolution Webhook] Error notificando admin (reagendar):', err.message);
+        }
+    } else {
+        await whatsappService.sendTextMessage(phone, `No encontramos una cita para reagendar. Agenda aquí: ${url}/agendar.html`);
     }
 }
 
