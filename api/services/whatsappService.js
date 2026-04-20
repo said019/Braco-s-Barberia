@@ -183,41 +183,36 @@ ${cardUrl ? `🔗 Tu tarjeta: ${cardUrl}` : ''}
 };
 
 // ============================================================================
-// 6. Recordatorio 24h (con Poll para confirmar/reagendar/cancelar)
+// 6. Recordatorio 24h (Poll único con toda la info)
 // ============================================================================
 export const sendReminder24h = async ({ phone, name, service, time, code }) => {
-    const intro = `📅 *Recordatorio Braco's Barbería*
-
-Hola ${name}, recordatorio de tu cita *mañana*:
-✂️ ${service}
-🕐 ${time}
-🔑 ${code || '----'}`;
-    await sendText(phone, intro);
-    return sendPoll(
+    const question = `📅 Recordatorio Braco's Barbería\n\nHola ${name}, tu cita es mañana a las ${time}.\n✂️ ${service}\n🔑 ${code || '----'}\n\n¿Confirmas tu asistencia?`;
+    const pollRes = await sendPoll(
         phone,
-        `¿Confirmas tu asistencia?`,
+        question,
         ['✅ Confirmar Asistencia', '🔄 Reagendar', '❌ Cancelar']
     );
+    // Fallback a texto si el poll falla
+    if (!pollRes.success) {
+        return sendText(phone, `${question}\n\nResponde: CONFIRMAR, REAGENDAR o CANCELAR`);
+    }
+    return pollRes;
 };
 
 // ============================================================================
-// 6b. Recordatorio 2h (+ poll compacto)
+// 6b. Recordatorio 2h (Poll único con toda la info)
 // ============================================================================
 export const sendReminder2h = async ({ phone, name, service, time, code }) => {
-    const msg = `⏰ *Recordatorio Braco's Barbería*
-
-Hola ${name}, tu cita es *hoy a las ${time}*.
-
-✂️ ${service}
-🔑 Código: ${code || '----'}
-
-¡Te esperamos! 💈`;
-    await sendText(phone, msg);
-    return sendPoll(
+    const question = `⏰ Tu cita es HOY a las ${time}\n\nHola ${name}\n✂️ ${service}\n🔑 ${code || '----'}\n\n¿Todo en orden?`;
+    const pollRes = await sendPoll(
         phone,
-        `¿Todo en orden?`,
+        question,
         ['✅ Ahí estaré', '❌ Cancelar']
     );
+    if (!pollRes.success) {
+        return sendText(phone, `${question}\n\nResponde: CONFIRMAR o CANCELAR`);
+    }
+    return pollRes;
 };
 
 // ============================================================================
