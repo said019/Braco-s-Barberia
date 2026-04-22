@@ -160,16 +160,9 @@ async function routeAction(phone, rawText) {
     } else if (isShortYes || includesAny(confirmarKeywords)) {
         await handleConfirmation(phone);
     } else {
-        console.log(`[Evolution Webhook] ⚠️  Opción no reconocida: "${text}"`);
-        try {
-            await whatsappService.sendTextMessage(
-                phone,
-                `No entendí tu mensaje. Por favor responde:\n\n` +
-                `✅ CONFIRMAR — para confirmar tu cita\n` +
-                `🔄 REAGENDAR — para cambiar fecha u hora\n` +
-                `❌ CANCELAR — para cancelar tu cita`
-            );
-        } catch (_) {}
+        // Silencio: no es una intención clara. Dejar que el dueño
+        // responda manualmente desde su WhatsApp.
+        console.log(`[Evolution Webhook] Mensaje ignorado (sin intención clara): "${text}"`);
     }
 }
 
