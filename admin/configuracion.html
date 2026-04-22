@@ -1147,6 +1147,9 @@
                             <button id="btn-wa-test" class="btn btn-secondary" onclick="testWhatsApp()" style="display:none;">
                                 <i class="fas fa-paper-plane"></i> Enviar mensaje de prueba
                             </button>
+                            <button id="btn-wa-webhook" class="btn btn-secondary" onclick="setupWhatsAppWebhook()">
+                                <i class="fas fa-link"></i> Registrar Webhook
+                            </button>
                         </div>
 
                         <!-- Help Text -->
@@ -2365,6 +2368,19 @@
             try {
                 await api.post('/evolution/test', { phone });
                 showToast('Mensaje de prueba enviado', 'success');
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        async function setupWhatsAppWebhook() {
+            try {
+                const data = await api.post('/evolution/setup-webhook');
+                if (data?.success) {
+                    showToast('Webhook registrado: ' + (data.webhookUrl || 'OK'), 'success');
+                } else {
+                    showToast('No se pudo registrar el webhook. Revisa los logs.', 'error');
+                }
             } catch (e) {
                 showToast('Error: ' + e.message, 'error');
             }
