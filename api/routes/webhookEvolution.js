@@ -90,19 +90,19 @@ router.post('/', async (req, res) => {
         const phone = rawPhone.replace(/\D/g, '');
         if (!phone) return;
 
-        // 1) Intentar detectar poll
+        // 1) Intentar detectar poll (siempre procesar, es intención certera)
         const pollAnswer = extractPollAnswer(message, data);
         if (pollAnswer) {
             console.log(`[Evolution Webhook] 🗳️  Poll de ${phone}: "${pollAnswer}"`);
-            await routeAction(phone, pollAnswer);
+            await routeAction(phone, pollAnswer, { fromPoll: true });
             return;
         }
 
-        // 2) Texto plano
+        // 2) Texto plano (procesamos solo si coincide con intención muy específica)
         const text = extractText(message);
         if (text) {
             console.log(`[Evolution Webhook] 💬 Texto de ${phone}: "${text}"`);
-            await routeAction(phone, text);
+            await routeAction(phone, text, { fromPoll: false });
         }
     } catch (error) {
         console.error('[Evolution Webhook] Error:', error);
@@ -111,57 +111,60 @@ router.post('/', async (req, res) => {
 
 // ============================================================================
 // ROUTER: Detecta intención del mensaje/poll y dispara el handler adecuado
+// Si fromPoll=true: acepta keywords amplios (el cliente votó en el poll)
+// Si fromPoll=false (texto libre): solo palabras explícitas e inequívocas
 // ============================================================================
-async function routeAction(phone, rawText) {
+async function routeAction(phone, rawText, { fromPoll = false } = {}) {
     const text = normalizeText(rawText);
-    console.log(`[Evolution Webhook] Normalizado: "${text}"`);
+    console.log(`[Evolution Webhook] Normalizado: "${text}" (fromPoll=${fromPoll})`);
 
     const includesAny = (arr) => arr.some(k => text.includes(k));
 
-    // ---- CANCELAR (checamos primero porque "no puedo" no debe ser confirmar) ----
-    const cancelarKeywords = [
-        'cancelar', 'cancela', 'cancelo', 'cancelacion', 'cancelada', 'cancelado',
-        'anular', 'anula', 'anulo', 'anulacion',
-        'no puedo', 'no podre', 'no voy', 'no ire', 'no asistire', 'no asisto',
-        'no voy a poder', 'no podre ir', 'ya no voy', 'ya no puedo',
-        'quiero cancelar', 'deseo cancelar', 'favor de cancelar', 'por favor cancelar'
+    // Keywords estrictos — SOLO estas palabras inequívocas se aceptan en texto libre
+    const cancelarStrict = [
+        'cancelar', 'cancela', 'cancelo', 'cancelacion',
+        'anular', 'anula', 'anulo'
+    ];
+    const reagendarStrict = [
+        'reagendar', 'reagenda', 'reagendo', 'reagendacion',
+        'reprogramar', 'reprograma', 'reprogramacion'
+    ];
+    const confirmarStrict = [
+        'confirmar', 'confirmo', 'confirmacion',
+        'ahi estare', 'todo bien', 'todo en orden'
     ];
 
-    // ---- REAGENDAR / MODIFICAR ----
-    const reagendarKeywords = [
-        'reagendar', 'reagenda', 'reagendo', 'reagendacion', 'reagendame',
-        'reprogramar', 'reprograma', 'reprogramo', 'reprogramacion',
-        'modificar', 'modifica', 'modifico', 'modificacion',
-        'cambiar', 'cambia', 'cambio', 'cambiame',
-        'mover', 'mueve', 'muevo', 'muevame',
-        'posponer', 'pospone', 'pospongo',
-        'otra fecha', 'otra hora', 'otro dia', 'otro horario', 'nueva fecha',
-        'para otro dia', 'para otra fecha'
+    // Keywords amplios — solo se usan cuando la respuesta viene de un poll
+    const cancelarPoll = [
+        ...cancelarStrict,
+        'no puedo', 'no podre', 'no voy', 'no ire', 'no asistire'
+    ];
+    const reagendarPoll = [
+        ...reagendarStrict,
+        'modificar', 'modifica', 'modifico',
+        'cambiar', 'cambia', 'cambio',
+        'mover', 'mueve', 'otra fecha', 'otro dia'
+    ];
+    const confirmarPoll = [
+        ...confirmarStrict,
+        'confirma', 'confirmada', 'confirmado',
+        'ahi voy', 'ahi nos vemos', 'ahi llego', 'ahi estoy',
+        'todo ok', 'todo listo',
+        'si voy', 'si ire', 'si asistire', 'si asisto', 'si estare',
+        'asistire', 'asisto'
     ];
 
-    // ---- CONFIRMAR ----
-    const confirmarKeywords = [
-        'confirmar', 'confirma', 'confirmo', 'confirmacion', 'confirmada', 'confirmado',
-        'ahi estare', 'ahi voy', 'ahi nos vemos', 'ahi llego',
-        'todo bien', 'todo en orden', 'todo ok', 'todo listo', 'todo perfecto',
-        'si voy', 'si ire', 'si asistire', 'si asisto', 'si estare', 'si confirmo',
-        'asistire', 'asisto', 'voy a ir', 'ahi estoy',
-        'ok', 'okay', 'vale', 'listo', 'perfecto', 'de acuerdo', 'claro',
-        'dale', 'hecho', 'entendido', 'recibido', 'enterado', 'gracias'
-    ];
+    const kwCancelar = fromPoll ? cancelarPoll : cancelarStrict;
+    const kwReagendar = fromPoll ? reagendarPoll : reagendarStrict;
+    const kwConfirmar = fromPoll ? confirmarPoll : confirmarStrict;
 
-    // "si" solo como palabra completa
-    const isShortYes = /^(si|s)$/.test(text);
-
-    if (includesAny(cancelarKeywords)) {
+    if (includesAny(kwCancelar)) {
         await handleCancellationRequest(phone);
-    } else if (includesAny(reagendarKeywords)) {
+    } else if (includesAny(kwReagendar)) {
         await handleRescheduleRequest(phone);
-    } else if (isShortYes || includesAny(confirmarKeywords)) {
+    } else if (includesAny(kwConfirmar)) {
         await handleConfirmation(phone);
     } else {
-        // Silencio: no es una intención clara. Dejar que el dueño
-        // responda manualmente desde su WhatsApp.
         console.log(`[Evolution Webhook] Mensaje ignorado (sin intención clara): "${text}"`);
     }
 }
@@ -209,8 +212,8 @@ async function handleConfirmation(phone) {
 
         await whatsappService.sendConfirmationResponse(phone);
     } else {
-        console.log(`[Evolution Webhook] ❌ No se encontró cita para ${phone}`);
-        await whatsappService.sendTextMessage(phone, 'No encontramos una cita pendiente próxima para confirmar. Si tienes dudas, contáctanos.');
+        // Sin cita: silencio. No spamear al cliente.
+        console.log(`[Evolution Webhook] Sin cita para ${phone} — no se responde`);
     }
 }
 
@@ -279,7 +282,7 @@ async function handleCancellationRequest(phone) {
             console.error('[Evolution Webhook] Error notificando admin:', err.message);
         }
     } else {
-        await whatsappService.sendTextMessage(phone, `No encontramos una cita activa para cancelar. Si deseas agendar, visita: ${url}/agendar.html`);
+        console.log(`[Evolution Webhook] Sin cita activa para cancelar ${phone} — no se responde`);
     }
 }
 
@@ -354,7 +357,7 @@ ${url}/agendar.html`
             console.error('[Evolution Webhook] Error notificando admin (reagendar):', err.message);
         }
     } else {
-        await whatsappService.sendTextMessage(phone, `No encontramos una cita para reagendar. Agenda aquí: ${url}/agendar.html`);
+        console.log(`[Evolution Webhook] Sin cita para reagendar ${phone} — no se responde`);
     }
 }
 
